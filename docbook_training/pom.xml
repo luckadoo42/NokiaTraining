@@ -1,0 +1,796 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<artifactId>nctm</artifactId>
+
+	<version>20-SNAPSHOT</version>
+
+	<name>Nokia Co-op training material</name>
+	<url>http://pubs.motive.com/wiki/</url>
+	<description>Nokia Co-op training material</description>
+	<parent>
+		<groupId>motive.docmodules</groupId>
+		<artifactId>base-pom</artifactId>
+		<version>1.8-93</version>
+	</parent>
+	
+	<properties>
+		<!-- added for the PDF generation of API docs -->
+		<maven.build.timestamp.format>yyyy-MM-dd HH:MM</maven.build.timestamp.format>
+		
+		<!-- for all the dependencies below, use a 2.1.0-nn or later version now that it's on Jenkins -->
+		<!-- check http://pubs.motive.com/wiki/ReleaseVersions for latest releses -->
+
+		<doctools.version>2.1.12-187</doctools.version> <!-- doctools must be 2.1.1-31 or later to get updates for jira feedback-->
+		<commoncontent.version>2.1.9-155</commoncontent.version>
+		<libdoctools.version>2.1.1-20</libdoctools.version>
+		
+		<!-- JCBG-2111 -->
+		<!-- To automatically publish the ES Provisioning API Javadoc and the subscriber repository REST API swagger docs on IC, 
+			 and to have the latest released version of the camel-context.xml file in the ES User guide, do the following:
+			- From the Jenkins Build mail for released CDP versions (sent to dev mailing list), get the CDP version. 
+			  Example of mail subject : [cdp-dev] [Jenkins]: CDP 18.0.1.0-20180524063240 Released
+			  The CDP version in this example = 18.0.1.0-20180524063240
+			- Open the CDP pom.xml file for that released version - replace <CDP version> - : 
+			  https://gerrit.ext.net.nokia.com/gerrit/gitweb?p=CDP/core.git;a=blob_plain;f=pom.xml;hb=<CDP version>
+			- Search the following in the pom file: <es.version>
+			- Copy the es.version here below as <es.version>
+			- Add es.javadocs and es.swaggerdocs to the module.xml
+			
+			ALTERNATIVE:
+			The javadoc is fetched from https://repo.lab.pl.alcatel-lucent.com/cdp-mvn-releases/motive/udm/plugins/provisioning-system-api/ 
+			The camel file is fetched from https://repo.lab.pl.alcatel-lucent.com/cdp-mvn-releases/motive/udm/plugins/provisioning-system-camel-core/
+			The swagger docs are fetched from repo.lab.pl.alcatel-lucent.com/cdp-mvn-releases/motive/udm/plugins/subscriber-repository/
+			Just take the latest version in those dirs (should be the same for both - if not, contact the CDP release manager or TPM).
+			
+			CHECKS TO BE DONE for a released version of CDP/ES:
+			1. Check that the following artifacts exists: 
+			   - https://repo.lab.pl.alcatel-lucent.com/cdp-mvn-releases/motive/udm/plugins/provisioning-system-api/<es.version>/provisioning-system-api-<es.version>-javadoc.jar 
+			   - https://repo.lab.pl.alcatel-lucent.com/cdp-mvn-releases/motive/udm/plugins/provisioning-system-camel-core/<es.version>/provisioning-system-camel-core-<es.version>.jar
+			   - https://repo.lab.pl.alcatel-lucent.com/cdp-mvn-releases/motive/udm/plugins/subscriber-repository/<es.version>/subscriber-repository-<es.version>-swagger.zip 
+			=> If it fails, contact R&D team
+			3. Check that the build can get the files by running the following cmd: mvn dependency:tree
+			=> If an item exists in artifactory but the build can’t get it, the issue could be that the item is not part of the techpubs-mvn-dependencies repo. 
+			=> Log a request with CTO DevOps in the DO- jira instance.
+			
+			Snapshot versions for the javadoc can be fetched from https://repo.lab.pl.alcatel-lucent.com/techpubs-mvn-dependencies/motive/udm/plugins/provisioning-system-api/
+			Snapshot versions for the camel file can be fetched from https://repo.lab.pl.alcatel-lucent.com/techpubs-mvn-dependencies/motive/udm/plugins/provisioning-system-camel-core
+			
+			18A version = 18.12.0.0-20181203115909
+			18A SP1 version = 18.12.1.10-20190411113526
+			19 version = 19.0.0.7-20190814095147
+			19.11 draft version = 19.0.0.17-20200211105527324
+			19.11 version = 19.0.0.18-20200214172554884
+			19.11 MP1 version = 19.11.1.2-20200320123255990 (released ES version)
+			19.11 SP1 draft version = 19.11.1.7-20200429111919928 => 19.11.0.1-20200512040043140
+			20 draft version = 20.0.0.0-20200810093445161
+	    -->
+		
+		<!--UPDATE BY DRAY - 8 Sept 2020 es.version>19.11.0.6-20200714164040603</es.version-->
+		<es.version>20.0.0.0-20200810093445161</es.version>
+		<!--javadoc.version>${es.version}</javadoc.version-->
+
+		<!-- To automatically get the following:
+				- Core CDP REST API swagger docs
+				- json file for the system settings
+				- mdm.yaml file
+				- RCS protocol javadoc 
+				- Scripted primitives API javadoc
+			you need the CDP version.	
+			Do the following to get the CDP version:
+			- From the Jenkins Build mail for released CDP versions (sent to dev mailing list), get the CDP version. 
+			  Example of mail subject : [cdp-dev] [Jenkins]: CDP 18.0.1.0-20180524063240 Released
+			  The CDP version in this example = 18.0.1.0-20180524063240
+			- Copy the cdp version to <cdp.version> here below
+						
+			ALTERNATIVE:
+			Take the version of the latest green CDP-master-BRANCH build on Jenkins: https://build7.cci.nokia.net/job/OSS/job/CDP/job/CDP-master-BRANCH/
+			
+			CHECKS TO BE DONE for a released version of CDP:
+			1. Check that the following artifacts exists: 
+			   - https://repo.lab.pl.alcatel-lucent.com/cdp-mvn-releases/motive/mdm/rest/<cdp.version>/rest-<cdp.version>.yaml 
+			   - https://repo.lab.pl.alcatel-lucent.com/cdp-mvn-releases/motive/mdm/system-properties-info/<cdp.version>/system-propertoes-info-<cdp-version>.json
+			   - https://repo.lab.pl.alcatel-lucent.com/cdp-mvn-releases/motive/mdm/mdm-installer/<cdp.version>/mdm-installer-<cdp.version>.yaml  
+			   - https://repo.lab.pl.alcatel-lucent.com/cdp-mvn-releases/motive/mdm/rcs-protocol/<cdp.version>/rcs-protocol-<cdp.version>-javadoc.jar 
+			   - https://repo.lab.pl.alcatel-lucent.com/cdp-mvn-releases/motive/mdm/alu-commons/<cdp-version>/alu-commons-<cdp-version>-javadoc.jar 
+			=> If it fails, contact R&D team
+			3. Check that the build can get the files by running the following cmd: mvn dependency:tree
+			=> If an item exists in artifactory but the build can’t get it, the issue could be that the item is not part of the techpubs-mvn-dependencies repo. 
+			=> Log a request with CTO DevOps in the DO- jira instance.
+			
+		-->
+		<!-- Intermediate snapshot versions for the artifacts are here: 
+			- https://repo.lab.pl.alcatel-lucent.com/techpubs-mvn-dependencies/motive/mdm/rest/
+			- https://repo.lab.pl.alcatel-lucent.com/techpubs-mvn-dependencies/motive/mdm/system-properties-info/
+			- https://repo.lab.pl.alcatel-lucent.com/techpubs-mvn-dependencies/motive/mdm/mdm-installer/
+			- https://repo.lab.pl.alcatel-lucent.com/techpubs-mvn-dependencies/motive/mdm/rcs-protocol/
+			- https://repo.lab.pl.alcatel-lucent.com/techpubs-mvn-dependencies/motive/mdm/alu-commons/
+			If you want to use an intermediate snapshot version, look for the version in the above directories.
+			
+		-->
+		<!--
+			CDP VERSIONS USED:
+			18A version = 18.12.0.0-20181206122227
+			18A SP1 version = 18.12.1.0-20190415060404
+			19 version = 19.08.0.0-20190823075730
+			19.11 draft version = 19.11.0.0-20200219193131845
+			19.11 version = 19.11.0.0-20200220223320221
+			19.11 SP1 draft version = 19.11.0.1-20200505163639036 => 19.11.0.1-20200514093018410 -> 19.11.2.0-20200709130156578 -> 19.11.2.0-20200715211028931 on 16th July
+			20 draft version = 19.11.2.1-20200824182918190
+	    -->
+		
+		<cdp.version>19.11.2.0-20200715211028931</cdp.version>
+		
+		<!-- needed to create a PDF for the swagger docs -->
+		<asciidoctor.directory>${project.build.directory}/generated-docs</asciidoctor.directory>
+		
+	</properties>
+
+	<!-- ************************************** -->
+	<!-- Nothing to see below here, move along. -->
+	<!-- ************************************** -->
+	<packaging>pom</packaging>
+	<groupId>motive.docmodules</groupId>
+	<modelVersion>4.0.0</modelVersion>
+	<dependencies>
+
+		<!-- JCBG-2111 -->
+        <!-- COMMENT: note that exclusion elements below require maven 3.2.1 or later -->
+        <dependency>
+            <groupId>motive.udm.plugins</groupId>
+            <artifactId>provisioning-system-api</artifactId>
+            <version>${es.version}</version>
+            <classifier>javadoc</classifier>
+            <type>jar</type>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+		
+		<dependency>
+			<groupId>motive.mdm</groupId>
+			<artifactId>rcs-protocol</artifactId>
+			<version>${cdp.version}</version>
+			<classifier>javadoc</classifier>
+			<type>jar</type>
+			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>*</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+			</exclusions>			
+		</dependency>
+		
+		<dependency>
+			<groupId>motive.mdm</groupId>
+			<artifactId>alu-commons</artifactId>
+			<version>${cdp.version}</version>
+			<classifier>javadoc</classifier>
+			<type>jar</type>
+			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>*</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+			</exclusions>			
+		</dependency>
+		
+		<dependency>
+			<groupId>motive.udm.plugins</groupId>
+			<artifactId>provisioning-system-camel-core</artifactId>
+			<version>${es.version}</version>
+			<type>jar</type>
+			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>*</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>	
+		
+		<dependency>
+			<groupId>motive.mdm</groupId>
+			<artifactId>mdm-installer</artifactId>
+			<version>${cdp.version}</version>
+			<type>yaml</type>
+			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>*</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		
+		<dependency>
+			<groupId>motive.udm.plugins</groupId>
+			<artifactId>subscriber-repository</artifactId>
+			<version>${es.version}</version>
+			<classifier>swagger</classifier>
+			<type>zip</type>
+			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>*</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>		
+		
+		<dependency>
+			<groupId>motive.mdm</groupId>
+			<artifactId>rest</artifactId>
+			<version>${cdp.version}</version>
+			<type>yaml</type>
+			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>*</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		
+		<dependency>
+			<groupId>motive.mdm</groupId>
+			<artifactId>system-properties-info</artifactId>
+			<version>${cdp.version}</version>
+			<type>json</type>
+			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>*</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		
+		<dependency>
+			<groupId>motive.docmodules</groupId>
+			<artifactId>doctools</artifactId>
+			<type>zip</type>
+			<scope>provided</scope>
+			<version>${doctools.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>motive.docmodules</groupId>
+			<artifactId>glossary</artifactId>
+			<classifier>resources</classifier>
+			<type>zip</type>
+			<scope>provided</scope>
+			<version>${commoncontent.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>motive.docmodules</groupId>
+			<artifactId>libdoctools</artifactId>
+			<scope>provided</scope>
+			<type>zip</type>
+			<version>${libdoctools.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>xerces</groupId>
+			<artifactId>xercesImpl</artifactId>
+			<version>2.9.1</version>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+<!--	<distributionManagement>
+		<repository>
+			<id>releases</id>
+			<name>central</name>
+			<url>http://maven.motive.com/content/repositories/releases</url>
+			
+			
+		</repository>
+		<snapshotRepository>
+			<id>snapshots</id>
+			<name>snapshots</name>
+			<url>http://maven.motive.com/content/repositories/snapshots</url>
+						
+		</snapshotRepository>
+	</distributionManagement> -->
+	<build>
+
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>2.2</version>
+					<dependencies>
+						<dependency>
+							<groupId>org.apache.maven</groupId>
+							<artifactId>maven-archiver</artifactId>
+							<version>2.4</version>
+						</dependency>
+					</dependencies>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-antrun-plugin</artifactId>
+					<version>1.5</version>
+					<dependencies>
+						<dependency>
+							<groupId>saxon</groupId>
+							<artifactId>saxon</artifactId>
+							<version>6.5.3</version>
+						</dependency>
+						<dependency>
+							<groupId>xerces</groupId>
+							<artifactId>xercesImpl</artifactId>
+							<version>2.9.1</version>
+						</dependency>
+						<dependency>
+							<groupId>net.sourceforge.saxon</groupId>
+							<artifactId>saxon</artifactId>
+							<version>9.1.0.8</version>
+						</dependency>
+						<dependency>
+							<groupId>javax.mail</groupId>
+							<artifactId>mail</artifactId>
+							<version>1.4</version>
+						</dependency>
+					</dependencies>
+					<executions>
+						<execution>
+							<id>my-antrun-initialize</id>
+							<phase>initialize</phase>
+							<configuration>
+								<target>
+									<property environment="env"/>
+									<!-- read in all environment vars, now avail as env.* -->
+
+									<!-- For JCBG-2099, disabling echoproperties b/c it shows passwords
+							  <echo>========= Now echoing properties as they exist at start of the antrun-initialize ===</echo>
+							  <echoproperties/>
+							  echoing out the pom version
+							  -->
+									<echo>Writing pom version to a file pom.version.txt:
+										${project.version}.</echo>
+									<echo file="pom.version.properties"
+										>project.version=${project.version}</echo>
+
+
+									<dirname property="doctools-zip"
+										file="${motive.docmodules:doctools:zip}"/>
+									<echo> doctools-zip = ${motive.docmodules:doctools:zip}</echo>
+									<dirname property="glossary-zip"
+										file="${motive.docmodules:glossary:zip:resources}"/>
+									<dirname property="libdoctools-zip"
+										file="${motive.docmodules:libdoctools:zip}"/>
+									<unzip src="${doctools-zip}/doctools-${doctools.version}.zip"
+										dest="${project.build.directory}/doctools" overwrite="false"/>
+									<unzip
+										src="${glossary-zip}/glossary-${commoncontent.version}-resources.zip"
+										dest="${project.build.directory}/doctools" overwrite="false"/>
+
+
+
+									<!-- JCBG-2111 -->
+                                    <dirname property="javadoc-jar"  file="${motive.udm.plugins:provisioning-system-api:jar:javadoc}"/>
+                                    <echo> javadoc-jar = ${motive.udm.plugins:provisioning-system-api:jar:javadoc}</echo>
+                                    <unzip
+                                       src="${javadoc-jar}/provisioning-system-api-${es.version}-javadoc.jar"
+                                       dest="${project.basedir}/en_US/es.javadocs/source"
+                                       overwrite="true"/>
+									
+									<dirname property="rcs-javadoc-jar"	file="${motive.mdm:rcs-protocol:jar:javadoc}"/>
+									<echo> rcs-javadoc-jar = ${motive.mdm:rcs-protocol:jar:javadoc}</echo>
+									<unzip
+										src="${rcs-javadoc-jar}/rcs-protocol-${cdp.version}-javadoc.jar"
+										dest="${project.basedir}/en_US/rcs.javadocs/source"
+										overwrite="true"/>
+									
+									<dirname property="scripted-primitive-javadoc-jar"	file="${motive.mdm:alu-commons:jar:javadoc}"/>
+									<echo> scripted-primitive-javadoc-jar = ${motive.mdm:alu-commons:jar:javadoc}</echo>
+									<unzip
+										src="${scripted-primitive-javadoc-jar}/alu-commons-${cdp.version}-javadoc.jar"
+										dest="${project.basedir}/en_US/scripted.primitives.javadocs/source"
+										overwrite="true"/>
+									
+									<dirname property="camel-jar"
+										file="${motive.udm.plugins:provisioning-system-camel-core:jar}"/>
+									<echo> camel-jar =
+										${motive.udm.plugins:provisioning-system-camel-core:jar}</echo>
+									<unzip
+										src="${camel-jar}/provisioning-system-camel-core-${es.version}.jar"
+										dest="${project.basedir}/en_US/es.user.guide/embed"
+										overwrite="true">
+										<patternset>
+											<include name="camel-context.xml"/>
+										</patternset>
+									</unzip>
+									
+									<dirname property="swagger-zip"
+										file="${motive.udm.plugins:subscriber-repository:zip:swagger}"/>
+									<echo> swagger-zip =
+										${motive.udm.plugins:subscriber-repository:zip:swagger}</echo>
+									<unzip
+										src="${swagger-zip}/subscriber-repository-${es.version}-swagger.zip"
+										dest="${project.basedir}/en_US/es.swaggerdocs/source"
+										overwrite="true">
+										<patternset>
+											<include name="subscriber-repository/swagger.yaml"/>
+										</patternset>
+								    </unzip>
+									
+									<dirname property="swagger-yaml"
+										file="${motive.mdm:rest:yaml}"/>
+									<echo> swagger-yaml =
+										${motive.mdm:rest:yaml}</echo>
+									<copy
+										verbose="true"
+										file="${motive.mdm:rest:yaml}"
+										tofile="${project.basedir}/en_US/core.swaggerdocs/source/rest.yaml"
+										overwrite="true">
+									</copy>									
+
+									<dirname property="mdm-yaml"
+										file="${motive.mdm:mdm-installer:yaml}"/>
+									<echo> mdm-yaml =
+										${motive.mdm:mdm-installer:yaml}</echo>
+									<copy
+										verbose="true"
+										file="${motive.mdm:mdm-installer:yaml}"
+										tofile="${project.basedir}/en_US/deployment.guide/embed/mdm.yaml"
+										overwrite="true">
+									</copy>									
+									
+									<dirname property="system-settings"
+										file="${motive.mdm:system-properties-info:json}"/>
+									<echo> system-settings =
+										${motive.mdm:system-properties-info:json}</echo>
+									<copy
+										verbose="true"
+										file="${motive.mdm:system-properties-info:json}"
+										tofile="${project.basedir}/en_US/cdp.configuration.guide/system_settings/json-input-file-original"
+										overwrite="true">
+									</copy>									
+									
+									<echo>libdoctools-zip=${libdoctools-zip}, and
+										motive.docmodules:libdoctools:zip =
+										${motive.docmodules:libdoctools:zip} and
+										motive.docmodules:doctools:zip=${motive.docmodules:doctools:zip}</echo>
+									<unzip
+										src="${libdoctools-zip}/libdoctools-${libdoctools.version}.zip"
+										dest="${project.build.directory}/doctools" overwrite="false"/>
+
+									<!-- put jsch jar in place for use with scp task later -->
+									<copy verbose="true" todir="${user.home}/.ant/lib/" 
+										file="${project.build.directory}/doctools/lib/jsch-0.1.50.jar"/> 
+
+									<ant antfile="target/doctools/DocShared/main-build.xml"
+										output="target/ant-module2build.log">
+										<property name="module.filename" value="${module.filename}"/>
+										<!-- for JCBG-1954, passing this down -->
+										<property name="jira.uname">${jira.uname}</property>
+										<property name="jira.password">${jira.password}</property>
+
+										<target name="module2build"/>
+										<target name="generate-olink-target-dbs"/>
+									</ant>
+								</target>
+							</configuration>
+							<goals>
+								<goal>run</goal>
+							</goals>
+						</execution>
+						<execution>
+							<id>compile</id>
+							<phase>compile</phase>
+							<configuration>
+								<target>
+									<ant antfile="target/work/build.xml"
+										output="target/ant-build.log"/>
+								</target>
+							</configuration>
+							<goals>
+								<goal>run</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<version>2.2-beta-1</version>
+					<executions>
+						<execution>
+							<id>make resources</id>
+							<goals>
+								<goal>single</goal>
+							</goals>
+							<phase>package</phase>
+							<configuration>
+								<descriptors>
+									<descriptor>${project.basedir}/assembly.xml</descriptor>
+								</descriptors>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<!-- 
+		this is required to make interactive build promotion work
+		-->
+					<groupId>org.jfrog.buildinfo</groupId>
+					<artifactId>artifactory-maven-plugin</artifactId>
+					<version>2.6.1</version>
+					<!--<inherited>false</inherited>-->
+					<executions>
+						<execution>
+							<id>build-info</id>
+							<goals>
+								<goal>publish</goal>
+							</goals>
+							<phase>validate</phase>
+
+							<configuration>
+								<deployProperties> </deployProperties>
+								<artifactory>g
+									<includeEnvVars>true</includeEnvVars>
+									<timeoutSec>60</timeoutSec>
+									<propertiesFile>publish.properties</propertiesFile>
+								</artifactory>
+								<publisher>
+									<contextUrl>https://repo.lab.pl.alcatel-lucent.com</contextUrl>
+									<username>${artifactory.username}</username>
+									<password>${artifactory.password}</password>
+									<repoKey>techpubs-mvn-candidates</repoKey>
+									<snapshotRepoKey>techpubs-mvn-snapshots</snapshotRepoKey>
+								</publisher>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+
+			</plugins>
+
+		</pluginManagement>
+
+		<plugins>
+			<!--	<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-antrun-plugin</artifactId>
+					<version>1.5</version>
+					<dependencies>
+						<dependency>
+							<groupId>saxon</groupId>
+							<artifactId>saxon</artifactId>
+							<version>6.5.3</version>
+						</dependency>
+						<dependency>
+							<groupId>xerces</groupId>
+							<artifactId>xercesImpl</artifactId>
+							<version>2.9.1</version>
+						</dependency>
+						<dependency>
+							<groupId>net.sourceforge.saxon</groupId>
+							<artifactId>saxon</artifactId>
+							<version>9.1.0.8</version>
+						</dependency>
+						<dependency>
+							<groupId>javax.mail</groupId>
+							<artifactId>mail</artifactId>
+							<version>1.4</version>
+						</dependency>
+					</dependencies>
+					<executions>
+						<execution>
+							<id>initialize</id>
+							<phase>initialize</phase>
+							<configuration>
+								<target>
+									<dirname property="doctools-zip" file="${motive.docmodules:doctools:zip}" />
+									<dirname property="glossary-zip" file="${motive.docmodules:glossary:zip:resources}" />
+									<unzip src="${doctools-zip}/doctools-${doctools.version}.zip" dest="${project.build.directory}/doctools" overwrite="false" />
+									<unzip src="${glossary-zip}/glossary-${commoncontent.version}-resources.zip" dest="${project.build.directory}/doctools" overwrite="false" />
+									<ant antfile="target/doctools/DocShared/main-build.xml" output="target/ant-module2build.log">
+										<target name="module2build" />
+										<target name="generate-olink-target-dbs" />
+									</ant>
+								</target>
+							</configuration>
+							<goals>
+								<goal>run</goal>
+							</goals>
+						</execution>
+						<execution>
+							<id>compile</id>
+							<phase>compile</phase>
+							<configuration>
+								<target>
+									<ant antfile="target/work/build.xml" output="target/ant-build.log" />
+								</target>
+							</configuration>
+							<goals>
+								<goal>run</goal>
+							</goals>
+						</execution>
+					</executions>
+					</plugin> -->
+			<plugin>
+	            <groupId>org.jfrog.buildinfo</groupId>
+	            <artifactId>artifactory-maven-plugin</artifactId>
+	        </plugin>
+			
+			<!--plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+			</plugin-->
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+			</plugin>
+			
+				<!-- Use the swagger2markup to generate asciidoc from swagger file -->
+<!-- taken out temporarily to SPEED UP build -->	 		
+			<plugin>
+				<groupId>io.github.swagger2markup</groupId>
+				<artifactId>swagger2markup-maven-plugin</artifactId>
+				<version>1.0.0</version>
+				<configuration>
+					<swaggerInput>${project.basedir}/en_US/core.swaggerdocs/source/rest.yaml</swaggerInput>
+					<outputFile>${asciidoctor.directory}/IMPACTDMCoreRestAPI</outputFile>
+					<config>
+						<swagger2markup.markupLanguage>ASCIIDOC</swagger2markup.markupLanguage>
+						<swagger2markup.pathsGroupedBy>TAGS</swagger2markup.pathsGroupedBy>
+					</config>
+				</configuration>
+				
+				<executions>
+					<execution>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>convertSwagger2markup</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+	
+			 <!-- COMMENT  resize the columns -->
+			
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.6.0</version>
+				<executions>
+					<execution>
+						<id>script-sed-1</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>sed</executable>
+							<arguments>
+								<argument> -i </argument>
+								<argument> s/.^1,.^15,.^4/.^20,.^50,.^30/g</argument>
+								<argument>${project.build.directory}/generated-docs/IMPACTDMCoreRestAPI.adoc</argument>
+							</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>script-sed-2</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>sed</executable>
+							<arguments>
+								<argument> -i</argument>
+								<argument> s/.^1,.^3,.^10,.^4,.^2/.^10,.^20,.^40,.^20,.^10/g</argument>
+								<argument>${project.build.directory}/generated-docs/IMPACTDMCoreRestAPI.adoc</argument>
+							</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>script-sed-3</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>sed</executable>
+							<arguments>
+								<argument>-i</argument>
+								<argument>s/.^3,.^11,.^4/.^5,.^9,.^4/g</argument>
+								<argument>${project.build.directory}/generated-docs/IMPACTDMCoreRestAPI.adoc</argument>
+							</arguments>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>		
+		
+			<!-- COMMENT this plugin converts the swagger to pdf/html -->
+			
+			<plugin>
+				<groupId>org.asciidoctor</groupId>
+				<artifactId>asciidoctor-maven-plugin</artifactId>
+				<version>1.5.6</version>
+				<dependencies>
+					<dependency>
+						<groupId>org.asciidoctor</groupId>
+						<artifactId>asciidoctorj-pdf</artifactId>
+						<version>1.5.0-alpha.11</version>
+					</dependency>
+					<dependency>
+						<groupId>org.jruby</groupId>
+						<artifactId>jruby-complete</artifactId>
+						<version>1.7.21</version>
+					</dependency>
+				</dependencies>
+				<configuration>
+					<!-- COMMENT: You will need to create an .adoc file. This is the input to this plugin -->
+					<sourceDirectory>${asciidoctor.directory}</sourceDirectory>
+					<headerFooter>true</headerFooter>
+					<sourceDocumentName>IMPACTDMCoreRestAPI.adoc</sourceDocumentName>
+					<attributes>
+						<revnumber>${project.version}</revnumber>
+						<revdate>${maven.build.timestamp}</revdate>
+						<organization>${project.organization.name}</organization>
+						<doctype>book</doctype>
+						<imagesDir>../../en_US/core.swaggerdocs/images</imagesDir>
+						<toc>left</toc>
+						<toclevels>3</toclevels>
+						<numbered></numbered>
+						<hardbreaks></hardbreaks>
+						<sectlinks></sectlinks>
+						<sectanchors></sectanchors>
+						<generated>${asciidoctor.directory}/IMPACTDMCoreRestAPI</generated>
+						 COMMENT: this points to the previously create adoc files 
+					</attributes>
+				</configuration>
+				<executions>
+					<execution>
+						<id>asciidoc-to-pdf</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>process-asciidoc</goal>
+						</goals>
+						<configuration>
+							<backend>pdf</backend>
+							<outputDirectory>${project.build.directory}/out/en_US/external/pdf</outputDirectory>
+							<!-- COMMENT:  specify location to place pdf file -->
+							
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>	
+<!-- SPEED UP -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.2-beta-1</version>
+				<executions>
+					<execution>
+						<id>make resources</id>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<phase>package</phase>
+						<configuration>
+							<descriptors>
+								<descriptor>${project.basedir}/assembly.xml</descriptor>
+								<descriptor>${project.basedir}/assembly_l10n_kit.xml</descriptor>
+								<descriptor>${project.basedir}/assembly-CDPConsoleHelp.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+	
+
+</project>

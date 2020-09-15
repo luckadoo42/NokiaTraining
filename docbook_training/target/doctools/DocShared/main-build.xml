@@ -1,0 +1,3668 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="main-build">
+
+
+  <property name="force" value="false"/>
+
+  <property name="debug" value="false"/> <!-- added for JCBG-2047-->
+
+  <property name="mailhost" value="135.1.218.100"/> <!-- Adding so that we can change this in one place, 3/19/18 -->
+
+  <!-- let's make the value of olink.debug depend on debug
+
+so, if debug = true, then olink.debug=1
+else, olink.debug=0
+     (JCGG-1856 default for olink.debug)  
+  -->
+    <condition property="olink.debug" value="1" else="0">
+        <equals arg1="${debug}" arg2="true" />
+    </condition> 
+
+  
+    <!-- JCBG-2129  Setting a default value for inherit.book.keywords -->
+    <property name="inherit.book.keywords" value="false"/>
+
+
+    <!-- JCBG-1702  Setting a default value for fop.enable to prevent problems where both the fop and xep targets run as noted in JCBG-1702 -->
+    <property name="fop.enable" value="true"/>
+
+<!-- for nokia rebranding, jcbg-1780, made the css depend on branding -->
+    <condition property="css.filename" value="nokia1.css" else="html.css">
+        <equals arg1="${branding}" arg2="nokia1" />
+    </condition> 
+
+   <!-- JCBG-1658: fail.on.error = umbrella property that indicates you want the build to complete ignoring errors. 
+	default value is yes,  set it to no to ignore errors.
+        Several other properties below depend on its value. Allows a doc to build ignoring missing ids, links, etc. 
+	The value is yes/no so that it can be used as the value of an @terminate on an xsl:message;
+	  therefore, its name should be such that you can ask 'Do we want to ignore.failures?' and the answer, yes/no, should be appropriate as a value for @terminate. yes= terminate, no=don't terminate. 
+         
+-->
+
+   <property name="olink.doctitle" value="yes"/> <!-- default value; added for JCBG-1762. If set to yes, all external olinks get the book title appended; if no, they don't. Use to turn off book titles on links in Release Highlights documents. -->
+
+   <property name="fail.on.error" value="yes"/> 
+
+<!-- properties whose value depends on the value of fail.on.error  JCBG-1658 -->
+
+    <condition property="fail.on.bad.olink" value="yes" else="no">
+        <istrue value="${fail.on.error}"/>
+    </condition>  <!-- for jcbg-1587, need fail.on.bad.olink to be either yes or no -->
+
+    <condition property="skip.olink.conversion" value="false" else="true">
+        <istrue value="${fail.on.error}"/>
+    </condition> <!-- added for JCBG-1656, allows skip preproc conversion of olinks to xrefs -->
+
+    <condition property="remove.xrefs.and.links" value="false" else="true">
+        <istrue value="${fail.on.error}"/>
+    </condition> <!-- added for JCBG_1657, deletes xrefs and links during preprocess.xsl -->
+
+    <!-- the following items added to fail.on.error not b/c they cause failures exactly, but 
+	 because setting them this way speeds up builds for test purposes -->
+
+               <!-- exception: while url checking no worky in Jenkins, default it to off -->
+               <property name="disable.check.urls" value="true"/>
+    
+    <!-- disabling the below code b/c while url checking fails in Jenkins environment, I want the default for disable.check.urls to be set 'true' above...
+
+    <condition property="disable.check.urls" value="true" else="false">
+        <isfalse value="${fail.on.error}"/> 
+	</condition>
+   -->
+
+    <!-- changed from istrue to isfalse for JCBG-1817; we were getting the opposite of desired default value for disable.check.urls -->
+   <!-- adding this so that we skip check-urls when fail.on.error=no -->
+
+
+
+<!-- end properties whose value depends on fail.on.error -->
+
+<!-- test the value of fail.on.error and fail if it is neither yes nor no 
+        we need to do this b/c now that we use it in xsl in an @terminate, you get a confusing xsl error message if you set it wrong. JCBG-1658 -->
+<condition property="fail.on.error.is.faulty">
+  <not>
+     <or>
+      <equals arg1="${fail.on.error}" arg2="yes"/>
+      <equals arg1="${fail.on.error}" arg2="no"/>
+     </or>
+  </not>
+</condition>
+
+<fail if="fail.on.error.is.faulty" 
+   message="===================================================================================The property fail.on.error is set to '${fail.on.error}'; it MUST be set to 'yes' or 'no' or XSL scripts that reference it will throw errors, so I'm stopping you right here until you fix that. ==================================================================================="/>
+
+
+<!-- test the value of fail.on.bad.olink and fail if it is neither yes nor no 
+  added this during JCBG-1658 work-->
+<condition property="fail.on.bad.olink.is.faulty">
+  <not>
+     <or>
+      <equals arg1="${fail.on.bad.olink}" arg2="yes"/>
+      <equals arg1="${fail.on.bad.olink}" arg2="no"/>
+     </or>
+  </not>
+</condition>
+
+<fail if="fail.on.bad.olink.is.faulty" 
+   message="===================================================================================The property fail.on.bad.olink is set to '${fail.on.bad.olink}'; it MUST be set to 'yes' or 'no' or XSL scripts that reference it will throw errors, so I'm stopping you right here until you fix that. ==================================================================================="/>
+
+<!-- properties for olcs text file defaults--> 
+    <property name="olcs_securitycode" value="R"/> <!-- added for JCBG-1302 -->	   
+    <property name="olcs_prodmodel" value="Not Model Specific"/>  <!-- added for JCBG-1641 -->	
+    <property name="olcs_iptype" value="User Document -- Single (Manual or Guide)"/>  <!-- added for JCBG-2140 -->	
+
+
+<!-- jcbg-1250: notification-list property 
+
+	 The property notification-list is available during non-olink builds of documents.
+It is passed down by the target/work/build.xml file (generated by module2build.xsl).
+I'm mentioning it here b/c it is not set in THIS file, but is generally available.
+It has the value of the <notification> element of the module.xml file. 
+
+	 This was initially added to support the notification added for JCBG-147.
+-->
+
+
+<!-- jcbg-115: test for spaces in the build path -->
+<condition property="dir.has.spaces">
+<contains string="${ant.file}" substring=" "/>
+</condition>
+<fail if="dir.has.spaces" 
+message="Builds must be run from a path that DOES NOT CONTAIN SPACES. Found spaces in the path to the build file, ========${ant.file}=======. To fix this, change your checkout location to one that does not include spaces, and make sure book folder names do not include spaces."/>
+
+
+    <property environment="env"/>
+    <!-- read in all environment vars, now avail as env.* -->
+
+     <!-- JCBG-1206: Give the following var a default value in case it doesn't exist -->
+    <property name="env.DOCTOOLS-CHECKOUT" value="D:\workgit\doctools"/>
+
+    <!-- JCBG-480, support JIRA feedback links 
+    Establish a property that sets the type of feedback, with a default value of the standard email type.
+	-->
+    <property name='feedback.type' value='email'/>
+    <property name='feedback.component' value='Test'/>
+    <property name='feedback.assignee' value='-1'/>
+    <!-- JCBG-2058, adding feedback props -->
+    <property name='feedback.project' value='38283'/> <!-- the DocFeedback project, updated to jiradc value of 38283 on 2/7/18; with jira.motive.com, the project ID was 10323 -->
+    <property name='feedback.version' value='70193'/> <!-- the Test version value, updated to jiradc value of 70193 on 2/7/18; withjira.motive.com, the version ID for Test was 12786 -->
+
+    <property name='feedback.jirahostname' value='jiradc2.int.net.nokia.com'/> <!-- updated for jiradc2 14oct2019 -->
+    
+    <!-- JCBG-2071 -->
+    <property name='feedback.issuetype' value='222'/>  <!-- this value makes the default issuetype = Documentation. A value of 1 is Bug, 2 is New Feature. -->
+
+
+    <!-- chm properties -->
+
+    <!-- Set the win chm path based on env var HHC_HOME, but default to the local path value if it's not set.
+
+Doing it this way because on local machines, we've normally handled this through the Path. This way it should work if you have EITHER HHC_HOME or your Path set appropriately for HTML Help Workshop.
+
+
+-->
+    <condition property="htmlhelp.exe.win.path" value="${env.HHC_HOME}" else="${env.Path}">
+        <not>
+            <equals arg1="${env.HHC_HOME}" arg2="$${env.HHC_HOME}"/>
+        </not>
+    </condition>
+
+    
+
+
+    <property name="htmlhelp.exe.unix.path" value="hhc"/>
+    <!-- Need to test this, this is used with wine, i guess try building this on linux? -->
+
+    <!-- JCBG-852, Default value for trademark symbol option -->
+
+    <property name="trademark.symbols" value="topic"/>
+
+    <!-- Default value for google.code; means all docs will output the google.code code (infocenter outputs only). Can be overridden by placing a different value in the book's build.xml file (before the import line that imports main-build.xml. This is to implement JCBG-201.  -->
+
+    <property name="google.code" value="3"/>
+
+    <!-- disqus settings: this one sets which disqus account you use. The following is the default for us. -->
+
+    <property name="disqus.shortname" value="motivepubs"/>
+
+
+
+    <condition property="planid-set">
+        <not>
+            <equals arg1="${env.JOB_NAME}" arg2="$${env.JOB_NAME}"/>
+        </not>
+    </condition>
+
+
+   
+    
+    <!-- I'm not sure we're actually using this property, may want to delete it
+the intent was, say whether we are using artifactory or not
+    -->
+    <property name="artifactory" value="true"/>
+
+    <!-- pointer to the infocenter server -->
+<property name="infocenter.host"    value="sphere.motivelabs.us.alcatel-lucent.com"/>
+    
+    <!-- infocenter hostname value = infocenter.host property
+	 try one of these, if none found, leave the property unset
+	 sphere.motivelabs.us.alcatel-lucent.com
+	 sphere.motive.com
+
+DISABLING this functionality and hardcoding the name of the server 4/18/18
+    
+    <condition property="infocenter.host"
+	       value="sphere.motivelabs.us.alcatel-lucent.com">
+       <isreachable host="sphere.motivelabs.us.alcatel-lucent.com"  timeout="10" />
+    </condition>
+
+    <condition property="infocenter.host"
+	       value="sphere.motive.com">
+       <isreachable host="sphere.motive.com" timeout="10"/>
+    </condition>
+-->
+    
+    <!-- dropzone: a folder on infocenter.host where we copy infocenter jar files -->
+
+    <property name="dropzone" value="/opt/dropzone"/>
+
+ 
+    
+    <tstamp>
+        <format property="build.time" pattern="MM/dd/yyyy hh:mm aa" unit="hour"/>
+        <format property="build.time.filename" pattern="yyyy-MM-dd_hh-mm-ss_aa" unit="second"/>
+		<format property="build.time.eclipse" pattern="yyyyMMdd.hhmmss" unit="second"/> <!-- for JCBG-1333, added period in middle of the eclipse one -->
+        <format property="build.year" pattern="yyyy" unit="year"/>
+    </tstamp>
+
+   <property name="output_file_name" value="${input_file_name}"/> <!-- JCBG-1756: If output_file_name is not set, default it to the value of the input file name, b/c that works ok, and that property throws an error if not set. -->
+
+    <condition property="eclipse_output_file_name" value="${eclipse.plugin.id}"
+        else="${output_file_name}">
+        <isset property="eclipse.plugin.id"/>
+    </condition>
+
+   <!-- Adding new default value for eclipse.plugin.id, so that if you fail to set it, it is same as the jar file name; JCBG-982 -->
+   <property name="eclipse.plugin.id" value="${eclipse_output_file_name}"/>
+
+   <condition property="check.urls.disabled" value="true">
+     <equals arg1="${disable.check.urls}" arg2="true"/>
+   </condition>
+
+    <condition property="exclude.search.from.chunked.html.is.true" value="true">
+        <or>
+            <equals arg1="exclude.search.from.chunked.html" arg2="true"/>
+            <equals arg1="exclude.search.from.chunked.html" arg2="yes"/>
+        </or>
+    </condition>
+
+    <property name="security" value="external"/>
+    <property name="language" value="en_US"/>
+
+    <!-- Set up a hostname property.
+	 - For unix, run the hostname command and put the value in env.COMPUTERNAME
+	 - on Win, env.COMPUTERNAME already exists
+	 - copy env.COMPUTERNAME to hostname -->
+    
+    <exec executable="hostname" osfamily="unix" failifexecutionfails="false"
+        outputproperty="env.COMPUTERNAME"/>
+
+    <property name="hostname" value="${env.COMPUTERNAME}"/>
+
+    <property name="chunk_output_file_name" value="${output_file_name}"/>
+
+    <condition property="security.filename.flag" value="">
+        <equals arg1="${security}" arg2="external"/>
+    </condition>
+    <condition property="security.filename.flag" value="_Reviewer">
+        <equals arg1="${security}" arg2="reviewer"/>
+    </condition>
+    <condition property="security.filename.flag" value="_Writeronly">
+        <equals arg1="${security}" arg2="writeronly"/>
+    </condition>
+    <condition property="security.filename.flag" value="_Internal">
+        <equals arg1="${security}" arg2="internal"/>
+    </condition>
+    <condition property="show.comments" value="1">
+        <or>
+            <equals arg1="${security}" arg2="reviewer"/>
+            <equals arg1="${security}" arg2="writeronly"/>
+        </or>
+    </condition>
+    <property name="show.comments" value="0"/>
+
+    <dirname property="antfile.dir" file="${ant.file.main-build}"/>
+    <!-- Set input_file_path to ${ant.file}'s dir as a separate property
+        from antfile.dir because we may need to override it if calling a
+        doc's build file from a module build file.  -->
+    <dirname property="input_file_path" file="${ant.file}"/>
+    <dirname property="doctools" file="${antfile.dir}/../dummy"/>
+
+
+    <!-- setting the value of XEP_HOME, required to use XEP -->
+    
+    <!-- the pre-Jenkins way: 3 conditions:
+
+    <condition property="XEP_HOME" value="${env.XEP_HOME}">
+        <isset property="env.XEP_HOME"/>
+    </condition>
+
+    <condition property="XEP_HOME" value="${env.MOTIVE_XMLDOCS2_HOME}/xep/4.10">
+        <isset property="env.MOTIVE_XMLDOCS2_HOME"/>
+    </condition>
+
+    <condition property="XEP_HOME" value="${env.HOME}/.local/share/applications/xep/4.10">
+        <os family="unix"/>
+	</condition>
+    -->
+    
+
+    <condition property="XEP_HOME" value="${env.XEP_HOME}">
+        <isset property="env.XEP_HOME"/>
+    </condition>
+
+    <!-- use env var XEP_HOME if set, otherwise use this: -->
+
+    <property name="XEP_HOME" value="${doctools}/xep419" />
+ 
+    
+
+<!-- end setting value of XEP_HOME -->
+
+
+    
+<!-- Define ant-contrib so can use its tasks. JCBG-589 -->
+     <taskdef resource="net/sf/antcontrib/antlib.xml">
+           <classpath>
+               <pathelement location="${doctools}/lib/ant-contrib-1.0b3.jar"/>
+           </classpath>
+     </taskdef>
+
+<!-- Define a path we can use anywhere, that points at the doctools lib folder and every jar in it -->
+
+
+<!-- Define Scp so can use scp. JCBG-956  @#@
+
+all the attempts below have failed. 
+
+
+here's an attempt that just gives paths to folders
+     <taskdef name="scp" classname="org.apache.tools.ant.taskdefs.optional.ssh.Scp" >
+           <classpath>
+               <pathelement location="${ant.home}/lib"/>
+               <pathelement location="${doctools}/lib"/>
+          </classpath>
+     </taskdef>
+
+C:\Program Files\Motive\doctools\apache-ant-1.8.0\lib\ant-jsch.jar;
+
+   <taskdef name="scp" classname="org.apache.tools.ant.taskdefs.optional.ssh.Scp" >
+            <classpath>
+             <fileset dir="${doctools}/lib">
+               <include name="*.jar"/>
+             </fileset>         
+             <fileset dir="${ant.home}/lib">
+               <include name="*.jar"/>
+             </fileset>         
+            </classpath>
+      </taskdef>
+
+   <taskdef name="scp" classname="org.apache.tools.ant.taskdefs.optional.ssh.Scp" 
+classpath="C:\Program Files\Motive\doctools\apache-ant-1.8.0\lib\ant-launcher.jar;C:\worksvn\pubs\alm\branches\3.1\en_US\ma.deploy.guide\.\;C:\Program Files\Java\jre6\lib\ext\QTJava.zip;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\ant-contrib-1.0b3.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\avalon-framework-4.0.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\avalon-framework-api-4.2.0.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\avalon-framework-impl-4.2.0.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-1.5-fop-0.20-5.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-anim-1.7.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-awt-util-1.6-1.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-awt-util-1.7.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-bridge-1.6-1.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-bridge-1.7.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-codec-1.7.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-css-1.6-1.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-css-1.7.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-dom-1.6-1.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-dom-1.7.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-ext-1.6-1.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-ext-1.7.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-extension-1.7.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-gui-util-1.6-1.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-gvt-1.6-1.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-gvt-1.7.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-parser-1.6-1.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-parser-1.7.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-rasterizer-1.6-1.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-rasterizer-1.7.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-script-1.6-1.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-script-1.7.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-svg-dom-1.6-1.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-svg-dom-1.7.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-svggen-1.7.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-transcoder-1.6-1.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-transcoder-1.7.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-util-1.6-1.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-util-1.7.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-xml-1.6-1.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\batik-xml-1.7.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\commons-io-1.3.1.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\commons-logging-1.0.4.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\fop-0.20.5.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\fop-1.1.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\jing-20091111.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\jsch-0.1.50.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\saxon-6.5.3.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\saxon-9.1.0.8.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\saxon-ant-9.1.0.1.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\Tidy.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\xalan-2.4.1.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\xalan-2.6.0.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\xercesImpl-2.9.1.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\xml-apis-1.3.04.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\xml-apis-ext-1.3.04.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\xmlgraphics-commons-1.5.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\xmlParserAPIs-2.0.2.jar;c:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\;C:\Program Files\Motive\doctools\apache-ant-1.8.0\lib\ant-antlr.jar;C:\Program Files\Motive\doctools\apache-ant-1.8.0\lib\ant-apache-bcel.jar;C:\Program Files\Motive\doctools\apache-ant-1.8.0\lib\ant-apache-bsf.jar;C:\Program Files\Motive\doctools\apache-ant-1.8.0\lib\ant-apache-log4j.jar;C:\Program Files\Motive\doctools\apache-ant-1.8.0\lib\ant-apache-oro.jar;C:\Program Files\Motive\doctools\apache-ant-1.8.0\lib\ant-apache-regexp.jar;C:\Program Files\Motive\doctools\apache-ant-1.8.0\lib\ant-apache-resolver.jar;C:\Program Files\Motive\doctools\apache-ant-1.8.0\lib\ant-apache-xalan2.jar;C:\Program Files\Motive\doctools\apache-ant-1.8.0\lib\ant-commons-logging.jar;C:\Program Files\Motive\doctools\apache-ant-1.8.0\lib\ant-commons-net.jar;C:\Program Files\Motive\doctools\apache-ant-1.8.0\lib\ant-jai.jar;C:\Program Files\Motive\doctools\apache-ant-1.8.0\lib\ant-javamail.jar;C:\Program Files\Motive\doctools\apache-ant-1.8.0\lib\ant-jdepend.jar;C:\Program Files\Motive\doctools\apache-ant-1.8.0\lib\ant-jmf.jar;C:\Program Files\Motive\doctools\apache-ant-1.8.0\lib\ant-jsch.jar;C:\Program Files\Motive\doctools\apache-ant-1.8.0\lib\ant-junit.jar;C:\Program Files\Motive\doctools\apache-ant-1.8.0\lib\ant-launcher.jar;C:\Program Files\Motive\doctools\apache-ant-1.8.0\lib\ant-netrexx.jar;C:\Program Files\Motive\doctools\apache-ant-1.8.0\lib\ant-nodeps.jar;C:\Program Files\Motive\doctools\apache-ant-1.8.0\lib\ant-stylebook.jar;C:\Program Files\Motive\doctools\apache-ant-1.8.0\lib\ant-swing.jar;C:\Program Files\Motive\doctools\apache-ant-1.8.0\lib\ant-testutil.jar;C:\Program Files\Motive\doctools\apache-ant-1.8.0\lib\ant-trax.jar;C:\Program Files\Motive\doctools\apache-ant-1.8.0\lib\ant.jar;C:\Program Files\Motive\doctools\apache-ant-1.8.0\lib\xercesImpl.jar;C:\Program Files\Motive\doctools\apache-ant-1.8.0\lib\xml-apis.jar;C:\Program Files\Java\jre6\lib\tools.jar">
+      </taskdef>
+-->
+
+ 
+
+    <property name="module.filename" value="module.xml"/> <!-- JCBG-1954, add a property for the module filename -->
+    <property name="parent-module-file" value="${antfile.dir}/../../../${module.filename}"/>
+
+    <fail message="The file specified by the module.filename property does not exist at the root of your project. The system can't find the file [${module.filename}].">  <!-- JCBG-1954, added test to validate that the specified file exists-->
+      <condition>
+        <not>
+             <available file="${parent-module-file}"/>
+        </not>
+      </condition>
+    </fail>
+    
+    <dirname property="module.dir" file="${parent-module-file}"/>
+    <basename property="branchname" file="${module.dir}"/>
+
+    <property name="saxon6" value="${doctools}/lib/saxon-6.5.3.jar"/>
+    <property name="saxon9" value="${doctools}/lib/saxon-9.1.0.8.jar"/>
+    <property name="xercesImpl" value="${doctools}/lib/xercesImpl-2-2-1.jar"/>
+
+    
+
+
+    <path id="xep-classpath">
+        <!-- These next two are required so XEP will use the resolver to resolve paths to the svg dtd -->
+        <!-- Although everything is in place and as it should be, XEP still doesn't appear to be using the catalogs -->
+        <!-- Therefore I'm using a hack method below where I simply use ant's <replace> task to nuke the public and system identifiers -->
+        <!-- from svg images. Blech. -->
+        <!--fileset dir="${doctools_path}/xml-commons-resolver">
+            <include name="resolver.jar"/>
+        </fileset>
+        <pathelement path="${doctools_path}/DocShared/catalogs"/> 
+        <pathelement path="${doctools_path}/xml-commons-resolver"/-->
+        <!-- Set up the classpath XEP needs to run -->
+        <fileset dir="${XEP_HOME}/lib">
+            <include name="xep*.jar"/>
+            <include name="xt.jar"/>
+            <include name="saxon.jar"/>
+        </fileset>
+        <pathelement path="${XEP_HOME}/lib/XEPTask.jar"/>
+    </path>
+
+    <!-- We use this to figure out where stuff is in the staging area -->
+    <pathconvert dirsep="/" property="input.file.path.trimmed">
+        <path>
+            <pathelement location="${input_file_path}"/>
+        </path>
+        <chainedmapper>
+            <globmapper from="${module.dir}${file.separator}*" to="*"/>
+        </chainedmapper>
+    </pathconvert>
+
+    <property name="staging.top.dir" value="${module.dir}/target/work"/>
+    <property name="staging.doc.dir" value="${staging.top.dir}/${input.file.path.trimmed}"/>
+    <dirname property="outdir" file="${staging.top.dir}/../out/${language}/${security}/dummy"/>
+    <property name="htmlstage" value="${staging.doc.dir}/_stage/${language}/${security}"/>
+
+    <property name="feedback.email" value="mpd-techpubsall@list.nokia.com"/> <!-- updated per JCBG-2073, from former pubs-feedback@ motive.com value to new nokia list-->
+
+
+    <!-- These lines centralize the naming of the input and output files from each step -->
+    <property name="resolve-xincludes_output_base" value="_01.xincluded."/>
+    <property name="dedupids_input_base" value="${resolve-xincludes_output_base}"/>
+    <property name="dedupids_output_base" value="_02.dedupids."/>
+    <property name="preprocess_input_base" value="${dedupids_output_base}"/>
+    <property name="preprocess_output_base" value="_03.preprocessed."/>
+    <property name="local_preprocess_input_base" value="${preprocess_output_base}"/>
+    <property name="local_preprocess_output_base" value="_04.local_preprocessed."/>
+    <property name="filter_input_base" value="${local_preprocess_output_base}"/>
+    <property name="filter_output_base" value="_05.filtered."/>
+    <property name="glossify_input_base" value="${filter_output_base}"/>
+    <property name="glossify_output_base" value="_06.glossified."/>
+    <property name="filerefs-part1_input_base" value="${glossify_output_base}"/>
+    <property name="filerefs-part1_output_base" value="_07.filerefs-part1."/>
+    <property name="filerefs_input_base" value="${filerefs-part1_output_base}"/>
+    <property name="filerefs_output_base" value="_08.filerefs-adjusted."/>
+    <property name="docbook2fo_input_base" value="${filerefs_output_base}"/>
+    <property name="docbook2fo_output_base" value="_09.xslfo"/>
+    <property name="pdf_input_base" value="${docbook2fo_output_base}"/>
+
+    <!-- 
+        If any files in the original source dir are newer than the xincluded file, then we can assume that we need to rebuild. 
+        This isn't 100% precise, but it's good enough since we're mostly optimizing for the build system use case.
+
+     For JCBG-1787, changed this from an 'uptodate' task to a condition task so that I could add the RH special case to it. I changed the use of source-files-up-to-date throughout this file, where it is frequently an @unless on precursor targets, so that they use it as ${source-files-up-to-date}, not just its name. Before, ant only checked whether the property was set; now it checks whether it is true or false. Below, the code sets it to true only if the files are up to date AND we're not dealing with an RH doc (based on css.filename value).
+
+    -->
+
+    <condition property="source-files-up-to-date" value="true" else="false">
+      <and>
+        <!-- special case: if RH doc, then force this property to be false every time -->
+	<not><equals arg1="${css.filename}" arg2="rh.css" /></not>
+	<!-- so, to return true, the css must not be rh.css, and the files must be up to date -->
+	<uptodate  targetfile="${staging.doc.dir}/${preprocess_input_base}${input_file_name}.xml">
+              <srcfiles dir="${module.dir}"
+                        includes="**/*.xml **/*.XML **/*.png **/*.PNG **/*.svg **/*.SVG **/*.jpg **/*.JPG **/*.jpeg **/*.JPEG **/*.gif **/*.GIF"
+                        excludes="**/olink.db target/** **/*.log **/_dummy **/xx.html"/>
+	</uptodate>
+      </and>
+    </condition>
+    
+
+    <!-- define a catalog for general use -->
+    <xmlcatalog id="main-catalog">
+
+        <!-- xhtml 1.0 -->
+        <dtd publicId="-//W3C//DTD XHTML 1.0 Transitional//EN"
+            location="file:///${doctools}/DocShared/schemas/xhtml/1.0/xhtml1-transitional.dtd"/>
+        <entity publicId="-//W3C//ENTITIES Latin 1 for XHTML//EN"
+            location="file:///${doctools}/DocShared/schemas/xhtml/1.0/xhtml-lat1.ent"/>
+        <entity publicId="-//W3C//ENTITIES Symbols for XHTML//EN"
+            location="file:///${doctools}/DocShared/schemas/xhtml/1.0/xhtml-symbol.ent"/>
+        <entity publicId="-//W3C//ENTITIES Special for XHTML//EN"
+            location="file:///${doctools}/DocShared/schemas/xhtml/1.0/xhtml-special.ent"/>
+        <dtd publicId="-//W3C//DTD XHTML 1.0 Strict//EN"
+            location="file:///${doctools}/DocShared/schemas/xhtml/1.0/xhtml1-strict.dtd"/>
+
+        <!-- /xhtml 1.0 -->
+    </xmlcatalog>
+
+    <target name="echoprops">
+        <!-- this is a utility/debugging target, to be manually called from the command line only. Since all book folders' build.xml files point to main-build.xml, you can run this via 'ant echoprops' in a book folder (or ant180 echoprops).
+     -->
+        <echoproperties/>
+    </target>
+ 
+    <target name="clean-work">
+        <!-- JCBG-452: this is a utility/debugging target, to be manually called from the command line only. The idea is to clean, without deleting everything in /target... and especially, without removing dependencies.   -->
+        <echo>Deleting the /target/work folder ...${staging.top.dir}</echo>
+		<delete dir="${staging.top.dir}"/>
+
+    </target>
+
+    <target name="clean-this">
+        <!-- JCBG-452: this is a utility/debugging target, to be manually called from the command line only. The idea is to clean the /work stuff for the current book file: so, delete its subfolder in /work/en_US   -->
+        <echo>Deleting the /target/work/en_US/BOOKNAME folder ...in this case, ${staging.doc.dir}</echo>
+		<delete dir="${staging.doc.dir}"/>
+    </target>
+
+    <target name="gen-titlepage">
+	  <!-- utility target to regen the title page xsl for a branding
+		   run this from a book folder, set the branding property
+		   (meaning it's convenient to run this from a book with the desired branding)
+		   and it updates the title page xsl for that branding back in doctools/current;
+		   
+
+		   added as part of JCBG-133
+		   replaces titlepage.sh scripts in branding folders,
+		   which were one liners like 
+		   ~/bin/saxonize -o tp-fo.xsl tp-fo.xml $MOTIVE_XMLDOCS_HOME/export/DocBookXSL/1.72/template/titlepage.xsl
+
+things this needs to do
+- print some HELP
+- test if branding set and error if it is not
+		   could use target 'if' ... but then we don't get any msging? 
+   Well, if it's NOT set, then... you should get an error. test that.
+- make it show the right PATH
+- then, run an xsl (use a macro)
+
+		   -->
+   <echo>Regenerating title pages for branding ${branding}</echo>
+
+   <echo>The path we'll use for xsl is: DocBookXSL/1.72/template/titlepage.xsl</echo>
+
+<!--
+
+C:\worksvn\pubs\doctools\branches\current\docbook-xsl\1.72.0\template
+... or??? C:\worksvn\pubs\testProduct\branches\1.0\target\doctools\docbook-xsl\1.72.0\template
+... geez, we don't know where this is going to be. Yikes.
+That makes me want to run this from ... main-build's folder. Double yikes.
+ok, look again: why does running main-build fail in its OWN folder, NON-imported?
+    <saxon9-xslt>
+-->
+   </target>
+ 
+
+
+
+    <target name="jingtask">
+        <taskdef name="jing" classname="com.thaiopensource.relaxng.util.JingTask">
+            <classpath>
+                <pathelement location="${doctools}/lib/jing-20091111.jar"/>
+                <!--            <pathelement location="${doctools}/jing-20091111/bin/isorelax.jar"/>
+     <pathelement location="${doctools}/jing-20091111/bin/saxon.jar"/>
+     <pathelement location="${doctools}/jing-20091111/bin/xml-apis.jar"/>
+     <pathelement location="${doctools}/jing-20091111/bin/xercesImpl.jar"/>       
+-->
+            </classpath>
+        </taskdef>
+    </target>
+
+<!-- for JCBG-742, skip RN run during targetdb -->
+
+   <target name="call-getjira">
+      <if> 
+	<not>
+	  <equals arg1="${source-files-up-to-date}" arg2="true" />
+	</not>
+
+	<then>
+         <antcall target="getjira"/>
+	</then>
+	<else>
+	  <echo message="Source files are up-to-date, so I'm SKIPPING calling the getjira target." />
+	</else>
+      </if>
+<!-- the following makes it only call getjira when NOT targetdb. Retaining this to show how you can determine whether you are in the targetdb process, but we're not going to use this for JCBG-1219 now.
+      <if> 
+	<not>
+	  <equals arg1="${ant.project.invoked-targets}" arg2="targetdb" />
+	</not>
+
+	<then>
+         <antcall target="getjira"/>
+	</then>
+	<else>
+	  <echo message="In a targetdb build; skipping getjira target." />
+	</else>
+      </if>
+
+-->
+    </target>
+
+<!-- for JCBG-1219: a default getjira target, in case you aren't using it, so we don't get an error
+       of course you'd only hit that error if you overrode your init target with one that depends on getjira, but then did NOT include a getjira target in your build.xml...
+-->
+
+ <target name="getjira">
+<echo>This default getjira target does nothing. To use it:
+- add an init target to your build.xml like this:  &lt;target name="init" depends="header,call-getjira"/&gt;
+- add a getjira target to override this one, and put your get-jira macros inside it:
+
+ &lt;target name="getjira" &gt;
+   &lt;get-jira-xml 
+     queryurl="http".........
+   &lt;/target&gt;
+</echo>
+
+</target>
+
+
+<!-- @#@ for JCBG-793, macro to get data from JIRA and convert it to list or table -->
+
+<!-- This macro works by getting data to a series of temp files, and running 2 transformations and several replaces on the temp files.
+
+Detail:
+  - get the jira data to a temp file temp-jirarootID.xml
+  - copy that file to temp-jirarootID-NBSP-fixed
+  - in NBSP-fixed, replace escaped NBSPs with nothing, to remove them
+  - xsl NBSP-fixed to HTML-fixed using jiraUnescape.xsl.
+     This xsl allows us to replace escaped items in specific fields of the data. But it can't put the proper unescaped characters back, so it uses @name@ values.
+  - in HTML-fixed, replace lt, gt, and ampersands marked by jiraUnescape
+	- also, replace escaped &amp;# with &#
+  - xsl HTML-fixed to outputfile, using jira2docbook.xsl
+-->			  
+
+
+<!-- global props this macro needs -->
+              <!-- Note that if we shift to passing down values from Maven, that the value set in base-pom or passed down from Bamboo overrides these and the values here won't really matter. JCBG-2099-->
+    <property name="jira.uname" value="releasenotes"/>
+    <property name="jira.password" value="J!fF0Rr^"/>
+    <property file="${doctools}\DocShared\build.properties"/> 
+
+    <macrodef name="get-jira-xml">
+	   <attribute name="queryurl"/> 
+	   <attribute name="outputfile"/> 
+	   <attribute name="type" default="known" /> 
+	   <attribute name="style" default = "table" /> 
+	   <attribute name="jirarootid" default = "jira-@{outputfile}" />
+	   <attribute name="jiratitle" default = ""/> 
+	   <attribute name="usecat" default="yes"/> <!-- added usecat for JCBG-1213-->
+           <attribute name="rootelement" default="section" /> <!-- added rootelement for JCBG-1556; only applies when style='list'-->
+	   <attribute name="intropara" default="NONE"/> <!-- added for JCBG-1556; only applies when style='list'-->
+	   <attribute name="rhkeyword" default="NONE"/> <!-- added for JCBG-1758; if not NONE, is used to make an RH keyword-->
+	   <attribute name="stopchunking" default = "yes" /> <!-- added for JCBG-2044 -->
+
+	   <sequential>
+          <!-- NO PROPERTIES: do not set any properties in this macro!
+			   The macro may be used >1 time in a target; if it is, then setting a property freezes the property value and requires that we only use the macro once in a target. -->
+
+		 <!-- create staging dir, if doesn't already exist
+			    this cmd is ignored if the dir exists already
+				we need this because we are going to use the staging dir before other odc activities occur -->
+         <mkdir dir="${staging.doc.dir}"/>
+
+     
+         <if>
+           <!-- jcbg-2096 changes re: jira hosts changing
+
+Before: we checked if jira.motive.com or portal.motive.com and if so used jira.uname and pw; otherwise, we used no uname/pw.
+Now: we'll check for antwerp jira and if so use none, otherwise use the uname and pw. -->
+	   
+            <!-- if we are targeting antwerp: must contain the hostname AND not be offline --> 
+            <and>
+                <contains string="@{queryurl}" substring="jira-1.be.alcatel-lucent.com"/>
+ 		<not><equals arg1="${offline}" arg2="true"/></not>
+            </and>
+            <then>
+              <!-- if https://jira-1.be.alcatel-lucent.com -->
+	         <echo>No password, because host is jira-1.be...</echo>
+                 <get verbose="yes"
+                      src="@{queryurl}" 
+                      dest="${staging.doc.dir}/temp-@{jirarootid}.xml"/>
+		       </then>
+          <elseif>
+			  <not>				
+                <equals arg1="${offline}" arg2="true"/>
+			  </not>
+              <!-- else, use the uname/pw  -->
+              <then>
+
+		<!-- delete the following debug line later JCBG-2099 -->
+                <echo>connecting using: [[[${jira.uname}]]] and [[[${jira.password}]]]: </echo>
+		
+                 <get verbose="yes"
+                      src="@{queryurl}" 
+                      dest="${staging.doc.dir}/temp-@{jirarootid}.xml"
+                      username="${jira.uname}" password="${jira.password}"/>
+           
+              </then>
+	  </elseif>
+	  <!-- any other cases are when offline=true, so we do nothing; this allows you to build and skip the download -->
+
+       </if>
+
+
+  <!-- first, copy the jira file to a new file -->
+  <copy file="${staging.doc.dir}/temp-@{jirarootid}.xml" tofile="${staging.doc.dir}/temp-@{jirarootid}-NBSP-fixed.xml"/> 
+  <!-- throw away escaped nbsps, because otherwise we later get unescaped nbsps, which cause 
+	   an undeclared entity problem, and we have no use for them anyway. They only occur if you put a TABLE in your jira issue, put there because jira makes it into an html table; we either don't use the table, or if we do, we will convert it to docbook, where the nbsp is not needed. If you have some other use for an nbsp, we don't support it in our output. -->
+  <replace file="${staging.doc.dir}/temp-@{jirarootid}-NBSP-fixed.xml" encoding="UTF-8" summary="true">   
+      <replacefilter token="${html.amp}amp;nbsp;" value=""/> 
+  </replace>
+  
+   <!-- xsl to unescape customfieldvalue fields only -->
+        <saxon-xslt  in="${staging.doc.dir}/temp-@{jirarootid}-NBSP-fixed.xml"
+                     style="${doctools}/DocShared/xsls/utilities/jiraUnescape.xsl"
+		             out="${staging.doc.dir}/temp-@{jirarootid}-HTML-fixed.xml"
+                     force="true">
+        </saxon-xslt>
+
+
+  <!-- Next: finish fix HTML with some replaces --> 
+  <!-- do replaces in the new file -->
+     <!-- I'm having to use properties for the tokens here, so as to be able
+		  to find literal escaped values like &lt; the properties 
+		   are loaded from build.properties -->
+ 
+
+<echo>Perform replaces to convert @lt@, @gt@, and @ampersand@ to real output</echo>
+  <!-- seems like we need to do these separately, not in same replace task? oh, maybe not...try putting them back -->
+ <replace file="${staging.doc.dir}/temp-@{jirarootid}-HTML-fixed.xml" encoding="UTF-8" summary="true">   
+      <replacefilter token="@lt@" value="${html.lessthan}"/> 
+</replace>
+ <replace file="${staging.doc.dir}/temp-@{jirarootid}-HTML-fixed.xml" encoding="UTF-8" summary="true">
+      <replacefilter token="@gt@" value="&gt;"/>
+</replace>
+
+<echo>Replacing &amp;quot; and &amp;#, to fix entities in Release Notes Title fields...</echo>
+ <replace file="${staging.doc.dir}/temp-@{jirarootid}-HTML-fixed.xml" encoding="UTF-8" summary="true">
+      <replacefilter token="@ampersand@quot;" value="&quot;"/> 
+      <replacefilter token="@ampersand@#" value="${html.amp}#"/> 
+ </replace>
+
+<echo>Replace any remaining @ampersand@ with &amp;</echo>
+ <replace file="${staging.doc.dir}/temp-@{jirarootid}-HTML-fixed.xml" encoding="UTF-8" summary="true">
+      <replacefilter token="@ampersand@" value="&amp;"/> 
+ </replace>
+
+        <!-- note that using saxon-xslt below means the default params normally passed by main-build into saxon9-xslt are NOT auto provided here -->
+     
+        <saxon-xslt  in="${staging.doc.dir}/temp-@{jirarootid}-HTML-fixed.xml"
+                     style="${doctools}/DocShared/xsls/utilities/jira2docbook.xsl"
+		             out="@{outputfile}"
+                     force="true">
+		      <param name="JIRAROOTID" expression="@{jirarootid}"/>
+		      <param name="TYPE" expression="@{type}"/>
+		      <param name="STYLE" expression="@{style}"/>
+		      <param name="JIRATITLE" expression="@{jiratitle}"/>
+		      <param name="ulink.show" expression="${ulink.show}" if="ulink.show"/> <!-- added for JCBG-1168--> 
+		      <param name="USECAT" expression="@{usecat}" unless="@{usecat}"/> <!-- added usecat for JCBG-1213
+		      NOTE the tricky use of 'unless' here...
+		      @usecat is supposed to have a value of either yes or no, and its default value is yes.
+		      We only want to pass down @usecat if it is no. 
+		      Since the param element's 'unless' attribute understands yes and no, that means we can use it to decie whether to pass the value down. Normally you'd use 'if', but using 'unless' here enables us to flip the logic.
+		      So, saying 'unless="@{usecat}" means unless @usecat=no, don't send it down.
+		      -->
+		      <param name="ROOTELEMENT" expression="@{rootelement}" /> <!-- added rootelement for jcbg-1556; only applies when style='list'-->
+                      <param name="INTROPARA" expression="@{intropara}" /> <!-- added intropara for jcbg-1556; only applies when style='list'-->		      
+                      <param name="RHKEYWORD" expression="@{rhkeyword}" /> <!-- added jcbg-1758 -->		      
+
+                      <param name="STOPCHUNKING" expression="@{stopchunking}" /> <!-- added jcbg-2044 -->		      
+
+
+        </saxon-xslt>
+
+	   </sequential>
+
+    </macrodef>
+
+<!-- @#@ for JCBG-672 and JCBG-1403: Target to create an Automatic Release Page based on <keyword> values in olink.db. -->
+<!-- This target runs 1 transformation on olink.db to create a list that is then included in a book. -->
+    <target name="generate-release-highlights">
+      <if> <!-- JCBG-1711: Have different behavior in targetdb builds than regular content builds -->
+         <equals arg1="${ant.project.invoked-targets}" arg2="targetdb" />
+         <then> <!-- this is the targetdb case -->
+
+	   <if> <!-- JCBG-1801: replacing starter release-highlights-page.xml file with one that is empty-->
+	       <not><equals arg1="${rh.skip.force.valid.page.file}" arg2="true" /></not>
+	             <!-- I'm using 'not equals' here so that ONLY setting the property to true skips this step; if the property is not set at all or set to any other value, you go ahead and do the force. -->  
+	       <then>
+   	         <echo message="In target.db build, forcing release-highlights-page.xml to be empty so that it is guaranteed to be valid. It will be regenerated later."/>
+	   
+	         <echo file="release-highlights-page.xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+               &lt;para xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" xml:id="release_highlights" version="5.0-extension BroadBook-2.0"/&gt;</echo>
+	       </then>
+	       <else><echo>In target.db build, skipping step of forcing release-highlights-page.xml to be empty, because rh.skip.force.valid.page.file=${rh.skip.force.valid.page.file}.</echo>
+	       </else>
+	   </if>
+	  </then>
+	  <else>  <!-- this is the not-targetdb case -->
+	    
+	    <sequential>
+	      <echo>Since we're NOT in a target.db build, we'll generate the release highlights file now (release-highlights-page.xml).</echo>
+	     <!-- Create staging dir if it doesn't already exist.
+		  We need this because we are going to use the staging dir before other doc activities occur. -->
+	     <mkdir dir="${staging.doc.dir}"/>
+
+	     <saxon-xslt  in="${module.dir}/target/olink.db"
+			  style="${doctools}/DocShared/xsls/utilities/generate-release-highlights-page.xsl"
+			  out="release-highlights-page.xml"
+			  force="true">
+	     </saxon-xslt>
+	     <!-- for JCBG-1787, copy the generated file to target/work... -->
+	     <copy file="release-highlights-page.xml"
+		   todir="${staging.doc.dir}"
+		   overwrite="true"
+		   verbose="true"/>
+
+	     <!-- for debugging, echo some of the file to console -->
+	     <echo> Contents of ${staging.doc.dir}/release-highlights-page.xml (first 10 lines):</echo>
+	     <echo> =============================</echo>
+
+	     <concat>
+	       	<filelist dir="${staging.doc.dir}/" files="release-highlights-page.xml"/>
+	       <filterchain>
+                   <headfilter lines="10"/>
+	       </filterchain>
+	     </concat>
+    	     <echo> =============================</echo>
+	     
+	   </sequential>
+	</else>
+      </if>
+    </target>
+
+    <target name="genrh" depends="generate-release-highlights"/> <!-- shortcut for above target -->
+
+    <target name="scroll2docbook">
+      <echo>Usage: 'ant scroll2docbook -Din=inputfilename -Dout=outputfilename</echo>
+  <copy file="${in}" tofile="${in}-tmp"/>
+  <!-- now remove the d: labels if they exist (from confluence output)-->	
+  <replace file="${in}-tmp" encoding="UTF-8" summary="true">   
+      <replacefilter token="&lt;d:" value="&lt;"/> 
+      <replacefilter token="&lt;/d:" value="&lt;/"/> 
+	  <replacefilter token='xmlns:d="http://docbook.org/ns/docbook"' value='xmlns="http://docbook.org/ns/docbook"'/>
+    </replace>
+
+
+
+        <xslt
+        in="${in}-tmp"
+        out="${out}"
+        style="${doctools}/DocShared/xsls/utilities/convertConfluenceScrollwiki.xsl"
+        force="true"
+        classpath="${saxon9}"/>
+
+
+   </target>
+
+
+
+
+    <macrodef name="saxon6-xinclude">
+        <attribute name="in"/>
+        <attribute name="style"/>
+        <attribute name="out"/>
+        <sequential>
+            <java classname="com.icl.saxon.StyleSheet" fork="true" failonerror="true"
+                output="@{out}">
+                <sysproperty key="javax.xml.parsers.DocumentBuilderFactory"
+                    value="org.apache.xerces.jaxp.DocumentBuilderFactoryImpl"/>
+                <sysproperty key="javax.xml.parsers.SAXParserFactory"
+                    value="org.apache.xerces.jaxp.SAXParserFactoryImpl"/>
+                <sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
+                    value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
+                <arg line="&quot;@{in}&quot; &quot;@{style}&quot; current.docid=${current.docid}"/>
+                <classpath>
+                    <pathelement location="${saxon6}"/>
+                    <pathelement location="${doctools}/lib/xercesImpl-2.9.1.jar"/>
+                </classpath>
+            </java>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="saxon9-xinclude" description="Transform with Saxon 9 and resolve xincludes">
+        <attribute name="in"/>
+        <attribute name="style"/>
+        <attribute name="out"/>
+        <sequential>
+            <java jar="${saxon9}" fork="true" failonerror="true" maxmemory="256m">
+                <arg value="-xi:on"/>
+                <arg value="-s:@{in}"/>
+                <arg value="-xsl:@{style}"/>
+                <arg value="-o:@{out}"/>
+                <arg value="current.docid=${current.docid}"/>
+                <classpath>
+                    <pathelement location="${xercesImpl}"/>
+                </classpath>
+            </java>
+        </sequential>
+    </macrodef>
+
+    <taskdef name="saxon-xslt" classname="net.sf.saxon.ant.AntTransform"
+        classpath="${doctools}/lib/saxon-ant-9.1.0.1.jar;${saxon9};${xercesImpl}"/>
+
+    <macrodef name="saxon9-xslt" description="Transform with Saxon 9">
+        <attribute name="in"/>
+        <attribute name="style"/>
+        <attribute name="out"/>
+        <attribute name="format"/>
+        <attribute name="force"/>
+        <sequential>
+            <!-- TODO: Add other params here -->
+            <saxon-xslt in="@{in}" out="@{out}" style="@{style}" force="@{force}">
+                <param name="input_file_name" expression="${input_file_name}.xml"/>
+                <param name="branding" expression="${branding}" if="branding"/>
+                <param name="terminate" expression="${terminate}" if="terminate"/>
+                <param name="format" expression="@{format}"/>
+                <param name="security" expression="${security}" if="security"/>
+                <param name="mailhost" expression="${mailhost}" if="mailhost"/>
+                <param name="language" expression="${language}" if="language"/>
+                <param name="eclipse.plugin.id" expression="${eclipse.plugin.id}" if="eclipse.plugin.id"/> 
+
+
+                <param name="target.database.document"
+                    expression="file:///${module.dir}/target/olink.db"/> 
+
+                <param name="profile.security" expression="${security}" if="security"/>
+                <param name="profile.author_condition_1" expression="${author_condition_1}"
+                    if="author_condition_1"/>
+                <param name="profile.author_condition_2" expression="${author_condition_2}"
+                    if="author_condition_2"/>
+                <param name="security.filename.flag" expression="${security.filename.flag}"
+                    if="security.filename.flag"/>
+
+                <param name="recurse.on.glossary" expression="${recurse.on.glossary}"
+                    if="recurse.on.glossary"/>
+                <param name="glossary.disable" expression="${glossary.disable}"
+                    if="glossary.disable"/>
+
+		<!-- added for JCBG-2129 -->
+                <param name="inherit.book.keywords" expression="${inherit.book.keywords}"
+                    if="inherit.book.keywords"/>
+               
+                <!-- added for JCBG-1585, JCBG-672-->	
+                <param name="css.filename" expression="${css.filename}"
+                    if="css.filename"/>
+               
+                <!-- added for JCBG-1217 -->	
+                <param name="draft.mode" expression="${draft.mode}"
+                    if="draft.mode"/>
+                
+				<!-- added for JCBG-424 -->
+                <param name="database.linking.enable" expression="${database.linking.enable}"
+                    if="database.linking.enable"/>
+
+                <param name="rootid" expression="${rootid}" if="rootid"/>
+
+                
+
+                <param name="glossary.exclusions" expression="${glossary.exclusions}"
+                    if="glossary.exclusions"/>
+
+                <param name="filerefdir" expression="${filerefdir}" if="filerefdir"/>
+
+		<!-- added to pass down this property to cause the xsls to build fo intended for FOP , jcbg-76 -->
+		<param name="fop1.extensions" expression="${fop1.extensions}" if = "fop1.extensions"/> 
+		<param name="fop.extensions" expression="${fop.extensions}" if = "fop.extensions"/> 
+
+
+                <param name="ant.project.invoked-targets" expression="${ant.project.invoked-targets}"/>
+		  <!-- added per JCBG-1587 so that we can tell what target invoked an xsl -->
+
+                <param name="module.dir" expression="${module.dir}"/>
+                <param name="staging.top.dir" expression="${staging.top.dir}"/>
+                <param name="staging.doc.dir" expression="${staging.doc.dir}"/>
+                <param name="doctools" expression="${doctools}"/>
+                <param name="saxon9" expression="${saxon9}"/>
+                <param name="branchname" expression="${branchname}"/>
+
+                <param name="source-files-up-to-date" expression="${source-files-up-to-date}"
+                    if="source-files-up-to-date"/>
+
+                <param name="htmlstage" expression="${htmlstage}"/>
+
+                <param name="source-files-up-to-date" expression="${source-files-up-to-date}"
+                    if="source-files-up-to-date"/>
+
+                <!-- added for JCBG-89 -->
+                <param name="fail.on.bad.olink" expression="${fail.on.bad.olink}"
+                    if="fail.on.bad.olink"/>
+
+                <!-- added for JCBG-1656 -->
+                <param name="skip.olink.conversion" expression="${skip.olink.conversion}"
+                    if="skip.olink.conversion"/>
+
+                <!-- added for JCBG-1657 -->
+                <param name="remove.xrefs.and.links" expression="${remove.xrefs.and.links}"
+                    if="remove.xrefs.and.links"/>
+
+                <!-- added for JCBG-1658 -->
+                <param name="fail.on.error" expression="${fail.on.error}"
+                    if="fail.on.error"/>
+
+		<param name="debug" expression="${debug}"
+                    if="debug"/> <!-- added for JCBG-2047-->
+
+                <param name="olink.debug" expression="${olink.debug}" if="olink.debug"/>
+                <param name="insert.olink.page.number" expression="yes"/>
+                <param name="current.docid" expression="${current.docid}" if="current.docid"/>
+                <param name="olink.doctitle" expression="${olink.doctitle}" if="olink.doctitle"/> <!-- added for JCBG-1762-->
+                <param name="olink.hyperlink.external.docs"
+                    expression="${olink.hyperlink.external.docs}" if="olink.hyperlink.external.docs"/>
+
+                <param name="common.graphics.path" expression="file:/${doctools}/DocShared/content/images"/>
+
+                <param name="tooltip.glossterms" expression="${tooltip.glossterms}"
+                    if="tooltip.glossterms"/>
+
+                <param name="strip.xrefstyle.formats" expression="${strip.xrefstyle.formats}"
+                    if="strip.xrefstyle.formats"/>
+                <param name="strip.stop-chunking.formats"
+                    expression="${strip.stop-chunking.formats}" if="strip.stop-chunking.formats"/>
+
+                <param name="manifest.in.base.dir" expression="1"/>
+
+                <param name="show.comments" expression="${show.comments}" if="show.comments"/>
+
+                <param name="base.dir" expression="${base.dir}" if="base.dir"/>
+                <param name="dest.dir" expression="${htmlstage}/@{format}"/>
+
+                <param name="build.info" expression="${PKVERSION} built on ${build.time}"/>
+
+		<!-- changed from input_file_path to input.file.path.trimmed for SMP-12547 -->
+                <param name="docfilename" expression="${input.file.path.trimmed}/${input_file_name}.xml"/>
+
+                <param name="output_file_name" expression="${output_file_name}"/>
+                <param name="this" expression="${this}" if="this"/>
+                <param name="omit.cover" expression="${omit.cover}" if="omit.cover"/>
+
+                <param name="feedback.email" expression="${feedback.email}"/>
+
+		<!-- added for JCBG-480-->
+                <param name="feedback.type" expression="${feedback.type}"  if="feedback.type"/>
+                <param name="feedback.component" expression="${feedback.component}"  if="feedback.component"/>
+                <param name="feedback.assignee" expression="${feedback.assignee}"  if="feedback.assignee"/>
+		<!-- added for JCBG-2058 -->
+		<param name="feedback.project" expression="${feedback.project}"  if="feedback.project"/>
+		<param name="feedback.version" expression="${feedback.version}"  if="feedback.version"/>
+		<param name="feedback.jirahostname" expression="${feedback.jirahostname}"  if="feedback.jirahostname"/>
+		<!-- added for JCBG-2071 -->
+                <param name="feedback.issuetype" expression="${feedback.issuetype}"  if="feedback.issuetype"/>
+
+                <param name="procedures.in.toc" expression="${procedures.in.toc}"
+                    if="procedures.in.toc"/>
+
+                <param name="htmlhelp.use.hhk" expression="${htmlhelp.use.hhk}"
+                    if="htmlhelp.use.hhk"/>
+                <param name="htmlhelp.generate.index" expression="${htmlhelp.generate.index}"
+                    if="htmlhelp.generate.index"/>
+				
+                <param name="xep.extensions" expression="${xep.extensions}" if="xep.extensions"/> <!-- changed to pass down value instead of hardcoded 1 for JCBG-76 -->
+
+                <param name="htmlhelp.encoding" expression="${htmlhelp.encoding}"
+                    if="htmlhelp.encoding"/>
+                <param name="default.encoding" expression="${htmlhelp.encoding}"
+                    if="htmlhelp.encoding"/>
+                <param name="saxon.character.representation"
+                    expression="${saxon.character.representation}"
+                    if="saxon.character.representation"/>
+                <param name="chunker.output.encoding" expression="${htmlhelp.encoding}"
+                    if="htmlhelp.encoding"/>
+
+                <param name="BUILD_URL" expression="${env.BUILD_URL}" if="env.BUILD_URL"/>
+                <param name="PLANID" expression="${env.JOB_NAME}" if="env.JOB_NAME"/>
+
+                <param name="BUILDNUMBER" expression="${env.BUILD_NUMBER}" if="env.BUILD_NUMBER"/>
+
+                <param name="hostname" expression="${hostname}" if="hostname"/>
+
+                <param name="chunk.frameset.start.filename"
+                    expression="${chunk.frameset.start.filename}" if="chunk.frameset.start.filename"/>
+
+                <param name="toc.section.depth" expression="${toc.section.depth}"
+                    if="toc.section.depth"/>
+
+                <param name="chunk_output_file_name" expression="${chunk_output_file_name}"
+                    if="chunk_output_file_name"/>
+                <param name="chunked.toc.all.open" expression="${chunked.toc.all.open}"
+                    if="chunked.toc.all.open"/>
+                <param name="chunk.default.topic" expression="${chunk.default.topic}"
+                    if="chunk.default.topic"/>
+                <param name="exclude.deprecated.glossterms"
+                    expression="${exclude.deprecated.glossterms}" if="exclude.deprecated.glossterms"/>
+                <param name="generate.index" expression="${generate.index}" if="generate.index"/>
+                <param name="generate.toc" expression="${generate.toc}" if="generate.toc"/>
+                <param name="generate.toc.section.level" expression="${generate.toc.section.level}"
+                    if="generate.toc.section.level"/>
+				<!-- added for JCBG-852 -->
+	            <param name="trademark.symbols" expression="${trademark.symbols}" if="trademark.symbols"/>
+                <param name="google.code" expression="${google.code}" if="google.code"/>
+                <param name="disqus.enable" expression="${disqus.enable}" if="disqus.enable"/>
+                <param name="disqus.shortname" expression="${disqus.shortname}"
+                    if="disqus.shortname"/>
+                <param name="infocenter" expression="${infocenter}" if="infocenter"/> <!-- added for JCBG-1150 -->
+
+                <param name="include.alcatel.cobranding" expression="${include.alcatel.cobranding}"
+                    if="include.alcatel.cobranding"/>
+                <param name="motive.include.infocenter.footer "
+                    expression="${motive.include.infocenter.footer}"
+                    if="motive.include.infocenter.footer"/>
+                <param name="motive.footer.text" expression="${motive.footer.text}"
+                    if="motive.footer.text"/>
+                <param name="motive.monospace.font.size" expression="${motive.monospace.font.size}"
+                    if="motive.monospace.font.size"/>
+                <param name="motive.cover.subtitle.font.size "
+                    expression="${motive.cover.subtitle.font.size}"
+                    if="motive.cover.subtitle.font.size"/>
+
+		<!-- pass down stdrd docbook navig.graphics value -->
+                <param name="navig.graphics" expression="${navig.graphics}" if="navig.graphics"/>
+		
+                <param name="propagate.role.to.style" expression="${propagate.role.to.style}"
+                    if="propagate.role.to.style"/>
+                <param name="suppress.navigation" expression="${suppress.navigation}"
+                    if="suppress.navigation"/>
+                <param name="ulink.target" expression="${ulink.target}" if="ulink.target"/>
+                <param name="ulink.show" expression="${ulink.show}" if="ulink.show"/> <!-- added for JCBG-1168--> 
+                <param name="motive.cover.title.font.size"
+                    expression="${motive.cover.title.font.size}" if="motive.cover.title.font.size"/>
+<!-- the following all added for JCBG-693, to provide all the autolabel parameters -->
+                <param name="part.autolabel" expression="${part.autolabel}" if="part.autolabel"/> 
+                <param name="appendix.autolabel" expression="${appendix.autolabel}" if="appendix.autolabel"/> 
+                <param name="chapter.autolabel" expression="${chapter.autolabel}" if="chapter.autolabel"/> 
+                <param name="section.autolabel" expression="${section.autolabel}" if="section.autolabel"/> 
+				<param name="section.autolabel.includes.component.label" expression="${section.autolabel.includes.component.label}" if="section.autolabel.includes.component.label"/> 
+                <param name="section.autolabel.max.depth"
+                    expression="${section.autolabel.max.depth}" if="section.autolabel.max.depth"/>
+				<!-- adding the next 3 for JCBG-470 -->
+				<param name="doctools.version" expression="${doctools.version}" if="doctools.version"/>
+				<param name="commoncontent.version" expression="${commoncontent.version}" if="commoncontent.version"/>
+				   <!-- expecting glossary.version to eventually become obsolete, repl by above -->
+				<param name="glossary.version" expression="${glossary.version}" if="glossary.version"/>
+
+
+            </saxon-xslt>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="saxon6-xslt" description="Transform with Saxon 6">
+        <attribute name="in"/>
+        <attribute name="style"/>
+        <attribute name="out"/>
+        <attribute name="format"/>
+        <attribute name="force"/>
+        <sequential>
+            <!-- TODO: Add other params here -->
+            <xslt classpath="${saxon6}" in="@{in}" out="@{out}" style="@{style}" force="@{force}">
+                <factory name="com.icl.saxon.TransformerFactoryImpl"/>
+
+                <param name="input_file_name" expression="${input_file_name}.xml"/>
+                <param name="branding" expression="${branding}" if="branding"/>
+                <param name="terminate" expression="${terminate}" if="terminate"/>
+                <param name="format" expression="@{format}"/>
+                <param name="security" expression="${security}" if="security"/>
+                <param name="mailhost" expression="${mailhost}" if="mailhost"/>
+                <param name="language" expression="${language}" if="language"/>
+                <param name="eclipse.plugin.id" expression="${eclipse.plugin.id}"
+                    if="eclipse.plugin.id"/>
+
+                <param name="profile.security" expression="${security}" if="security"/>
+                <param name="profile.author_condition_1" expression="${author_condition_1}"
+                    if="author_condition_1"/>
+                <param name="profile.author_condition_2" expression="${author_condition_2}"
+                    if="author_condition_2"/>
+                <param name="security.filename.flag" expression="${security.filename.flag}"
+                    if="security.filename.flag"/>
+
+                <param name="recurse.on.glossary" expression="${recurse.on.glossary}"
+                    if="recurse.on.glossary"/>
+                <param name="glossary.disable" expression="${glossary.disable}"
+                    if="glossary.disable"/>
+
+		<!-- added for JCBG-2129 -->
+                <param name="inherit.book.keywords" expression="${inherit.book.keywords}"
+                    if="inherit.book.keywords"/>
+					
+                <!-- added for JCBG-1585, JCBG-672-->	
+                <param name="css.filename" expression="${css.filename}"
+                    if="css.filename"/>
+
+
+				<!-- added for JCBG-1217 -->	
+				<param name="draft.mode" expression="${draft.mode}"
+                    if="draft.mode"/>
+				
+				<!-- added for JCBG-424 -->
+                <param name="database.linking.enable" expression="${database.linking.enable}"
+                    if="database.linking.enable"/>
+
+                <param name="rootid" expression="${rootid}" if="rootid"/>
+                
+
+                <param name="glossary.exclusions" expression="${glossary.exclusions}"
+                    if="glossary.exclusions"/>
+
+		<!-- added to pass down this property to cause the xsls to build fo intended for FOP, jcbg-76 -->
+		<param name="fop1.extensions" expression="${fop1.extensions}" if= "fop1.extensions"/> 
+		<param name="fop.extensions" expression="${fop.extensions}" if = "fop.extensions"/> 
+
+                <param name="ant.project.invoked-targets" expression="${ant.project.invoked-targets}"/>
+		  <!-- added per JCBG-1587 so that we can tell what target invoked an xsl -->
+
+
+                <param name="module.dir" expression="${module.dir}"/>
+                <param name="staging.top.dir" expression="${staging.top.dir}"/>
+                <param name="staging.doc.dir" expression="${staging.doc.dir}"/>
+
+<!-- can we use xpath to sanitize this? was: @#@ -->
+                <param name="doctools" expression="${doctools}"/> 
+<!--
+                <param name="doctools" expression="concat(translate(${doctools},'\','/')),'8675309'" type="XPATH_STRING"/>  -->
+
+
+                <param name="saxon9" expression="${saxon9}"/>
+                <param name="branchname" expression="${branchname}"/>
+
+                <param name="htmlstage" expression="${htmlstage}"/>
+
+                <param name="source-files-up-to-date" expression="${source-files-up-to-date}"
+                    if="source-files-up-to-date"/>
+
+                <!-- added for jcbg-89 -->
+                <param name="fail.on.bad.olink" expression="${fail.on.bad.olink}"
+                    if="fail.on.bad.olink"/>
+
+                <!-- added for JCBG-1656 -->
+                <param name="skip.olink.conversion" expression="${skip.olink.conversion}"
+                    if="skip.olink.conversion"/>
+
+                <!-- added for JCBG-1657 -->
+                <param name="remove.xrefs.and.links" expression="${remove.xrefs.and.links}"
+                    if="remove.xrefs.and.links"/>
+
+                <!-- added for JCBG-1658 -->
+                <param name="fail.on.error" expression="${fail.on.error}"
+                    if="fail.on.error"/>
+
+		<param name="debug" expression="${debug}"
+                    if="debug"/> <!-- added for JCBG-2047-->
+
+                <param name="olink.debug" expression="${olink.debug}" if="olink.debug"/>
+                <param name="insert.olink.page.number" expression="yes"/>
+                <param name="current.docid" expression="${current.docid}" if="current.docid"/>
+
+
+                <param name="target.database.document"
+                    expression="file:///${module.dir}/target/olink.db"/> 
+                <param name="olink.doctitle" expression="${olink.doctitle}" if="olink.doctitle"/> <!-- added for JCBG-1762-->
+                <param name="olink.hyperlink.external.docs"
+                    expression="${olink.hyperlink.external.docs}" if="olink.hyperlink.external.docs"/>
+
+                <param name="common.graphics.path" expression="file:/${doctools}/DocShared/content/images"/>
+
+                <param name="tooltip.glossterms" expression="${tooltip.glossterms}"
+                    if="tooltip.glossterms"/>
+
+                <param name="strip.xrefstyle.formats" expression="${strip.xrefstyle.formats}"
+                    if="strip.xrefstyle.formats"/>
+                <param name="strip.stop-chunking.formats"
+                    expression="${strip.stop-chunking.formats}" if="strip.stop-chunking.formats"/>
+
+                <param name="manifest.in.base.dir" expression="1"/>
+
+                <param name="show.comments" expression="${show.comments}" if="show.comments"/>
+
+                <param name="base.dir" expression="${base.dir}" if="base.dir"/>
+                <param name="dest.dir" expression="${htmlstage}/@{format}"/>
+
+                <param name="build.info" expression="${PKVERSION} built on ${build.time}"/>
+
+		<!-- changed from input_file_path to input.file.path.trimmed for SMP-12547 -->
+                <param name="docfilename" expression="${input.file.path.trimmed}/${input_file_name}.xml"/>
+
+
+                <param name="output_file_name" expression="${output_file_name}"/>
+
+                <param name="omit.cover" expression="${omit.cover}" if="omit.cover"/>
+
+                <param name="feedback.email" expression="${feedback.email}"/>
+
+				<!-- added for JCBG-480-->
+                <param name="feedback.type" expression="${feedback.type}"  if="feedback.type"/>
+                <param name="feedback.component" expression="${feedback.component}"  if="feedback.component"/>
+                <param name="feedback.assignee" expression="${feedback.assignee}"  if="feedback.assignee"/>
+		<!-- added for JCBG-2058 -->
+		<param name="feedback.project" expression="${feedback.project}"  if="feedback.project"/>
+		<param name="feedback.version" expression="${feedback.version}"  if="feedback.version"/>
+		<param name="feedback.jirahostname" expression="${feedback.jirahostname}"  if="feedback.jirahostname"/>
+		<!-- added for JCBG-2071 -->
+                <param name="feedback.issuetype" expression="${feedback.issuetype}"  if="feedback.issuetype"/>
+
+
+
+                <param name="procedures.in.toc" expression="${procedures.in.toc}"
+                    if="procedures.in.toc"/>
+
+                <param name="htmlhelp.use.hhk" expression="${htmlhelp.use.hhk}"
+                    if="htmlhelp.use.hhk"/>
+                <param name="htmlhelp.generate.index" expression="${htmlhelp.generate.index}"
+                    if="htmlhelp.generate.index"/>
+
+                <param name="xep.extensions" expression="${xep.extensions}" if="xep.extensions"/> <!-- changed to pass down value instead of hardcoded 1 for JCBG-76 -->
+
+                <param name="htmlhelp.encoding" expression="${htmlhelp.encoding}"
+                    if="htmlhelp.encoding"/>
+                <!-- e.g. Shift_JIS  -->
+                <param name="default.encoding" expression="${htmlhelp.encoding}"
+                    if="htmlhelp.encoding"/>
+                <!-- e.g. Shift_JIS  -->
+                <param name="saxon.character.representation"
+                    expression="${saxon.character.representation}"
+                    if="saxon.character.representation"/>
+                <!-- e.g. set to native for jajp -->
+                <param name="chunker.output.encoding" expression="${htmlhelp.encoding}"
+                    if="htmlhelp.encoding"/>
+                <!-- e.g. Shift_JIS  -->
+
+                <param name="BUILD_URL" expression="${env.BUILD_URL}" if="env.BUILD_URL"/>
+                <param name="PLANID" expression="${env.JOB_NAME}" if="env.JOB_NAME"/>
+                <param name="BUILDNUMBER" expression="${env.BUILD_NUMBER}" if="env.BUILD_NUMBER"/>
+
+                <param name="hostname" expression="${hostname}" if="hostname"/>
+
+                <param name="chunk.frameset.start.filename"
+                    expression="${chunk.frameset.start.filename}" if="chunk.frameset.start.filename"/>
+
+                <param name="toc.section.depth" expression="${toc.section.depth}"
+                    if="toc.section.depth"/>
+
+                <param name="chunk_output_file_name" expression="${chunk_output_file_name}"
+                    if="chunk_output_file_name"/>
+                <param name="chunked.toc.all.open" expression="${chunked.toc.all.open}"
+                    if="chunked.toc.all.open"/>
+                <param name="chunk.default.topic" expression="${chunk.default.topic}"
+                    if="chunk.default.topic"/>
+                <param name="exclude.deprecated.glossterms"
+                    expression="${exclude.deprecated.glossterms}" if="exclude.deprecated.glossterms"/>
+                <param name="generate.index" expression="${generate.index}" if="generate.index"/>
+                <param name="generate.toc" expression="${generate.toc}" if="generate.toc"/>
+                <param name="generate.toc.section.level" expression="${generate.toc.section.level}"
+                    if="generate.toc.section.level"/>
+				<!-- added for JCBG-852 -->
+	            <param name="trademark.symbols" expression="${trademark.symbols}" if="trademark.symbols"/>
+
+                <param name="google.code" expression="${google.code}" if="google.code"/>
+                <param name="disqus.enable" expression="${disqus.enable}" if="disqus.enable"/>
+                <param name="disqus.shortname" expression="${disqus.shortname}"
+                    if="disqus.shortname"/>
+				<param name="infocenter" expression="${infocenter}" if="infocenter"/> <!-- added for JCBG-1150 -->
+                <param name="include.alcatel.cobranding" expression="${include.alcatel.cobranding}"
+                    if="include.alcatel.cobranding"/>
+                <param name="motive.include.infocenter.footer "
+                    expression="${motive.include.infocenter.footer}"
+                    if="motive.include.infocenter.footer"/>
+                <param name="motive.footer.text" expression="${motive.footer.text}"
+                    if="motive.footer.text"/>
+                <param name="motive.monospace.font.size" expression="${motive.monospace.font.size}"
+                    if="motive.monospace.font.size"/>
+                <param name="motive.cover.subtitle.font.size "
+                    expression="${motive.cover.subtitle.font.size}"
+                    if="motive.cover.subtitle.font.size"/>
+
+  		<!-- pass down stdrd docbook navig.graphics value -->
+                <param name="navig.graphics" expression="${navig.graphics}" if="navig.graphics"/>
+
+		
+                <param name="propagate.role.to.style" expression="${propagate.role.to.style}"
+                    if="propagate.role.to.style"/>
+                <param name="suppress.navigation" expression="${suppress.navigation}"
+                    if="suppress.navigation"/>
+                <param name="ulink.target" expression="${ulink.target}" if="ulink.target"/>
+                <param name="ulink.show" expression="${ulink.show}" if="ulink.show"/> <!-- added for JCBG-1168--> 
+                <param name="motive.cover.title.font.size"
+                    expression="${motive.cover.title.font.size}" if="motive.cover.title.font.size"/>
+<!-- the following all added for JCBG-693, to provide all the autolabel parameters -->
+                <param name="part.autolabel" expression="${part.autolabel}" if="part.autolabel"/> 
+                <param name="appendix.autolabel" expression="${appendix.autolabel}" if="appendix.autolabel"/> 
+                <param name="chapter.autolabel" expression="${chapter.autolabel}" if="chapter.autolabel"/> 
+                <param name="section.autolabel" expression="${section.autolabel}" if="section.autolabel"/> 
+				<param name="section.autolabel.includes.component.label" expression="${section.autolabel.includes.component.label}" if="section.autolabel.includes.component.label"/> 
+                <param name="section.autolabel.max.depth"
+                    expression="${section.autolabel.max.depth}" if="section.autolabel.max.depth"/>
+				<!-- adding the next 3 for JCBG-470 -->
+				<param name="doctools.version" expression="${doctools.version}" if="doctools.version"/>
+				<param name="commoncontent.version" expression="${commoncontent.version}" if="commoncontent.version"/>
+				   <!-- expecting glossary.version to eventually become obsolete, repl by above -->
+				<param name="glossary.version" expression="${glossary.version}" if="glossary.version"/>
+ 
+
+            </xslt>
+        </sequential>
+    </macrodef>
+
+    <target name="clean" depends="clean-olink-dbs">
+        <delete dir="${staging.doc.dir}"/>
+        <delete>
+            <fileset dir="${staging.top.dir}" includes="copy-images-build-*.xml"/>
+        </delete>
+    </target>
+
+    <target name="validate-module-file" depends="jingtask">
+        <jing rngfile="${doctools}/DocShared/schemas/module/module.rng" file="${parent-module-file}"
+            checkid="false"/>
+    </target>
+
+
+
+    <target name="generate-olink-target-dbs" depends="validate-module-file,generate-olink-target-dbs_no-depends"/> <!-- JCBG-1387, avoiding antcall by using depends -->
+      
+
+    <target name="generate-olink-target-dbs_no-depends">
+        <!-- TODO: Add a check to see if this needs to happen? -->
+        <!-- 
+            Use xslt to generate an ant script from module.xml.
+            This ant script calls the targetdb target for each document
+            and generates a target-${current.docid}.db for each document in the module.
+            Then it calls compile-olinkdb which combines all these target dbs
+            into a single olink.db file via xincludes...then resolve the xincluded
+            document into one big doc. 
+        -->
+        <!-- for jcbg-2066, echoing value of parent-module-file -->
+        <echo>MODULE FILE: target=generate-olink-target-dbs_no-depends, parent-module-file=${parent-module-file}</echo> 
+	
+        <saxon9-xslt in="${parent-module-file}" out="${module.dir}/target/generate-olinks.xml"
+            style="${doctools}/DocShared/xsls/olink/module2ant.xsl" format="NOTSET" force="true"/>  <!-- for jcbg-2082, changed force="${force}" to force="true" here to force it to always rebuild this file -->
+
+        <ant dir="${module.dir}/target" antfile="generate-olinks.xml"/>
+
+    </target>
+
+    <target name="m2b-gotdbs" depends="validate-module-file,module2build_no-depends, generate-olink-target-dbs_no-depends"/>  <!-- JCBG-1387, avoiding antcall by using depends instead -->
+
+    <target name="olno" depends="m2b-gotdbs"/> <!-- shortcut for above, mnemonic is 'olink with no downloads' -->
+
+
+    <uptodate property="targetdb-up-to-date" value="true"
+        targetfile="${staging.top.dir}/target-${current.docid}.db">
+        <srcfiles dir="${module.dir}" includes="**/*.xml **/*.XML"
+            excludes="**/olink.db **/generate-olinks.xml **/copy-images-build.xml target/** **/*.excludes"
+        />
+    </uptodate>
+
+    <target name="targetdb" depends="local_preprocess" unless="targetdb-up-to-date">
+	    <echo>=====
+Generating targetdb file for ${input_file_name}.xml
+=====</echo>
+        <echo>Starting xslt with ...branchname ${branchname}</echo>
+        <xslt classpath="${saxon6}"
+            in="${staging.doc.dir}/${local_preprocess_output_base}${input_file_name}.xml"
+            out="${staging.top.dir}/target/dummy"
+            style="${doctools}/DocShared/xsls/docbook/xhtml/monolithic-html.xsl">
+            <factory name="com.icl.saxon.TransformerFactoryImpl"/>
+
+            <param name="targets.filename" expression="target-${current.docid}.db"/>
+            <param name="eclipse.plugin.id" expression="${eclipse.plugin.id}"/>  <!-- added for jcbg-672, to pass the ecl id down to the targetdb file -->
+            <param name="security" expression="reviewer"/>
+            <param name="branchname" expression="${branchname}"/>
+            <param name="collect.xref.targets" expression="only"/>
+            <param name="current.docid" expression="${current.docid}"/>
+        </xslt>
+        <delete file="${staging.top.dir}/target/dummy"/>
+		<echo>module-dir is ${module.dir}, user.dir is ${user.dir}</echo>
+        <echo>About to try to move ${user.dir}/target-${current.docid}.db to the /target folder ... </echo>
+		<!-- JCBG-512: Before, the move line below had file="${module.dir}...". Now using user.dir below, because target-${current.docid}.db file is actually created in the current dir from which ant was launched, not the module.dir necessarily -->
+		<move file="${user.dir}/target-${current.docid}.db" todir="${module.dir}/target"/>
+
+
+    </target>
+
+ <!-- targetdb-fake is for things like folder2jar and javadoc2jar outputs -->
+ 
+ <target name="targetdb-fake"  unless="targetdb-up-to-date">
+
+   <!-- This target depends on the following properties being set properly
+	current.docid
+	eclipse.plugin.id
+	eclipse.title
+	rhkeyword
+	base.olink.filename (defaults to 'index' to use index.html for javadoc for ex, but must be set manaully for folder2jar)
+
+-->
+    <echo>Creating a minimal targetdb file that has only one entry, for the top of the book, in file ${module.dir}/target/target-${current.docid}.db.</echo>
+
+    <echo file="${module.dir}/target/target-${current.docid}.db">
+
+&lt;div element="book" href="#${eclipse.plugin.id}" targetptr="${current.docid}" number="" data-eclipseid="${eclipse.plugin.id}"&gt;
+    &lt;ttl&gt;${eclipse.title}&lt;/ttl&gt;
+    &lt;xreftext&gt;${eclipse.title}&lt;/xreftext&gt;
+    <!-- the div below is to fix JCBG-1979 re: RH links; note that it ends in a /> rather than a </div> b/c
+	 we later do a replace on </div>, and we need to not have 2 of those
+         the property base.olink.filename below is designed to point to the first valid html file in the book,
+	 and should not have an extension; the default value for javadoc is 'index'
+
+    -->
+    &lt;div element="preface" href="#${base.olink.filename}" targetptr="${base.olink.filename}" number="" data-eclipseid="${eclipse.plugin.id}"/&gt;
+    
+
+    &lt;/div&gt;
+    </echo>
+
+    <!-- To allow us to DECIDE whether to do the rhkeyword part, doing it separately, as a replace on the above file -->
+
+       <if>
+	<not>
+	  <equals arg1="${rhkeyword}" arg2="NONE" />
+	</not>
+
+	<then>
+     <echo>Inserting Release Highlights keyword '${rhkeyword}'.</echo>
+     <replace file="${module.dir}/target/target-${current.docid}.db" encoding="UTF-8" summary="true">
+        <replacefilter token='&lt;/div&gt;'  
+                       value='&lt;keywordset&gt;  &lt;keyword&gt;${rhkeyword}&lt;/keyword&gt;  &lt;/keywordset&gt;  &lt;/div&gt;'/> 
+     </replace>
+	</then>
+       </if>
+  
+
+    
+    </target>
+
+    <target name="refresh-olinks-this-doc" depends="targetdb">
+      <!-- To make Oxygen's olink dialog recognize an updated olink.db, we first generate the relevant
+	   subfile via depends="targetdb", then touch the olink.db file.
+	   This is because the olink.db file referenced below is just a set of xincludes and doesn't need to
+	   be updated, but without changing it, Oxygen won't update its dialog box. Reference JCBG-82. -->
+      <touch file="${module.dir}/olink.db"/>
+    </target>
+
+    <target name="reo" depends="refresh-olinks-this-doc" /> <!-- shortcut for above -->
+    
+    <target name="xinclude-olinkdb">
+      <!-- seeing errors on this, see JCBG-82 for details -->
+        <saxon9-xinclude in="${module.dir}/olink.db" out="${module.dir}/target/olink.db"
+            style="${doctools}/DocShared/xsls/utilities/copy.xsl"/>
+    </target>
+
+    <target name="compile-olinkdb" depends="validate-module-file">
+        <saxon9-xslt in="${parent-module-file}" out="${module.dir}/olink.db"
+            style="${doctools}/DocShared/xsls/olink/compile-olinkdb.xsl" format="NOTSET"
+            force="true"/>
+
+	<echo>
+Checking for duplicate current.docids (JCBG-991)
+	</echo>
+      <saxon9-xslt in="${module.dir}/olink.db" out="${module.dir}/target/olink.dupe.debug.txt"
+            style="${doctools}/DocShared/xsls/utilities/checkdupedocids.xsl" format="NOTSET"
+            force="true"/>
+
+	
+        <saxon9-xinclude in="${module.dir}/olink.db" out="${module.dir}/target/olink.db"
+            style="${doctools}/DocShared/xsls/utilities/copy.xsl"/>
+
+        <!--        <move file="${module.dir}/olink.db.xincluded" tofile="${module.dir}/olink.db"/>
+-->
+    </target>
+
+    <target name="clean-olink-dbs">
+        <delete>
+            <fileset dir="${staging.top.dir}" includes="target-*.db olink.db"/>
+            <fileset dir="${module.dir}" includes="olink.db"/>
+        </delete>
+    </target>
+
+    <target name="header" if="input_file_name">
+	  <!-- This target just writes out a header for the log 
+           Added for JCBG-534. Added as dependency to init and validate-initial,
+           so that this'll get run on every build.
+
+    	   For JCBG-967, added if attribute so that we skip this if input_file_name is not set.
+		  (That prop is only NOT set when you are building olink stuff, module2build; if you aren't 
+		  building the book output itself.)     -->
+<echo>===============================================================
+===============================================================
+  Building document: ${input_file_path}\${input_file_name} 
+  Invoked target(s) = ${ant.project.invoked-targets}
+  Security = **${security}** 
+  support_holmanization=${support_holmanization}; holmanize=${holmanize}
+  source-files-up-to-date = ${source-files-up-to-date}
+  artifactory = ${artifactory}
+  infocenter.host = ${infocenter.host}
+===============================================================
+
+</echo>
+</target>
+
+
+
+    <target name="init" depends="header">
+<echo>------------------------------------------------------------
+Default 'init' target. Executed before every build of a book. Override in build.xml to do something every build. (This default target merely outputs this message.)
+-----------------------------------------------------------
+
+</echo>
+
+        <!--
+            <property name="docbook-xsl" value="${env.TMP}/doctools/docbook-xsl/${docbook.xsl.version}"/>
+            <property name="docbook-xml" value="${env.TMP}/doctools/docbook-xml/${docbook.schema.version}-all"/>
+            <mkdir dir="${docbook-xsl}"/>
+            <mkdir dir="${docbook-xml}"/>
+            
+            <unzip src="${net.sf.docbook:docbook-xsl:zip:ns-resources}"     dest="${docbook-xsl}"     overwrite="false"/>
+            <unzip src="${net.sf.docbook:docbook-xml:zip:resources}"        dest="${docbook-xml}"     overwrite="false"/>
+        -->
+    </target>
+
+    <target name="validate-initial" depends="header, init,jingtask" unless="${source-files-up-to-date}">
+      <!-- For jcbg-1787, I put ${} around the source-files-up-to-date name in the unless attribute above,
+	   so that ant evaluates it and uses its value, not whether or not it is set. This is important because it allows us to check whether the prop is true or false, and to set the property in a build.xml to force a document to rebuild every time; this was important for RH documents. -->
+        <!-- TODO: Change checkid to true?-->
+        <echo>Validating with Jing (checkid="false")</echo>
+        <echo>Attempting to validate ${staging.doc.dir}/${input_file_name}.xml.</echo>
+        <echo> (If this fails, verify that the book's input_file_name property is correct and
+            validate the book file. The [validate-initial] step ONLY validates the book file --
+            before any xincludes are resolved -- so an error here indicates that the book is not
+            valid OR that the book file was not found.)</echo>
+
+        <!-- Test whether the input_file_name file exists; if the file does not exist, fail the build. -->
+	<available file="${input_file_name}.xml" property="input_file_name-file-exists"/>
+	<fail
+	    message="File not found: ${input_file_name}.xml. Check for typos in the input_file_name property in the book's build.xml file."
+	    unless="input_file_name-file-exists"
+	    />
+
+        <jing rngfile="${doctools}/DocShared/schemas/broadbook/broadbook.rng"
+            file="${input_file_name}.xml" checkid="false"/>
+        <!-- See http://www.docbook.org/docs/howto/ for example  -->
+        <!-- This validates xincluded content against rng and schematron rules. Currently schematron rules don't cause build breaks, just warnings. Change failonerror to true to change this  -->
+        <!--java jar="${doctools}/oNVDL/bin/onvdl.jar" fork="true" failonerror="false">
+            <jvmarg value="-Dorg.apache.xerces.xni.parser.XMLParserConfiguration=org.apache.xerces.parsers.XIncludeParserConfiguration"/>
+            <arg value="${doctools}/DocShared/schemas/broadbook/broadbook.nvdl"/>
+            <arg value="${input_file_name}.xml"/>
+            </java-->
+    </target>
+
+    <target name="copy-to-staging" depends="validate-initial" unless="${source-files-up-to-date}">
+      <!-- For jcbg-1787, I put ${} around the source-files-up-to-date name in the unless attribute above,
+	   so that ant evaluates it and uses its value, not whether or not it is set. This is important because it allows us to check whether the prop is true or false, and to set the property in a build.xml to force a document to rebuild every time; this was important for RH documents. -->
+        <mkdir dir="${staging.top.dir}"/>
+        <copy todir="${staging.top.dir}" verbose="true">
+            <fileset dir="${module.dir}" includes="**/*"
+                excludes="**/build.xml **/target/** **/.git/** **/*.xsl"/>
+        </copy>
+    </target>
+
+    <!-- changed the below value to 'false' for JCBG-509 -->
+    <property name="support_holmanization" value="false"/>
+
+    <condition property="holmanize">
+        <and>
+            <equals arg1="${support_holmanization}" arg2="true"/>
+            <equals arg1="${source-files-up-to-date}" arg2="false"/>
+	    
+	    <!-- JCBG-1749: checking the holmanization.includes file b/c if nonexistent
+		 or empty, holmanize will try to holmanize all and fail -->
+	       <!-- first, does the file exist? -->
+	    <available file="${module.dir}/holmanization.includes"/> 
+	       <!-- next, is its length > 0 ? -->
+	    <length file="${module.dir}/holmanization.includes" when="greater" length="0" />
+	      <!-- next, it must contain at least one path, hence one slash,
+		   so we'll test for that, thereby eliminating files that are all whitespace
+	           or contain no paths at all; 
+  	            a valid file contains at least one path like
+	               en_US/doc1/a_chapter.xml
+	            and we never use files at the root of the module for holman,
+                     so you'd have at least one slash in there somewhere ...  -->
+            <resourcecontains resource="${module.dir}/holmanization.includes" substring="/" />
+          </and>
+	
+    </condition>
+
+
+
+    <target name="holmanize" depends="copy-to-staging" if="holmanize"
+        unless="${source-files-up-to-date}"
+        description="Run the holmanization xslt on all .xml files in the source dir (transform to .holmanized). Use a nested mapper to change .holmanized back to .xml">
+
+        <stopwatch name="holmanize" action="start"/><!-- antcontrib task -->      
+
+        <!-- For jcbg-1787, I put ${} around the source-files-up-to-date name in the unless attribute above,
+	   so that ant evaluates it and uses its value, not whether or not it is set. This is important because it allows us to check whether the prop is true or false, and to set the property in a build.xml to force a document to rebuild every time; this was important for RH documents. -->
+
+        <!-- Holmanize selected docbook files in the staging directory: -->
+	<!-- JCBG-1749 if holmanization.includes is empty or does not exist, this fails
+	        because we use holmanization.includes as the includesfile value
+		and if it evaluates to nothing, that's like NOT having an includes attr
+		  which leads to default behavior of 'process all files'
+		addressed this 9/28/15 by adding conditions to where we set the 'holmanize'
+		property above, in a condition task
+ -->
+        <xslt classpath="${saxon6}" basedir="${staging.top.dir}"
+            includesfile="${module.dir}/holmanization.includes"
+            excludes="**/build.xml **/_stage/** **/_*.xml **/copy-images-build*.xml **/assembly.xml **/pom.xml **/module.xml **/target/** **.excludes"
+            destdir="${staging.top.dir}" extension=".holmanized"
+            style="${doctools}/DocShared/xsls/share/holmanize.xsl" processor="trax">
+            <!-- failontransformationerror="false" -->
+            <factory name="com.icl.saxon.TransformerFactoryImpl"/>
+        </xslt>
+
+        <!-- Now rename *.holmanized to *.xml: -->
+        <copy todir="${staging.top.dir}" overwrite="true">
+            <fileset dir="${staging.top.dir}" includes="**/*.holmanized"/>
+            <globmapper from="*.holmanized" to="*.xml"/>
+        </copy>
+
+        <stopwatch name="holmanize" action="stop"/><!-- antcontrib task -->
+        <stopwatch name="holmanize" action="total"/><!-- antcontrib task -->      
+
+    </target>
+
+    <target name="resolve-xincludes" depends="holmanize" unless="${source-files-up-to-date}">
+
+     <!-- For jcbg-1787, I put ${} around the source-files-up-to-date name in the unless attribute above,
+	   so that ant evaluates it and uses its value, not whether or not it is set. This is important because it allows us to check whether the prop is true or false, and to set the property in a build.xml to force a document to rebuild every time; this was important for RH documents. --> 
+      
+        <echo level="info">Resolving xincludes</echo>
+               <!-- changed to saxon9-xinclude (from saxon6-xinclude) to fix jcbg-92 -->
+        <saxon9-xinclude in="${staging.doc.dir}/${input_file_name}.xml"
+            out="${staging.doc.dir}/${resolve-xincludes_output_base}${input_file_name}.xml"
+            style="${doctools}/DocShared/xsls/utilities/copy.xsl"/>
+    </target>
+
+    <target name="dedupids" depends="resolve-xincludes" unless="${source-files-up-to-date}">
+    <!-- For jcbg-1787, I put ${} around the source-files-up-to-date name in the unless attribute above,
+	   so that ant evaluates it and uses its value, not whether or not it is set. This is important because it allows us to check whether the prop is true or false, and to set the property in a build.xml to force a document to rebuild every time; this was important for RH documents. -->
+      
+        <saxon9-xslt in="${staging.doc.dir}/${dedupids_input_base}${input_file_name}.xml"
+            out="${staging.doc.dir}/${dedupids_output_base}${input_file_name}.xml"
+            style="${doctools}/DocShared/xsls/share/dedupids.xsl" format="NOTSET" force="${force}"/>
+    </target>
+
+    <target name="preprocess" depends="dedupids" unless="${source-files-up-to-date}">
+<!-- For jcbg-1787, I put ${} around the source-files-up-to-date name in the unless attribute above,
+	   so that ant evaluates it and uses its value, not whether or not it is set. This is important because it allows us to check whether the prop is true or false, and to set the property in a build.xml to force a document to rebuild every time; this was important for RH documents. -->
+      
+        <echo level="info">Preprocessing</echo>
+        <saxon9-xslt in="${staging.doc.dir}/${preprocess_input_base}${input_file_name}.xml"
+            out="${staging.doc.dir}/${preprocess_output_base}${input_file_name}.xml"
+            style="${doctools}/DocShared/xsls/preprocess/preprocess.xsl" format="NOTSET"
+            force="${force}"/>
+    </target>
+
+    <target name="local_preprocess" depends="preprocess">
+<echo>Default local preprocess target, does nothing but copy local preprocess input file to output file unchanged.</echo>
+        <copy file="${staging.doc.dir}/${local_preprocess_input_base}${input_file_name}.xml"
+            tofile="${staging.doc.dir}/${local_preprocess_output_base}${input_file_name}.xml"/>
+
+<!-- Commenting out the detailed instructions for using local_preprocess, as we have this documented in the writer's guide, and I feel they just clutter the build logs. Aaron DaMommio, 3/7/13.
+        <echo level="info">Note: </echo>
+        <echo level="info">This document does not define a local_preprocess target.</echo>
+        <echo level="info">If you would like to add a local_preprocess target, </echo>
+        <echo level="info">add a target to the end of your build.xml that depends on 'preprocess'</echo>
+        <echo level="info">and creates a file name ${local_preprocess_input}, as shown in the following example:</echo>
+        <echo level="info">  &lt;target name="local_preprocess" depends="preprocess"&gt;</echo>
+        <echo level="info">    &lt;xslt</echo>
+        <echo level="info">            style="scriptname.xsl"</echo>
+        <echo level="info">            in="$${staging.doc.dir}/_03.preprocessed.$${input_file_name}.xml"</echo>
+        <echo level="info">            out="$${staging.doc.dir}/_04.local_preprocessed.$${input_file_name}.xml"&gt;</echo>
+        <echo level="info">    &lt;/xslt&gt;</echo>
+        <echo level="info">  &lt;/target&gt;</echo>
+        <echo level="info"> (This example assumes that you want to run the XSL 'scriptname.xsl', </echo>
+<echo level="info"> found in the book's folder, against the book content. </echo>
+<echo level="info"> You could substitute any Ant code, as long as you make your</echo>
+<echo level="info">  changes on the _03 file shown, using the properties shown, </echo>
+<echo level="info"> and copy the results to the _04 file shown. )</echo>
+
+-->
+
+    </target>
+
+    <target name="filter" depends="preprocess,local_preprocess"
+        description="Filter out content based on attribute values.">
+        <saxon9-xslt in="${staging.doc.dir}/${filter_input_base}${input_file_name}.xml"
+            out="${staging.doc.dir}/${filter_output_base}${security}.${input_file_name}.xml"
+            style="${doctools}/DocShared/xsls/filter/profile.xsl" format="NOTSET" force="${force}"/>
+    </target>
+
+    <target name="validate-filtered" depends="filter,jingtask"
+        description="Validate the document after filitering content to catch validation errors that have been introduced">
+        <!-- TODO: Use oNVDL here since we no longer have to worry about xincludes -->
+        <echo>Validating: ${staging.doc.dir}/${filter_output_base}${security}.${input_file_name}.xml </echo>
+        <jing rngfile="${doctools}/DocShared/schemas/broadbook/broadbook.rng"
+            file="${staging.doc.dir}/${filter_output_base}${security}.${input_file_name}.xml"
+            checkid="true"/>
+    </target>
+
+    <target name="glossify" depends="validate-filtered" description="Generate a custom glossary.">
+
+       <stopwatch name="glossify" action="start"/>
+
+        <copy file="${doctools}/SharedContent/${language}/glossary/masterglossary-xincluded.xml"
+            tofile="${staging.doc.dir}/_masterglossary-db5-chunked-xincluded.xml"/>
+
+        <!-- Now we pull in the glossary and glossify (2 steps for now) -->
+        <saxon9-xslt
+            in="${staging.doc.dir}/${glossify_input_base}${security}.${input_file_name}.xml"
+            out="${staging.doc.dir}/${glossify_output_base}1.${security}.${input_file_name}.xml"
+            style="${doctools}/DocShared/xsls/glossificator/glossify-preprocess-1.xsl"
+            format="NOTSET" force="${force}"/>
+
+        <saxon9-xslt
+            in="${staging.doc.dir}/${glossify_output_base}1.${security}.${input_file_name}.xml"
+            out="${staging.doc.dir}/${glossify_output_base}${security}.${input_file_name}.xml"
+            style="${doctools}/DocShared/xsls/glossificator/glossify.xsl" format="NOTSET"
+            force="${force}"/>
+
+    <stopwatch name="glossify" action="stop"/>
+    <stopwatch name="glossify" action="total"/>
+    </target>
+
+    <target name="validate-glossified" depends="jingtask,glossify"
+        description="Validate the document after glossifying content to catch validation errors that have been introduced">
+        <!-- TODO: Use oNVDL here since we no longer have to worry about xincludes -->
+        <echo>Validating:
+            ${staging.doc.dir}/${glossify_output_base}${security}.${input_file_name}.xml</echo>
+        <jing rngfile="${doctools}/DocShared/schemas/broadbook/broadbook.rng"
+            file="${staging.doc.dir}/${glossify_output_base}${security}.${input_file_name}.xml"
+            checkid="true"/>
+    </target>
+
+    <target name="generate-ant-file-to-check-urls" depends="glossify"> <!-- ### Any way or need to remove this depends? -->
+        <echo level="info">Generating ant file to check URLs</echo>    <!-- ### Rename output file to save for each security? -->
+
+        <!-- Display timestamp so that I can gauge performance (time used). -->
+        <tstamp><format property="check-urls-start-timestamp" pattern="MM/dd/yyyy hh:mm:ss aa"/></tstamp>
+	<echo>Start time: ${check-urls-start-timestamp}</echo>
+	<stopwatch name="Elapsed time" action="start"/><!-- antcontrib task -->
+
+        <saxon9-xslt in="${staging.doc.dir}/${glossify_output_base}${security}.${input_file_name}.xml"
+            out="${staging.doc.dir}/generated-ant-file-to-check-urls.xml"
+            style="${doctools}/DocShared/xsls/utilities/check-urls.xsl" format="NOTSET"
+            force="${force}"/>
+    </target>
+
+    <target name="check-urls" depends="generate-ant-file-to-check-urls,setproxy" unless="${check.urls.disabled}">
+      <!-- JCBG-2024: Add the 'record' task to log all the check-urls output in one file to include in the "Found invalid URLs" email. 
+                      The record start is here; the record stop is at the end of this target. -->
+      <record name="${module.dir}/target/check-urls.log" action="start" append="yes"/> 
+        <echo level="info">Checking URLs = = = = = ${staging.doc.dir}</echo>
+	<ant antfile="${staging.doc.dir}/generated-ant-file-to-check-urls.xml"/>
+
+        <!-- Display timestamp so that I can gauge performance (time used). -->
+        <tstamp><format property="check-urls-end-timestamp" pattern="MM/dd/yyyy hh:mm:ss aa"/></tstamp>
+	<echo>End time: ${check-urls-end-timestamp}</echo>
+	<stopwatch name="Elapsed time" action="elapsed"/><!-- antcontrib task -->
+      <record name="${module.dir}/target/check-urls.log" action="stop"/> <!-- JCBG-2024 -->
+    </target>
+
+    <target name="refresh-olink-db-this-doc" depends="validate-glossified, check-urls">
+        <!-- TODO: Regenerate the target.db for this doc in this format UNLESS it is newer than the source docs. -->
+    </target>
+
+    <target name="svg-fixup">
+
+      <!-- Note, this target has 2 xslts which superficially appear same except that one has a big catalog and other doesn't.
+	   But, in fact, they are different, AND both use catalog:
+	   - one processes .svg and the other .SVG
+	   - the second one REFERENCES the catalog in the first one -->
+      
+        <xslt classpath="${saxon9}" basedir="${staging.top.dir}" includes="**/*.svg"
+            destdir="${staging.top.dir}" extension=".visio-fixed"
+            style="${doctools}/DocShared/xsls/utilities/visioSvgFixup.xsl">
+            <factory name="net.sf.saxon.TransformerFactoryImpl"/>
+            <xmlcatalog id="svgcat">
+                <dtd publicid="-//W3C//DTD SVG 1.1//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg11.dtd"/>
+                <dtd publicid="-//W3C//DTD SVG 1.0//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.0/svg10.dtd"/>
+                <entity publicid="-//W3C//ENTITIES SVG 1.1 Document Model//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg11-model.mod"/>
+                <entity publicid="-//W3C//ENTITIES SVG 1.1 Attribute Collection//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg11-attribs.mod"/>
+                <entity publicid="-//W3C//ENTITIES SVG 1.1 Modular Framework//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-framework.mod"/>
+                <entity publicid="-//W3C//ENTITIES SVG 1.1 Core Attribute//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-core-attrib.mod"/>
+                <entity publicid="-//W3C//ENTITIES SVG 1.1 Container Attribute//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-container-attrib.mod"/>
+                <entity publicid="-//W3C//ENTITIES SVG 1.1 Viewport Attribute//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-viewport-attrib.mod"/>
+                <entity publicid="-//W3C//ENTITIES SVG 1.1 Paint Attribute//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-paint-attrib.mod"/>
+                <entity publicid="-//W3C//ENTITIES SVG 1.1 Paint Opacity Attribute//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-opacity-attrib.mod"/>
+                <entity publicid="-//W3C//ENTITIES SVG 1.1 Graphics Attribute//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-graphics-attrib.mod"/>
+                <entity publicid="-//W3C//ENTITIES SVG 1.1 Document Events Attribute//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-docevents-attrib.mod"/>
+                <entity publicid="-//W3C//ENTITIES SVG 1.1 Graphical Element Events Attribute//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-graphevents-attrib.mod"/>
+                <entity publicid="-//W3C//ENTITIES SVG 1.1 Animation Events Attribute//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-animevents-attrib.mod"/>
+                <entity publicid="-//W3C//ENTITIES SVG 1.1 XLink Attribute//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-xlink-attrib.mod"/>
+                <entity publicid="-//W3C//ENTITIES SVG 1.1 External Resources Attribute//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-extresources-attrib.mod"/>
+                <entity publicid="-//W3C//ELEMENTS SVG 1.1 Structure//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-structure.mod"/>
+                <entity publicid="-//W3C//ELEMENTS SVG 1.1 Conditional Processing//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-conditional.mod"/>
+                <entity publicid="-//W3C//ELEMENTS SVG 1.1 Image//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-image.mod"/>
+                <entity publicid="-//W3C//ELEMENTS SVG 1.1 Style//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-style.mod"/>
+                <entity publicid="-//W3C//ELEMENTS SVG 1.1 Shape//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-shape.mod"/>
+                <entity publicid="-//W3C//ELEMENTS SVG 1.1 Text//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-text.mod"/>
+                <entity publicid="-//W3C//ELEMENTS SVG 1.1 Marker//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-marker.mod"/>
+                <entity publicid="-//W3C//ELEMENTS SVG 1.1 Color Profile//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-profile.mod"/>
+                <entity publicid="-//W3C//ELEMENTS SVG 1.1 Gradient//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-gradient.mod"/>
+                <entity publicid="-//W3C//ELEMENTS SVG 1.1 Pattern//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-pattern.mod"/>
+                <entity publicid="-//W3C//ELEMENTS SVG 1.1 Clip//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-clip.mod"/>
+                <entity publicid="-//W3C//ELEMENTS SVG 1.1 Mask//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-mask.mod"/>
+                <entity publicid="-//W3C//ELEMENTS SVG 1.1 Filter//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-filter.mod"/>
+                <entity publicid="-//W3C//ELEMENTS SVG 1.1 Cursor//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-cursor.mod"/>
+                <entity publicid="-//W3C//ELEMENTS SVG 1.1 Hyperlinking//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-hyperlink.mod"/>
+                <entity publicid="-//W3C//ELEMENTS SVG 1.1 View//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-view.mod"/>
+                <entity publicid="-//W3C//ELEMENTS SVG 1.1 Scripting//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-script.mod"/>
+                <entity publicid="-//W3C//ELEMENTS SVG 1.1 Animation//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-animation.mod"/>
+                <entity publicid="-//W3C//ELEMENTS SVG 1.1 Font//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-font.mod"/>
+                <entity publicid="-//W3C//ELEMENTS SVG 1.1 Extensibility//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-extensibility.mod"/>
+                <entity publicid="-//W3C//ENTITIES SVG 1.1 Datatypes//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-datatypes.mod"/>
+                <entity publicid="-//W3C//ENTITIES SVG 1.1 Qualified Name//EN"
+                    location="${doctools}/DocShared/schemas/svg/1.1/svg-qname.mod"/>
+            </xmlcatalog>
+        </xslt>
+        <xslt classpath="${saxon9}" basedir="${staging.top.dir}" includes="**/*.SVG"
+            destdir="${staging.top.dir}" extension=".VISIO-FIXED"
+            style="${doctools}/DocShared/xsls/utilities/visioSvgFixup.xsl">
+            <factory name="net.sf.saxon.TransformerFactoryImpl"/>
+            <xmlcatalog refid="svgcat"/>
+        </xslt>
+
+        <!-- Use  preservelastmodified="true" so that we won't redo the xslt next pass. Redoing the copy is ok because it's cheap. -->
+        <copy todir="${staging.top.dir}" overwrite="true" preservelastmodified="true">
+            <fileset dir="${staging.top.dir}" includes="**/*.visio-fixed"/>
+            <globmapper from="*.visio-fixed" to="*.svg"/>
+        </copy>
+        <copy todir="${staging.top.dir}" overwrite="true" preservelastmodified="true">
+            <fileset dir="${staging.top.dir}" includes="**/*.visio-fixed"/>
+            <globmapper from="*.VISIO-FIXED" to="*.SVG"/>
+        </copy>
+
+    </target>
+
+    <target name="images-pdf" depends="refresh-olink-db-this-doc,svg-fixup">
+        <saxon9-xslt
+            in="${staging.doc.dir}/${filerefs-part1_input_base}${security}.${input_file_name}.xml"
+            out="${staging.doc.dir}/${filerefs-part1_output_base}${security}.pdf.${input_file_name}.xml"
+            style="${doctools}/DocShared/xsls/utilities/filerefs-part1.xsl" format="pdf"
+            force="${force}"/>
+        <saxon9-xslt
+            in="${staging.doc.dir}/${filerefs_input_base}${security}.pdf.${input_file_name}.xml"
+            out="${staging.doc.dir}/${filerefs_output_base}${security}.pdf.${input_file_name}.xml"
+            style="${doctools}/DocShared/xsls/utilities/filerefs.xsl" format="pdf" force="${force}"
+        />
+    </target>
+
+    <target name="images-html" depends="refresh-olink-db-this-doc,svg-fixup">
+
+        <mkdir dir="${htmlstage}/images-temp"/>
+
+        <saxon9-xslt
+            in="${staging.doc.dir}/${filerefs-part1_input_base}${security}.${input_file_name}.xml"
+            out="${staging.doc.dir}/${filerefs-part1_output_base}${security}.html.${input_file_name}.xml"
+            style="${doctools}/DocShared/xsls/utilities/filerefs-part1.xsl" format="html"
+            force="${force}"/>
+        <saxon9-xslt
+            in="${staging.doc.dir}/${filerefs_input_base}${security}.html.${input_file_name}.xml"
+            out="${staging.doc.dir}/${filerefs_output_base}${security}.html.${input_file_name}.xml"
+            style="${doctools}/DocShared/xsls/utilities/filerefs.xsl" format="html" force="${force}"/>
+        <ant antfile="${staging.top.dir}/copy-images-build-${security}.xml"/>
+        
+		<!-- copy over the embed folder, per JCBG-796-->
+        <if> <!-- added this to avoid failures when embed doesn't exist-->
+          <available file="embed"/>
+          <then>
+		    <echo>Now we copy over any embedded files...</echo>
+		    <copy todir="${htmlstage}/images-temp/embed">
+		      <fileset dir="embed"/>
+            </copy>
+          </then>
+        </if>
+
+    </target>
+
+    <target name="docbook2fo" depends="images-pdf">
+        <!-- 
+            generate fo  
+            Saxon will only generate fo if it is out of date. 
+ 
+           changed from saxon6-xslt to saxon9-xslt on 8/26/14 for jcbg-76, fop
+        -->
+        <saxon6-xslt
+            in="${staging.doc.dir}/${docbook2fo_input_base}${security}.pdf.${input_file_name}.xml"
+            out="${staging.doc.dir}/${docbook2fo_output_base}.${security}.${branding}.${input_file_name}.fo"
+            style="${doctools}/DocShared/xsls/docbook/${branding}-pdf/driver.xsl" format="pdf"
+            force="${force}"/>
+
+  <!-- set pdf.not.needed property to true if the fo file is newer than the last pdf you generated 
+	  (pdf.not.needed is only about whether we need to make a NEW pdf. You cannot, for example, set it to avoid making pdf at all, b/c if you have no pdf availa and you are trying to build eclipse-infocenter, other code checks for the EXISTENCE (not the age) of a pdf)-->		
+        <uptodate property="pdf.not.needed"
+            srcfile="${staging.doc.dir}/${docbook2fo_output_base}.${security}.${branding}.${input_file_name}.fo"
+            targetfile="${staging.doc.dir}/${output_file_name}${security.filename.flag}.pdf"/>
+    </target>
+
+
+<!-- pdf target is mainly a pointer to either fop or xep, and only one of those two targets will actually run -->
+
+<target name="pdf" depends="check-pdf-open,fop,xep,olcs-txt" unless="pdf.not.needed">
+ <!-- the main work of pdf making happens in the fop and xep targets -->
+
+        <!-- copy whole embed folder to output, per JCBG-796  
+	     ...I later decided NOT to do this, because I couldn't come up with a good way to handle the pdfs and links; you can't keep the file with the pdf file this way, so... I'm skipping this and limiting the use of embed to html outputs.
+
+        <if> 
+          <available file="embed"/>
+          <then>
+		    <echo>Now we copy over any embedded files...to PDF output folder</echo>
+	    	<copy todir="${outdir}/pdf/${output_file_name}_embed">
+         	  <fileset dir="embed"/>
+            </copy>
+          </then>
+        </if>  -->
+
+
+        
+
+        <antcall target="local_postprocess_pdf"/>
+
+         
+        <!-- make opener for the generated pdf -->
+        <echo file="${staging.doc.dir}/open_most_recent_pdf.xml">
+            <![CDATA[
+            <project>
+                <exec executable="xdg-open" osfamily="unix">
+                    <arg value="${outdir}/pdf/${output_file_name}${security.filename.flag}.pdf"/>
+                </exec>
+                <exec executable="cmd.exe" osfamily="windows">
+                    <arg line="/c start ../../target/out/${language}/${security}/pdf/${output_file_name}${security.filename.flag}.pdf"/>
+                </exec> 
+            </project>
+]]>
+        </echo>
+
+</target>
+         
+<!-- define fop task, outside of target, so that any target can use this task
+doing it this way for future non-pdf uses of the fop target -->
+
+<taskdef name="fop" classname="org.apache.fop.tools.anttasks.Fop">
+  <classpath>
+     <fileset dir="${doctools}/lib">
+       <include name="*.jar"/>
+      </fileset> 
+  </classpath>
+</taskdef> 
+
+
+<!-- Set the fop/xep properties appropriately based on the value of fop.enable;
+    we need to set these before we call docbook2fo, and must set ALL 3 of these appropriately lest they take their defaults in the xsl-->
+<condition property="fop.extensions" value="1" else="0">
+  <equals arg1="${fop.enable}" arg2="true"/>
+</condition>
+
+<condition property="fop1.extensions" value="1" else="0">
+  <equals arg1="${fop.enable}" arg2="true"/>
+</condition>
+
+<condition property="xep.extensions" value="0" else="1">
+  <equals arg1="${fop.enable}" arg2="true"/>
+</condition>
+
+
+
+<target name="fop"  depends="docbook2fo, fop-nodepends"/> <!-- the main fop target, it implements dependencies -->
+
+<target name="fop2" depends="fop-nodepends">
+  <!-- this is just here to be an alias for fop-nodepends, because fop2 was the original name, but it's a dumb name that is hard to remember...but has the virtue of being short -->
+  <echo>Alias for fop-nodepends.</echo>
+</target>
+  
+<target name="fop-nodepends" if="${fop.enable}">
+   <!-- this target holds the code for building fop, and has no dependencies so it can be called separately for testing 
+    JCBG-1702: moved the 'if="${fop.enable}"' to THIS target, from fop, b/c it turns out that if does not apply to DEPENDENCIES, so it wasn't stopping fop-nodepends from running like I expected it to.  
+--> 
+   <echo>fop.enable = ${fop.enable}</echo>
+   <!-- JCBG-1860: let's output the fop jar filenames we find, as a debug thing and to show which fop version we're using -->
+   <fileset id="lib.contents" dir="${doctools}/lib" includes="fop*.jar"/> 
+   <property name="prop.lib.contents" refid="lib.contents"/>
+   <echo>FOP jar files in lib folder: ${prop.lib.contents} (indicates fop version used)</echo>   
+   
+
+  <stopwatch name="fop" action="start"/>
+
+  <!-- FOP fails to transform if the target folder for the PDF output doesn't already exist, so make sure by creating it. Ant's mkdir command does nothing if the folder already exists, so no risks here. -->
+  <mkdir dir="${outdir}/pdf/"/> 
+
+  <fop fofile="${staging.doc.dir}/${docbook2fo_output_base}.${security}.${branding}.${input_file_name}.fo"
+       outfile="${outdir}/pdf/${output_file_name}${security.filename.flag}.pdf"
+       userconfig="${doctools}/lib/fop-config.xml"
+	   messagelevel="debug"
+   />
+   <!-- note that the source for fop-config is in doctools' AddToLib folder and gets added to the lib folder when doctools is built -->
+ 
+    <stopwatch name="fop" action="stop"/>
+    <stopwatch name="fop" action="total"/>
+
+</target>
+
+<target name="xep" depends="docbook2fo" unless="${fop.enable}">
+
+  <stopwatch name="xep" action="start"/>
+        <!-- 
+            Run xep on fo (confirm xep skips if file is up to date. 
+            Consider if you need to check images and still regen pdf if images are dirty 
+        -->
+        <taskdef name="xep" classname="com.renderx.xepx.ant.XEPTask"
+            classpath="${XEP_HOME}/lib/XEPTask.jar"/>
+        <xep in="${staging.doc.dir}/${pdf_input_base}.${security}.${branding}.${input_file_name}.fo"
+            out="${outdir}/pdf/${output_file_name}${security.filename.flag}.pdf" format="PDF">
+            <classpath refid="xep-classpath"/>
+            <sysproperty key="com.renderx.xep.CONFIG" value="${XEP_HOME}/xep.xml"/>
+
+        </xep>
+        <!--            <sysproperty key="com.renderx.sax.entityresolver" value="org.apache.xml.resolver.tools.CatalogResolver"/>
+            <sysproperty key="com.renderx.jaxp.uriresolver" value="org.apache.xml.resolver.tools.CatalogResolver"/>-->
+    <stopwatch name="xep" action="stop"/>
+    <stopwatch name="xep" action="total"/>
+
+</target>
+
+
+    <target name="open-pdf">
+        <ant antfile="${staging.doc.dir}/open_most_recent_pdf.xml"/>
+    </target>
+
+    <!-- These are noop targets that can be overriden per-document -->
+    <target name="local_postprocess_pdf"/>
+    <target name="local_postprocess_webhelp"/>
+    <target name="local_postprocess_chunk"/>
+    <target name="local_postprocess_portal"/>     <!-- JCBG-2126: Add portal format -->
+    <target name="local_postprocess_eclipse-infocenter"/>
+    <target name="local_postprocess_eclipse-help"/>
+    <target name="local_postprocess_monolithic-html"/>
+    <target name="local_postprocess_chm"/>
+    <!-- ========================================================= -->
+
+    <target name="check-pdf-available">
+        <available property="pdf-available"
+            file="${outdir}/pdf/${output_file_name}${security.filename.flag}.pdf"/>
+    </target>
+
+    <target name="pdf-unavailable" unless="pdf-available">
+        <!-- added filename to the output, per JCBG-534 -->
+        <fail> ERROR: Cannot build eclipse-infocenter format unless a pdf of the same security is
+            already built. Did not find ${outdir}/pdf/${output_file_name}${security.filename.flag}.pdf.</fail>
+    </target>
+
+<!-- JCBG-1931: Call this target before trying to build a PDF. Try to delete the PDF.
+     If the PDF cannot be deleted, then the PDF about to be built will not be able to overwrite the existing PDF. -->
+    <target name="check-pdf-open" unless="planid-set"> <!-- If planid-set, running a server build and no need to run this target. -->
+      <trycatch>
+	<try>
+	  <delete file="${outdir}/pdf/${output_file_name}${security.filename.flag}.pdf"/>
+	</try>
+	<catch>
+	  <fail message="ERROR: PDF not built. Do you have a PDF of the same name already open? If so, close that PDF."/>
+	</catch>
+      </trycatch>
+    </target>
+
+<target name="eclipse-infocenter" depends="check-pdf-available,pdf-unavailable,images-html"
+        if="pdf-available">
+
+          <echo>Adding pdf and pdf icon to infocenter jar</echo>
+        <copy file="${doctools}/DocShared/content/images/pdficon_small.gif"
+            todir="${htmlstage}/eclipse-infocenter"/>
+        <copy file="${outdir}/pdf/${output_file_name}${security.filename.flag}.pdf"
+            todir="${htmlstage}/eclipse-infocenter"/>
+        <copy todir="${htmlstage}/eclipse-infocenter">
+            <fileset dir="${htmlstage}/images-temp/"/>
+        </copy>
+
+   <!-- most of the work is now done, as of JCBG-1753, in the build-eclipse macro -->
+  <build-eclipse format="eclipse-infocenter"/> 
+
+</target>
+
+<!-- former target 'dropzone-not-set' is now 'infocenter-host-not-set' because
+     1. we never experienced dropzone not set b/c it had a default
+     2. now what we care about is, do you have an infocenter.host property/do you have a host to publish to? -->
+
+<target name="infocenter-host-not-set" unless="infocenter.host">
+  <echo>
+  @@@@@@@@@@@@@@@@@@@@@@@
+  Can't publish to infocenter because no infocenter host found.
+  Current document is ${input_file_path}\${input_file_name}.
+  Invoked target(s) = ${ant.project.invoked-targets} under security = **${security}**
+  @@@@@@@@@@@@@@@@@@@@@@@
+</echo>
+  <!-- I'm disabling this email message below for now b/c I don't want an email for every single failure;
+       I'm thinking that later maybe we turn this on, after we're set on new sphere system, so
+       that any transient failures of sphere cause an email. - Aaron DaMommio
+       
+      <echo>No available infocenter host found. Sending email to ${notification-list}. Email fails on local builds.</echo>
+         <mail from="noreply@nokia.com" 
+	       tolist="${notification-list}"
+				subject="No available infocenter host found for build ${env.BUILD_URL}"
+				mailhost="${mailhost}"
+				failonerror="false">
+	   <message>The system checked
+	   sphere.motivelabs.us.alcatel-lucent.com and sphere.motive.com
+	   and could not reach either one, so it's running with no infocenter server for the building of
+	   invoked target(s) = ${ant.project.invoked-targets} under security = **${security}**
+	   No jars will be published to the infocenter.
+
+	     ${env.BUILD_URL}
+
+</message></mail> -->
+  
+    </target>
+
+
+<target name="publish-eclipse-infocenter" depends="infocenter-host-not-set,eclipse-infocenter"   if="planid-set">
+ <publish-eclipse format="eclipse-infocenter"/>
+</target>
+
+<!-- JCBG-780: added publish-eclipse-help target; moved content of publish-eclipse-infocenter to new macro publish-eclipse;
+      then had both targets call that macro so that no code is duplicated -->
+
+<target name="publish-eclipse-help" depends="infocenter-host-not-set,eclipse-help"   if="planid-set">
+ <publish-eclipse format="eclipse-help"/> 
+</target>
+
+
+<macrodef name="publish-eclipse"> <!-- Added for JCBG-780 -->
+ <attribute name="format"/> <!-- set this to either eclipse-help or eclipse-infocenter -->
+    <sequential>
+
+      <echo>Attempting to copy ${eclipse_output_file_name}.jar to dropzone directory on host ${infocenter.host}.
+      </echo>
+
+	 <trycatch property="copyfailerror" reference="copyfailref">
+           <try>
+	     <echo>Publishing to sphere's /opt/dropzone folder using SCP. @@@. </echo>
+
+	     <!-- building from a command line like this:
+		 scp -v -i ./techpubs-sphere/techpubs-sphere_rsa wow.txt techpubs-sphere@sphere.motive.com:/opt/dropzone
+		  -->
+	     <exec executable="scp">
+	       <arg value="-v"/>
+	       <arg value="-o"/>
+	       <arg value="StrictHostKeyChecking=no"/>
+	       <arg value="-i"/>
+	       <arg file="${doctools}/DocShared/techpubs-sphere/techpubs-sphere_rsa"/>
+	       <arg file="${outdir}/@{format}/${eclipse_output_file_name}.jar"/> <!-- the file to publish -->
+	       <arg value="techpubs-sphere@${infocenter.host}:/opt/dropzone/${infocenter}"/>
+
+	     </exec>
+
+	     
+	 <!-- The previous copy to forgery/dropzone code: 
+	      <copy file="${outdir}/@{format}/${eclipse_output_file_name}.jar" tofile="${dropzone}\infocenter\${infocenter}\${eclipse_output_file_name}.jar"/> -->
+	      
+	   </try>
+	   <catch>
+	     <!-- 1/24/18: I removed 'mpd-techpubs-buildmgr@list.nokia.com' from the tolist below while testing.
+		  ADD IT BACK LATER when this is done. @#@. -Aaron DaMommio -->
+	  <echo>Copying of ${eclipse_output_file_name}.jar to [${infocenter.host}] failed. Sending email to ${notification-list}.</echo>
+       	  <mail from="noreply@nokia.com" 
+				tolist="${notification-list}"
+				subject="Copy to infocenter host failed in ${env.JOB_NAME}"
+				mailhost="${mailhost}"
+				failonerror="false">
+	    <message>Copying of ${eclipse_output_file_name}.jar to [${infocenter.host}] failed.
+	    
+	    The build tried to copy to the specified machine and failed. Copy failed with error message:
+
+	    ${copyfailerror}
+		
+	
+  When this build completes, find more info at:
+  Build plan page:
+  ${env.BUILD_URL}
+
+  This message generated by machine ${env.COMPUTERNAME}, user ${env.USERNAME}. 
+  
+  	</message>
+		  </mail>
+		  <!-- disabling the retry while we try out directly copying to infocenter host
+		       
+<echo>Copy to dropzone failed with error message: ${copyfailerror}
+About to retry 3 more times.</echo>
+
+     	  <retry retrycount='3'>
+          <copy file="${outdir}/@{format}/${eclipse_output_file_name}.jar" tofile="${dropzone}\infocenter\${infocenter}\${eclipse_output_file_name}.jar"/>
+          </retry> -->
+	  
+	   </catch>
+   </trycatch>
+</sequential>
+</macrodef>
+
+
+
+<!-- JCBG-258, create property that tests whether we are running on windows -->
+ <condition property="IS_WINDOWS" value="true" else="false">
+     <os family="windows"/>
+  </condition>
+
+
+<target name="open-eclipse-infocenter">
+ <open-eclipse format="eclipse-infocenter"/>
+</target>
+
+<target name="open-eclipse-help">
+ <open-eclipse format="eclipse-help"/>
+</target>
+
+
+<macrodef name="open-eclipse">
+ <attribute name="format"/> <!-- set this to either eclipse-help or eclipse-infocenter -->
+    <sequential>
+         <if>  <!-- test whether windows or not, since we can only do this on windows -->
+                <equals arg1="${IS_WINDOWS}" arg2="true" /> 
+                <then>
+		      <echo>Opening an .hta version of the document, built the same way the Eclipse jar was built; the .hta file uses Internet Explorer to display itself.</echo>
+		      <echo>Opening ${htmlstage}/@{format}/${output_file_name}.hta</echo>
+                       <exec executable="cmd.exe" osfamily="windows">
+                <arg line="/c start ${htmlstage}/@{format}/${output_file_name}.hta"/>
+                      </exec> 
+                </then>
+                <else>
+                    <fail message="This is not a Windows system, and the open-eclipse-infocenter target doesn't support non-Windows environments." />
+                </else>
+            </if>
+    </sequential>
+</macrodef>
+
+
+<!-- JCBG-1753 refactor eclipse-help and eclipse-infocenter to remove duplicate code; 
+     doing that by creating a macro that both will use -->
+<macrodef name="build-eclipse">
+  <attribute name="format"/> <!-- set this to either eclipse-help or eclipse-infocenter -->
+    <sequential>
+
+
+        <delete file="${staging.top.dir}/_dummy" failonerror="false"/>
+        <saxon6-xslt
+            in="${staging.doc.dir}/${filerefs_output_base}${security}.html.${input_file_name}.xml"
+            out="${staging.top.dir}/_dummy"
+            style="${doctools}/DocShared/xsls/docbook/eclipse/${branding}.xsl"
+            format="@{format}" force="${force}"/>
+        <delete file="${staging.top.dir}/_dummy"/>
+
+        <copy todir="${htmlstage}/@{format}">
+            <fileset dir="${htmlstage}/images-temp/"/>
+        </copy>
+
+        <replace file="${htmlstage}/@{format}/toc.xml" token="&lt;!DOCTYPE toc" value=""/>
+        <replace file="${htmlstage}/@{format}/toc.xml"
+            token="PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;>"
+            value=""/>
+        <replace file="${htmlstage}/@{format}/plugin.xml" token="&lt;!DOCTYPE plugin" value=""/>
+        <replace file="${htmlstage}/@{format}/plugin.xml"
+            token="PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;>"
+            value=""/>
+        <replace file="${htmlstage}/@{format}/index.xml" token="&lt;!DOCTYPE index" value=""/>
+        <replace file="${htmlstage}/@{format}/index.xml"
+            token="PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;>"
+            value=""/>
+        <replace file="${htmlstage}/@{format}/toc.xml"
+            token="xmlns=&quot;http://www.w3.org/1999/xhtml&quot;" value=""/>
+
+
+        <copy todir="${htmlstage}/@{format}/common/js">
+            <fileset dir="${doctools}/DocShared/content/js" includes="overlib.js,motive.js"/>
+        </copy>
+
+        <copy todir="${htmlstage}/@{format}/common/css">
+	    <!-- for JCBG-1585, copying ALL css files instead of just html.css -->
+            <fileset dir="${doctools}/DocShared/content/css" includes="*.css"/>
+        </copy>
+
+<!-- commenting the indexing out per JCBG-1429 and JCBG-1747
+        <echo file="${htmlstage}/build-index-${build.time.filename}.xml"> &lt;project name="Index
+            Plugin" default="build.index" basedir="." > &lt;target name="build.index"
+            if="eclipse.running"> &lt;help.buildHelpIndex
+            manifest="${htmlstage}/@{format}/plugin.xml"
+            destination="${htmlstage}/@{format}"/> &lt;/target> &lt;/project> </echo>
+
+        <java classname="org.eclipse.core.launcher.Main"
+            classpath="${doctools}/eclipse-platform/3.2/eclipse/startup.jar" fork="true"
+            failonerror="true">
+            <arg
+                line="-application org.eclipse.ant.core.antRunner -buildfile &quot;${htmlstage}/build-index-${build.time.filename}.xml&quot; -verbose -debug"
+            />
+        </java> -->
+
+        <jar destfile="${outdir}/@{format}/${eclipse_output_file_name}.jar">
+            <fileset dir="${htmlstage}/@{format}" excludes="**/frameset/**" defaultexcludes="no"
+            />
+        </jar>
+
+	<!-- JCBG-2035 (build in local Windows builds, not in any server builds)-->
+        <antcall target="build-hta">
+	  <param name="passed-format" value="@{format}"/>
+	</antcall>
+
+        <antcall target="local_postprocess_@{format}"/>
+
+
+    </sequential>
+</macrodef>
+
+<target name="eclipse-help" depends="images-html">
+  
+  <build-eclipse format="eclipse-help"/> 
+
+</target>
+
+<!-- JCBG-2035 (build in local Windows builds, not in any server builds)-->
+<target name="build-hta" unless="planid-set"> <!-- If planid-set, running a server build and no need to run this target. --> 
+        <!-- Make the .hta version -->
+	<!-- This target is called from the build-eclipse macrodef with a passed-format param to preserve the @{format} value. -->
+	<echo message="Building the .hta file."/>
+
+        <move todir="${htmlstage}/temp">
+            <fileset dir="${htmlstage}/${passed-format}"/>
+        </move>
+        <move todir="${htmlstage}/${passed-format}">
+            <fileset dir="${htmlstage}/temp/frameset"/>
+        </move>
+        <move todir="${htmlstage}/${passed-format}/content">
+            <fileset dir="${htmlstage}/temp"/>
+        </move>
+        <copy todir="${htmlstage}/${passed-format}/content/common/js">
+            <fileset dir="${doctools}/DocShared/content/js" includes="cookies.js"/>
+        </copy>
+        <copy todir="${htmlstage}/${passed-format}">
+            <fileset dir="${doctools}/DocShared/content/eclipse-toc" includes="common/**"/>
+        </copy>
+        <delete dir="${htmlstage}/temp"/>
+</target>
+
+    <target name="webhelp" depends="pdf,images-html">
+        <!-- TODO: Generate webhelp infocenter and stick a pdf into it, then zip/war it up. -->
+
+	<fail message="CANNOT BUILD WEBHELP. Webhelp target is not finished, doesn't do anything yet except call a few dependent targets."/>
+    </target>
+
+    <target name="chunk-xslt">
+        <saxon6-xslt
+            in="${staging.doc.dir}/${filerefs_output_base}${security}.html.${input_file_name}.xml"
+            out="_dummy" style="${doctools}/DocShared/xsls/docbook/chunk/${branding}.xsl"
+            format="chunk" force="${force}"/>
+        <delete file="_dummy"/>
+    </target>
+
+    <!-- JCBG-2126: Add portal format -->
+    <target name="portal-xslt">
+        <!-- Remove the copyright at the bottom of each page. -->
+        <saxon6-xslt
+            in="${staging.doc.dir}/${filerefs_output_base}${security}.html.${input_file_name}.xml"
+            out="extra-proc_dummy" style="${doctools}/DocShared/xsls/docbook/portal/extra-proc.xsl"
+            format="portal" force="${force}"/>
+
+        <move
+            file="extra-proc_dummy"
+            tofile="${staging.doc.dir}/${filerefs_output_base}${security}.html.${input_file_name}.xml"
+          />
+
+        <!-- Perform the regular processing, as was done in the chunk-xslt target. -->
+        <saxon6-xslt
+            in="${staging.doc.dir}/${filerefs_output_base}${security}.html.${input_file_name}.xml"
+            out="_dummy" style="${doctools}/DocShared/xsls/docbook/portal/${branding}.xsl"
+            format="portal" force="${force}"/>
+        <delete file="_dummy"/>
+    </target>
+
+    <!-- TODO: Hide exclude.search.from.chunked.html using <condition> -->
+    <target name="chunk-index" unless="exclude.search.from.chunked.html.is.true">
+        <taskdef name="indexertask" classname="com.nexwave.nquindexer.IndexerTask"
+            classpath="${doctools}/DocShared/indexer/nw-cms.jar"/>
+
+        <copy overwrite="true" todir="${htmlstage}/chunk/content/search">
+            <fileset dir="${doctools}/DocShared/content/js/search"
+                includes="addition.js,indexLoader.js,nwSearchFnt.js,*.props"/>
+        </copy>
+
+        <indexertask htmldir="${htmlstage}/chunk/content"/>
+
+        <delete file="${module.dir}/xx.html"/>
+
+        <delete dir="${htmlstage}/chunk/content/search" includes="*.props"/>
+
+        <!-- 
+            This is a hack to workaround a bug in the search stuff. 
+            The problem is that if your content happens not to contain any words for a certain letter, 
+            then indexLoader.js causes js errors when it tries to load that letter's .js file 
+        -->
+        <touch verbose="false" file="${htmlstage}/chunk/content/search/0.js"/>
+        <touch verbose="false" file="${htmlstage}/chunk/content/search/1.js"/>
+        <touch verbose="false" file="${htmlstage}/chunk/content/search/a.js"/>
+        <touch verbose="false" file="${htmlstage}/chunk/content/search/b.js"/>
+        <touch verbose="false" file="${htmlstage}/chunk/content/search/c.js"/>
+        <touch verbose="false" file="${htmlstage}/chunk/content/search/d.js"/>
+        <touch verbose="false" file="${htmlstage}/chunk/content/search/e.js"/>
+        <touch verbose="false" file="${htmlstage}/chunk/content/search/f.js"/>
+        <touch verbose="false" file="${htmlstage}/chunk/content/search/g.js"/>
+        <touch verbose="false" file="${htmlstage}/chunk/content/search/h.js"/>
+        <touch verbose="false" file="${htmlstage}/chunk/content/search/i.js"/>
+        <touch verbose="false" file="${htmlstage}/chunk/content/search/k.js"/>
+        <touch verbose="false" file="${htmlstage}/chunk/content/search/l.js"/>
+        <touch verbose="false" file="${htmlstage}/chunk/content/search/m.js"/>
+        <touch verbose="false" file="${htmlstage}/chunk/content/search/n.js"/>
+        <touch verbose="false" file="${htmlstage}/chunk/content/search/o.js"/>
+        <touch verbose="false" file="${htmlstage}/chunk/content/search/p.js"/>
+        <touch verbose="false" file="${htmlstage}/chunk/content/search/q.js"/>
+        <touch verbose="false" file="${htmlstage}/chunk/content/search/r.js"/>
+        <touch verbose="false" file="${htmlstage}/chunk/content/search/s.js"/>
+        <touch verbose="false" file="${htmlstage}/chunk/content/search/t.js"/>
+        <touch verbose="false" file="${htmlstage}/chunk/content/search/u.js"/>
+        <touch verbose="false" file="${htmlstage}/chunk/content/search/v.js"/>
+        <touch verbose="false" file="${htmlstage}/chunk/content/search/w.js"/>
+        <touch verbose="false" file="${htmlstage}/chunk/content/search/x.js"/>
+        <touch verbose="false" file="${htmlstage}/chunk/content/search/y.js"/>
+        <touch verbose="false" file="${htmlstage}/chunk/content/search/z.js"/>
+    </target>
+
+    <target name="chunk" depends="images-html,chunk-xslt,chunk-index">
+
+        <copy todir="${htmlstage}/chunk/content">
+            <fileset dir="${htmlstage}/images-temp" includes="**/*"/>
+        </copy>
+
+        <copy todir="${htmlstage}/chunk/common/js">
+            <fileset dir="${doctools}/DocShared/content/js"
+                includes="overlib.js,motive.js,cookies.js"/>
+        </copy>
+
+        <copy todir="${htmlstage}/chunk/common/css">
+	    <!-- for JCBG-1585, copying ALL css files instead of just html.css; 
+	      note that chunk already needed tabs.css as well as html.css -->
+            <fileset dir="${doctools}/DocShared/content/css" includes="*.css"/>
+        </copy>
+
+        <!-- Images used for the show/hide toc button -->
+        <copy todir="${htmlstage}/chunk/common/images">
+            <fileset dir="${doctools}/DocShared/content/images"
+                includes="maximize.gif,restore.gif,tab_bottom.gif"/>
+        </copy>
+
+        <!-- Stuff for the tree control -->
+        <copy todir="${htmlstage}/chunk/common/tree">
+            <fileset dir="${doctools}/DocShared/content/tree" includes="*" excludes="index.html"/>
+        </copy>
+
+        <replace file="${htmlstage}/chunk/web.xml">
+            <replacetoken><![CDATA[PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">]]></replacetoken>
+            <replacevalue><![CDATA[PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" "http://java.sun.com/dtd/web-app_2_3.dtd">]]></replacevalue>
+        </replace>
+
+
+        <!-- Next two tasks copy files and then war them up.
+     But now we're not warring them. So we'll just copy them 
+	 straight to the outdir.
+     We want plain folder of chunk in output, so we can war it up
+	 using Maven assembly plugin.
+
+        <copy 
+            overwrite="true"
+            todir="${htmlstage}/chunk">
+            <fileset dir="${staging.doc.dir}"
+                includes="web.xml,weblogic.xml"/>
+        </copy>
+        
+        <war 
+            destfile="${outdir}/chunk/${chunk_output_file_name}.war"
+            basedir="${htmlstage}/chunk"
+            includes="**"
+            excludes="web.xml,weblogic.xml"
+            webxml="${htmlstage}/chunk/web.xml">
+            <webinf file="${htmlstage}/chunk/weblogic.xml"/>
+        </war>
+-->
+
+        <echo>Now copying chunked output to /out/chunk. </echo>
+        <copy overwrite="true" todir="${outdir}/chunk/${chunk_output_file_name}">
+            <fileset dir="${htmlstage}/chunk" includes="**"/>
+        </copy>
+
+
+
+
+        <antcall target="local_postprocess_chunk"/>
+
+    </target>
+
+<!-- JCBG-2126: Add portal format -->
+    <target name="portal" depends="images-html,portal-xslt">
+
+        <copy todir="${htmlstage}/portal/content">
+            <fileset dir="${htmlstage}/images-temp" includes="**/*"/>
+        </copy>
+
+        <copy todir="${htmlstage}/portal/common/css">
+	    <!-- for JCBG-1585, copying ALL css files instead of just html.css; 
+	      note that chunk already needed tabs.css as well as html.css -->
+            <fileset dir="${doctools}/DocShared/content/css" includes="*.css"/>
+        </copy>
+
+ <!-- ### Do we need this? --> <!--
+        <replace file="${htmlstage}/chunk/web.xml">
+            <replacetoken><![CDATA[PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">]]></replacetoken>
+            <replacevalue><![CDATA[PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" "http://java.sun.com/dtd/web-app_2_3.dtd">]]></replacevalue>
+        </replace>
+-->
+
+        <!-- Next two tasks copy files and then war them up.
+     But now we're not warring them. So we'll just copy them 
+	 straight to the outdir.
+     We want plain folder of chunk in output, so we can war it up
+	 using Maven assembly plugin.
+
+        <copy 
+            overwrite="true"
+            todir="${htmlstage}/chunk">
+            <fileset dir="${staging.doc.dir}"
+                includes="web.xml,weblogic.xml"/>
+        </copy>
+        
+        <war 
+            destfile="${outdir}/chunk/${chunk_output_file_name}.war"
+            basedir="${htmlstage}/chunk"
+            includes="**"
+            excludes="web.xml,weblogic.xml"
+            webxml="${htmlstage}/chunk/web.xml">
+            <webinf file="${htmlstage}/chunk/weblogic.xml"/>
+        </war>
+-->
+
+        <echo>Now copying portal output to /out/portal. </echo>
+        <copy overwrite="true" todir="${outdir}/portal/${chunk_output_file_name}"> <!-- Just using the chunk_output_file_name -->
+            <fileset dir="${htmlstage}/portal" includes="**"/>
+        </copy>
+
+        <antcall target="local_postprocess_portal"/>
+
+    </target>
+
+    <target name="open-portal">
+
+        <!-- Set a default value for portal.frameset.start.filename
+             in case the book doesn't already have one -->
+
+        <property name="portal.frameset.start.filename" value="index.html"/>
+
+        <exec executable="xdg-open" osfamily="unix">
+            <arg value="${htmlstage}/portal/${portal.frameset.start.filename}"/>
+        </exec>
+        <exec executable="cmd.exe" osfamily="windows">
+            <arg value="/c start ${htmlstage}/portal/${portal.frameset.start.filename}"/>
+        </exec>
+
+    </target>
+
+
+    <target name="open-chunk">
+
+        <!-- Set a default value for chunk.frameset.start.filename
+             in case the book doesn't already have one -->
+
+        <property name="chunk.frameset.start.filename" value="index.html"/>
+        <!-- This is set here to fix JCBG-200, open chunk fails when chunk.frameset.start.filename is set; by putting the property here, we give it a default value which we can use below. Thus we always open the right frameset file. -->
+
+        <exec executable="xdg-open" osfamily="unix">
+            <arg value="${htmlstage}/chunk/${chunk.frameset.start.filename}"/>
+        </exec>
+        <exec executable="cmd.exe" osfamily="windows">
+            <arg value="/c start ${htmlstage}/chunk/${chunk.frameset.start.filename}"/>
+        </exec>
+
+    </target>
+
+    <target name="monolithic-html" depends="images-html">
+
+
+
+        <!-- Generate monolithic-html, copy images, and zip it up. -->
+        <saxon6-xslt
+            in="${staging.doc.dir}/${filerefs_output_base}${security}.html.${input_file_name}.xml"
+            out="${htmlstage}/${output_file_name}/${output_file_name}${security.filename.flag}.html"
+            style="${doctools}/DocShared/xsls/docbook/xhtml/monolithic-html.xsl"
+            format="monolithic-html" force="${force}"/>
+
+        <copy todir="${htmlstage}/${output_file_name}">
+            <fileset dir="${htmlstage}/images-temp" includes="**/*"/>
+        </copy>
+
+        <zip destfile="${outdir}/monolithic-html/${output_file_name}.zip" basedir="${htmlstage}"
+            includes="${output_file_name}/**"/>
+
+        <antcall target="local_postprocess_monolithic-html"/>
+
+    </target>
+
+    <target name="open-monolithic-html">
+        <exec executable="xdg-open" osfamily="unix">
+            <arg
+                value="${htmlstage}/${output_file_name}/${output_file_name}${security.filename.flag}.html"
+            />
+        </exec>
+        <exec executable="cmd.exe" osfamily="windows">
+            <arg
+                value="/c start ${htmlstage}/${output_file_name}/${output_file_name}${security.filename.flag}.html"
+            />
+        </exec>
+    </target>
+
+
+    <!-- shortcut target 'mono' builds and displays monolithic html.  -->
+    <target name="mono" depends="monolithic-html,open-monolithic-html"/>
+
+    <!-- shortcut target 'ehelp' builds and displays eclipse-help. JCBG-1862 -->
+    <target name="ehelp" depends="eclipse-help,open-eclipse-help"/>
+
+
+    <target name="chm" depends="images-html">
+        <!-- TODO: Generate html help output, copy images into place, then compile with hhc. -->
+        <saxon6-xslt
+            in="${staging.doc.dir}/${filerefs_output_base}${security}.html.${input_file_name}.xml"
+            out="_dummy" style="${doctools}/DocShared/xsls/docbook/hhp/driver.xsl" format="chm"
+            force="${force}"/>
+        <delete file="_dummy"/>
+
+        <copy todir="${htmlstage}/chm">
+            <fileset dir="${htmlstage}/images-temp" includes="**/*"/>
+        </copy>
+
+        <copy todir="${htmlstage}/chm/common/js">
+            <fileset dir="${doctools}/DocShared/content/js" includes="overlib.js,motive.js"/>
+        </copy>
+
+        <copy todir="${htmlstage}/chm/common/css">
+	    <!-- for JCBG-1585, copying ALL css files instead of just html.css -->
+            <fileset dir="${doctools}/DocShared/content/css" includes="*.css"/>
+        </copy>
+
+        <!-- Exec hhc if on windows to compile chm and put it in ${outdir}/chm -->
+        <!-- Let hhc run for at most 10 minutes before killing it -->
+        <!-- hhc always returns 1, so failonerror must be false -->
+        <exec executable="cmd.exe" timeout="600000" dir="${htmlstage}/chm" failonerror="false"
+            osfamily="windows">
+            <arg value="/c hhc.exe htmlhelp.hhp"/>
+            <env key="PATH" value="${htmlhelp.exe.win.path}"/>
+            <!-- I tried putting the full path to hhc.exe in the arg line, using a property, but I got errors re: 'c:\Program' isn't a valid path...and I couldn't get escaping to work...so I added the env line, which essentially sets up a one-time path for just this command. -->
+        </exec>
+
+        <exec executable="wine" timeout="600000" dir="${htmlstage}/chm" failonerror="false"
+            osfamily="unix">
+            <arg line="${htmlhelp.exe.unix.path} htmlhelp.hhp"/>
+        </exec>
+
+        <move file="${htmlstage}/chm/htmlhelp.chm"
+            tofile="${outdir}/chm/${output_file_name}${security.filename.flag}.chm"/>
+        <zip destfile="${outdir}/chm/${output_file_name}${security.filename.flag}_src.zip"
+            defaultexcludes="no">
+            <zipfileset dir="${htmlstage}/chm" prefix="${output_file_name}"/>
+        </zip>
+
+        <antcall target="local_postprocess_chm"/>
+
+    </target>
+
+    <target name="l10nkit" depends="local_preprocess">
+        <!-- 
+            Plan:
+                Partially process file. Then reprocess that result to obtain a list of all files that it includes (by finding all xml:base and all filerefs). 
+                Copy all of these into the kit. 
+                Run l10nkit prep on all the xml files to get them into the kit. 
+                Glossary: Use list of included terms to make a subset glossary? But what about overrides in the local glossary?
+                Result: A copy of the whole module with only the files used in the desired files included.
+        -->
+    </target>
+
+    <target name="module2build" depends="init,validate-module-file,chmod-key">
+      <antcall target="testsuite"/>
+      <antcall target="module2build_no-depends"/>
+    </target>
+
+    <target name="module2build_no-depends">
+        <!-- for jcbg-2066, echoing value of parent-module-file -->
+        <echo>MODULE FILE: target=module2build_no-depends, parent-module-file=${parent-module-file}</echo> 
+      
+        <saxon9-xslt in="${parent-module-file}" out="${staging.top.dir}/build.xml"
+            style="${doctools}/DocShared/xsls/utilities/module2build.xsl" format="n/a" force="true"
+        />
+    </target>
+
+    <target name="build-module">
+        <ant antfile="${staging.top.dir}/build.xml"/>
+    </target>
+
+    <target name="ClearRevisionflags">
+        <saxon-xslt basedir="${input_file_path}" includes="**/*.xml" excludes="**/build.xml"
+            destdir="${input_file_path}" extension=".xml.revisionflagscleared"
+            style="${doctools}/DocShared/xsls/utilities/clear-revisionflags.xsl" force="true"/>
+        <move todir="${input_file_path}" overwrite="true">
+            <fileset dir="${input_file_path}" includes="**/*.xml.revisionflagscleared"/>
+            <globmapper from="*.xml.revisionflagscleared" to="*.xml"/>
+        </move>
+    </target>
+
+    <target name="chmod-key">
+      <!-- This chmods the private key for the techpubs-sphere user so that it is usable during the publish-eclipse targets,
+	   b/c the key file must not have wide open permissions or SCP rejects it -->
+        <chmod file="${doctools}/DocShared/techpubs-sphere/techpubs-sphere_rsa" perm="600"/>
+   </target>
+
+    <target name="makeReviewToc">
+      <!-- This target makes a review TOC by searching the infocenter specified by the infocenter property for a term specified by searchWord property, in the book specified by the eclipse.plugin.id property. 
+
+It does that via two URL requests to the infocenter, one which returns a toc.xml file and one which returns search hits. It converts the toc.xml file to an html set of bullets, and for each topic that showed up in the search results, it makes a highlighted link. -->
+
+
+
+        <xslt in="${ant.file}" style="${doctools}/DocShared/xsls/utilities/makeReviewToc.xsl"
+            out="${input_file_path}/ReviewToc.html" classpath="${saxon9}" force="true">
+		    <!-- note the input file is 'ant.file' which is the book's build.xml file; it's used just to fake out the xslt command, the xsl doesn't use its input file for anything, instead it gets 2 files via URLs and sticks them into params -->
+            <param name="eclipse.plugin.id" expression="${eclipse.plugin.id}" if="eclipse.plugin.id"/>
+            <param name="infocenter" expression="${infocenter}" if="infocenter"/>
+            <param name="searchWord" expression="${searchWord}" if="searchWord"/>
+        </xslt>
+
+        <exec executable="cmd.exe" failonerror="true" os="Windows XP, Windows 7">
+            <arg value="/C"/>
+            <arg value="start"/>
+            <arg value="ReviewToc.html"/>
+        </exec>
+
+        <exec executable="xdg-open" failonerror="true" os="Linux">
+            <arg value="ReviewToc.html"/>
+        </exec>
+
+    </target>
+
+    <target name="add-schema">
+
+        <!-- Use this to add a schema folder to a book folder. -->
+
+        <echo> Adding a /schema folder to this book folder. Using the latest schema code file
+            (build.xml) and properties file (build.properties) from this project's version of the
+            doctools, copied from target/doctools/DocShared/schemagen/template. </echo>
+        <copy todir="./schema">
+            <fileset dir="${doctools}/DocShared/schemagen/template" includes="*.*"/>
+        </copy>
+    </target>
+
+    <target name="upgradeDB4toDB5">
+      <echo>Usage: 'ant upgradeDB4toDB5 -Din=inputfilename -Dout=outputfilename</echo>
+        <xslt
+        in="${in}"
+        out="${out}"
+        style="${doctools}/DocShared/xsls/utilities/db4-upgrade.xsl"
+        force="true"
+        classpath="${saxon9}"/>
+
+   </target>
+
+
+
+<target name="test-ant-contrib">
+  <!-- JCBG-589: simply uses <if> to see if ant-contrib is really available -->
+
+  <echo>Doctools is ${doctools}.</echo>
+  <echo>Path to ant-contrib we are using is ${doctools}/lib/ant-contrib-1.0b3.jar</echo>
+  <echo>Now we'll set property foo=bar if we can find ant-contrib jar file...</echo>
+
+  <!-- we do see it at C:\worksvn\pubs\alm\branches\3.1\target\doctools\lib\ant-contrib-1.0b3.jar -->
+  <available property="foo" value="bar" file="${doctools}/lib/ant-contrib-1.0b3.jar"/>
+  <echo>After 'available',  value of $foo = .... ${foo}</echo>
+  <echo>Now we'll use a task 'if', that comes from ant-contrib. </echo>
+  <if>
+    <equals arg1="${foo}" arg2="bar" />
+  <then>
+   <echo message="The value of property foo is bar" />
+  </then>
+  <else>
+   <echo message="The value of property foo is not bar" />
+  </else>
+</if>
+</target>
+
+
+<!-- JCBG-548, JCBG-952
+Generate external war file suitable for external infocenters -->
+
+<!-- properties relevant to this -->
+<property name="external.war.staging.dir" value="${staging.top.dir}/external-war"/>
+
+<property name="external.eclipse.framework.source.dir" value="${doctools}/external-war-framework"/>
+
+<property name="ProductNameShort" value="${ProductAcronym}"/> <!-- use ProductAcronym if ProductNameShort not already defined-->
+<property name="external_war_name" value="${ProductNameShort}_${RELEASE}"/>
+<property name="firstJarId" value="NONE"/> <!-- default value for first jar in the war file -->
+<property name="startPagePath" value="NONE"/> <!-- default value for the page initially displayed in the content pane -->
+
+
+
+  <!-- main wrapper target for external war building -->
+<target name="external-war" depends="external-war-clean,external-war-prep,copy-jars-for-war,external-war-zip"/> 
+<!--
+    Note that this now does an external-war-clean before other tasks. This was necessary to prevent various erors involving not deleting a file from the staging folder.
+
+If you want to build an external war and edit it manually, then you should run
+external-war-config, (to put config files in en_US/bookfolder),
+
+then edit the config files, then run external-war-zip. After you do that once, you can revert to just editing files in en_US and running external-war to rebuild.
+
+You can also use this target to war up any arbitrary files: 
+   If you just want to war up a set of files from an arbitrary folder, you can use external-war-zip and set the property external.war.staging.dir to that folder... -->
+
+  <target name="external-war-clean" depends="clean-this">
+    <delete  dir="${external.war.staging.dir}"/>
+  </target>
+
+ 
+
+<target name="external-war-prep">
+  <!-- create staging directory -->
+
+  <mkdir dir="${external.war.staging.dir}"/>
+
+  <!-- first, get external ecl framework and put in staging -->
+
+  <copy todir="${external.war.staging.dir}">
+    <fileset dir="${external.eclipse.framework.source.dir}"/>
+  </copy>
+
+
+  <!-- here is where we used to copy the jars, now moved into separate target-->
+
+  
+  <!-- update the year in legal.html -->
+    <!-- legal.html -->
+   <echo>Updating legal.html.</echo>
+   <replace file="${external.war.staging.dir}/WEB-INF/plugins/org.nokia.help.all_1.0.0/html/legal.html" encoding="UTF-8" summary="true">   
+      <replacefilter token="2016" value="${COPYRIGHTYEAR}"/> 
+   </replace>
+
+  <!-- then update a few things specific to each infocenter -->
+   
+    <!-- footer.html -->
+   <echo>Updating footer.</echo>
+   <replace file="${external.war.staging.dir}/WEB-INF/plugins/org.nokia.help.all_1.0.0/html/Nokiabranding/footer.html" encoding="UTF-8" summary="true">   
+      <replacefilter token="@@YEAR@@" value="${COPYRIGHTYEAR}"/> 
+   </replace>
+   
+
+    <!-- index.html -->
+   <echo>Updating index.html.</echo>
+     <replace file="${external.war.staging.dir}/WEB-INF/plugins/org.nokia.help.all_1.0.0/html/index.html" encoding="UTF-8" summary="true">   
+      <replacefilter token="Full_Product_Name_HERE"  value="${ProductName}"/> 
+      <replacefilter token="Short_PRODUCT_NAME"  value="${ProductNameShort}"/> 
+   </replace>
+
+ 
+   <!-- plugin.xml, re: setting the window title -->
+   <echo>Updating plugin.xml.</echo>
+     <replace file="${external.war.staging.dir}/WEB-INF/plugins/org.nokia.help.all_1.0.0/plugin.xml" encoding="UTF-8" summary="true">
+      <replacefilter token="ProductName_release_here"  value="${ProductName} ${RELEASE}"/> 
+     </replace>
+
+ 
+   <!-- toc.xml -->
+   <echo>Updating toc.xml.</echo>
+     <replace file="${external.war.staging.dir}/WEB-INF/plugins/org.nokia.help.all_1.0.0/toc.xml" encoding="UTF-8" summary="true">
+      <replacefilter token="Product_Name, Release n.n Rx"  value="${ProductName} ${RELEASE}"/> 
+     </replace>
+  
+   <!-- helpData.xml -->
+      
+
+   <if>
+	<not>
+	  <equals arg1="${firstJarId}" arg2="NONE" />
+	</not>
+
+	<then>
+     <echo>Updating helpData.xml.</echo>
+     <replace file="${external.war.staging.dir}/WEB-INF/plugins/org.nokia.help.all_1.0.0/helpData.xml" encoding="UTF-8" summary="true">
+      <replacefilter token='&lt;toc id="/org.nokia.help.all/toc.xml" /&gt;'  
+                      value='&lt;toc id="/org.nokia.help.all/toc.xml" /&gt;&lt;toc id="/${firstJarId}/toc.xml" /&gt;'/> 
+     </replace>
+   </then></if>
+
+      <!-- plugin_customization.ini, for setting the start page: JCBG-1943 -->
+      
+   <if>
+	<not>
+	  <equals arg1="${startPagePath}" arg2="NONE" />
+	</not>
+
+	<then>
+	  <echo>Updating plugin_customization.ini with path to start page.</echo>
+	  <replace file="${external.war.staging.dir}/WEB-INF/plugins/org.nokia.help.all_1.0.0/plugin_customization.ini" encoding="UTF-8" summary="true">
+               <replacefilter token='org.eclipse.help.base/help_home=/org.nokia.help.all/html/index.html'  
+                      value='org.eclipse.help.base/help_home=${startPagePath}'/> 
+          </replace>
+	</then>
+   </if>
+
+</target>
+
+<target name="copy-jars-for-war">
+  <echo>Now copying jars from output into staging for war file ${external_war_name}.
+  </echo>
+  <!-- This default target copies all the external eclipse-help and eclipse-infocenter jars;
+       to do something different, override this target in the book's build.xml file. -->
+  
+
+    <!-- get the external jars and put them in staging//plugins -->
+      <!-- I used failonerror=false in this copy so that you can build even if you have no jars
+	   (otherwise you get a fail b/c the out/en_US/external/eclipse-infocenter may not even exist
+	   ...although that's not desirable, it's annoying to have it fail when you are testing; 
+	   may want to reconsider this later, or add something to check for jars and throw a msg 
+	   if no jars are found
+
+       Note that this now gets both infocenter and ehelp files, so it will get an RH file if you build an external version.
+      -->
+  <copy verbose="true" todir="${external.war.staging.dir}/WEB-INF/plugins" failonerror="false" >
+    <fileset dir="${staging.top.dir}/../out/en_US/external/eclipse-infocenter"/>
+    <fileset dir="${staging.top.dir}/../out/en_US/external/eclipse-help"/>
+  </copy>
+
+
+</target>  
+
+<target name="external-war-config" depends="external-war-prep">
+<!-- This command is ONLY for running manually. It uses external-war-prep to generate config files, then copies them to the war folder for editing -->
+
+<copy todir="${basedir}" >
+  <fileset dir="${external.war.staging.dir}/WEB-INF/plugins/org.nokia.help.all_1.0.0" includes="**">
+    <exclude name="common/**"/>     <exclude name="html/**"/>     <exclude name="META-INF/**"/>
+    <exclude name="plugin_customization.ini"/>
+  </fileset>
+</copy>
+
+</target>
+
+
+<target name="external-war-zip">
+   <!-- this is a subtarget used to make the war file after configuration is done -->
+
+   <!-- first copy any of the book's config files into place -->
+   <copy todir="${external.war.staging.dir}/WEB-INF/plugins/org.nokia.help.all_1.0.0/" verbose="true" overwrite="true">
+            <fileset dir="${basedir}" includes="**/*" excludes="build.xml"/>
+                
+        </copy>
+
+        <war 
+            destfile="${staging.top.dir}/../out/en_US/external/${external_war_name}.war"
+            basedir="${external.war.staging.dir}"
+            includes="**">
+        </war>
+
+</target>
+
+
+<!-- Code for converting a folder of javadoc to an eclipse jar file, JCBG-262 -->
+
+  <!-- properties needed for javadoc conversion and/or folder2jar -->
+  <property name="eclipse.version" value="${build.time.eclipse}"/> <!-- sets default version value to build.time.eclipse -->
+  <property name="eclipse.provider-name" value="Nokia"/>
+  <property name="jtidy" value="${doctools}/lib/jtidy-r938.jar"/> <!-- path to tidy jar file -->
+  <property name="javadoc.source" value="${module.dir}/export/javadoc"/> <!-- can be overridden if needed; needs to point to where you have an unzipped javadoc folder -->
+  <property name="javadoc.tidied" value="${javadoc.source}.tidied"/> <!-- where tidied files go -->
+  <property name="javadoc.outdir" value="${outdir}/eclipse-help"/> <!-- output location for javadoc to land in -->
+  <property name="rhkeyword" value="NONE"/> <!-- release highlights keyword, defaults to NONE, if NONE, not used -->
+  <property name="base.olink.filename" value="index"/> <!-- JCBG-1979, this is the base name of a valid HTML file in the book;
+							  for javadoc2jar that's 'index' to be index.html'
+							  for folder2jar, it's the file you want to be the first link -->
+
+  <!-- set property to one of two possible values for the javadoc.toc.filename to process
+
+Doing 2 'available' tasks. You'd think 1st one would win, but that's not what I experienced.
+What I want is, if overview-frame.html exists, then use that. To do that, I had to check for allclasses-frame.html FIRST,
+counter to my expectations. - Aaron DaMommio, 3/29/18
+
+  -->
+
+  <available file="${javadoc.source}/allclasses-frame.html" property="javadoc.toc.filename" value="allclasses-frame.html"/>
+  <available file="${javadoc.source}/overview-frame.html" property="javadoc.toc.filename" value="overview-frame.html"/>
+ 
+
+  <!-- define tidy task -->
+
+  <taskdef name="tidy" classname="org.w3c.tidy.ant.JTidyTask">
+   <classpath>
+     <pathelement location="${jtidy}"/>
+   </classpath>
+ </taskdef>  
+
+
+
+  
+<target name="javadoc2jar">
+
+<echo>About to create an eclipse jar file from javadoc files in ${javadoc.source}. (Eclipse plugin ID: ${eclipse.plugin.id})
+</echo>
+
+ <!-- fail if neither of the above filenames is found -->
+<fail unless="javadoc.toc.filename">Did not find either an overview-frame.html file nor an allclasses-frame.html file in the ${javadoc.source} folder; one of those is required, in order to generate an eclipse toc.xml. Make sure that the folder ${javadoc.source} exists and is populated with javadoc files before the javadoc2jar target runs. If there are other javadoc files but not one of these two specific files, then check if the javadoc version has changed.</fail>
+
+
+<!--  first, tidy the files in javadoc.source-->
+
+<echo>First task: tidy some files in ${javadoc.source}.</echo>
+
+<property name="tidyThis" value="overview-frame.html allclasses-frame.html **\package-frame.html overview-tree.html"/>
+
+<echo>  The paths I plan to tidy are: [${tidyThis}]</echo>
+
+<!-- now actually tidy -->
+
+   <tidy destdir="${javadoc.tidied}" >
+     <fileset dir="${javadoc.source}" includes="${tidyThis}"/>
+
+     <parameter name="doctype" value="strict" />
+     <parameter name="output-xhtml" value="yes" />
+     <parameter name="write-back" value="yes" />
+
+  </tidy>
+
+
+  <!-- We used to have some lines in here where we caught tidy errors and warnings in properties and then echoed them; that's not relevant to using this ant task. However, any errors SHOULD be shown in the log. Not sure though b/c I couldn't find a way to CAUSE a tidy error so that I could test that. -->
+  
+
+<!-- Now copy the files we tidied back into the source dir -->
+
+   <copy todir="${javadoc.source}"
+	 overwrite="true"
+	 verbose="true">
+     <fileset dir="${javadoc.tidied}"/>
+   </copy>
+
+
+
+
+<!--  Next, XSLT the Tidy-ed Javadoc HTML  files into an Eclipse toc.xml file -->
+
+<echo>
+
+  Next, XSLT one of the Javadoc HTML files into an Eclipse toc.xml file
+  using javadoc.toc.filename = ${javadoc.toc.filename}
+
+</echo>
+
+   <xslt
+     	in="${javadoc.source}\${javadoc.toc.filename}"
+	    out="${javadoc.source}\toc.xml"
+        style="${doctools}/DocShared/xsls/utilities/javadoc2eclipse.xsl"
+        force="true"
+        classpath="${doctools}/lib/saxon-ant-9.1.0.1.jar;${saxon9};${xercesImpl}">
+            <factory name="net.sf.saxon.TransformerFactoryImpl"/>  <!-- This factory setting turned out to be key after I added a use of the base-uri() function to javadoc2eclipse.xsl; even though the xsl was already using xsl 2.0, I had to tweak settings ot make sure it used saxon 9.1.0.8 and add this factory setting, before it would work. The errors only showed up on server (and possible full mvn compile) builds, so that was confusing. -Aaron DaMommio, 3/30/18 -->
+   	    <param name="eclipse.title" expression="${eclipse.title}"/>
+            <xmlcatalog refid="main-catalog"/>
+     </xslt>
+
+     <!-- write the generated toc file out: uncomment this to do that:
+
+  <echo>The generated toc.xml file is:
+  ======================================</echo>
+  <concat>
+  <filelist dir="${javadoc.source}" files="toc.xml"/>
+  </concat>
+
+<echo>======================================</echo>
+-->
+
+<!--  make the eclipse plugin.xml file for the jar -->
+
+<echo>
+
+Next, make an eclipse plugin.xml file.
+
+</echo>
+
+<!-- note added build.time.eclipse property as qualifier on version value below,
+so that plugin always gets a unique version -->
+<echo file="${javadoc.source}\plugin.xml">&lt;plugin
+  name="${eclipse.title}"
+  id="${eclipse.plugin.id}"
+  version="${eclipse.version}"
+  provider-name="${eclipse.provider-name}">
+   &lt;extension point="org.eclipse.help.toc">
+	&lt;toc file="toc.xml" primary="true"/>
+  &lt;/extension>
+&lt;/plugin>
+	</echo>
+
+<!--  make everything into a jar file in the output folder -->
+
+<echo>
+
+Finally, jar up the contents of ${javadoc.source} into ${javadoc.outdir}.
+
+</echo>
+
+	<jar destfile="${javadoc.outdir}\${eclipse.plugin.id}.jar">
+	  <fileset dir="${javadoc.source}"/>
+	</jar>
+
+<echo> 
+END OF JAVADOC CONVERSION 
+=========================</echo>
+
+</target> <!-- end of javadoc2jar-->
+
+<target name="folder2jar">  <!-- added for JCBG-746 -->
+
+ <!-- test whether toc.xml exists and fail if not-->
+<available file="${eclipse.source}\toc.xml" property="toc.xml-exists"/>
+<fail message="File not found: ${eclipse.source}\toc.xml. The document ${current.docid} is a folder2jar document and a toc.xml is required for such documents. Fix that problem before rebuilding."
+      unless="toc.xml-exists" />
+  
+
+<echo>About to create an eclipse-help jar file from files in ${eclipse.source}.
+</echo>
+
+<if> <!-- JCBG-2081 (Use a plugin.xml if provided.) -->
+  <available file="${eclipse.source}\plugin.xml"/>
+  <then>
+    <echo>Found an eclipse plugin.xml file--using it instead of creating one.</echo>
+  </then>
+  <else>
+    <!--  make the eclipse plugin.xml file for the jar -->
+    <echo>Make an eclipse plugin.xml file.</echo>
+
+    <!-- note added build.time.eclipse property as qualifier on version value below,
+	 so that plugin always gets a unique version -->
+    <echo file="${eclipse.source}\plugin.xml">&lt;plugin
+    name="${eclipse.title}"
+    id="${eclipse.plugin.id}"
+    version="${eclipse.version}"
+    provider-name="${eclipse.provider-name}">
+    &lt;extension point="org.eclipse.help.toc">
+    &lt;toc file="toc.xml" primary="true"/>
+    &lt;/extension>
+    &lt;/plugin>
+    </echo>
+  </else>
+</if>
+
+<!--  make everything into a jar file in the output folder -->
+
+<echo>
+
+Finally, jar up the contents of ${eclipse.source} into ${outdir}/eclipse-help.
+
+</echo>
+
+	<jar destfile="${outdir}\eclipse-help\${eclipse.plugin.id}.jar">
+	  <fileset dir="${eclipse.source}"/>
+	</jar>
+
+<echo> 
+END OF FOLDER2JAR CONVERSION 
+=========================</echo>
+
+</target> <!-- end of folder2jar -->
+
+
+<target name="olcs-txt">
+  <!-- this target makes an OLCS text file for the current book, assuming that we are outputting external pdf of it... 
+this target is called by the PDF target but only runs if 
+called when security='external' 
+-->
+<if>
+  <equals arg1="${security}" arg2="external"/>
+  <then>
+<echo>Writing OLCS text file to ${outdir}\pdf\${output_file_name}_OLCS.txt</echo>
+<echo file="${outdir}\pdf\${output_file_name}_OLCS.txt">
+Submitter: ${olcs_submitter}
+Contact: ${olcs_submitter}
+IPType: ${olcs_iptype}
+ProductName: ${olcs_prodname}
+ProductModel: ${olcs_prodmodel}
+ProductRelease: ${olcs_release}
+IPTitle: ${olcs_title}
+IPIdentifier: ${olcs_IPid}
+IPIssue: ${olcs_issue}
+IssueDate: ${olcs_issuedate}
+IPStatus: Final/GA
+Language: enus
+SecurityCode: ${olcs_securitycode}
+Company1: Alcatel-Lucent
+IPFileType: PDFDOC
+TotalVolumes: 1
+PaperAvailable: N
+Filename1: ${output_file_name}.pdf
+SourcePlatform: HANDOFF TOOL
+templateFilename: ${olcs_IPid}-Issue-${olcs_issue}.txt
+</echo>
+</then>
+</if>
+</target>
+
+<target name="olcs-upload">
+
+ <echo>Uploading PDFs and TXT files in folder ${outdir}\pdf to the OLCS auto-upload
+location. </echo> 
+  <echo>First, the pdf files.</echo>
+  <scp todir="motive:M0t1v313@usnavscdoc01.ndc.lucent.com:"  sftp='true' verbose="yes">
+    <fileset dir="${outdir}\pdf\">
+      <include name="*.pdf"/>
+    </fileset>
+  </scp>
+
+  <echo>Next, the txt files.</echo>
+  <scp todir="motive:M0t1v313@usnavscdoc01.ndc.lucent.com:"  sftp='true' verbose="yes">
+    <fileset dir="${outdir}\pdf\">
+      <include name="*.txt"/>
+    </fileset>
+  </scp> 
+  
+  <echo>Uploading complete.</echo>
+
+</target>
+
+<!-- JCBG-1206: ant tasks for copying files etc, as utility tasks for doctools maintainers -->
+
+<target name="upd" depends="update-scripts"/> <!-- alias-->
+
+<target name="update-scripts" >
+
+<!-- requires env variable DOCTOOLS-CHECKOUT set to full path to the checkout,
+unless yours matches the default value set up higher in this file -->
+<echo> Copying doctools scripts from checkout expected at DOCTOOLS-CHECKOUT: ${env.DOCTOOLS-CHECKOUT}</echo>
+
+<copy preservelastmodified="true" verbose="true"
+   todir="${doctools}/DocShared"> 
+   <fileset dir="${env.DOCTOOLS-CHECKOUT}/DocShared/" > <include name="main-build.xml"/>
+             <include name="build.properties"/></fileset>
+</copy> 
+
+<copy preservelastmodified="true" verbose="true"
+   todir="${doctools}/DocShared/xsls"> 
+   <fileset dir="${env.DOCTOOLS-CHECKOUT}/DocShared/xsls/" />
+</copy>
+
+<copy preservelastmodified="true" verbose="true"
+   todir="${doctools}/DocShared/content"> 
+   <fileset dir="${env.DOCTOOLS-CHECKOUT}/DocShared/content/" />
+</copy>
+
+<copy preservelastmodified="true" verbose="true"
+   todir="${doctools}/DocShared/schemas"> 
+   <fileset dir="${env.DOCTOOLS-CHECKOUT}/DocShared/schemas/" />
+</copy>
+
+<copy preservelastmodified="true" verbose="true"
+   todir="${doctools}/DocShared/schemagen"> 
+   <fileset dir="${env.DOCTOOLS-CHECKOUT}/DocShared/schemagen/" />
+</copy>
+
+</target>
+
+  <target name="validate-folder" depends="jingtask">
+    <!-- For jcbg-1992, utility target to validate the xml files in a folder
+	 by default, this validates everything in the current directory, as specified by user.dir
+	 override like this to change that:
+	 ant validate-folder -Duser.dir=mydir
+    -->
+
+        <jing rngfile="${doctools}/DocShared/schemas/broadbook/broadbook.rng"
+              checkid="false">
+	  <fileset dir="${user.dir}" includes="**/*.xml" excludes="build.xml"/>
+	</jing>
+
+        <!-- Test whether a build.xml file exists; if exists, mention we don't validate it. -->
+
+	<if>
+ 	<available file="build.xml"/>
+	  <then><echo>A build.xml file was found; it was NOT validated.</echo></then>
+	</if>
+
+	<!-- Can't validate a build.xml with rng because no schema. Didn't work with XMLValidate task either. -->
+
+	
+    </target>
+
+    <!-- JCBG-2043: Set proxy if in a server build. (Useful for check-urls.xsl and build.xml files that want to access the web.) -->
+    <target name="setproxy">
+      <if>
+        <not><isset property="planid-set"/></not>
+        <then>
+          <echo>PLANID is not set, so in a local build...setting proxy.</echo>
+          <setproxy proxyhost="proxy.lbs.alcatel-lucent.com" proxyport="8000"/>
+        </then>
+        <else>
+          <echo>PLANID is set, so in a server build...did not set proxy.</echo>
+        </else>
+      </if>
+    </target>
+
+    <!-- this target is intended to call any number of test targets.
+	 to make it run 1x/build, put an antcall to it in module2bld target.
+	 -->
+    <target name="testsuite" >
+      <!-- depends="testscp,testmail" -->
+      <echo>Test suite disabled.</echo>
+    </target>
+    
+    <target name="testscp">
+
+      
+
+	 <trycatch property="copyfailerror" reference="copyfailref">
+           <try>
+	     <echo>Showing contents of doctools/DocShared/techpubs-sphere</echo>
+             <exec executable="ls"><arg value="${doctools}/DocShared/techpubs-sphere"/></exec>
+
+	     <echo> testing scp via exec</echo>
+
+	     <!-- building from a command line like this:
+		 scp -v -i ./techpubs-sphere/techpubs-sphere_rsa wow.txt techpubs-sphere@sphere.motive.com:/opt/dropzone
+		  -->
+	     <exec executable="scp">
+	       <arg value="-v"/>
+	       <arg value="-o"/>
+	       <arg value="StrictHostKeyChecking=no"/>
+	       <arg value="-i"/>
+	       <arg file="${doctools}/DocShared/techpubs-sphere/techpubs-sphere_rsa"/>
+	       <arg file="${doctools}/DocShared/main-build.xml"/> <!-- the file to upload -->
+	       <arg value="techpubs-sphere@${infocenter.host}:/opt/dropzone"/>
+
+	     </exec>
+
+	     
+<!--	           <echo>Testing ant SCP command. @@@</echo>
+           	<scp file="user:password@somehost:/home/chuck/myfile.txt" todir="../some/other/dir"/>-->
+
+	   </try>
+	   <catch>
+<echo>SCP failed with error message: ${copyfailerror}</echo>
+	   </catch>
+   </trycatch>
+
+      
+    </target>
+
+    <target name="testmail">
+       <echo>Testing email. @@@ </echo>
+       <mail from="noreply@nokia.com" 
+				tolist="aaron.damommio@nokia.com"
+				subject="Test send mail from build ${env.JOB_NAME}"
+				mailhost="${mailhost}"
+				failonerror="false">
+       <message>Test mail.</message></mail>    
+    </target>
+
+    <!-- embedding dita @@@ -->
+
+
+    <!-- set up some props -->    
+    <target name="dita-init"> <!-- set some props and such -->
+      
+     
+<property name="output.dir" value="D:\worksvn\IMPACT\IoT\trunk\AEP/output-aep_userguide/pdf"/>
+<property name="dita.temp.dir" value="${staging.doc.dir}"/>
+<property name="pdf.formatter" value="fop"/>
+<property name="clean.temp" value="yes"/>
+<property name="dita.dir" value="${doctools}/dita"/>
+<property name="args.input" value="D:\worksvn\IMPACT\IoT\trunk\AEP\aep_userguide.ditamap"/>
+
+      <echo>basedir = ${basedir}</echo>
+      <echo>dita.dir = ${dita.dir}</echo>
+    </target>
+
+    <target name="dita-help" depends="dita-init">
+      <ant antfile="${dita.dir}/build.xml" target="help">
+<!-- can put props here-->
+      </ant>
+
+    </target>
+
+    <target name="dita-pdf" depends="dita-init">
+      <property name="transtype" value="pdf2"/>
+      
+      <ant antfile="${dita.dir}/build.xml" target="init">
+	<property name="args.input" value="${input_file_name}.ditamap"/>
+      </ant>
+
+    </target>
+    
+    
+
+    <target name="dita2docbook" depends="dita-init"> <!-- unfinished-->
+      <ant antfile="${dita.dir}/build.xml" target="init">
+	<property name="args.input" value="${input_file_name}.xml"/>
+        <property name="transtype" value="docbook"/>
+
+      </ant>
+
+    </target>
+
+
+    <target name="db2dita-preserve-include-info">
+      <echo>Preserving include info in &lt;remark&gt; elements.</echo>
+
+      <!-- Find one-line or multiline <include */> and <xi:include */> elements.
+	   Use ".*?" to match nongreedy (over just two lines instead of as many lines as possible).
+	   Match to end of element, capturing match in parens to create a <remark> and to re-create an xi:include.
+	   Create a remark so that writer can go through *.dita files manually and implement a proper DITA conref or something similar.
+      -->
+      <replaceregexp flags="gs" encoding="UTF-8">
+	<fileset dir=".">
+	  <exclude name="**/build.xml"/> <!-- I don't expect matches here, but excluding just to be safe. -->
+	  <exclude name="**/images/**"/> <!-- I don't expect matches here, but excluding just to be safe. -->
+	</fileset>
+	<!-- First set of parens matches include or xi:include; second set of parens matches rest of element-->
+	<regexp pattern="&lt;(include|xi:include)(.*?)\/&gt;"/>
+	<!-- The "\2" (used twice) is replaced by the match of ".*?" in the pattern above. -->
+	<substitution expression="&lt;remark&gt;FIXME-include: \2 ### INCLUDED FILE CAN BE HUNDREDS OF LINES AWAY&lt;/remark&gt; &lt;xi:include \2/&gt;"/>
+      </replaceregexp>
+    </target>
+
+    <target name="db2dita-preserve-comments">
+      <echo>Preserving XML comments.</echo>
+
+      <!-- Find one-line or multiline comment markers and duplicate in a <remark>.
+           Use ".*?" to match nongreedy (over just two lines instead of as many lines as possible).
+      -->
+      <replaceregexp flags="gs" encoding="UTF-8">
+        <fileset dir=".">
+          <exclude name="**/build.xml"/> <!-- I don't expect matches here, but excluding just to be safe. -->
+          <exclude name="**/images/**"/> <!-- I don't expect matches here, but excluding just to be safe. -->
+          <exclude name="**/*.dita"/>
+          <exclude name="**/*.xsl"/>
+        </fileset>
+
+        <regexp pattern="&lt;!--(.*?)--&gt;"/>
+        <!-- The "\1" is replaced by the match of ".*?" in the pattern above. -->
+        <substitution expression="&lt;remark&gt;PRESERVEDCOMMENT\1&lt;/remark&gt;"/>
+      </replaceregexp>
+    </target>
+
+    <target name="db2dita-preserve-security-ac">
+      <echo>Preserving security attributes, author_condition_1 attributes, and author_condition_2 attributes.</echo>
+        <saxon-xslt  in="../../target/work/en_US/${input_file_name}/${resolve-xincludes_output_base}${input_file_name}.xml"
+                     style="../../../dt-db2dita/xsl/insert-security-auth_cond-remarks.xsl"
+		     out="db2dita_01.xincluded-security-auth_cond-verification-file.xml"
+                     force="true">
+        </saxon-xslt>
+
+    </target>
+    
+    <target name="db2dita-replace-sbr">
+      <echo>Replacing "&lt;?sbr?&gt;" with zero-width spaces (&amp;#8203;).</echo>
+      <replace dir="." encoding="UTF-8">
+	<exclude name="**/build.xml"/>
+	<exclude name="**/images/**"/>
+	<replacetoken>&lt;?sbr?&gt;</replacetoken>
+	<replacevalue>&amp;#8203;</replacevalue>
+      </replace>
+    </target>
+
+    <target name="db2dita-show-dropped-items">
+      <echo># # # # # ITEMS THAT ARE NOT PRESERVED WHEN YOU CONVERT # # # # #</echo>
+      <echo></echo> <!-- Insert blank line for better readability -->
+      <echo>An entry of "Result: 1" below indicates the item was not found, so no further action is needed for that item.</echo>
+      <echo></echo> <!-- Insert blank line for better readability -->
+      <echo>========== Not preserved: landscape-figure (processing instruction)</echo>
+      <exec executable="grep">
+	<arg value="-r"/>
+	<arg value="landscape-figure"/>
+	<arg value="*"/>
+      </exec>
+      <echo></echo> <!-- Insert blank line for better readability -->
+      <echo>========== Not preserved: list-presentation (processing instruction)</echo>
+      <exec executable="grep">
+	<arg value="-r"/>
+	<arg value="list-presentation"/>
+	<arg value="*"/>
+      </exec>
+      <echo></echo> <!-- Insert blank line for better readability -->
+      <echo>========== Not preserved: numeration (attribute)</echo>
+      <exec executable="grep">
+	<arg value="-r"/>
+	<arg value="numeration="/>
+	<arg value="*"/>
+      </exec>
+      <echo></echo> <!-- Insert blank line for better readability -->
+      <echo>========== Not preserved: wide-block-element (processing-struction)</echo>
+      <exec executable="grep">
+	<arg value="-r"/>
+	<arg value="wide-block-element"/>
+	<arg value="*"/>
+      </exec>
+      <echo></echo> <!-- Insert blank line for better readability -->
+      <echo>========== Not preserved: share_* (Holmanization sharing element)</echo>
+      <exec executable="grep">
+	<arg value="-r"/>
+	<arg value="&lt;share_"/>
+	<arg value="*"/>
+      </exec>
+      <echo></echo> <!-- Insert blank line for better readability -->
+      <echo>========== Not preserved: entrytbl element</echo>
+      <exec executable="grep">
+	<arg value="-r"/>
+	<arg value="&lt;entrytbl"/>
+	<arg value="*"/>
+      </exec>
+
+    </target>
+
+    <target name="db2dita-preprocess" depends="db2dita-replace-sbr, db2dita-preserve-include-info, db2dita-preserve-comments, db2dita-show-dropped-items"/>
+    
+    <target name="db2dita-keydefs">
+      <echo>Changing @@ variables to DITA keydefs.</echo>
+      <echo>Input file: ${vars.file}</echo>
+      <echo>DITA keydefs file: content/variable-keydefs.ditamap</echo>
+      <echo></echo> <!-- Blank line for readability -->
+      <saxon-xslt  basedir="."
+		   in="${vars.file}"
+                   style="${doctools}/DocShared/xsls/utilities/@@vars2keydefs.xsl"
+		   out="content/variable-keydefs.ditamap"
+                   force="true">
+      </saxon-xslt>
+    </target>
+
+    <target name="db2dita-replace-vars">
+      <echo>Replacing @@var@@ variables with &lt;ph keyref="var"/&gt; strings in ${dita.file}.</echo>
+      <replaceregexp file="${dita.file}" flags="gs" encoding="UTF-8">
+        <regexp pattern="@@([\S]*?)@@"/> <!-- \S is any nonwhitespace chars. -->
+        <!-- The "\1" is replaced by the match of "[\S]*?" in the pattern above. -->
+        <substitution expression="&lt;ph keyref=&quot;var_\1&quot;/&gt;"/> 
+      </replaceregexp>  <!-- In line above, prefix the key name with "var_" to give the writer a hint that the key is a variable. -->
+    </target>
+
+    <target name="db2dita-vars" depends="db2dita-keydefs, db2dita-replace-vars"/>
+
+</project>
+

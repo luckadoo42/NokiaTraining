@@ -1,0 +1,1 @@
+javac -cp "c:\\programs\\apache-ant-1.6.5\\lib\\ant.jar" -sourcepath .  -d .. com/nexwave/nsidita/*.java com/nexwave/nquindexer/*.java; cd ..; jar -cvf nw-cms.jar com; cd java ; cp ../nw-cms.jar /cygdrive/e/workhead/export/docmodules/doctools/1.0/DocShared/bin/nw-cms.jar; cp ../nw-cms.jar /cygdrive/e/workhead/docmodules/doctools/1.0/DocShared/bin/nw-cms.jar

@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar xmlns:bj="http://motive.com/techpubs/datamodel"
+  xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0"
+  xmlns="http://relaxng.org/ns/structure/1.0">
+  <include href="broadbook.rng"/>
+
+  <define name="bj.reference">
+    <element name="bj:reference">
+      <ref name="bj.reference.attlist"/>
+      <choice>
+        <zeroOrMore>
+          <ref name="bj.section"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="bj.subsystem"/>
+        </zeroOrMore>
+      </choice>
+    </element>
+  </define>
+  <define name="bj.reference.attlist" combine="interleave">
+    <empty/>
+  </define>
+  <define name="bj.section">
+    <element name="bj:section">
+      <ref name="bj.section.attlist"/>
+      <ref name="bj.title"/>
+      <oneOrMore>
+        <ref name="bj.subsystem"/>
+      </oneOrMore>
+    </element>
+  </define>
+  <define name="bj.section.attlist" combine="interleave">
+    <empty/>
+  </define>
+  <define name="bj.title">
+    <element name="bj:title">
+      <ref name="bj.title.attlist"/>
+      <zeroOrMore>
+        <ref name="db.all.inlines"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="bj.title.attlist" combine="interleave">
+    <empty/>
+  </define>
+  <define name="bj.populator">
+    <element name="bj:populator">
+      <ref name="bj.populator.attlist"/>
+      <text/>
+    </element>
+  </define>
+  <define name="bj.populator.attlist" combine="interleave">
+    <empty/>
+  </define>
+  <define name="bj.subsystem">
+    <element name="bj:subsystem">
+      <ref name="bj.subsystem.attlist"/>
+      <ref name="bj.title"/>
+      <zeroOrMore>
+        <ref name="bj.populator"/>
+      </zeroOrMore>
+      <ref name="bj.description"/>
+      <zeroOrMore>
+        <ref name="db.section"/>
+      </zeroOrMore>
+      <!-- JCBG-2002 added xi:include here, to allow xi:included items at top of subsystems, like we do sections -->
+      <zeroOrMore>
+        <ref name="db.xi.include"/>
+      </zeroOrMore>
+      <interleave>
+        <!--      JCBG-2152 making the RNG allow these 3 elements bj:table, bj:deleted-table, bj:deleted-column 
+          to appear in any order by wrapping in interleave element-->
+        <oneOrMore>
+          <ref name="bj.table"/>
+        </oneOrMore>
+        <!-- JCBG-2054 adding bj.deleted-table, bj.deleted-column 
+       -->
+        <zeroOrMore>
+          <ref name="bj.deleted-table"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="bj.deleted-column"/>
+        </zeroOrMore>
+      </interleave>
+
+    </element>
+  </define>
+  <define name="bj.subsystem.attlist" combine="interleave">
+    <attribute name="name"/>
+    <optional>
+      <attribute name="security"/>
+    </optional>
+  </define>
+  <define name="bj.table">
+    <element name="bj:table">
+      <ref name="bj.table.attlist"/>
+      <ref name="bj.description"/>
+      <zeroOrMore>
+        <ref name="bj.uks"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="bj.column"/>
+      </zeroOrMore>
+      <!-- JCBG-2054 adding bj.deleted-column -->
+      <zeroOrMore>
+        <ref name="bj.deleted-column"/>
+      </zeroOrMore>
+
+    </element>
+  </define>
+  <define name="bj.table.attlist" combine="interleave">
+    <attribute name="name"/>
+    <optional>
+      <attribute name="added"/>
+    </optional>
+    <optional>
+      <attribute name="deprecated"/>
+    </optional>
+    <optional>
+      <attribute name="removed"/>
+    </optional>
+    <optional>
+      <attribute name="audience" a:defaultValue="external">
+        <choice>
+          <value>dev</value>
+          <value>profsvc</value>
+          <value>external</value>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="view">
+        <choice>
+          <value>yes</value>
+          <value>no</value>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="type">
+        <choice>
+          <value>fact</value>
+          <value>dimension</value>
+          <value>summary</value>
+        </choice>
+      </attribute>
+    </optional>
+  </define>
+  <!-- for JCBG-2054, adding deleted-table, deleted-column elements -->
+  <define name="bj.deleted-table">
+    <element name="bj:deleted-table">
+      <attribute name="name">
+        <text/>
+      </attribute>
+      <attribute name="cat">
+        <text/>
+      </attribute>
+      <attribute name="removed">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="bj.deleted-column">
+    <element name="bj:deleted-column">
+      <attribute name="table">
+        <text/>
+      </attribute>
+      <attribute name="name">
+        <text/>
+      </attribute>
+      <attribute name="cat">
+        <text/>
+      </attribute>
+      <attribute name="removed">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+
+
+  <define name="bj.uks">
+    <element name="bj:uks">
+      <ref name="bj.uks.attlist"/>
+      <oneOrMore>
+        <ref name="bj.uk"/>
+      </oneOrMore>
+    </element>
+  </define>
+  <define name="bj.uks.attlist" combine="interleave">
+    <empty/>
+  </define>
+  <define name="bj.uk">
+    <element name="bj:uk">
+      <ref name="bj.uk.attlist"/>
+      <text/>
+    </element>
+  </define>
+  <define name="bj.uk.attlist" combine="interleave">
+    <empty/>
+  </define>
+  <define name="p">
+    <element name="p">
+      <ref name="p.attlist"/>
+      <empty/>
+    </element>
+  </define>
+  <define name="p.attlist" combine="interleave">
+    <empty/>
+  </define>
+  <define name="bj.example">
+    <element name="bj:example">
+      <ref name="bj.example.attlist"/>
+      <zeroOrMore>
+        <choice>
+          <ref name="db.all.inlines"/>
+          <ref name="db.programlisting"/>
+          <ref name="db.itemizedlist"/>
+          <ref name="db.simplelist"/>
+          <ref name="p"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="bj.example.attlist" combine="interleave">
+    <empty/>
+  </define>
+  <define name="bj.constraints">
+    <element name="bj:constraints">
+      <ref name="bj.constraints.attlist"/>
+      <oneOrMore>
+        <ref name="bj.constraint"/>
+      </oneOrMore>
+    </element>
+  </define>
+  <define name="bj.constraints.attlist" combine="interleave">
+    <empty/>
+  </define>
+  <define name="bj.constraint">
+    <element name="bj:constraint">
+      <ref name="bj.constraint.attlist"/>
+      <text/>
+    </element>
+  </define>
+  <define name="bj.constraint.attlist" combine="interleave">
+    <empty/>
+  </define>
+  <define name="bj.description">
+    <element name="bj:description">
+      <ref name="bj.description.attlist"/>
+      <zeroOrMore>
+        <ref name="db.para"/>
+      </zeroOrMore>
+      <!-- JCBG-2002 added xi:include here, to allow xi:includes within descriptions -->
+      <zeroOrMore>
+        <ref name="db.xi.include"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="bj.description.attlist" combine="interleave">
+    <empty/>
+  </define>
+  <define name="bj.column">
+    <element name="bj:column">
+      <ref name="bj.column.attlist"/>
+      <ref name="bj.description"/>
+      <optional>
+        <ref name="bj.example"/>
+      </optional>
+      <optional>
+        <ref name="bj.constraints"/>
+      </optional>
+      <optional>
+        <ref name="bj.format"/>
+      </optional>
+      <optional>
+        <ref name="bj.source"/>
+      </optional>
+    </element>
+  </define>
+  <define name="bj.column.attlist" combine="interleave">
+    <attribute name="name"/>
+    <optional>
+      <attribute name="added"/>
+    </optional>
+    <optional>
+      <attribute name="deprecated"/>
+    </optional>
+    <optional>
+      <attribute name="removed"/>
+    </optional>
+  </define>
+  <define name="bj.source">
+    <element name="bj:source">
+      <ref name="bj.source.attlist"/>
+      <zeroOrMore>
+        <ref name="db.all.inlines"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="bj.source.attlist" combine="interleave">
+    <empty/>
+  </define>
+  <define name="bj.format">
+    <element name="bj:format">
+      <ref name="bj.format.attlist"/>
+      <empty/>
+    </element>
+  </define>
+  <define name="bj.format.attlist" combine="interleave">
+    <optional>
+      <attribute name="type"/>
+    </optional>
+    <optional>
+      <attribute name="last"/>
+      <!-- added for What's New automation, JCBG-2054-->
+    </optional>
+    <optional>
+      <attribute name="added"/>
+      <!-- added for What's New automation, JCBG-2054, and to fix bug JCBG-2062-->
+    </optional>
+    <optional>
+      <attribute name="size"/>
+    </optional>
+    <optional>
+      <attribute name="default"/>
+    </optional>
+    <optional>
+      <attribute name="position"/>
+    </optional>
+    <optional>
+      <attribute name="nullable" a:defaultValue="true">
+        <choice>
+          <value>true</value>
+          <value>false</value>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="indexed">
+        <choice>
+          <value>true</value>
+          <value>false</value>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="primaryKey">
+        <choice>
+          <value>true</value>
+          <value>false</value>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="foreignKey"/>
+    </optional>
+  </define>
+  <define name="bj.foreignKey">
+    <element name="bj:foreignKey">
+      <ref name="bj.foreignKey.attlist"/>
+      <empty/>
+    </element>
+  </define>
+  <define name="bj.foreignKey.attlist" combine="interleave">
+    <optional>
+      <attribute name="table"/>
+    </optional>
+  </define>
+  <define name="beginpage" combine="choice">
+    <notAllowed/>
+  </define>
+  <define name="biblioset" combine="choice">
+    <notAllowed/>
+  </define>
+  <define name="dedication" combine="choice">
+    <notAllowed/>
+  </define>
+  <define name="equation" combine="choice">
+    <notAllowed/>
+  </define>
+  <define name="refsect1" combine="choice">
+    <notAllowed/>
+  </define>
+  <define name="sect1" combine="choice">
+    <notAllowed/>
+  </define>
+  <define name="toc" combine="choice">
+    <notAllowed/>
+  </define>
+  <define name="tocchap" combine="choice">
+    <notAllowed/>
+  </define>
+  <start combine="choice">
+    <choice>
+      <ref name="db.info"/>
+      <ref name="bj.foreignKey"/>
+      <ref name="db.sect2"/>
+      <ref name="bj.reference"/>
+      <ref name="bj.subsystem"/>
+      <ref name="db.book"/>
+    </choice>
+  </start>
+</grammar>
