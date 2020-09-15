@@ -1,3 +1,5 @@
+DITA TRAINING README
+
 Howdy!
 
 Welcome to Nokia. This is the readme for my training repository for git.
