@@ -1,1 +1,0 @@
-~/bin/saxonize -o tp-fo.xsl tp-fo.xml $MOTIVE_XMLDOCS_HOME/export/DocBookXSL/1.72/template/titlepage.xsl
