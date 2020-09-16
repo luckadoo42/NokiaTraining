@@ -8,3 +8,5 @@ Things you need to know about Nokia:
 Please ask questions whenever you find you don't understand something. We are largely VERY friendly!
 
 -Dray
+
+P.S. This is a change made during training.
