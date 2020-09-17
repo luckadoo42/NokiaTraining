@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="db-backup">
+    <title>db-backup</title>
+    <conbody>
+        <section id="section_tcv_3tj_nlb">
+            <title>Description</title>
+            <p>This tool creates a backup copy of the SPS database so that it may be restored later
+                if there are unforeseen situations (such as DB corruption or other severe scenarios)
+                whereby the database needs to be restored back to a previous version.</p>
+            <p>Nightly backups can be achieved by scheduling db-backup to run on a scheduled
+                interval (for example, each night during the maintenance window).</p>
+            <p>This tool is run on the AdminCLI pod in the SPS system. Unless you are doing a
+                disaster recovery, Nokia recommends that you perform this procedure during off hours
+                (non-peak-hours). A separate backup file will be created for each namespace, with
+                inline compression (gzip) performed as the file is created to reduce the amount of
+                disk space required for these backups. All namespaces and data sets will be backed
+                up.</p>
+            <p>The backup files can later be used as input to the db-restore tool.</p>
+            <note>
+                <p>db-backup will terminate if the cluster changes during the backup (for example,
+                    if a node goes
+                    down)<!--Dray: this seems still true for CNF, but should confirm.--></p>
+            </note>
+            <note>
+                <p>Do not run this command during the transition window from daylight saving time to
+                    standard time.</p>
+            </note>
+        </section>
+        <section id="section_gj3_k5j_nlb">
+            <title>Syntax</title>
+            <p>
+                <codeblock>db-backup -d &lt;directory> -n &lt;namespace[,namespace]*> [-f] [-r
+&lt;local|both|all>]</codeblock>
+                <table frame="all" rowsep="1" colsep="1" id="table_ahz_l5j_nlb">
+                    <title/>
+                    <tgroup cols="2">
+                        <colspec colname="c1" colnum="1" colwidth="1*"/>
+                        <colspec colname="c2" colnum="2" colwidth="1*"/>
+                        <thead>
+                            <row>
+                                <entry>Code</entry>
+                                <entry>Description</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry><codeph>No arguments</codeph></entry>
+                                <entry>Displays usage/help information.</entry>
+                            </row>
+                            <row>
+                                <entry><codeph>-h or -?</codeph></entry>
+                                <entry>Displays usage/help information.</entry>
+                            </row>
+                            <row>
+                                <entry><codeph>-d &lt;directory></codeph></entry>
+                                <entry>Output directory for the backup files. This directory should
+                                    already exist.</entry>
+                            </row>
+                            <row>
+                                <entry><codeph>-f</codeph></entry>
+                                <entry>Force execution. If specified, the user will not be asked for
+                                    confirmation.</entry>
+                            </row>
+                            <row>
+                                <entry><codeph>-n &lt;namespace[,namespace]*></codeph></entry>
+                                <entry>Namespace list to backup. Allows you to specify the
+                                    namespaces to backup.</entry>
+                            </row>
+                            <row>
+                                <entry>-r &lt;local|both|all></entry>
+                                <entry>
+                                    <p>Pods running and storing the backups, where:<ul
+                                            id="ul_oy2_t5j_nlb">
+                                            <li>local: local AdminCLI pods</li>
+                                            <li>both: both AdminCLI pods</li>
+                                            <li>all: all database nodes </li>
+                                        </ul>If local, both, or all are not specified, the default
+                                        is local.</p>
+                                </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+            </p>
+        </section>
+        <section id="section_v5p_x5j_nlb">
+            <title>Example<!--Dray: I will need examples; ask Arundhati once he's done.--></title>
+            <p><!--Dray: I will certainly need examples.--></p>
+        </section>
+    </conbody>
+</concept>

@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-dbcollectlogs"><title>db-collect-logs tool</title><conbody>
+<section><title>Description</title>
+<p>When a database issue arises that requires offline analysis, it is often necessary to collect configuration and log information. This information is spread across the database nodes in the system and can be tedious and error prone to collect all the right information from all the right nodes. </p>
+<p>NCC provides a one-button tool to automate this information collection and is run on the active
+                OAME node in the NCC system. Nokia recommends that you perform this procedure during
+                off hours (non-peak-hours).</p>
+<p> db-collect-logs can be used to collect all this data and create a compressed <i>.tar</i> file on the active OAME node. This single file can then be forwarded to Nokia’s technical support for offline analysis.</p>
+<note>Before copying any files to any NCC VMs, the user must execute the df and du Linux commands
+                from each VM to determine the storage available and whether or not the copying of
+                new files can proceed. Usage of the Linux commands df (abbreviation for disk free)
+                and du (abbreviated from disk usage) can be found on every VM via the Linux manual
+                page by using “man df” and “man du” as root user. There are two storage directories
+                that can be used on any VM as follows:<p/><ul>
+                    <li>
+                        <p> First choice, is under the /appdata directory which is created and
+                            mounted to the cinder volume (OpenStack)/independent disk (VMware) on
+                            every VM.</p>
+                    </li>
+                    <li>
+                        <p>Second choice, is under the /var/log directory which is created and
+                            mounted to the cinder volume (OpenStack)/independent disk (VMware) on
+                            every VM.</p>
+                    </li>
+                </ul><p>If there is enough storage available, proceed.</p><p>When you have completed
+                    the task, clean-up the files that are no longer needed.</p><p>If there is not
+                    enough space, either do some clean-up or contact Nokia Support.</p></note>
+</section>
+<section><title>Syntax</title>
+<codeblock>db-collect-logs -d &lt;directory&gt; [-v]</codeblock>
+<table>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+<p>
+<b>Code</b>
+</p>
+</entry>
+<entry>
+<p>
+<b>Description</b>
+</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+<codeblock>No arguments</codeblock>
+</entry>
+<entry>
+Displays usage/help information.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-h or -?</codeblock>
+</entry>
+<entry>
+Displays usage/help information.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-d &lt;directory&gt;</codeblock>
+</entry>
+<entry>
+Directory where the compressed (.tar) file will be created.  This should be an already existing directory.  
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-v</codeblock>
+</entry>
+<entry>
+Verbose mode, showing the step-by-step progress and the list of files being added to the <i>.tar</i> file.
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section><title>Example Output</title>
+<p>
+<b>Default options</b>
+</p>
+<fig>
+<codeblock>db-collect-logs -d /var/tmp
+
+Collecting database logs and config files from each DB node...
+
+Collecting database info from each DB node...
+
+Creating tar file...
+
+Completed.  Tar file created in [/var/tmp/DBLogs--2017-05-22.tar.gz]
+</codeblock>
+</fig>
+<p>
+<b>Verbose options</b>
+</p>
+<fig>
+<codeblock>db-collect-logs -d /var/tmp -v
+
+Collecting database logs and config files from each DB node...
+
+Collecting database info from each DB node...
+[INFO] Data collection for _write_version in progress..
+[INFO] Data collection for  ['network'] in progress..
+[INFO] Data collection for  ['namespace'] in progress..
+[INFO] Data collection for  ['set'] in progress..
+[INFO] Data collection for  ['xdr'] in progress..
+[INFO] Data collection for  ['dc'] in progress..
+[INFO] Data collection for  ['sindex'] in progress..
+[INFO] Data collection for  ['config'] in progress..
+[INFO] Data collection for  ['config', 'xdr'] in progress..
+[INFO] Data collection for  ['config', 'dc'] in progress..
+[INFO] Data collection for  ['config', 'cluster'] in progress..
+[INFO] Data collection for  ['distribution'] in progress..
+[INFO] Data collection for  ['distribution', 'eviction'] in progress..
+[INFO] Data collection for  ['distribution', 'object_size', '-b'] in progress..
+[INFO] Data collection for  ['latency'] in progress..
+[INFO] Data collection for  ['statistics'] in progress..
+[INFO] Data collection for  ['statistics', 'xdr'] in progress..
+[INFO] Data collection for  ['statistics', 'dc'] in progress..
+[INFO] Data collection for  ['statistics', 'sindex'] in progress..
+[INFO] Data collection for  ['pmap'] in progress..
+[INFO] Data collection for  ['features'] in progress..
+[INFO] Data collection for  service in progress..
+[INFO] Data collection for  services in progress..
+[INFO] Data collection for  hist-dump:ns=spslocal;hist=ttl in progress..
+[INFO] Data collection for  hist-dump:ns=spslocal;hist=objsz in progress..
+[INFO] Data collection for  hist-dump:ns=spspd101;hist=ttl in progress..
+[INFO] Data collection for  hist-dump:ns=spspd101;hist=objsz in progress..
+[INFO] Data collection for  hist-dump:ns=spspd100;hist=ttl in progress..
+[INFO] Data collection for  hist-dump:ns=spspd100;hist=objsz in progress..
+[INFO] Data collection for  hist-dump:ns=spspd102;hist=ttl in progress..
+[INFO] Data collection for  hist-dump:ns=spspd102;hist=objsz in progress..
+[INFO] Data collection for  hist-dump:ns=spsundologs;hist=ttl in progress..
+[INFO] Data collection for  hist-dump:ns=spsundologs;hist=objsz in progress..
+[INFO] Data collection for  hist-dump:ns=sps;hist=ttl in progress..
+[INFO] Data collection for  hist-dump:ns=sps;hist=objsz in progress..
+[INFO] Data collection for  hist-dump:ns=spsglobal;hist=ttl in progress..
+[INFO] Data collection for  hist-dump:ns=spsglobal;hist=objsz in progress..
+[INFO] Data collection for  ['hostname -I'] in progress..
+[INFO] Data collection for  ['uname -a'] in progress..
+[INFO] Data collection for  ['lsb_release -a'] in progress..
+
+[INFO] Data collection for alternative command ['ls /etc|grep release|xargs -I f cat /etc/f'] in progress..
+[INFO] Data collection for  ['cat /proc/meminfo'] in progress..
+[INFO] Data collection for  ['cat /proc/interrupts'] in progress..
+[INFO] Data collection for  ['ls /sys/block/{sd*,xvd*}/queue/rotational |xargs -I f sh -c "echo f; cat f;"'] in progress..
+[INFO] Data collection for  ['ls /sys/block/{sd*,xvd*}/device/model |xargs -I f sh -c "echo f; cat f;"'] in progress..
+[INFO] Data collection for  ['ls /sys/block/{sd*,xvd*}/queue/scheduler |xargs -I f sh -c "echo f; cat f;"'] in progress..
+[INFO] Data collection for  ['rpm -qa|grep -E "citrus|aero"'] in progress..
+[INFO] Data collection for  ['ip addr'] in progress..
+[INFO] Data collection for  ['ip -s link'] in progress..
+[INFO] Data collection for  ['sudo iptables -L'] in progress..
+[INFO] Data collection for  ['sudo sysctl -a | grep -E "shmmax|file-max|maxfiles"'] in progress..
+[INFO] Data collection for  ['iostat -x 1 10'] in progress..
+[INFO] Data collection for  ['sar -n DEV'] in progress..
+[INFO] Data collection for  ['sar -n EDEV'] in progress..
+[INFO] Data collection for  ['df -h'] in progress..
+[INFO] Data collection for  ['free -m'] in progress..
+[INFO] Data collection for  ['sudo dmesg -T'] in progress..
+[INFO] Data collection for alternative command ['sudo dmesg'] in progress..
+[INFO] Data collection for  ['top -n3 -b'] in progress..
+[INFO] Data collection for  ['mpstat -P ALL 2 3'] in progress..
+[INFO] Data collection for  ['uptime'] in progress..
+[INFO] Data collection for  ['ss -pant | grep 3000 | grep TIME-WAIT | wc -l'] in progress..
+[INFO] Data collection for  ['ss -pant | grep 3000 | grep CLOSE-WAIT | wc -l'] in progress..
+[INFO] Data collection for  ['ss -pant | grep 3000 | grep ESTAB | wc -l'] in progress..
+[INFO] Data collection for  ['ss -pant | grep 3000 | grep LISTEN | wc -l'] in progress..
+[INFO] Data collection for _collect_sys in progress..
+[INFO] Data collection for _get_awsdata in progress..
+[INFO] Data collection for _collect_lsof in progress..
+[INFO] Data collection for  ['cat /etc/aerospike/aerospike.conf'] in progress..
+[INFO] Data collection for Snapshot: 1 in progress..
+INFO: Dumping collectinfo in JSON format.
+
+
+
+Files in /var/tmp/collect_info_20170522_204112 and /tmp/collect_info_20170522_204112.tgz saved.
+END OF ASCOLLECTINFO
+
+Creating tar file...
+./
+./AerospikeConfig/
+./AerospikeConfig/135.121.114.133/
+./AerospikeConfig/135.121.114.133/collect_info_20170522_204112.tgz
+./AerospikeLogs/
+./AerospikeLogs/135.121.114.133/
+./AerospikeLogs/135.121.114.133/aerospike.log.4.gz
+./AerospikeLogs/135.121.114.133/aerospike.log.8.gz
+./AerospikeLogs/135.121.114.133/aerospike.log.12.gz
+./AerospikeLogs/135.121.114.133/aerospike.log.1
+./AerospikeLogs/135.121.114.133/aerospike.log.5.gz
+./AerospikeLogs/135.121.114.133/aerospike.log.9.gz
+./AerospikeLogs/135.121.114.133/aerospike.log.3.gz
+./AerospikeLogs/135.121.114.133/aerospike.log
+./AerospikeLogs/135.121.114.133/aerospike.log.2.gz
+./AerospikeLogs/135.121.114.133/aerospike.log.10.gz
+./AerospikeLogs/135.121.114.133/aerospike.log.11.gz
+./AerospikeLogs/135.121.114.133/aerospike.log.7.gz
+./AerospikeLogs/135.121.114.133/aerospike.log.6.gz
+
+Completed.  Tar file created in [/var/tmp/DBLogs--2017-05-22.tar.gz]
+</codeblock>
+</fig>
+</section>
+</conbody></concept>

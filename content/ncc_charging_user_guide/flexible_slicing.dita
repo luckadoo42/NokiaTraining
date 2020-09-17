@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e198636"><title>Flexible slicing and quota allocation</title><conbody>
+<section><title>Overview</title>
+<p>The flexible slicing feature, applicable to the real-time charging, addresses the quota optimization at the <i>reservation</i> time. Since each application takes a slice of a session, balance availability must be assured when parallel multiple session are ongoing. Flexible slicing primarily addresses the quota size.</p>
+<fig>
+<title>NCC slicing</title>
+<image href="../images/img9yz-09126-ug01-pczza-sp1-sps_slicing_default.png"/>
+</fig>
+<p>The <i>validity</i> time of a quota needs to be properly managed and can have an influence on the quota size. The quota size and quota validity time drive the frequency at which the network element requests a new slice. As each request representing the signaling traffic and load on the system affects performance, the number of slices should be limited to a bare minimum.</p>
+<p>To decrease the amount of interactions between the network and OCS, large quotas valid for a long time should be used. However, this has a direct impact on the credit that needs to be <i>reserved</i>. A reserved credit is not available to parallel sessions or events and may not be necessary for the amount of data actually transferred.</p>
+<p>To favor the amount of parallel traffic and foster expenses, it is better to limit the quota size and validity time. The quota limitation is directly dependent on the service offer and the remaining credit of the user. There can be various elements driving the quota limitation for a given call, such as roaming versus local call, priority session versus normal session, or free versus charged call. This function handles the flexible allocation of quota (of any unit) for an active session/event and applies charging for that quota to the applicable balance in real time.</p>
+<p>Quota is flexibly determined by rules according to the following variables, after which the requests are sent to the Rating Engine that manages the master balance/bucket across multiple sessions of the subscriber:</p><ul>
+<li>
+<p>Category ID received from GGSN</p>
+</li>
+<li>
+<p>Tariff</p>
+</li>
+<li>
+<p>Date/Time</p>
+</li>
+<li>
+<p>Zone or location of user</p>
+</li>
+<li>
+<p>Home or roaming status</p>
+</li>
+<li>
+<p>SGSN address</p>
+</li>
+<li>
+<p>
+<i>Access-Technology</i>, such as GPRS, UMTS, or WLAN</p>
+</li>
+<li>
+<p>Device Type</p>
+</li>
+<li>
+<p>Group size</p>
+</li>
+</ul>
+<p>In addition to the above list, quota size is influenced by a rule that checks the value of any AVP in the received message, including flexible or configurable AVPs.</p>
+<p>The allocated quota size is also influenced by:</p><ul>
+<li>
+<p>Proximity to milestone</p>
+</li>
+<li>
+<p>Activated features, for example Tariff Time Change (TTC)</p>
+</li>
+<li>
+<p>Single balance/bucket is supported at individual or group level</p>
+</li>
+<li>
+<p>Groups and group size</p>
+</li>
+<li>
+<p>Configurable maximum or minimum values to not allow the quota to be either too large or too small</p>
+</li>
+</ul>
+</section>
+</conbody></concept>

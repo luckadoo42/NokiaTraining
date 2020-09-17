@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="aerospike_parameters">
+    <title>Aerospike parameters</title>
+    <conbody>
+        <p>This section describes the <codeph>aerospike</codeph> sub-chart parameters in the SPS
+            Helm chart.</p>
+        <section id="section_l14_33x_bmb">
+            <title>Namespaces</title>
+            <p>The Aerospike parameters are related to the following namespaces:</p>
+            <p><b>dscNamespace</b></p>
+            <p>This is the default namespace for the SM and ME. SM and ME use dsc as follows:</p>
+            <ul id="ul_sks_x3x_bmb">
+                <li>On SM all the records are stored in this namespace.</li>
+                <li>On ME any record that is not assigned to other namespaces is stored in this
+                    namespace. </li>
+            </ul>
+            <p>Two-way XDR replication is automatically enabled for this namespace by configuring
+                the <codeph>topology.spssite.matesite</codeph> parameter between the two ME sites or
+                two SM sites.</p>
+            <p><b>dsclocalNamespace</b></p>
+            <p>Only ME uses it. This namesapce stores the records provisioned by SM that are not
+                subscriber related (that is, service definition data). </p>
+            <p>XDR cannot be enabled for this namespace.</p>
+            <p><b>dscglobalNamespace</b></p>
+            <p>Only ME uses it. This namespace stores N-way replicated records (that is, global
+                mapping tables).</p>
+            <p>N-way XDR replication across all MEs is automatically enabled for this namespace by
+                configuring the <codeph>topology.spssite.id</codeph> parameter for MEs.</p>
+            <p><b>spspdNamespace</b></p>
+            <p>Only ME uses one or several namespaces for the partitions data. These namespaces
+                store subscriber/devices related data.</p>
+            <p>Two-way XDR replication is automatically enabled for each of these namespaces by
+                configuring the <codeph>topology.spspartition.siteids</codeph> parameter between the
+                two MEs associated with the partition. <note>This type of deployment has one
+                    restriction which is that A CNF can only have one partition (that is, there is
+                    one and only one <codeph>topology.spspartition.siteids</codeph> that contains
+                    this CNF's <codeph>spssiteid</codeph>)</note></p>
+            <p><b>spsundologsNamespace</b></p>
+            <p>SM and ME use it. This namespace stores all the transactions' undo logs information
+                that is used to revert a transaction if a rollback occurs.</p>
+            <p>This is a memory only namespace. </p>
+            <p>XDR cannot be enabled for this namespace. </p>
+        </section>
+        <section id="section_ctp_f3x_bmb"><title>Aerospike namespace parameters</title><p>Aerospike
+                namespace’s <codeph>filesize</codeph> and <codeph>memorysize</codeph> parameters are
+                configured in accordance with the following:</p><ul id="ul_ggw_p5x_bmb">
+                <li>The <codeph>filesize</codeph> and <codeph>memorysize</codeph> parameters defined
+                    for a specified namespace correlate.</li>
+                <li>The values for the <codeph>memorysize</codeph> parameters must be defined and
+                    cannot be empty.</li>
+                <li>The values for the <codeph>filesize</codeph> are optional.</li>
+                <li>You must update these parameters for a live deployment.</li>
+                <li>You must contact Nokia Professional Services to determine the correct values for
+                    these parameters.</li>
+                <li>The default values are for the lab trial setups only.</li>
+            </ul>For the example of the <codeph>aerospike</codeph> sub-chart configuration for
+            geo-replicarion, see section <xref href="parameters.dita"/>.</section>
+    </conbody>
+</concept>

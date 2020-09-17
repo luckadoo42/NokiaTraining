@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-iohdtraficcontrol"><title>iohd-traffic-control tool</title><conbody>
+<section><title>Description</title>
+<p>This tool is used to enable or disable a specified type of traffic (Diameter or HTTP) to all nodes from the local IOHD. You can run this tool from the OAME and it will apply to the active IOHD.</p>
+<p>Output from the tool displays the status of all traffic on all the related nodes after the requested change has been made. </p>
+</section>
+<section><title>Syntax</title>
+<codeblock>iohd-traffic-control [-deDHNh] [-n &lt;node&gt;]</codeblock>
+<note>
+<p>If a specific node (-n &lt;node&gt;) is included as an argument, both Diameter and HTTP traffic are enabled/disabled regardless of whether you use the -D or -H options.</p>
+</note>
+<p>
+<b>For example:</b>
+</p>
+<p>To disable Diameter and HTTP traffic to a specified node:</p>
+<codeblock>iohd-traffic-control -d -n &lt;node&gt;</codeblock>
+<p>To disable external Diameter traffic:</p>
+<codeblock>iohd-traffic-control -dD </codeblock>
+<p>To disable external HTTP traffic:</p>
+<codeblock>iohd-traffic-control -dH </codeblock>
+<p>To enable external Diameter traffic:</p>
+<codeblock>iohd-traffic-control -eD </codeblock>
+<p>To enable external HTTP traffic:</p>
+<codeblock>iohd-traffic-control -eH </codeblock>
+<p>To disable Diameter traffic and HTTP traffic to all nodes:</p>
+<codeblock>iohd-traffic-control -dN</codeblock>
+<p>To enable Diameter traffic and HTTP traffic to all nodes:</p>
+<codeblock>iohd-traffic-control -eN </codeblock>
+<table>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+<p>
+<b>Code</b>
+</p>
+</entry>
+<entry>
+<p>
+<b>Description</b>
+</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+<codeblock>No arguments</codeblock>
+</entry>
+<entry>
+Displays the current status.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-h</codeblock>
+</entry>
+<entry>
+Displays usage/help information.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-d </codeblock>
+</entry>
+<entry>
+Disable the specified traffic.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-e </codeblock>
+</entry>
+<entry>
+<p>Enable the specified traffic.</p>
+<p>
+<b>Note: </b>Enabling traffic with this option will not override traffic that is automatically disabled by monitoring. In this case, the option only causes traffic to no longer be manually disabled. Any traffic that has been manually disabled must be manually enabled.</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-D</codeblock>
+</entry>
+<entry>
+This option specifies external Diameter traffic.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-H</codeblock>
+</entry>
+<entry>
+This option specifies external HTTP traffic.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-n &lt;node&gt;</codeblock>
+</entry>
+<entry>
+<p>The specific node to which traffic is going. The &lt;node&gt; option is for the host name of the node. For example:</p>
+<p>
+<i>sps-ig-3-diameterapp-1</i>
+</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-N</codeblock>
+</entry>
+<entry>
+Traffic to all nodes.
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section><title>Example Output </title>
+<p>Output similar to the following should be returned after execution of the tool:</p>
+<fig>
+<codeblock>-sh-4.2$ iohd-traffic-control -dDn sps-ig-3-diameterapp-1
+
+WARNING: Disabling external traffic will cause the site to be taken out of service.
+Do you wish to continue? [y/n] y</codeblock>
+<codeblock>
+External Diameter traffic is manually disabled.
+External HTTP traffic is enabled.
+
+------------------------------------------
+Node                     Traffic to Node
+------------------------------------------
+sps-ig-3-diameterapp-0   enabled
+sps-ig-3-diameterapp-1   manually disabled
+sps-ig-3-diameterapp-2   enabled
+sps-ig-3-diameterapp-3   enabled
+------------------------------------------</codeblock>
+</fig>
+<note>
+<p>If the external traffic has not been disabled on purpose, the output of this tool also identifies if the traffic is “down”. </p>
+</note>
+</section>
+</conbody></concept>

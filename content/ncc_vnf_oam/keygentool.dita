@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-keygentool"><title>Repair KeyGenerator tool</title><conbody>
+<section><title>Description</title>
+<p>The "TPA_repairKeyGenerator" tool is used to repair the "KeyGenerators" data set during the
+                disaster recovery process. The "KeyGenerators" data set is a set defined in the
+                "dsclocal" namespace that stores the highest sequence generated against the set
+                name. NCC uses the sequence stored in the "KeyGenerators" data set to generate
+                unique club ids. The NCC increments the sequence in multiples of 10, rather than
+                incrementing by 1 every time. </p>
+<p>The tool fetches the set names from the KeyGenerator data set. For each set, the tool scans all clubbed records of that set to determine the highest key value currently used and based on that highest key, writes the next available key into the "KeyGenerators" data set. It will update the KeyGenerator data set for a particular partition, only if the highest key value used in that partition is less than that of the value available in the KeyGenerator data set for that partition. For example, if the tool finds the highest key value used for the partition "InfrequentlyChangingData52" is 22148 and the value available in the KeyGenerator data set is 22150, it will not update the KeyGenerator data set. </p>
+<p>The tool always updates the KeyGenerator data set after rounding up the highest key value used to the next multiple of ten. For example, if the tool finds the highest key value used is 22148, it will update the KeyGenerator data set with the value 22150. </p>
+<p>The logs of the tool are dumped in “/opt/tpa/logs/CommandsDebug.log”.</p>
+<p>The tool always starts from the beginning and prints statistical information (number of records processed per set) every 5 seconds. There is no option to pause/resume a previous tool invocation. For example, if the tool is interrupted for any reason, the next run of the tool will start from the beginning. </p>
+<sectiondiv>
+<p><b>KeyGenerators guidelines</b></p>
+<p>The tool is installed on the OAME nodes and is only executed during the disaster recovery process because it consumes CPU and other resources on the host node. </p>
+<p>On a single OAME node, only one instance of the tool can be executed at a time and the tool execution will not start if a similar tool (db-backup/db-restore/asbackup/asrestore etc.) is currently running on the same node. Nokia recommends that you make sure this tool or similar tools are not running on the other node(s) at the same time.</p>
+<p>The tool only does KeyGenerator repairs for those sets that exist in the KeyGenerator data set. The KeyGenerator must be already populated with the correct set names. If the tool finds that the KeyGenerator is empty, the tool stops execution with the message: "No set found to process".</p>
+</sectiondiv>
+</section>
+<section><title>Syntax</title>
+<p>Log in to the OAME node as the tpaadmin user or as the root user and navigate to the “/opt/tpa/bin/” directory where the tool is located. Enter the following command. </p>
+<codeblock>TPA_repairKeyGen</codeblock>
+<p>The tool does not have options and asks for a confirmation before proceeding with the recovery task. Choose “y”.</p>
+</section>
+<section><title>Example Output</title>
+<p>The command output is similar to the following example:</p>
+<fig>
+<title>Repair KeyGenerator tool output</title>
+<!--MMO resource relative URI: ../Graphics/keygenrepair_default.png-->
+    <image href="../images/keygenrepair_default.png"/>
+</fig>
+</section>
+</conbody></concept>

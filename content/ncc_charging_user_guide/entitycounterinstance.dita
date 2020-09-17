@@ -1,0 +1,570 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e155344"><title>Entity counter instance </title><conbody>
+<section><title>Overview</title>
+<p>The entity counter instance is an instance of the counter.</p>
+<note>
+<p>Any changes in the order of the hierarchy does not create or delete an instance of the counter for a group or device counter. The entity of the counter instance is not deleted although the group or device is deleted.</p>
+</note>
+</section>
+<section><title>Reset counter instances</title>
+<p>To reset the counter instances using the account lifecycle, an account reference is included within each instance of the counter. Before adding a counter to a device or group, the device or group must have a subscription. If not, then such counters are added without the account reference which cannot be fetched and reset using the account lifecycle.</p>
+<p>For the given API requests, the list of subscriptions associated with the device or group entities are fetched. From this list, the first subscription is considered and the account object associated with it is fetched. This account object is passed as a parameter during the creation of the counter instance entity.</p><ul>
+<li>
+<p>
+<uicontrol>addCounterToDevice</uicontrol>
+</p>
+</li>
+<li>
+<p>
+<uicontrol>addDeviceCounterToGroup</uicontrol>
+</p>
+</li>
+<li>
+<p>
+<uicontrol>addGroupCounterToGroup</uicontrol>
+</p>
+</li>
+</ul>
+</section>
+<section><title>Entity counter instance configuration</title>
+<note>
+<p>The parameters for entity counter instance cannot be configured using the SM GUI.</p>
+</note>
+<table pgwide="1" colsep="1" rowsep="1">
+                <title>Parameters for entity counter instance</title>
+                <tgroup cols="4">
+                    <colspec colname="col1"/>
+                    <colspec colname="COLSPEC0"/>
+                    <colspec colname="COLSPEC6"/>
+                    <colspec colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Parameter</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                            <entry>
+                                <p>Data type</p>
+                            </entry>
+                            <entry>
+                                <p>Mandatory/Optional</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry nameend="col2" namest="col1">
+                                <uicontrol>CounterInstanceList</uicontrol>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> chargingServiceId </entry>
+                            <entry> This attribute gets its charging service name when it is being
+                                created. </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> CounterDefId </entry>
+                            <entry> The ID of a counter definition. </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> CounterInsId </entry>
+                            <entry> The ID of a counter instance. </entry>
+                            <entry> String </entry>
+                            <entry> Mandatory </entry>
+                        </row>
+                        <row>
+                            <entry> CurrentValue </entry>
+                            <entry> The value of the counter. This value cannot be negative. The
+                                default value is <varname>0</varname>. </entry>
+                            <entry> Big Decimal </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> DefaultState </entry>
+                            <entry>
+                                <p>The default state of the counter instance. If it is in use, then
+                                    the default state is set to <varname>0</varname>.</p>
+                                <p>The default value is <varname>-99</varname> and it identifies the
+                                    initial state of the counter.</p>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> EndTime </entry>
+                            <entry> The end time of the counter instance. </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> exhaustionTime </entry>
+                            <entry> This attribute represents the time at which the counter is
+                                hard-stopped. </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> LastReportingState </entry>
+                            <entry> The signaling state sent in last SLA. </entry>
+                            <entry> String </entry>
+                            <entry> Mandatory </entry>
+                        </row>
+                        <row>
+                            <entry> LastReportingTime </entry>
+                            <entry> This attribute represents the time when last SLA sent for Sy
+                                interface. </entry>
+                            <entry> Long </entry>
+                            <entry> Mandatory </entry>
+                        </row>
+                        <row>
+                            <entry> LastSNRReportingState </entry>
+                            <entry>
+                                <p>This field is updated with the current state of threshold when an
+                                    SNR was sent.</p>
+                                <p>The default value is <varname>-99</varname> and it identifies the
+                                    initial state of the counter.</p>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> LastSNRReportingTime </entry>
+                            <entry> This field is updated with the time when an SNR was sent. </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> overageLimit </entry>
+                            <entry>
+                                <p>This attribute defines the overage usage limit per counter within
+                                    a bundle. When a counter is selected in a different charging
+                                    service, this parameter value can be changed. Once, usage limit
+                                    of the counter is reached, the overage limit is considered and
+                                    subsequently triggers all threshold actions for the overage
+                                    block. The overage is applied repetitively to the counter.</p>
+                                <p>
+                                    <b>Note:</b> The overage limit can be defined only when the
+                                    usage limit is defined.</p>
+                            </entry>
+                            <entry> Big decimal </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> overageThresholdProfileGroupIdList </entry>
+                            <entry>
+                                <p>This attribute indicates the threshold profile group IDs on
+                                    overage limit, which is the symbolic end limit of these
+                                    threshold and is applicable after usage limit.</p>
+                                <p>A subscriber can have only one policy threshold and multiple
+                                    normal thresholds in overage threshold for policy counter.</p>
+                                <p>
+                                    <b>Note:</b> As overage limit is repetitive in nature,
+                                    thresholds on overage limit are also repeatedly executed.</p>
+                            </entry>
+                            <entry> List&lt;String&gt; </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> policyCounterName </entry>
+                            <entry>
+                                <p>This value is set if user has configured a
+                                        <varname>Send-SNR</varname> action on a threshold associated
+                                    with this counter. Then this attribute represents the Virtual
+                                    Policy Counter mentioned in <varname>Send-SNR</varname> action. </p>
+                                <p>Example: <varname>SY.Send-SNR = “VPC,HIGH”</varname>
+                                </p>
+                                <p>VPC is the Virtual Policy Counter name.</p>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> PreviousValue </entry>
+                            <entry> The value of the previous counter. This value cannot be
+                                negative. </entry>
+                            <entry> Big Decimal </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> subsId </entry>
+                            <entry> This attribute gets its subscription ID when it is being
+                                created. </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> SyPolicyCounter </entry>
+                            <entry>
+                                <p>The value is copied from the Counter Definition.</p>
+                                <p>The supported values are as follows:</p>
+                                <ul>
+                                    <li>
+                                        <p>True: If the flag is true, the counter is an instance of
+                                            the policy counter.</p>
+                                    </li>
+                                    <li>
+                                        <p>False: If the flag is false, the counter is an instance
+                                            of non policy counter.</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry> Boolean </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> thresholdProfileGroupIdList </entry>
+                            <entry>
+                                <p>This attribute indicates the IDs of threshold profile group.</p>
+                                <p>Following are the important points to note:</p>
+                                <ul>
+                                    <li>
+                                        <p>Only one policy threshold can be associated with a policy
+                                            counter.</p>
+                                    </li>
+                                    <li>
+                                        <p>Multiple normal thresholds can be associated with a
+                                            policy counter.</p>
+                                    </li>
+                                </ul>
+                                <p>
+                                    <b>Note:</b> Percentage type thresholds are allowed only when
+                                    usage limit is defined.</p>
+                            </entry>
+                            <entry> List&lt;string&gt; </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> usageLimit </entry>
+                            <entry>
+                                <p>This attribute defines the usage limit applied per counter within
+                                    a bundle, that is charging service.</p>
+                                <p>If this attribute is defined, then percentage type thresholds are
+                                    allowed in the <i>thresholdProfileGroupIdList</i> with a
+                                    symbolic end limit as usage limit. When the counter is selected
+                                    in a different charging service, this attribute is changed.</p>
+                            </entry>
+                            <entry> Big decimal </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry nameend="col2" namest="col1">
+                                <uicontrol>EntityCounterInstanceId</uicontrol>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> AttachModeValue </entry>
+                            <entry/>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> Coordinates </entry>
+                            <entry> The location of the entity. </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> EntityCounterInstanceAttachMode </entry>
+                            <entry>
+                                <p>This field allows you to select the Entity Counter Instance
+                                    attach mode.</p>
+                                <p>The supported values are as follows:</p>
+                                <ul>
+                                    <li>
+                                        <p>Device</p>
+                                    </li>
+                                    <li>
+                                        <p>Group</p>
+                                    </li>
+                                    <li>
+                                        <p>Device_Group</p>
+                                    </li>
+                                    <li>
+                                        <p>Subscription</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry> entityCounterInstanceAttachMode </entry>
+                            <entry> Optional </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<sectiondiv>
+<p><b>Threshold Profile group instance list</b></p>
+<note>
+<p>The parameters for threshold profile group instance list cannot be configured using the SM GUI.</p>
+<p>Some of the parameters listed in the table are linked to the calculations performed by internal logic.</p>
+</note>
+<table frame="all" pgwide="1" colsep="1" rowsep="1">
+                    <title>Parameters for Threshold Profile group instance list</title>
+                    <tgroup cols="4">
+                        <colspec colname="col1"/>
+                        <colspec colname="col3"/>
+                        <colspec colname="COLSPEC11"/>
+                        <colspec colname="col4"/>
+                        <thead>
+                            <row>
+                                <entry>
+                                    <p>Parameter</p>
+                                </entry>
+                                <entry>
+                                    <p>Description</p>
+                                </entry>
+                                <entry>
+                                    <p>Options</p>
+                                </entry>
+                                <entry>
+                                    <p>Mandatory/Optional</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry nameend="col4" namest="col1">
+                                    <uicontrol>ThresholdProfileGroupInstList</uicontrol>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> DynamicMilestone </entry>
+                                <entry>
+                                    <p>Milestone is a percentage type threshold when the
+                                            <i>DynamicMilestoneFlag</i> is true with the empty rule
+                                        container. </p>
+                                    <p>The supported values are as follows:</p>
+                                    <ul>
+                                        <li>
+                                            <p>True: If the flag is true, then the threshold profile
+                                                group is used as a milestone.</p>
+                                        </li>
+                                        <li>
+                                            <p>False: If the flag is false, then the threshold
+                                                profile group is not used as a milestone.</p>
+                                        </li>
+                                    </ul>
+                                </entry>
+                                <entry> Boolean </entry>
+                                <entry> Mandatory </entry>
+                            </row>
+                            <row>
+                                <entry> ThPrfGrpDfName </entry>
+                                <entry> This field is the key parameter of the threshold profile
+                                    group entity. </entry>
+                                <entry> String </entry>
+                                <entry> Optional </entry>
+                            </row>
+                            <row>
+                                <entry nameend="col4" namest="col1">
+                                    <uicontrol>ThrsPrfInsList</uicontrol>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> Interval </entry>
+                                <entry> This field is for internal use only. It is required for rule
+                                    engine. </entry>
+                                <entry> Integer </entry>
+                                <entry> Mandatory </entry>
+                            </row>
+                            <row>
+                                <entry nameend="col4" namest="col1">
+                                    <uicontrol>ThreshInstList</uicontrol>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> ThrsPrfDefName </entry>
+                                <entry> This field is the key parameter of the threshold profile
+                                    entity. </entry>
+                                <entry> String </entry>
+                                <entry> Optional </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+</sectiondiv>
+<sectiondiv>
+<p><b>Overage Threshold Profile group instance list</b></p>
+<note>
+<p>The parameters for overage threshold profile group instance list cannot be configured using the SM GUI.</p>
+<p>Some of the parameters listed in the table are linked to the calculations performed by internal logic.</p>
+</note>
+<table frame="all" pgwide="1" colsep="1" rowsep="1">
+                    <title>Parameters for Overage Threshold Profile group instance list</title>
+                    <tgroup cols="4">
+                        <colspec colname="col1"/>
+                        <colspec colname="col3"/>
+                        <colspec colname="COLSPEC11"/>
+                        <colspec colname="col4"/>
+                        <thead>
+                            <row>
+                                <entry>
+                                    <p>Parameter</p>
+                                </entry>
+                                <entry>
+                                    <p>Description</p>
+                                </entry>
+                                <entry>
+                                    <p>Options</p>
+                                </entry>
+                                <entry>
+                                    <p>Mandatory/Optional</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry nameend="col4" namest="col1">
+                                    <uicontrol>OverageThresholdProfileGroupInstList</uicontrol>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> DynamicMilestone </entry>
+                                <entry>
+                                    <p>Milestone is a percentage type threshold when the
+                                            <i>DynamicMilestoneFlag</i> is true with the empty rule
+                                        container. </p>
+                                    <p>The supported values are as follows:</p>
+                                    <ul>
+                                        <li>
+                                            <p>True: If the flag is true, then the threshold profile
+                                                group is used as a milestone.</p>
+                                        </li>
+                                        <li>
+                                            <p>False: If the flag is false, then the threshold
+                                                profile group is not used as a milestone.</p>
+                                        </li>
+                                    </ul>
+                                </entry>
+                                <entry> Boolean </entry>
+                                <entry> Mandatory </entry>
+                            </row>
+                            <row>
+                                <entry> ThPrfGrpDfName </entry>
+                                <entry> This field is the key parameter of the threshold profile
+                                    group entity. </entry>
+                                <entry> String </entry>
+                                <entry> Optional </entry>
+                            </row>
+                            <row>
+                                <entry nameend="col4" namest="col1">
+                                    <uicontrol>ThrsPrfInsList</uicontrol>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> Interval </entry>
+                                <entry> This field is for internal use only. It is required for rule
+                                    engine. </entry>
+                                <entry> Integer </entry>
+                                <entry> Mandatory </entry>
+                            </row>
+                            <row>
+                                <entry nameend="col4" namest="col1">
+                                    <uicontrol>ThreshInstList</uicontrol>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> ThrsPrfDefName </entry>
+                                <entry> This field is the key parameter of the threshold profile
+                                    entity. </entry>
+                                <entry> String </entry>
+                                <entry> Optional </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+</sectiondiv>
+</section>
+<section><title>Actions associated with a counter instance</title>
+<table pgwide="1" colsep="1" rowsep="1">
+                <tgroup cols="2">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Action</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> Create </entry>
+                            <entry> Used to create a counter instance. </entry>
+                        </row>
+                        <row>
+                            <entry> CreateEntityCounterInstance </entry>
+                            <entry> Used to create entity counter instance. </entry>
+                        </row>
+                        <row>
+                            <entry> Delete </entry>
+                            <entry> Used to delete a counter instance. </entry>
+                        </row>
+                        <row>
+                            <entry> FindEntityCounterInstanceByAccountId </entry>
+                            <entry> Used to get the list of all entity counter instances for the
+                                given account ID. </entry>
+                        </row>
+                        <row>
+                            <entry> FindSyPolicyCounterSignalingInfo </entry>
+                            <entry> Used to get list of signaling state information for the given
+                                    <i>EntityCounterInstanceId</i>. </entry>
+                        </row>
+                        <row>
+                            <entry> Read </entry>
+                            <entry> Used to display a particular counter instance entity as per the
+                                data retrieved from database. The mandatory parameter is
+                                    <i>CounterInstance ID</i>. </entry>
+                        </row>
+                        <row>
+                            <entry> RemoveEntityCounterInstance </entry>
+                            <entry> Used to remove the EntityCounterInstance from the database for
+                                the given <i>EntityCounterInstanceId</i> and <i>Counter Id</i>.
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Reset </entry>
+                            <entry> Used to reset all the <i>EntityCounterInstances</i> and their
+                                threshold instances and caps associated with a given Account Id.
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> updateEntityCounterInstance </entry>
+                            <entry> Used to update the current value, usage limit, and overage
+                                limit. It also allows to add or remove a threshold list and
+                                overageLimit threshold list. </entry>
+                        </row>
+                        <row>
+                            <entry> UpdateEntityCounterInstanceCurrentValue </entry>
+                            <entry> Used to update current value for a given
+                                    <i>EntityCounterInstanceId</i> and <i>CounterInstanceClass
+                                    Id</i>. This method is only for internal purpose. </entry>
+                        </row>
+                        <row>
+                            <entry> UpdateEntityCounterInstanceDefaultState </entry>
+                            <entry> Used to update <i>EntityCounterInstance</i> Object after
+                                successfully updating the <i>defaultState</i> attribute of
+                                CounterInstanceClass. </entry>
+                        </row>
+                        <row>
+                            <entry> Update </entry>
+                            <entry> Used to update a particular counter instance entity in database.
+                                The mandatory parameter is <i>CounterInstance ID</i> and
+                                    <i>CurrentValue</i> is the only value updated. </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<note>
+<p>These actions are valid for internal purposes only and cannot be accessed using the SM GUI. </p>
+</note>
+</section>
+</conbody></concept>

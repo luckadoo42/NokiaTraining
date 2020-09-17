@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-distribute"><title>distribute-diameter-dictionaries</title><conbody>
+<section><title>Description</title>
+<p>This tool distributes custom diameter dictionaries to all nodes that require them. It then triggers rules reloads to regenerate the rules attribute dictionaries. If this tool is run on an SM, it will also distribute or not distribute the dictionaries to each of the named ME's OAMEs.</p>
+<note>
+<p>This script overwrites existing dictionaries. We recommend making backups of your existing dictionaries before running the script.</p>
+</note>
+<note>
+<p>Before copying any files to any NCC VMs, the user must execute the df and du Linux commands from
+                    each VM to determine the storage available and whether or not the copying of new
+                    files can proceed. Usage of the Linux commands df (abbreviation for disk free)
+                    and du (abbreviated from disk usage) can be found on every VM via the Linux
+                    manual page by using “man df” and “man du” as root user. There are two storage
+                    directories that can be used on any VM as follows:</p><ul>
+<li>
+<p> First choice, is under the /appdata directory which is created and mounted to the cinder volume (OpenStack)/independent disk (VMware) on every VM.</p>
+</li>
+<li>
+<p>Second choice, is under the /var/log directory which is created and mounted to the cinder volume (OpenStack)/independent disk (VMware) on every VM.</p>
+</li>
+</ul>
+<p>If there is enough storage available, proceed.</p>
+<p>When you have completed the task, clean-up the files that are no longer needed.</p>
+<p>If there is not enough space, either do some clean-up or contact Nokia Support.</p>
+</note>
+</section>
+<section><title>Syntax</title>
+<codeblock>distribute-diameter-dictionaries [-d &lt;directory&gt; ] [-e &lt;MEs&gt;] [-i &lt;MEs&gt; [-h]</codeblock>
+<table>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<tbody>
+<row>
+<entry>
+<b>Code</b>
+</entry>
+<entry>
+<b>Description</b>
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>No arguments</codeblock>
+</entry>
+<entry>
+Displays usage/help information
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-h or -?</codeblock>
+</entry>
+<entry>
+Displays usage/help information.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-d &lt;directory&gt;</codeblock>
+</entry>
+<entry>
+Source directory containing the custom diameter dictionary files to distribute. This is not required when run on an ME to distribute files that came from an SM.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-e &lt;MEs&gt;</codeblock>
+</entry>
+<entry>
+Excludes the MEs (comma-separated OAME VIPs of MEs) from distribution. Only meaningful when run on SM.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-i &lt;MEs&gt;</codeblock>
+</entry>
+<entry>
+Includes the MEs (comma-separated OAME VIPs of MEs) for distribution. Only meaningful when run on SM.
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section><title>Example output from SM</title>
+<codeblock>[root@sps-sm-oame-0 bin]# ./distribute-diameter-dictionaries -d /dictionaries/diameter/</codeblock>
+<fig>
+<codeblock>Dictionaries in /dictionaries/diameter/ will be copied to nodes: sps-sm-application-1 sps-sm-application-0
+Continue? [y/n] y
+Removing old files from sps-sm-application-1...
+Copying new files to sps-sm-application-1...
+Removing old files from sps-sm-application-0...
+Copying new files to sps-sm-application-0...
+Reloading SM rules attribute dictionaries...
+Rules attribute dictionary reloaded successfully.
+
+Dictionaries in /dictionaries/diameter/ will be copied to MEs: 138.120.33.197
+Continue? [y/n] y
+Creating archive of files for MEs...
+Distributing archive to ME 138.120.33.197...
+tpaadmin@138.120.33.197's password: 
+</codeblock>
+</fig>
+<p>You should now manually run distribute-diameter-dictionaries on each ME's active OAME.</p>
+</section>
+<section><title>Example output from ME</title>
+<codeblock>[root@sps-me-oame-0 bin]# ./distribute-diameter-dictionaries </codeblock>
+<fig>
+<codeblock>Archive /tmp/dictionaries_from_sm.tar.gz will be extracted to /tmp/dictionaries_from_sm
+Continue? [y/n] y
+Extracting new files from SM...
+
+Dictionaries in /tmp/dictionaries_from_sm will be copied to nodes: sps-me-diameter-0 sps-me-diameter-1
+Continue? [y/n] y
+Removing old files from sps-me-diameter-0...
+Copying new files to sps-me-diameter-0...
+Removing old files from sps-me-diameter-1...
+Copying new files to sps-me-diameter-1...
+Reloading DDM rules attribute dictionary...
+Rules attribute dictionary reloaded successfully.
+Reloading Charging rules attribute dictionary...
+Rules attribute dictionary reloaded successfully.
+</codeblock>
+</fig>
+</section>
+</conbody></concept>

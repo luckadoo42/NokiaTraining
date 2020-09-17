@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//NSN//DTD DITA Concept//EN" "nsnconcept.dtd">
+<concept id="id9yz-09126-mt02-rezza-upgrade-script"><title>sps-upgrade script</title><conbody>
+<section><title>Description</title>
+<p>This script sets up the spsSU tool environment, creates the interim CSAR package, generates NCC
+                upgrade task lists, performs a number of tasks such as upgrade, backout, commit, and
+                update persisted version.</p>
+</section>
+<section><title>Syntax</title>
+<p>
+                <codeph> sps-upgrade [-f &lt;file&gt;] [-h] [-e] -i &lt;vnfd_ext&gt; -j
+                    &lt;vnf_conf&gt; -p &lt;file&gt; -r &lt;release&gt; -s &lt;file&gt; -t
+                    &lt;task&gt; | -c &lt;task&gt; [-d &lt;dir &gt;] | [-d &lt;dir&gt;] -t
+                    &lt;task&gt; | -S | -u | -v &lt;version&gt;</codeph>
+            </p>
+<p>                  </p>
+<p>                  </p>
+<table colsep="1" rowsep="1">
+                <tgroup cols="2">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Option</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>
+                                <codeph>-c &lt;task&gt;</codeph>
+                            </entry>
+                            <entry> Continues the upgrade from where it has stopped. For information
+                                on <codeph>&lt;task&gt;</codeph>, see option <codeph>-t
+                                    &lt;task&gt;.</codeph>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-d &lt;dir&gt;</codeph>
+                            </entry>
+                            <entry> Specifies the directory path of the VNF spsSU-sps tool. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-e</codeph>
+                            </entry>
+                            <entry> Generates upgrade task lists and exit program. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-f &lt;file&gt;</codeph>
+                            </entry>
+                            <entry> Specifies the full path of
+                                    <filepath>clouds-config.yaml</filepath> file. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-h</codeph>
+                            </entry>
+                            <entry> Displays usage/help information. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-i &lt;vnf_ext&gt;</codeph>
+                            </entry>
+                            <entry> Specifies the full path of the TO release version of
+                                    <filepath>vnf_extension.json</filepath> file, which is generated
+                                by the VNF generator tool. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-j &lt;vnf_conf&gt;</codeph>
+                            </entry>
+                            <entry> Specifies the full path of the TO release version of the VNF
+                                Config file, which is updated by <codeph>sps-instantiate</codeph>
+                                script. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-p &lt;file&gt;</codeph>
+                            </entry>
+                            <entry>Specifies the full path of the TO release version of
+                                    <filepath>cbam_package.zip</filepath> file. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-r &lt;release&gt;</codeph>
+                            </entry>
+                            <entry>Specifies the FROM release version of the SPS, for example, 19.6,
+                                19.6_sp1 or 19.9. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-s &lt;file&gt;</codeph>
+                            </entry>
+                            <entry>The full path of the TO load scalable.json file. </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>-S</codeph></entry>
+                            <entry>The upgrade contains a security patch and will apply to all
+                                nodes. If <codeph>-S</codeph> is present as an option in this
+                                command, the value is true, and the upgrade contains a security
+                                patch. If <codeph>-S</codeph> is not present as an option in this
+                                command, the value is false, and the upgrade does not contain a
+                                security patch.</entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-t &lt;task&gt;</codeph>
+                            </entry>
+                            <entry>
+                                <p>Specifies an upgrade task. The options are the following:</p>
+                                <ul>
+                                    <li>
+                                        <p>
+                                            <codeph>all</codeph> is to upgrade all the VMs in one
+                                            attempt without soak testing.</p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <codeph>before-test</codeph> is to upgrade the first
+                                            half of the VMs before soak testing.</p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <codeph>after-test</codeph> is to upgrade the remaining
+                                            VMs after soak testing.</p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <codeph>backout</codeph> is to back out all the upgraded
+                                            VMs.</p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <codeph>backout-group1</codeph> is to back out the
+                                            upgraded VMs of group1.</p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <codeph>backout-group2</codeph> is to back out the
+                                            upgraded VMs of group2.</p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <codeph>backout-group3</codeph> is to back out the
+                                            upgraded VMs of group3.</p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <codeph>commit</codeph> is to commit all the upgraded
+                                            VMs.</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-u </codeph>
+                            </entry>
+                            <entry> Updates the version on non-impacted VMs after upgrade is
+                                committed. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-v &lt;version&gt;</codeph>
+                            </entry>
+                            <entry> Specifies the NCC version (TO release version or FROM release
+                                version) to update the persisted version. </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+</section>
+<section><title>Examples</title>
+<p>To upgrade from 19.9 all the sites’s VMs in one attempt without soak testing, enter:</p>
+<p>
+<codeph>sps-upgrade -i /opt/sps/configs/vnf_extension.json -j /opt/sps/configs/vnf_conf.json -p /opt/sps/configs/cbam_package.zip -r 19.9 -s /your/path/scalable.json -t all</codeph>
+</p>
+<p>
+<codeph/>
+</p>
+<p>To upgrade from 19.9 the first half of the site’s VMs before soak testing, enter:</p>
+<p>
+<codeph>sps-upgrade -i /opt/sps/configs/vnf_extension.json -j /opt/sps/configs/vnf_conf.json -p /opt/sps/configs/cbam_package.zip -r 19.9 -s /your/path/scalable.json -t before-test</codeph>
+</p>
+<p>
+<codeph/>
+</p>
+<p>To upgrade the rest of the site’s VMs after soak testing, enter:</p>
+<p>
+<codeph>sps-upgrade -t after-test</codeph>
+</p>
+<p>
+<codeph/>
+</p>
+<p>To back out if upgrade or soak testing fails, enter:</p>
+<p>
+<codeph>sps-upgrade -t backout</codeph>
+</p>
+<p>
+<codeph>sps-upgrade -d /opt/sps/tools/spsSU-VNF_NAME-yyyy-mm-dd-hh:mm:ss -t backout</codeph>
+</p>
+<p>
+<codeph/>
+</p>
+<p>To commit all the site’s upgraded VMs, enter:</p>
+<p>
+<codeph>sps-upgrade -t commit</codeph>
+</p>
+<p>
+<codeph>sps-upgrade -d /opt/sps/tools/spsSU-VNF_NAME-yyyy-mm-dd-hh:mm:ss -t commit</codeph>
+</p>
+<p>
+<codeph/>
+</p>
+<p>To update the version on non-impacted VMs after committing, enter:</p>
+<p>
+<codeph>sps-upgrade -u</codeph>
+</p>
+<p>
+<codeph/>
+</p>
+<p>To update the persisted version to the TO release version, enter: </p>
+<p>
+<codeph>sps-upgrade -v SPS_xx_xx_Ixx</codeph>
+</p>
+<p>where SPS_xx_xx_Ixx is the IBUILD value.</p>
+</section>
+</conbody></concept>

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="deploying_sps_streams_helm_chart">
+    <title>Deploying SPS-streams Helm chart</title>
+    <taskbody>
+        <context>
+            <p>This procedure provides instructions on how to deploy the SPS-streams Helm chart.</p>
+        </context>
+        <steps>
+            <step>
+                <cmd>Create the Overrides yaml file by entering:</cmd>
+                <info>
+          <codeblock>cat > sps-streams-overrides.yaml &lt;&lt;EOF
+global:
+  serviceAccountName: dr-sa-external
+  drReleaseName: dr-eventlink
+  datarefinery:
+    imageTag: $DR_VERSION
+    imagePullPolicy: "IfNotPresent"
+  istio:
+    enabled: true
+#NLT_IMAGE_NAME_OVERRIDES  kubectlImage: "kubectl" #was tools/kubectl
+#POD_NAME_PREFIX  fullnameOverride: "$POD_NAME_PREFIX"
+#POD_NAME_PREFIX  containerNamePrefix: "$CONTAINER_NAME_PREFIX"
+ 
+tags:
+  vz-sps-ap-input: ${AP_ENABLED}
+cbur:
+  enabled: ${CBUR_ENABLED}
+ 
+crdb-redisio:
+  istio:
+    enabled: true
+  admin:
+    nodeAffinity:
+      enabled: false
+#NLT_IMAGE_NAME_OVERRIDES    image: {name: "admin"} # was "crdb/admin"
+  cbur:
+    enabled: ${CBUR_ENABLED}
+  server:
+    image:
+      registry: "drdo-docker-candidates.repo.lab.pl.alcatel-lucent.com"
+    resources:
+      requests:
+        memory: 2Gi
+        cpu: 2000m
+      limits:
+        memory: 4Gi
+        cpu: 2500m
+#NLT_IMAGE_NAME_OVERRIDES    metrics: {image: {name: "redis_exporter"} } #was "oliver006/redis_exporter"
+#NLT_IMAGE_NAME_OVERRIDES  sentinel: {image: {name: "redisio"}} # was "crdb/redisio"
+  rolemon:
+#NLT_IMAGE_NAME_OVERRIDES    image: {name: "rolemon"} # was "crdb/rolemon"
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 250m
+      limits:
+        memory: 256Mi
+        cpu: 250m
+#NLT_IMAGE_NAME_OVERRIDES  cbur: {image: {name: "cbura"}} # was "cbur/cbura"
+ 
+ 
+vz-sps-input:
+  replicas: 3
+  parameters:
+    SPS_CFG_KAFKA:
+      BootstrapServers: "kf-${SITE_TYPE}-headless:9092" #this is the name of the headless service, which is in the pattern "kf-{spshelmreleasename}-headless"
+      EgressTopicName: "cdr"
+#DEV_OVERRIDES      SecondsPerBatch: 5
+vz-sps-output:
+  replicas: 3
+vz-sps-mapper:
+  replicas: 5
+#DEV_OVERRIDES  parameters: {VZ_SPS_CFG_CG_MAPPER: {SecondsPerBatch: 30}}
+ 
+ 
+vz-sps-ap-input:
+  replicas: 3
+  parameters:
+    AP_CFG_NCHF_DECODER:
+      BootstrapServers: "kf-${SITE_TYPE}-headless:9092" #this is the name of the headless service, which is in the pattern "kf-{spshelmreleasename}-headless"
+      EgressTopicName: "disposition"
+      SecondsPerBatch: 5
+EOF</codeblock>
+        </info>
+            </step>
+      <step>
+        <cmd>Based on the input, replace the values in the Overrides file by entering:</cmd>
+        <info>
+          <codeblock>if [[ "$NLT_IMAGE_NAME_OVERRIDES" == "true" ]]; then sed -i 's/#NLT_IMAGE_NAME_OVERRIDES//g' sps-streams-overrides.yaml; fi
+if [[ "$DEV_OVERRIDES" == "true" ]]; then sed -i 's/#DEV_OVERRIDES//g' sps-streams-overrides.yaml; fi
+if [ -n "$POD_NAME_PREFIX" ]; then sed -i 's/#POD_NAME_PREFIX//g' sps-streams-overrides.yaml; fi</codeblock>
+        </info>
+      </step>
+      <step>
+        <cmd>Edit the Overrides yaml file as needed.</cmd>
+      </step>
+            <step>
+                <cmd>Install the SPS-streams Helm chart by entering:</cmd>
+                <info>
+                    <codeblock>helm install -n $NAMESPACE sps-streams sps-streams-chart*.tgz -f sps-streams-overrides.yaml</codeblock>
+                </info>
+            </step>
+        </steps>
+    </taskbody>
+</task>

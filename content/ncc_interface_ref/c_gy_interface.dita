@@ -1,0 +1,698 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="untitled1">
+    <title>Gy interface</title>
+    <concept id="concept_h2q_dsm_5mb">
+        <title>Multiple MSCC</title>
+        <conbody>
+            <p><i>Multiple-Services-Credit-Control</i> AVP is of type Grouped and contains the AVPs
+                related to the independent credit-control of multiple services feature. Each
+                instance of this AVP carries units related to one or more services or a single
+                rating group or single service identifier. NCC supports multiple MSCC.</p>
+            <p> The following conditions apply to multiple MSCC:</p>
+            <ul id="ul_djs_5kn_5mb">
+                <li>
+                    <p>If both rating group and service identifier values are received in a Diameter
+                        request, then rating group takes precedence over service identifier. Also,
+                        if multiple service identifiers are received in a Diameter request, then the
+                        first service-identifier value is considered.</p>
+                </li>
+                <li>
+                    <p>Unit type is concluded at CCR level and not at MSCC level.</p>
+                </li>
+                <li>
+                    <p>Currently, if USU is received with some value in CCR-I, then it is ignored
+                        without throwing any error and the request is processed.</p>
+                </li>
+            </ul>
+        </conbody>
+        <concept id="concept_fx5_sls_wmb">
+            <title>Handling of asynchronous MSCC</title>
+            <conbody>
+                <section>
+                    <p>The following rules are followed while handling asynchronous MSCC:</p>
+                    <ul id="ul_fjs_5kn_5mb">
+                        <li>
+                            <p>If RSU AVP is not received in the CCR-U for a specific MSCC, then
+                                that MSCC is considered to be closed.</p>
+                        </li>
+                        <li>
+                            <p>A Diameter Gy session is not terminated even if all rating sessions
+                                in a CCR-U are terminated. The Diameter Gy session is cleared by
+                                audit or CCR-T.</p>
+                        </li>
+                        <li>
+                            <p>On receiving the CCR-T Diameter Gy session and all rating sessions
+                                are terminated.</p>
+                        </li>
+                        <li>
+                            <p>If any new MSCC is received in a CCR-U, then a new rating session is
+                                opened for that specific MSCC, rating group, or service
+                                identifier.</p>
+                        </li>
+                    </ul>
+                </section>
+            </conbody>
+        </concept>
+    </concept>
+    <concept id="concept_vrt_fsm_5mb">
+        <title>Centralized and de-centralized support</title>
+        <conbody>
+            <p>NCC determines centralized or decentralized unit as per the logic provided in the
+                following table:</p>
+            <section id="section_n2k_cln_5mb">
+                <table id="table_o2k_cln_5mb" colsep="1" rowsep="1" frame="all">
+                    <title>Status of RSU AVP in MSCC AVP for CCR-I</title>
+                    <tgroup cols="2">
+                        <colspec colnum="1" colname="col1" colwidth="1.2*"/>
+                        <colspec colnum="2" colname="col2" colwidth="1*"/>
+                        <thead>
+                            <row>
+                                <entry>Requested-Service-Unit (RSU) AVP in CCR-I</entry>
+                                <entry>Mode</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry>Present with Sub-AVPs</entry>
+                                <entry>Decentralized</entry>
+                            </row>
+                            <row>
+                                <entry>Present as Empty</entry>
+                                <entry>Centralized</entry>
+                            </row>
+                            <row>
+                                <entry>Absent</entry>
+                                <entry>MSCC rejected</entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+                <p>Consider the following points for centralized or decentralized unit
+                        determination:<ul id="ul_rrh_qms_wmb">
+                        <li><i>Requested-Service-Unit (RSU)</i> AVP is read at
+                            Multiple-Services-Credit-Control (MSCC) level.</li>
+                        <li><i>Used-Service-Unit (USU)</i> AVP value is ignored in a CCR-I
+                            request.</li>
+                        <li>Once a session call is identified as centralized, it remains in the same
+                            mode throughout the complete session. If an RSU AVP is reported in
+                            Credit-Control-Request-Update (CCR-U) request, then it is ignored by the
+                            charging application.</li>
+                        <li>For centralized mode, only one unit type is supported.</li>
+                        <li>Slicing algorithm is supported only during centralized mode and is only
+                            for <i>VOLUME</i> unit type.</li>
+                        <li>Decentralized unit determination and rating:<ul id="ul_qst_5ms_wmb">
+                                <li>Considers only for the first unit from the RSU and USU. Over Gy
+                                    interface only below unit types are supposed to come in RSU and
+                                    USU for NCC support. If one or all out of CC-Total-Octets,
+                                    CC-Input-Octets and CC-Output-Octets are present, then only
+                                    first in the sequence is considered by NCC, rest are ignored:<ul
+                                        id="ul_srh_qms_wmb">
+                                        <li><ph id="_Refd19e5017"><i>CC-Input-Octets</i></ph></li>
+                                        <li><i>CC-Output-Octets</i></li>
+                                        <li><i>CC-Total-Octets</i></li>
+                                    </ul></li>
+                                <li>Only <i>CC-Total-Octets</i> used for data calls under GSU in
+                                    CCA</li>
+                            </ul></li>
+                        <li>Centralized unit determination and rating:<ul id="ul_urh_qms_wmb">
+                                <li><ph id="_Refd19e5071">If <i>CC-Total-Octets</i> is present under
+                                        USU in CCR, and <i>CC-Input-Octets</i>,
+                                            <i>CC-Output-Octets</i>, or both are present, then only
+                                            <i>CC-Total-Octets</i> is considered for commit logic
+                                        and the same is sent while sending CCA.</ph></li>
+                                <li>If <i>CC-Total-Octets</i> is not present under USU in CCR, but
+                                        <i>CC-Input-Octets</i>, <i>CC-Output-Octets</i>, or both are
+                                    present, then both are summed together to consider it equivalent
+                                    to <i>CC-Total-Octets</i> and the same is used for commit logic.
+                                    In CCA, only <i>CC-Total-Octets</i> is sent.</li>
+                            </ul></li>
+                    </ul>The behavior is the same for all combinations where <i>CC-Total-Octets</i>
+                    is not present in CCR, as mentioned in the following table:</p>
+                <ul id="ul_p2k_cln_5mb">
+                    <li>
+                        <table id="table_t2k_cln_5mb" colsep="1" rowsep="1" frame="all">
+                            <tgroup cols="5">
+                                <colspec colnum="1" colname="col1"/>
+                                <colspec colnum="2" colname="col2"/>
+                                <colspec colnum="3" colname="col3"/>
+                                <colspec colnum="4" colname="col4"/>
+                                <colspec colnum="5" colname="col5"/>
+                                <thead>
+                                    <row>
+                                        <entry namest="col1" nameend="col3">Units in CCR</entry>
+                                        <entry morerows="1">Unit considered for charging</entry>
+                                        <entry morerows="1">Units in CCA</entry>
+                                    </row>
+                                    <row>
+                                        <entry>CC-Total-Octets</entry>
+                                        <entry>CC-Input-Octets</entry>
+                                        <entry>CC-Output-Octets</entry>
+                                    </row>
+                                </thead>
+                                <tbody>
+                                    <row>
+                                        <entry>Yes</entry>
+                                        <entry>Yes</entry>
+                                        <entry>Yes</entry>
+                                        <entry>CC-Total-Octets</entry>
+                                        <entry>CC-Total-Octets</entry>
+                                    </row>
+                                    <row>
+                                        <entry>Yes</entry>
+                                        <entry>Yes</entry>
+                                        <entry>No</entry>
+                                        <entry>CC-Total-Octets</entry>
+                                        <entry>CC-Total-Octets</entry>
+                                    </row>
+                                    <row>
+                                        <entry>Yes</entry>
+                                        <entry>No</entry>
+                                        <entry>Yes</entry>
+                                        <entry>CC-Total-Octets</entry>
+                                        <entry>CC-Total-Octets</entry>
+                                    </row>
+                                    <row>
+                                        <entry>Yes</entry>
+                                        <entry>No</entry>
+                                        <entry>No</entry>
+                                        <entry>CC-Total-Octets</entry>
+                                        <entry>CC-Total-Octets</entry>
+                                    </row>
+                                    <row>
+                                        <entry>No</entry>
+                                        <entry>Yes</entry>
+                                        <entry>Yes</entry>
+                                        <entry>CC-Total-Octets = CC-Input-Octets +
+                                            CC-Output-Octets</entry>
+                                        <entry>CC-Total-Octets</entry>
+                                    </row>
+                                    <row>
+                                        <entry>No</entry>
+                                        <entry>Yes</entry>
+                                        <entry>No</entry>
+                                        <entry>CC-Total-Octets = CC-Input-Octets</entry>
+                                        <entry>CC-Total-Octets</entry>
+                                    </row>
+                                    <row>
+                                        <entry>No</entry>
+                                        <entry>No</entry>
+                                        <entry>Yes</entry>
+                                        <entry>CC-Total-Octets = CC-Output-Octets</entry>
+                                        <entry>CC-Total-Octets</entry>
+                                    </row>
+                                </tbody>
+                            </tgroup>
+                        </table>
+                    </li>
+                    <li>
+                        <p>For <i>VOLUME</i> unit type, only <i>CC-Total-Octets</i> is supported
+                            under GSU in CCA request in centralized mode.</p>
+                    </li>
+                    <li>
+                        <p>Immediate Event Charging (IEC) calls are not supported in centralized
+                            mode.</p>
+                    </li>
+                </ul>
+            </section>
+        </conbody>
+    </concept>
+    <concept id="concept_nrb_qrs_wmb">
+        <title>Result codes</title>
+        <conbody>
+            <table colsep="1" rowsep="1" frame="all">
+                <tgroup cols="4">
+                    <colspec colnum="1" colname="col1" colwidth="1.5*"/>
+                    <colspec colnum="2" colname="col2" colwidth="2.42*"/>
+                    <colspec colnum="3" colname="col3" colwidth="1*"/>
+                    <colspec colnum="4" colname="col4" colwidth="1.08*"/>
+                    <thead>
+                        <row>
+                            <entry>Application preference</entry>
+                            <entry>Description</entry>
+                            <entry>Data type</entry>
+                            <entry>Default value</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>Clear session if no RG active</entry>
+                            <entry>
+                                <p>This parameter its applicable only for CCA-I.</p>
+                                <p><varname>false</varname>: The result code is always set to 2001
+                                    at command level in CCA irrespective of the result code values
+                                    at MSCC level.</p>
+                                <p><varname>true</varname>: If an active MSCC or RG does not exist
+                                    for a given session, then the following happens:</p>
+                                <ul id="ul_tc1_vrs_wmb">
+                                    <li>
+                                        <p>MSCC level result code is set at command level, if only
+                                            one MSCC is returned in CCA-I.</p>
+                                    </li>
+                                    <li>
+                                        <p>If multiple MSCCs are returned in the CCA-I with the same
+                                            error result code, then the same error result code is
+                                            set at command level and session is not created.</p>
+                                    </li>
+                                    <li>
+                                        <p>If multiple MSCCs are returned in CCA-I with different
+                                            error result codes, then the result code is set to 2001
+                                            at command level and session is created.</p>
+                                    </li>
+                                </ul>
+                                <p>If this is <varname>false</varname>, then there is no change in
+                                    behavior for following cases (where CCA = 2001) irrespective of
+                                    the value set for clear session if there is no RG active
+                                    parameter:</p>
+                                <ul id="ul_uc1_vrs_wmb">
+                                    <li>
+                                        <p>Event call behavior</p>
+                                    </li>
+                                    <li>
+                                        <p>CCR-T behavior where the root level result code is set to
+                                            2001 irrespective of the MSCC result code and always
+                                            terminate the session</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry>Boolean</entry>
+                            <entry>false</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </conbody>
+    </concept>
+    <concept id="concept_ngd_3sm_5mb">
+        <title>CCR authorization</title>
+        <conbody>
+            <p>No MSCC in CCR-I is considered as CCR authorization. If a device is eligible (not in
+                barred state) for call, then 2001 is sent in CCA. Otherwise, an appropriate error
+                result code is sent, and the session is not created. This behavior is controlled by
+                the following application preference: </p>
+            <table id="table_dgx_zmn_5mb" colsep="1" rowsep="1" frame="all">
+                <tgroup cols="4">
+                    <colspec colnum="1" colname="col1" colwidth="1.5*"/>
+                    <colspec colnum="2" colname="col2" colwidth="2.42*"/>
+                    <colspec colnum="3" colname="col3" colwidth="1*"/>
+                    <colspec colnum="4" colname="col4" colwidth="1.08*"/>
+                    <thead>
+                        <row>
+                            <entry>Application preference</entry>
+                            <entry>Description</entry>
+                            <entry>Data type</entry>
+                            <entry>Default value</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>Gy Session Authorization Validity (seconds)</entry>
+                            <entry>
+                                <p>If it is set to 0, then CCR Authorization feature is considered
+                                    as disabled; otherwise CCR Authorization feature is enabled.</p>
+                                <p>Its value specifies the time in seconds after which the Gy
+                                    session created due to CCR Authorization is closed if no further
+                                    request is received for that session.</p>
+                            </entry>
+                            <entry>Integer</entry>
+                            <entry>0</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <p>This authorization feature is controlled by configuration as mentioned in <i>Charging
+                    application preferences</i> section in the <i>Managing application
+                    preferences</i> chapter of the <i>Global Configuration Guide</i>.</p>
+        </conbody>
+    </concept>
+    <concept id="concept_vfq_ksm_5mb">
+        <title>PS-Information AVP</title>
+        <conbody>
+            <p>The PS-Information AVP must be present in each CCR-I/U/T request. Support of AVPs
+                under PS-Information is shown in the following table.</p>
+            <table id="table_pfp_lsm_5mb" colsep="1" rowsep="1" frame="all">
+                <title>PS-Information AVP support</title>
+                <tgroup cols="3">
+                    <colspec colnum="1" colname="c1" colwidth="3.34*"/>
+                    <colspec colnum="2" colname="c2" colwidth="1*"/>
+                    <colspec colnum="3" colname="c3" colwidth="5.46*"/>
+                    <thead>
+                        <row>
+                            <entry><b>AVP</b></entry>
+                            <entry><b>Category</b></entry>
+                            <entry><b>Description</b></entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>3GPP-Charging-Id </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules and logic</entry>
+                        </row>
+                        <row>
+                            <entry>PDN-Connection-Charging-ID</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Node-ID</entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules and logic</entry>
+                        </row>
+                        <row>
+                            <entry>3GPP-PDP-Type</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>PDP-Address</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>PDP-Address-Prefix-Length</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Dynamic-Address-Flag</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Dynamic-Address-Flag-Extension</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>QoS-Information</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules and logic</entry>
+                        </row>
+                        <row>
+                            <entry>SGSN-Address</entry>
+                            <entry>M</entry>
+                            <entry>Supported as per 3GPP by NCC rules and logic. It can be used to
+                                identify HOME/ROAMING based on complex map in NCC</entry>
+                        </row>
+                        <row>
+                            <entry>GGSN-Address </entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>TDF-IP-Address</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>SGW-Address</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>ePDG-Address</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>TWAG-Address</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>CG-Address</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Serving-Node-Type</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>SGW-Change</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>3GPP-IMSI-MCC-MNC</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>IMSI-Unauthenticated-Flag</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>3GPP-GGSN-MCC-MNC</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>3GPP-NSAPI</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Called-Station-Id</entry>
+                            <entry>M</entry>
+                            <entry>Supported as per 3GPP by NCC rules and logic</entry>
+                        </row>
+                        <row>
+                            <entry>3GPP-Session-Stop-Indicator</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>3GPP-Selection-Mode</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>3GPP-Charging-Characteristics</entry>
+                            <entry>O</entry>
+                            <entry>Not supported</entry>
+                        </row>
+                        <row>
+                            <entry>Charging-Characteristics-Selection-Mode</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>3GPP-SGSN-MCC-MNC </entry>
+                            <entry>M</entry>
+                            <entry>Supported as per 3GPP by NCC rules and logic. It can be used to
+                                identify HOME/ROAMING based on complex map in NCC</entry>
+                        </row>
+                        <row>
+                            <entry>3GPP-MS-Time-Zone</entry>
+                            <entry>M</entry>
+                            <entry>Supported as per 3GPP by NCC rules and logic</entry>
+                        </row>
+                        <row>
+                            <entry>Charging-Rule-Base-Name</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>ADC-Rule-Base-Name</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>3GPP-User-Location-Info</entry>
+                            <entry>M</entry>
+                            <entry>Supported as per 3GPP by NCC rules and logic</entry>
+                        </row>
+                        <row>
+                            <entry>User-Location-Info-Time</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>User-CSG-Information</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Presence-Reporting-Area-Information</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>3GPP2-BSID</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>TWAN-User-Location-Info</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>UWAN-User-Location-Info</entry>
+                            <entry>O</entry>
+                            <entry>Not supported</entry>
+                        </row>
+                        <row>
+                            <entry>3GPP-RAT-Type</entry>
+                            <entry>M</entry>
+                            <entry>Supported as per 3GPP by NCC rules and logic</entry>
+                        </row>
+                        <row>
+                            <entry>PS-Furnish-Charging-Information</entry>
+                            <entry>O</entry>
+                            <entry>Not supported</entry>
+                        </row>
+                        <row>
+                            <entry>PDP-Context-Type</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Offline-Charging</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Traffic-Data-Volumes</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Service-Data-Container</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>User-Equipment-Info</entry>
+                            <entry>M</entry>
+                            <entry>Supported as per 3GPP by NCC rules and logic</entry>
+                        </row>
+                        <row>
+                            <entry>Terminal-Information</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Start-Time</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Stop-Time</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Change-Condition</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Diagnostics</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Low-Priority-Indicator</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>NBIFOM-Mode</entry>
+                            <entry>O</entry>
+                            <entry>Not supported</entry>
+                        </row>
+                        <row>
+                            <entry>NBIFOM-Support</entry>
+                            <entry>O</entry>
+                            <entry>Not supported</entry>
+                        </row>
+                        <row>
+                            <entry>MME-Number-for-MT-SMS</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>MME-Name</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>MME-Realm</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Logical-Access-ID</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Physical-Access-ID</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Fixed-User-Location-Info</entry>
+                            <entry>O</entry>
+                            <entry>Supported by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>CN-Operator-Selection-Entity</entry>
+                            <entry>O</entry>
+                            <entry>Not supported</entry>
+                        </row>
+                        <row>
+                            <entry>Enhanced-Diagnostics</entry>
+                            <entry>O</entry>
+                            <entry>Not supported</entry>
+                        </row>
+                        <row>
+                            <entry>SGi-PtP-Tunnelling-Method</entry>
+                            <entry>O</entry>
+                            <entry>Not supported</entry>
+                        </row>
+                        <row>
+                            <entry>CP-CIoT-EPS-Optimisation-Indicator </entry>
+                            <entry>O</entry>
+                            <entry>Not supported</entry>
+                        </row>
+                        <row>
+                            <entry>UNI-PDU-CP-Only-Flag</entry>
+                            <entry>O</entry>
+                            <entry>Not supported</entry>
+                        </row>
+                        <row>
+                            <entry>Serving-PLMN-Rate-Control</entry>
+                            <entry>O</entry>
+                            <entry>Not supported</entry>
+                        </row>
+                        <row>
+                            <entry>APN-Rate-Control</entry>
+                            <entry>O</entry>
+                            <entry>Not supported</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <note>
+                <ul id="ol_obk_1gm_5mb">
+                    <li>“Not Supported” indicates that NCC does not perform any logic processing for
+                        these AVPs.</li>
+                    <li>“Supported by NCC rules” indicates that value of such AVPs can be used in
+                        rules for decision making. It does not mean there is any core logic exist in
+                        NCC around these AVPs.</li>
+                    <li>All AVPs that are of multiple occurrence type, only the first occurrence is
+                        supported in rule.</li>
+                    <li>For the AVPs tagged with “M”, NCC does not reject the request if this is
+                        absent. It indicates that some potential use cases are not satisfied if
+                        these AVPs are absent.</li>
+                </ul>
+            </note>
+        </conbody>
+    </concept>
+</concept>

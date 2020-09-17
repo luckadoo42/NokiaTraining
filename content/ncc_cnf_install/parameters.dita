@@ -1,0 +1,508 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="parameters">
+    <title>Topology and geo-redundancy parameters</title>
+    <conbody>
+        <p>This section describes the parameters that define a CNF's topology and geo-redundancy
+            (replication) configurations. These parameters are defined in the
+                <codeph>topology</codeph> section of the SPS Helm chart.</p>
+        <p>
+            <note>For the deployments with geo-redundancy, the <codeph>xdrproxy.enabled</codeph>
+                parameter must be set to <codeph>true</codeph> in the <codeph>overrides</codeph>
+                file.</note>
+        </p>
+        <section id="section_gd4_yvr_bmb">
+            <title>Topology parameters</title>
+            <p>The <codeph>topology</codeph> section represents a CNF's topology information that
+                depends on the following:</p>
+            <p>
+                <ul id="ul_iym_gc2_vlb">
+                    <li>deployment model: independent ME pairs, networked ME pairs, or integrated SM
+                        and ME (IG)</li>
+                    <li>number of CNFs in the deployment and their type: ME, SM, IG, ME as CHF
+                        router</li>
+                    <li>use of geo-redundancy</li>
+                </ul>
+            </p>
+            <p>The following table describes the parameters in the <codeph>topology</codeph>
+                section.</p>
+            <table frame="all" rowsep="1" colsep="1" id="table_fjl_qnk_vkb">
+                <title>Topology parameters descriptions</title>
+                <tgroup cols="2">
+                    <colspec colname="c2" colnum="1" colwidth="1*"/>
+                    <colspec colname="c3" colnum="2" colwidth="2.08*"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Parameter</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry namest="c2" nameend="c3">
+                                <p><codeph>topology.spspartition</codeph> parameters</p>
+                                <p>These parameters represent paired (mate) ME or IG CNFs configured
+                                    for the subscriber data. If a paired ME or IG fails, each of its
+                                    replication neighbors handles a portion of the traffic intended
+                                    for that failed CNF.</p>
+                                <p>Records are assigned in each paired group into their own unique
+                                    namespace and the Aerospike XDR replication is configured for
+                                    each namespace.</p>
+                                <p>The <codeph>topology.spspartition</codeph> parameters must be
+                                    configured as follows:</p>
+                                <ul id="ul_vz1_nxq_bmb">
+                                    <li>
+                                        <p>Every SM must have in its SPS Helm chart all the
+                                                <codeph>topology.spspartition</codeph> parameters of
+                                            all the partitions across all the MEs.</p>
+                                    </li>
+                                    <li>
+                                        <p>A single partition is shared between paired ME sites with
+                                            multiple pairs possible in the network. Every ME must
+                                            have in its SPS Helm chart all the
+                                                <codeph>topology.spspartition</codeph> parameters
+                                            that are used with its paired ME for the single
+                                            partition that these two ME share.</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p><codeph>topology.spspartition.id</codeph></p>
+                            </entry>
+                            <entry>
+                                <p>This parameter defines the partition ID of a CNF. There are only
+                                    128 supported values in the interval [0,127].</p>
+                                <p>Must update the default value.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p><codeph>topology.spspartition.name</codeph></p>
+                            </entry>
+                            <entry>
+                                <p>This parameter defines the name for the paired MEs or IGs.</p>
+                                <p>This parameter is defined with the maximum of 51 alphanumeric and
+                                    dash (-) characters. The dot (‘.’) and underscore (‘_’)
+                                    characters cannot be used.</p>
+                                <p>Must update the default value.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p><codeph>topology.spspartition.siteids</codeph></p>
+                            </entry>
+                            <entry>
+                                <p>The value must match with the
+                                        <codeph>topology.spssite.id</codeph> values of the paired
+                                    MEs or IGs.</p>
+                                <p>For example, if ME1 has <codeph>topology.spssite.id</codeph> set
+                                    to 1 and ME2 has <codeph>topology.spssite.id</codeph> set to 2,
+                                    then the value of this parameter must be set to [1,2].</p>
+                                <p>Must update the default value.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry namest="c2" nameend="c3">
+                                <p><codeph>topology.spssite</codeph> parameters</p>
+                                <p>If the deployment model is networked ME pairs, then the following
+                                    applies:</p>
+                                <ul id="ul_exx_mjs_bmb">
+                                    <li>
+                                        <p>Every SM in addition to its own set of
+                                                <codeph>topology.spssite</codeph> parameters must
+                                            have in its SPS Helm chart all the
+                                                <codeph>topology.spssite</codeph> parameters of all
+                                            the MEs and SMs.</p>
+                                    </li>
+                                    <li>
+                                        <p>Every ME in addition to its own set of
+                                                <codeph>topology.spssite</codeph> parameters must
+                                            have in its SPS Helm chart all the
+                                                <codeph>topology.spssite</codeph> parameters of all
+                                            the MEs and SMs. This allows for the global mapping
+                                            tables to include all MEs in the network and be N-way
+                                            replicated.</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p><codeph>topology.spssite.id</codeph></p>
+                            </entry>
+                            <entry>
+                                <p>This parameter defines the ID for a CNF. </p>
+                                <p>This parameter is an integer and supports 32 values in the
+                                    interval [0,31]. This parameter is used for all the NCC topology
+                                    parameters and must be unique for each CNF across all the CNFs
+                                    deployed.</p>
+                                <p>For example, if there are four MEs and two SMs in your NCC, then
+                                    each CNF is assigned a unique integer in this group of six; the
+                                    MEs are numbered 1, 2, 3 and 4; the SMs are numbered 5 and
+                                    6.</p>
+                                <p>Must update the default value.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p><codeph>topology.spssite.location</codeph></p>
+                            </entry>
+                            <entry>
+                                <p>This parameter defines the location of a CNF.</p>
+                                <p>Location must be unique per physical location. If multiple CNFs
+                                    (SM, and/or ME, and/or IG) share a building complex, then these
+                                    CNFs should have the same location. For example, if an ME and an
+                                    SM share location Ottawa, then the ME’s location is “Ottawa” and
+                                    the SM’s location is “Ottawa”. </p>
+                                <p>The value is an arbitrary string. Choose a value that is
+                                    meaningful and reasonable in length.</p>
+                                <p>Must update the default value.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p><codeph>topology.spssite.matesite</codeph></p>
+                            </entry>
+                            <entry>
+                                <p>This parameter is used for the dsc namespace to identify the
+                                    bidirectionspsally paired CNFs. </p>
+                                <p>This parameter is used to set the bidirectional relationship
+                                    between the two CNFs of the same type. This means that if ME1
+                                    has ME2 as its matesite, than ME2 must have only ME1 as its
+                                    matesite. The same principle applies to SM and IG CNFs.</p>
+                                <p>The value is the matesite’s <codeph>spssiteid</codeph>.</p>
+                                <p>A CNF cannot be its own matesite.</p>
+                                <p>Each SM has another SM as its matesite. Each ME has another ME as
+                                    its matesite. Each IG has another IG as its matesite. SMs and
+                                    MEs, SMs and IGs, MEs and IGs cannot be mates.</p>
+                                <p>Geo-redundant CNFs must always be deployed in multiples of two.
+                                    This is true for any type of deployment.</p>
+                                <p>For more information on deployment models, see the CNF Overview
+                                    Guide.</p>
+                                <p>For non-geo-redundant CNFs, the value must be Null, or remove the
+                                    key completely.</p>
+                                <p>Must update the default value.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p><codeph>topology.spssite.name</codeph></p>
+                            </entry>
+                            <entry>
+                                <p>This parameter defines the name of a CNF.</p>
+                                <p>This parameter is defined with the maximum of 25 alphanumeric and
+                                    dash (-) characters.</p>
+                                <p>The dot (‘.’) and underscore (‘_’) characters cannot be used.</p>
+                                <p>Must update the default value.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p><codeph>topology.spssite.oamipaddress</codeph></p>
+                            </entry>
+                            <entry><p>This parameter defines the public Ingress
+                                    FQDN.</p><p>Example:</p><codeph><codeph>oamipaddress:</codeph>
+                                    <codeph>site3-bcmt2.dyn.nesc.nokia.net</codeph></codeph><p>Must
+                                    update the default value.</p></entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p><codeph>topology.spssite.oamport</codeph></p>
+                            </entry>
+                            <entry><p>This parameter defines the public Ingress
+                                    port.</p><p>Example:</p><codeph>oamport:</codeph>
+                                <codeph>80</codeph></entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p><codeph>topology.spssite.oamprotocol</codeph></p>
+                            </entry>
+                            <entry><p>This parameter defines the public Ingress
+                                    protocol.</p><p>Example:</p><codeph>oamprotocol:</codeph>
+                                <codeph>http</codeph></entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p><codeph>topology.spssite.originhost</codeph></p>
+                            </entry>
+                            <entry>
+                                <p>This parameter defines a CNF's Diameter origin host name.</p>
+                                <p>This parameter is used without FQDN.</p>
+                                <p>Must update the default value.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p><codeph>topology.spssite.originrealm</codeph></p>
+                            </entry>
+                            <entry>
+                                <p>This parameter defines a CNF's Diameter origin realm name.</p>
+                                <p>Must update the default value.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p><codeph>topology.spssite.primarysmsite</codeph></p>
+                            </entry>
+                            <entry>
+                                <p>This parameter defines an SM or IG CNF as the primary site. This
+                                    parameter applies to SM and IG CNFs.</p>
+                                <p>In geo-configured deployments SMs and IGs are Active/Active. This
+                                    parameter allows the user to manually configure SMs and IGs as
+                                    Active/Standby. The Active/Standby configuration is required for
+                                    some plug-in components such as Ud and HLAPI.</p>
+                                <p>The values are:<ul id="ul_yrh_4nq_bmb">
+                                        <li><varname>true</varname></li>
+                                        <li><varname>false</varname></li>
+                                    </ul></p>
+                                <p>The are case sensitive and must be in lowercase.</p>
+                                <p>If this parameter is set to <varname>true</varname>, then this
+                                    CNF is considered primary. By default or if this parameter is
+                                    set to <varname>false</varname>, the system chooses the CNF with
+                                    the lowest numerical VIP value to be the primary.</p>
+                                <p>Modify the default value as needed.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p><codeph>topology.spssite.trafficipaddress</codeph></p>
+                            </entry>
+                            <entry><p>This parameter defines the public Ingress
+                                    FQDN.</p><p>Example:</p><codeph><codeph>oamipaddress:</codeph>
+                                    <codeph>site3-bcmt2.dyn.nesc.nokia.net</codeph></codeph><p>Must
+                                    update the default value.</p></entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p><codeph>topology.spssite.trafficport</codeph></p>
+                            </entry>
+                            <entry><p>This parameter defines the public Ingress
+                                    port.</p><p>Example:</p><codeph>trafficport:</codeph>
+                                <codeph>80</codeph>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p><codeph>topology.spssite.trafficprotocol</codeph></p>
+                            </entry>
+                            <entry><p>This parameter defines the public Ingress
+                                    protocol.</p><p>Example:</p><codeph><codeph>trafficprotocol:</codeph></codeph>
+                                <codeph>http</codeph></entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p><codeph>topology.spssite.types</codeph></p>
+                            </entry>
+                            <entry>
+                                <p>This parameter defines the type of a CNF.</p>
+                                <p>The following are the possible values:</p>
+                                <ul id="ul_sx4_xgq_bmb">
+                                    <li>for ME: [“SPS-Policy”, "SPS-Charging", “SPS-Notification”,
+                                        "SPS-CE"]</li>
+                                    <li>for SM: ["SPS-SM”]</li>
+                                    <li>For IG:
+                                        ["SPS-Policy","SPS-Charging","SPS-Notification","SPS-CE","SPSSM"]</li>
+                                </ul>
+                                <p>However, SPS-CE is one of the possible values, the SPS-CE
+                                    component is obsolete.</p>
+                                <p>Do not modify the default value.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry namest="c2" nameend="c3">
+                                <p>The <codeph>topology.spssite.xdr</codeph> parameters are used to
+                                    configure IP connectivity for sending XDR traffic from the
+                                    source site to the destination sites.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p><codeph>topology.spssite.xdr.externalips</codeph></p>
+                            </entry>
+                            <entry>
+                                <p>This parameter is a JSON array that contains a single element,
+                                    which is the public Ingress FQDN.</p>
+                                <p>Example:</p>
+                                <p><codeph>topology.spssite.xdr:</codeph><codeph>["site3-bcmt2.dyn.nesc.nokia.net"]</codeph></p>
+                                <p>Must update the default value.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p><codeph>topology.spssite.xdr.externalport</codeph></p>
+                            </entry>
+                            <entry>
+                                <p>This parameter is the node Port specified for incoming XDR traffic
+                                    when configuring the NCC Istio ingress gateway.</p>
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <p>The following example shows the <codeph>topology</codeph>,
+                <codeph>aerospike</codeph>, and <codeph>xdrproxy</codeph> sections configured for
+                geo-redundancy.</p>
+            <codeblock>#Site Topology Information
+ 
+  #Set this to the siteid within the topology you are currently
+  #deploying.
+  spssiteid: 2
+ 
+ 
+  # The topologydata section example can be found in the README.md
+  # (helm get readme CHARTLOCATION)
+  topologydata:
+   config:
+    topology:
+      spspartition:
+        - id: 1
+          name: ME2-ME4
+          siteids: [2,4]
+      spssite:
+        - id: 1
+          location: Ottawa-SM1
+          matesite: 3
+          name: SPS-SM1
+          oamipaddress: sm1.dyn.nesc.nokia.net
+          oamport: 30080
+          oamprotocol: http
+          originhost: ""
+          originrealm: ""
+          primarysmsite: false
+          trafficipaddress: sm1.dyn.nesc.nokia.net
+          trafficport: 30080
+          trafficprotocol: http
+          types: ["SPS-SM"]
+          xdr:
+            externalips: ["sm1.dyn.nesc.nokia.net"]
+            externalport: 3008
+        - id: 2
+          location: Ottawa-ME2
+          matesite: 4
+          name: SPS-ME2
+          oamipaddress: me2.dyn.nesc.nokia.net
+          oamport: 30081
+          oamprotocol: http
+          originhost: cnfme2
+          originrealm: realm
+          primarysmsite: false
+          trafficipaddress: me2.dyn.nesc.nokia.net
+          trafficport: 30081
+          trafficprotocol: http
+          types: ["SPS-Policy", "SPS-Charging", "SPS-Notification", "SPS-CE"]
+            externalips: ["me2.dyn.nesc.nokia.net"]
+            externalport: 3009
+        - id: 3
+          location: Montreal-SM3
+          matesite: 1
+          name: SPS-SM3
+          oamipaddress: sm3.dyn.nesc.nokia.net
+          oamport: 30080
+          oamprotocol: http
+          originhost: ""
+          originrealm: ""
+          primarysmsite: false
+          trafficipaddress: sm3.dyn.nesc.nokia.net
+          trafficport: 30080
+          trafficprotocol: http
+          types: ["SPS-SM"]
+          xdr:
+            externalips: ["sm3.dyn.nesc.nokia.net"]
+            externalport: 3008
+        - id: 4
+          location: Montreal-ME4
+          matesite: 2
+          name: SPS-ME4
+          oamipaddress: me4.dyn.nesc.nokia.net
+          oamport: 30081
+          oamprotocol: http
+          originhost: cnfme4
+          originrealm: realm
+          primarysmsite: false
+          trafficipaddress: me4.dyn.nesc.nokia.net
+          trafficport: 30081
+          trafficprotocol: http
+          types: ["SPS-Policy", "SPS-Charging", "SPS-Notification", "SPS-CE"]
+          xdr:
+            externalips: ["me4.dyn.nesc.nokia.net"]
+            externalport: 3009
+ 
+ 
+aerospike:
+  # VERIFY
+  #by default the system default storage class is used
+  #storageClass: "local-storage"
+
+  #localPvSize: "50Gi"
+  claimSize: "10Gi"
+  dscNamespace:
+    #filesize:
+    memorysize: "200M"
+  dsclocalNamespace:
+    #filesize:
+    memorysize: "400M"
+  dscglobalNamespace:
+    #filesize:
+    memorysize: "320M"
+  replicas: 4
+  spspdNamespace:
+    #filesize:
+    memorysize: "480M"
+  spsundologsNamespace:
+    memorysize: "200M"
+  resources:
+    requests:
+      cpu: 2
+      memory: "4Gi"
+    limits:
+      cpu: 2
+      memory: "4Gi"
+  logClaim:
+    enabled: true
+    size: "1Gi"
+
+# This section is required if Aerospike geo-replication is applicable
+xdrproxy:
+  enabled: true
+ 
+  # The external IP address(es) assigned to the load balancer for incoming
+  # XDR traffic.
+  externalIPs: "me2.dyn.nesc.nokia.net"
+  # The Port number assigned to the load balancer for incoming XDR traffic. Default
+  # is 3008, assign appropriate port number to avoid conflicts.
+  externalPort: 3009
+ 
+  # The content of the config-file used by the aerospike-xdr-proxy container.
+  # For more information, see Aerospike documentation,
+  # Tune the parameters in accordance with the anticipated average throughput and latency.
+  configFile:
+    service:
+      io-threads: 4
+      worker-threads: 4
+    aerospike:
+      performance:
+        event-loop-size: 4
+    logging:
+      enable-console-logging: true
+      ticker-interval: 10
+      levels:
+        root: info
+ 
+  # Increase resources on xdrproxy pods so geo/XDR works.
+  jvmheap: 3072
+  resources:
+    requests:
+      cpu: 4
+      memory: "4Gi"
+    limits:
+      cpu: 4
+      memory: "4Gi"</codeblock>
+        </section>
+    </conbody>
+</concept>

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e1261"><title>NCC architecture</title><conbody>
+<section><title>Overview</title>
+<p>The NCC application is composed of several modules that interact with each other to offer the
+                following functionalities:</p><ul>
+<li>
+<p>Performs subscriber rating and charging.</p>
+</li>
+<li>
+<p>Enables service operators to control their offers and interactions with subscribers.</p>
+</li>
+<li>
+<p>Addresses the data market.</p>
+</li>
+<li>
+<p>Performs the role of an Online Charging Function (OCF).</p>
+</li>
+</ul>
+<p>The Ro and Gy Diameter interfaces are used as native interfaces for charging and rating a session-based or event-based charging service.</p>
+<p>The Operations, Administration, and Maintenance (OA&amp;M) module of NCC is responsible for file
+                retrieval and generation of alarms in case of error events whereas the Input/Output
+                handler (I/O) handles the incoming and outgoing traffic.</p>
+<fig>
+<title>NCC  architecture</title>
+<image href="../images/img9yz-09126-ug01-pczza-sp1-charging_architecture_default.png"/>
+</fig>
+<p>Following are the major functions of each component in the NCC application:</p><ul>
+<li>
+<p>
+<uicontrol>Call controller:</uicontrol> This module encodes and decodes the Diameter Credit-Control-Request (CCR) or Credit-Control-Answer (CCA) messages. This module interfaces with the rating engine for context generation and rating response processing. </p>
+<p>Following are the sub-modules of the call controller:</p><ul>
+<li>
+<p>
+<uicontrol>Protocol specific controller:</uicontrol> This module is responsible for external protocols, such as Diameter protocol, Hyper Text Transfer Protocol (HTTP), File Transfer Protocol (FTP), and Simple Object Access Protocol (SOAP).</p>
+</li>
+<li>
+<p>
+                                                  <uicontrol>Common call controller:</uicontrol> The
+                                                  call controller module contains the logic to be
+                                                  executed when an incoming Diameter request is
+                                                  received. It interacts with the other modules of
+                                                  NCC during the processing of a received request.
+                                                  It supports CCR/CCA, RAR/RAA messages over Gy
+                                                  interface, and SLR/SLA, SNR/SNA messages over Sy
+                                                  interface.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+                        <uicontrol>Subscriber model:</uicontrol> The subscriber model is responsible
+                        for managing (lookup or update) the subscriber related information in the
+                        NCC database.</p>
+</li>
+<li>
+<p>
+                        <uicontrol>Service model:</uicontrol> The service model is responsible for
+                        managing the charging and rating entities in the NCC database like bundles,
+                        tariffs and buckets.</p>
+</li>
+<li>
+<p>
+<uicontrol>Session management:</uicontrol> The session management module is responsible for creating, updating and deleting the call sessions from memory.</p>
+</li>
+<li>
+<p>
+<uicontrol>Charging and rating engine:</uicontrol> The charging and rating engine module is responsible for selecting a charging service (from the set of defined charging services in the system) and to rate and charge the call according to the definition of the selected charging service.</p>
+</li>
+<li>
+<p>
+<uicontrol>Charging Data Record (CDR) generation framework:</uicontrol> This module is responsible for providing framework for generating application CDR in Abstract Syntax Notation (ASN) format.</p>
+</li>
+</ul>
+</section>
+<section><title>Interaction between NCC modules during a call </title>
+<fig>
+<title>Call flow showing the interaction between NCC modules</title>
+<image href="../images/img9yz-09126-ug01-pczza-sp1-call_flow_default.png"/>
+</fig>
+<p>Following steps describe how the charging modules interact with each other for a call received by
+                NCC: </p><ol>
+<li>
+<p>When a Diameter call is initiated by the Diameter client, a Credit-Control-Request initial (CCRi) message is sent to the call controller module, which encodes or decodes the Diameter CCR message and performs the message validation.</p>
+</li>
+<li>
+<p>The call controller sends a request to the subscriber model to fetch the subscriber details. In response, the subscriber model sends the requested information to the call controller.</p>
+</li>
+<li>
+<p>The call controller sends a request to the session manager to build a Call-Control (CC) session.</p>
+</li>
+<li>
+<p>After the CC session is established, the call controller requests the rule engine to apply call control rules to identify the call type, call sub-type, and so on at call control level.</p>
+</li>
+<li>
+<p>Once the call validation and subscriber lookup is completed, the call controller sends a charging request to the charging and rating engine.</p>
+</li>
+<li>
+<p>The rating engine interacts with the service model to fetch the subscription details of the device.</p>
+</li>
+<li>
+<p>After fetching the subscription details of the device, the charging and rating engine executes rules for applicability conditions, which means different rules are applied for different conditions. For example, if it is roaming call, then a different tariff is applied for charging. </p>
+</li>
+<li>
+<p>The charging and rating engine then builds a rating session in the session manager itself. </p>
+</li>
+<li>
+<p>Once all reservations are successfully completed, the charging and rating engine sends a charging response to the call controller module.</p>
+</li>
+<li>
+<p>The call controller updates the CC session with the session details fetched from the session manager.</p>
+</li>
+<li>
+<p>After updating the session, the call controller triggers the lifecycle manager to trigger lifecycle events.</p>
+</li>
+<li>
+<p>The lifecycle manager sends a notification to the notification server. The notification server sends an acknowledgment to the Diameter client (PGW) to terminate the call.</p>
+</li>
+<li>
+<p>The lifecycle manager informs the call controller that all the operations associated with the received event are executed.</p>
+</li>
+<li>
+<p>The call controller sends a CCA message to the Diameter client. This message contains the Diameter result code.</p>
+</li>
+</ol>
+</section>
+</conbody></concept>

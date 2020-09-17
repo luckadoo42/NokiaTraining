@@ -1,0 +1,760 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e8295"><title>Differential charging for IMS calls</title><conbody>
+<p>This section provides information about various scenarios for differential charging in IMS calls.</p>
+<section><title>Charging based on called party/calling party</title>
+<p>Calling Party number (CLG) and Called Party number (CLD) for a VoLTE calls are identified as
+    specified in the following table. Based on this, rules can be configured to set the calling
+    and/or called party. Differential charging can be configured based on the CLG/CLD set in
+    rules.</p>
+<table pgwide="1" colsep="1" rowsep="1">
+    <title>CLG and CLD for different call types</title>
+    <tgroup cols="3">
+     <colspec colname="col1"/>
+     <colspec colname="col2"/>
+     <colspec colname="COLSPEC0"/>
+     <thead>
+      <row>
+       <entry>
+        <p>Call Type</p>
+       </entry>
+       <entry>
+        <p>CLG</p>
+       </entry>
+       <entry>
+        <p>CLD</p>
+       </entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry> MOC </entry>
+       <entry> Subscription-Id/Subscription-Id-Data </entry>
+       <entry> Service-Information/IMS-Information/Called-Party-Address </entry>
+      </row>
+      <row>
+       <entry> MTC </entry>
+       <entry>
+        <p>Service-Information/IMS-Information/Calling-Party-Address </p>
+        <p>
+         <b>Note:</b> If <i>Calling-Party-Address</i> AVP appears multiple times, then the first one
+         in the request is used for processing.</p>
+       </entry>
+       <entry> Subscription-Id/Subscription-Id-Data </entry>
+      </row>
+      <row>
+       <entry> FWD </entry>
+       <entry>
+        <p>Service-Information/IMS-Information/Calling-Party-Address</p>
+        <p>
+         <b>Note:</b> For call forwarding, the actual calling party is provided by this AVP, but the
+         charging party is taken from Subscription-Id/Subscription-Id-Data.</p>
+       </entry>
+       <entry> Service-Information/IMS-Information/Called-Party-Address </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+<fig>
+<title>Example of CLG/CLD based charging</title>
+<!--MMO resource relative URI: ../Graphics/Release_18.9/f-CLG-CLDdiffCh_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-f-clg-clddiffch_default.png"/>
+</fig>
+<sectiondiv>
+<p><b>Parsing CLG/CLD to E164 format</b></p>
+<p>If the incoming calling part address/called party addresses is in SIP/TEL format, then it must be converted to E164 format using rules.</p>
+<p>For calling party address, the <varname>CALL_COMMON.Calling-Party</varname> condition is used to do the parsing. It takes the value from the <i>Calling-Party-Address</i> AVP.</p>
+<p>For called party address, the <varname>CALL_COMMON.Called-Party</varname> condition is used to do the parsing. It takes the value from the <i>Called-Party-Address</i> AVP.</p>
+<p>When the value in SIP/TEL format is converted to E164 format, the escape codes (+, -, and leading zeros) are removed from the number. Following are some examples of parsing:</p>
+<table colsep="1" rowsep="1">
+     <tgroup cols="2">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <thead>
+       <row>
+        <entry>
+         <p>SIP/TEL URI</p>
+        </entry>
+        <entry>
+         <p>Parsed E164 value</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> sip:+919958882103;rn=9918872101@Nokia.host;npri=888878798 </entry>
+        <entry> 919958882103 </entry>
+       </row>
+       <row>
+        <entry> tel:+919958882103;rn=9918872101@Nokia.host;npri=888878798 </entry>
+        <entry> 919958882103 </entry>
+       </row>
+       <row>
+        <entry> sip:+915559343211;rn=9918872103@Nokia.host;npri=888878798 </entry>
+        <entry> 915559343211 </entry>
+       </row>
+       <row>
+        <entry> tel:+915559343211;rn=9918872103@Nokia.host;npri=888878798 </entry>
+        <entry> 915559343211 </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+<note>
+<p>From the SIP/TEL URI, the value between the first colon (:) and the first semicolon (;) is picked for parsing. If '@' appears before semicolon (;), then the value between the first colon (:) and '@' is picked for parsing.</p>
+</note>
+</sectiondiv>
+</section>
+<section><title>Charging based on call sub-type</title>
+<p>Identification of call sub-type (MOC, MTC, or FWD) is done through rules based on the following logic:</p>
+<table pgwide="1" colsep="1" rowsep="1">
+    <tgroup cols="2">
+     <colspec colname="col1"/>
+     <colspec colname="col2"/>
+     <thead>
+      <row>
+       <entry>
+        <p>AVP</p>
+       </entry>
+       <entry>
+        <p>Call sub-type</p>
+       </entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry> Service-Information &gt; IMS-Information &gt; Role-Of-Node = 0 </entry>
+       <entry> MOC </entry>
+      </row>
+      <row>
+       <entry> Service-Information &gt; IMS-Information &gt; Role-Of-Node = 1 </entry>
+       <entry> MTC </entry>
+      </row>
+      <row>
+       <entry>
+        <p>Service-Information &gt; IMS-Information &gt; Role-Of-Node = 2</p>
+        <p>or</p>
+        <p>Service-Information &gt; IMS-Information &gt; Role-Of-Node = 0 and Service-Information
+         &gt; MMTel-Information &gt; Supplemantary-Service &gt; MMTel-SService-Type=6</p>
+       </entry>
+       <entry> FWD </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+<p>The examples in the following figures demonstrate rules and tariff configuration for call sub-type based charging.</p>
+<fig>
+    <title>Example: IMS rules for call sub-type</title>
+    <image href="../images/img9yz-09126-ug01-pczza-sp1-imsrulecallsubtype_default.png" scale="50"/>
+   </fig>
+<fig>
+    <title>Example: Tariff configuration for call sub-type</title>
+    <!--MMO resource relative URI: ../Graphics/Release_18.9/tariffCallSybtype_default.png-->
+    <image href="../images/img9yz-09126-ug01-pczza-sp1-tariffcallsybtype_default.png" scale="50"/>
+   </fig>
+</section>
+<section><title>Charging based on call time</title>
+<p>Charging for IMS calls based on call time is done through rules. The <i>Service-Information &gt; IMS-Information &gt; SIP-Request-Timestamp</i> AVP is used for time-based charging in IMS calls.</p>
+<p>If the <i>SIP-Request-Timestamp</i> AVP is available, then the event timestamp is set with this value.</p>
+<p>If the <i>SIP-Request-Timestamp</i> AVP is missing, then the event timestamp is set from the value of the <i>Event-Timestamp</i> AVP. If the <i>Event-Timestamp</i> AVP is also missing, then the current platform time is used.</p>
+<fig>
+<title>Sample rule for call-time-based charging</title>
+<!--MMO resource relative URI: ../Graphics/Release_18.9/f-callTimeCharging_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-f-calltimecharging_default.png" scale="70"/>
+</fig>
+</section>
+<section><title>First call for a device</title>
+<p>In the device entity, the <uicontrol>isFirstCallDone</uicontrol> variable determines whether a call is the first call for a device. For the first call, this parameter can be set to <varname>true</varname>. For subsequent calls, this parameter remains <varname>false</varname>.</p>
+<p>
+<b>Charging based on first call</b>
+</p>
+<p>Differential charging for the first call for a device can be configured using the <uicontrol>isFirstCall</uicontrol> variable in the <varname>SPR_DEVICE</varname> source context. The <uicontrol>SPR_DEVICE.isFirstCall</uicontrol> variable returns <varname>true</varname> for the first call. For subsequent calls, this variable returns <varname>false</varname>.</p>
+<fig>
+<title>Example: Tariff formula for differential charging based on first call</title>
+<!--MMO resource relative URI: ../Graphics/Release_19.0/diffChargingFstCall_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-diffchargingfstcall_default.png"/>
+</fig>
+<sectiondiv>
+<p><b>Sending notification for the first call</b></p>
+<p>To send the notification for the first call for a device, rule in the threshold is as below:</p><ol>
+<li>
+<p>Navigate to <b>Policy &amp; Charging Configuration → Common → Threshold</b>.</p>
+</li>
+<li>
+<p>Create a new charging threshold or update an existing one.</p>
+</li>
+<li>
+<p>In the applicability condition, provide the following condition and continue to the next step:</p>
+<p>
+<systemoutput>SPR_DEVICE.Is-First-Call = true</systemoutput>
+</p>
+</li>
+<li>
+<p>Configure rule for an absolute start threshold as follows:</p>
+<!--MMO resource relative URI: ../Graphics/Release_19.0/notifFirstCall_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-notiffirstcall_default.png"/>
+</li>
+<li>
+<p>Configure a rule in charging service as follows:</p>
+<!--MMO resource relative URI: ../Graphics/Release_19.0/notifFirstCall2_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-notiffirstcall2_default.png"/>
+</li>
+</ol>
+</sectiondiv>
+</section>
+<section><title>Destination-based charging</title>
+<sectiondiv>
+    <p><b>Charging based on onnet or offnet IMS calls</b></p>
+    <p>Differential charging for onnet and offnet IMS calls can be done through rules, using the
+      <i>IMS_SERVICE_INFO</i> source context. This source context is available for the following
+     triggers:</p><ul>
+     <li>
+      <p>
+       <i>IMS_CALL_ESTABLISHMENT</i>
+      </p>
+     </li>
+     <li>
+      <p>
+       <i>IMS_CALL_MODIFICATION</i>
+      </p>
+     </li>
+     <li>
+      <p>
+       <i>APPLICABILITY</i>
+      </p>
+     </li>
+     <li>
+      <p>
+       <i>TARIFF</i>
+      </p>
+     </li>
+    </ul>
+    <p>The following condition is used to check whether a call is onnet or offnet.</p>
+    <systemoutput>IMS_SERVICE_INFO.Is-OnNet = true</systemoutput>
+    <p>The default number of starting digits for this condition is 6. That is, if the starting six
+     digits of the calling and called numbers are the same, then they are considered as onnet.
+     Otherwise, they are considered as offnet.</p>
+    <note>
+     <p>+/- and leading zeroes are not considered as starting digits.</p>
+    </note>
+    <table frame="all" pgwide="1" colsep="1" rowsep="1">
+     <title>Examples: Onnet or offnet based on CLG and CLD</title>
+     <tgroup cols="3">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <colspec colname="col3"/>
+      <thead>
+       <row>
+        <entry>
+         <p>CLG</p>
+        </entry>
+        <entry>
+         <p>CLD</p>
+        </entry>
+        <entry>
+         <p>Onnet or offnet</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> tel:+919999955555 </entry>
+        <entry> tel:+919999954321 </entry>
+        <entry> Onnet </entry>
+       </row>
+       <row>
+        <entry> tel:+919999955555 </entry>
+        <entry> tel:-919999954321 </entry>
+        <entry> Onnet </entry>
+       </row>
+       <row>
+        <entry> +529999955555 </entry>
+        <entry> 0529999954321 </entry>
+        <entry> Onnet </entry>
+       </row>
+       <row>
+        <entry> +529999955555 </entry>
+        <entry> 0000529999954321 </entry>
+        <entry> Onnet </entry>
+       </row>
+       <row>
+        <entry> +21669999955555 </entry>
+        <entry> +66219999944321 </entry>
+        <entry> Offnet </entry>
+       </row>
+       <row>
+        <entry> +9999955555 </entry>
+        <entry> -9999944321 </entry>
+        <entry> Offnet </entry>
+       </row>
+       <row>
+        <entry> +9999955555 </entry>
+        <entry> 09999944321 </entry>
+        <entry> Offnet </entry>
+       </row>
+       <row>
+        <entry> +19999955555 </entry>
+        <entry> 00009999944321 </entry>
+        <entry> Offnet </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+    <p>The default number of starting digits can be changed using the condition shown in the
+     following example:</p>
+    <systemoutput>IMS_SERVICE_INFO.Is-OnNet-Explicit-Check (3) = true</systemoutput>
+    <p>The syntax for this context is <systemoutput>IMS_SERVICE_INFO.Is-OnNet-Explicit-Check
+      ("Calling_Party_STRING", Called_Party_STRING", Digits_For_Prefix_LONG)</systemoutput>.
+     However, <systemoutput>Calling_Party_STRING</systemoutput> and
+      <systemoutput>Called_Party_STRING</systemoutput> are optional.</p>
+    <p>The following figure provides an example rule for destination-based charging.</p>
+    <fig>
+     <title>Example: Rule configuration for destination-based charging - onnet or offnet IMS
+      calls</title>
+     <!--MMO resource relative URI: ../Graphics/Release_18.9/isOnnetOffnet_default.png-->
+     <image href="../images/img9yz-09126-ug01-pczza-sp1-isonnetoffnet_default.png"/>
+    </fig>
+   </sectiondiv>
+<sectiondiv>
+<p><b>Charging based on onnet or offnet SMS and MMS calls</b></p>
+<p>Differential charging for onnet and offnet SMS and MMS calls can be done through rules, using the <i>GY_MESSAGE</i> source context.</p>
+<p>The following conditions are used to check whether an SMS or MMS is onnet or offnet:</p><ul>
+<li>
+<p>
+<systemoutput>GY_MESSAGE.Is-OnNet = True/False</systemoutput>
+</p>
+<p>This value is taken from the <i>Subscriber-Id</i> and <i>Recipient-Address</i> AVPs.</p>
+</li>
+<li>
+<p>
+<systemoutput>GY_MESSAGE.Is-OnNet-Explicit-Check ( "Calling_Party_STRING", Called_Party_STRING", Digits_For_Prefix_LONG ) = True/False</systemoutput>
+</p>
+</li>
+</ul>
+<p>Similar to IMS calls, for SMS and MMS also, the default number of starting digits for this condition is 6. That is, if the starting six digits of the calling and called numbers are the same, then they are considered as onnet. Otherwise, they are considered as offnet.</p>
+<note>
+<p>+/- and leading zeroes are not considered as starting digits.</p>
+</note>
+<fig>
+<title>Example: Tariff configuration for destination-based charging - onnet or offnet SMS or MMS calls</title>
+<!--MMO resource relative URI: ../Graphics/Release_19.0/OnNetOffNetSMS_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-onnetoffnetsms_default.png"/>
+</fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>Charging based on country of called party</b></p>
+<p>Differential charging based on country code of the called party can be done through rules, using the <i>IMS_SERVICE_INFO</i> source context. The <i>Called-Party-Address</i> AVP extracts the country code, which is mapped to find the destination country name.</p>
+<p>Charging is based on the country name through tariff rule. For differential charging based on called country, the <uicontrol>Called-Party-Country</uicontrol> value is available in the <i>CALL_COMMON</i> source context.</p>
+<p>The <i>Called-Party-CC of IMS_SERVICE_INFO</i> source context is available for the following triggers:</p><ul>
+<li>
+<p>
+<i>IMS_CALL_ESTABLISHMENT</i>
+</p>
+</li>
+<li>
+<p>
+<i>IMS_CALL_MODIFICATION</i>
+</p>
+</li>
+<li>
+<p>
+<i>IMS_CALL_TERMINATION</i>
+</p>
+</li>
+<li>
+<p>
+<i>APPLICABILITY</i>
+</p>
+</li>
+<li>
+<p>
+<i>TARIFF</i>
+</p>
+</li>
+<li>
+<p>
+<i>THRESHOLD</i>
+</p>
+</li>
+</ul>
+<p>The following table provides the list of the standard one-digit and two-digit country codes.
+     These country codes are predefined in NCC. For three-digit country codes, a complex map must be
+     created.</p>
+<note>
+<p>Complex map cannot be used for one-digit and two-digit country codes.</p>
+</note>
+<table frame="all" id="cctable" pgwide="1" colsep="1" rowsep="1">
+     <title>Predefined one-digit and two-digit country codes and corresponding country names</title>
+     <tgroup cols="4">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <colspec colname="col3"/>
+      <colspec colname="col4"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Country Code</p>
+        </entry>
+        <entry>
+         <p>Country Name</p>
+        </entry>
+        <entry>
+         <p>Country Code</p>
+        </entry>
+        <entry>
+         <p>Country Name</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> 1 </entry>
+        <entry> USA </entry>
+        <entry> 54 </entry>
+        <entry> Argentina </entry>
+       </row>
+       <row>
+        <entry> 7 </entry>
+        <entry> Russia </entry>
+        <entry> 55 </entry>
+        <entry> Brazil </entry>
+       </row>
+       <row>
+        <entry> 20 </entry>
+        <entry> Egypt </entry>
+        <entry> 56 </entry>
+        <entry> Chile </entry>
+       </row>
+       <row>
+        <entry> 27 </entry>
+        <entry> South Africa </entry>
+        <entry> 57 </entry>
+        <entry> Colombia </entry>
+       </row>
+       <row>
+        <entry> 30 </entry>
+        <entry> Greece </entry>
+        <entry> 58 </entry>
+        <entry> Venezuela </entry>
+       </row>
+       <row>
+        <entry> 31 </entry>
+        <entry> Netherlands </entry>
+        <entry> 60 </entry>
+        <entry> Malaysia </entry>
+       </row>
+       <row>
+        <entry> 32 </entry>
+        <entry> Belgium </entry>
+        <entry> 61 </entry>
+        <entry> Australia </entry>
+       </row>
+       <row>
+        <entry> 33 </entry>
+        <entry> France </entry>
+        <entry> 62 </entry>
+        <entry> Indonesia </entry>
+       </row>
+       <row>
+        <entry> 34 </entry>
+        <entry> Spain </entry>
+        <entry> 63 </entry>
+        <entry> Philippines </entry>
+       </row>
+       <row>
+        <entry> 36 </entry>
+        <entry> Hungary </entry>
+        <entry> 64 </entry>
+        <entry> New Zealand </entry>
+       </row>
+       <row>
+        <entry> 39 </entry>
+        <entry> Italy </entry>
+        <entry> 65 </entry>
+        <entry> Singapore </entry>
+       </row>
+       <row>
+        <entry> 40 </entry>
+        <entry> Romania </entry>
+        <entry> 66 </entry>
+        <entry> Thailand </entry>
+       </row>
+       <row>
+        <entry> 41 </entry>
+        <entry> Switzerland </entry>
+        <entry> 81 </entry>
+        <entry> Japan </entry>
+       </row>
+       <row>
+        <entry> 43 </entry>
+        <entry> Austria </entry>
+        <entry> 82 </entry>
+        <entry> Korea </entry>
+       </row>
+       <row>
+        <entry> 44 </entry>
+        <entry> UK </entry>
+        <entry> 86 </entry>
+        <entry> China </entry>
+       </row>
+       <row>
+        <entry> 45 </entry>
+        <entry> Denmark </entry>
+        <entry> 90 </entry>
+        <entry> Turkey </entry>
+       </row>
+       <row>
+        <entry> 46 </entry>
+        <entry> Sweden </entry>
+        <entry> 91 </entry>
+        <entry> India </entry>
+       </row>
+       <row>
+        <entry> 47 </entry>
+        <entry> Norway </entry>
+        <entry> 92 </entry>
+        <entry> Pakistan </entry>
+       </row>
+       <row>
+        <entry> 48 </entry>
+        <entry> Poland </entry>
+        <entry> 93 </entry>
+        <entry> Afghanistan </entry>
+       </row>
+       <row>
+        <entry> 49 </entry>
+        <entry> Germany </entry>
+        <entry> 94 </entry>
+        <entry> Sri Lanka </entry>
+       </row>
+       <row>
+        <entry> 51 </entry>
+        <entry> Peru </entry>
+        <entry> 95 </entry>
+        <entry> Myanmar </entry>
+       </row>
+       <row>
+        <entry> 52 </entry>
+        <entry> Mexico </entry>
+        <entry> 98 </entry>
+        <entry> Iran </entry>
+       </row>
+       <row>
+        <entry> 53 </entry>
+        <entry> Cuba </entry>
+        <entry> - </entry>
+        <entry> - </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+<p>
+<b>Example: Configuration for pre-defined country code</b>
+</p>
+<p>Existing country codes are defined in NCC. The following figure provides an example tariff
+     formula for differential charging based on predefined country codes (available in
+      <!--xref URI: #ccTable--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-d1e8295/cctable"/>).<fig>
+      <title>Example: Charging based on Called-Party-Address</title>
+      <!--MMO resource relative URI: ../Graphics/Release_19.0/contryCdCharging_default.png-->
+      <image href="../images/img9yz-09126-ug01-pczza-sp1-contrycdcharging_default.png"/>
+     </fig></p>
+<p>
+<b>Example: Configuration for new country code</b>
+</p>
+<p>If the operator wants to add a new three-digit country code, it must define it in a complex map and then use it in rules.</p><ol>
+<li>
+<p>Navigate to <uicontrol>Policy &amp; Charging → Common → ≡ → Mapping Tables</uicontrol> and define a map with key value pares for country name and country code respectively.</p>
+</li>
+<li><p>Use the map name to create a rule variable in the
+        <systemoutput>IMS_CALL_ESTABLISHMENT</systemoutput> trigger.</p>
+      <!--MMO resource relative URI: ../Graphics/Release_19.0/CCruleVar2_default.png-->
+      <image href="../images/img9yz-09126-ug01-pczza-sp1-ccrulevar2_default.png"/>
+     </li>
+<li><p>Use the rule variable in a rule group.</p>
+      <!--MMO resource relative URI: ../Graphics/Release_19.0/CCruleVar1_default.png-->
+      <image href="../images/img9yz-09126-ug01-pczza-sp1-ccrulevar1_default.png"/>
+     </li>
+</ol>
+</sectiondiv>
+</section>
+<section><title>Access-Network-Information (ANI) AVP</title>
+<p>The <i>Access-Network-Information</i> AVP (AVP code 1263) is of type <varname>OctetString</varname> and indicates one instance of the SIP P-header <varname>P-Access-Network-Info</varname>. In SIP, as per RFC 7315 [404], the content of the <userinput>P-Access-Network-Info</userinput> header is known as the access-net-spec. When multiple access-net-spec values are transported in a single <userinput>P-Access-Network-Info</userinput> header in comma-separated format, then multiple <i>Access-Network-Information</i> AVPs are used with one access-net-spec value included in each AVP.</p>
+</section>
+<section><title>Charging based on ViLTE rating group</title>
+<p>The VoLTE or ViLTE correlation support over the Diameter 4G interface uses the <uicontrol>ViLTE Rating Group</uicontrol> system parameter that identifies the ViLTE call over the Gy interface. However, this functionality is disabled when the <uicontrol>ViLTE Rating Group</uicontrol> is set as <varname>-1</varname>. Otherwise, this functionality is enabled and the configured value is considered as per the rating group of a ViLTE call.</p>
+<p>This functionality enhances the capability of LTE Video Call (LTC) for performing smooth transition between voice and LVC.</p>
+<p>The hard-stop of a volume limit over ViLTE call is checked when a video call is received over the IMS Ro interface and the <uicontrol>ViLTE Rating Group</uicontrol> system parameter is enabled.</p>
+<p>The volume quota is checked over ViLTE call and the following conditions are considered to check the hard-stop limit of volume:</p><ul>
+<li>
+<p>All volume buckets are exhausted.</p>
+</li>
+<li>
+<p>The hard-stop limit is reached over a counter, either due to the <systemoutput>Reject</systemoutput> threshold action or when the maximum limit of a counter is reached.</p>
+</li>
+<li>
+<p>No volume resources are available to rate and charge any rating groups when it comes over the Gy interface.</p>
+</li>
+<li>
+<p>The account balance is not available to rate and charge any rating groups when it comes over the Gy interface.</p>
+</li>
+<li>
+<p>A Usage Control (UC) limit is reached for a device.</p>
+</li>
+<li>
+<p>PL or DL check is preformed.</p>
+</li>
+<li>
+<p>A Time of Day (TOD) check is performed.</p>
+</li>
+<li>
+<p>Minutes allowance (when time bucket is available).</p>
+</li>
+<li>
+<p>This rating group is not present in a Gy request on a Ro interface, but when it is an LVC call and the <uicontrol>ViLTE Rating Group</uicontrol> system parameter is configured similar to that in a rating group to check the data allowance. The same rating group is present in the Gy request.</p>
+</li>
+</ul>
+<p>When a CCR message is received over the Gy interface containing the rating group for a ViLTE call, the hard-stop limit is checked. If the hard-stop limit is reached, then it responds with a result code <systemoutput>2001</systemoutput> in a CCA message over the Gy interface and a RAR message is triggered for all active IMS Ro sessions. When a RAR message is sent over the IMS Ro interface, it leads to the arrival of CCR-U(s) message from TAS. Whereas, on the arrival of CCR-U message, the hard-stop limit of volume to be checked and if the hard-stop limit is reached, then the video call is responded with result code <systemoutput>2001</systemoutput> at root level and result code <systemoutput>4012</systemoutput> at MSCC level. The Ro and Gy sessions are not terminated and a CCR-U message is returned from TAS for a voice call, which means transition of video call to voice call, and a CCR-T message from PGW for the Gy session.</p>
+<note>
+<p>Following conditions are assumed:</p><ul>
+<li>
+<p>VoLTE or ViLTE calls are running over Diameter 4G interface and only a single MSCC is supported in an IMS call.</p>
+</li>
+<li>
+<p>Only one type of voice media is supported and there is no differentiation between HD or non-HD voice.</p>
+</li>
+<li>
+<p>This functionality is applicable to originating, terminating, and forwarding a ViLTE call. However, starting a new call during an update or terminate operation is not supported for an IMS call.</p>
+</li>
+<li>
+<p>There are no retries of RAR, which means in case of any failure, a subscriber would continue to have video call for a short duration till next CCR-U request is received over the IMS Ro interface.</p>
+</li>
+<li>
+<p>The <i>CALL_COMMON</i> and <i>Gy_MESSAGE</i> are supported in rules for Gy estimation.</p>
+</li>
+<li>
+<p>When IMS call returns a result code <systemoutput>4012</systemoutput> or <systemoutput>5031</systemoutput> in CCR-U message, then the validity time value is picked from the <uicontrol>Ims session inactivity duration</uicontrol>.</p>
+</li>
+<li>
+<p>For a soft limit Gy call, the validity time is picked from the <uicontrol>Validity Time</uicontrol> defined in the slicing profile.</p>
+</li>
+</ul>
+</note>
+</section>
+<section><title>ANI or cell-based charging</title>
+<p>Location of the subscriber is determined using the <i>Service-Information &gt; IMS-Information &gt; Access-Network-Information AVP. Decoding of Access-Network-Information</i> AVP is done to extract relevant information. The decoding takes into consideration the fact that MNC can either be of two digits or three digits in length. The decoding separates all information of <i>ANI</i> AVP, for example, MCC, MNC, LAC CI, and this information is available for use in rules and custom data. If the <i>ANI</i> AVP appears multiple times, the first one is considered for processing.</p>
+<p>In the example described in the following figure, the following conditions are used to detect EUTRAN and GERAN calls.</p>
+<systemoutput>IMS_SERVICE_INFO.RAT-TYPE = RATType3Gpp_EUTRAN</systemoutput>
+<systemoutput>IMS_SERVICE_INFO.RAT-TYPE = RATType3Gpp_GERAN</systemoutput>
+<fig>
+<title>Sample rule for cell-based charging</title>
+<!--MMO resource relative URI: ../Graphics/Release_18.9/f-ANI-charging_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-f-ani-charging_default.png" scale="70"/>
+</fig>
+</section>
+<section><title>Roaming-based charging</title>
+<p>Roaming is determined based on complex map using MCC and MNC AVP extracted from the <i>ANI</i> AVP. Roaming information is then used in rules to decide on charging based on roaming location.</p>
+<fig>
+<title>Sample complex map for roaming configuration</title>
+<!--MMO resource relative URI: ../Graphics/Release_18.9/f-roamComplexMap_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-f-roamcomplexmap_default.png" scale="50"/>
+</fig>
+<fig>
+<title>Sample rule variable for roaming</title>
+<!--MMO resource relative URI: ../Graphics/Release_18.9/f-roamRuleVar_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-f-roamrulevar_default.png" scale="50"/>
+</fig>
+<fig>
+<title>Sample rule for roaming</title>
+<!--MMO resource relative URI: ../Graphics/Release_18.9/f-RoamRuleGrp_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-f-roamrulegrp_default.png" scale="50"/>
+</fig>
+<p>For termination calls, the <i>ANI</i> AVP may not be present in the CCR-I. In this case, the original user location for the terminating call from first CCR-U is considered, if available, irrespective of whether the triggered feature support is turned on or off, and whether location change trigger is included or not. This value is set in the <systemoutput>origUserLocationInfo</systemoutput> CDR tag.</p>
+<p>For example, if CCR-I <i>ANI</i> AVP includes a value <varname>a</varname>, and the first CCR-U <i>ANI</i> AVP includes a value <varname>b</varname>, then the value of the <systemoutput>origUserLocationInfo</systemoutput> tag in CDR is as follows:</p><ul>
+<li>
+<p>for CCR-I: the value is <varname>a</varname>
+</p>
+</li>
+<li>
+<p>for CCR-U1: the value is <varname>b</varname>
+</p>
+</li>
+</ul>
+</section>
+<section><title>Media-based charging</title>
+<p>The media type is determined through rules. The media type used for the call (whether initial or at media change) is read from the AVP <i>Service-Information &gt; IMS-Information &gt; SDP-Media-Component &gt; SDP-Media-Name</i>.</p>
+<p>The following media types are only supported for the VoLTE calls:</p>
+<table pgwide="1" colsep="1" rowsep="1">
+    <tgroup cols="2">
+     <colspec colname="col1"/>
+     <colspec colname="col2"/>
+     <thead>
+      <row>
+       <entry>
+        <p>Media type</p>
+       </entry>
+       <entry>
+        <p>AVP value format</p>
+       </entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry> Audio </entry>
+       <entry> audio 49170 RTP/AVP 0 </entry>
+      </row>
+      <row>
+       <entry> Video </entry>
+       <entry> video 49170/2 RTP/AVP 31 </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+<p>The first string in the AVP value is the media type for the call. If there are multiple <i>SDP-Media-Name</i> AVPs in the CCR message with both audio and video media names, then the call is considered as a video call. If <i>SDP-Media-Component</i> AVP is not present, then the media is considered as audio.</p>
+<fig>
+<title>Sample rule for media-based charging</title>
+<!--MMO resource relative URI: ../Graphics/Release_18.9/f-mediaBasedCh_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-f-mediabasedch_default.png"/>
+</fig>
+</section>
+<section><title>Charging based on closed user group calls</title>
+<p>If both the calling party and called party are part of the same closed user group (CUG), then the call is an in-group call. Otherwise, the call is an out-group call. Differential charging can be configured for in-group/out-group calls, for voice, SMS, and MMS.</p>
+<p>CUG call is checked only if the call is onnet.</p>
+<p>The <uicontrol>Cug_Groups</uicontrol> attribute in the <i>CALL_COMMON</i> source context configures differential charging based on in-group or out-group calls. This attribute is available for the following triggers:</p><ul>
+<li>
+<p>
+<i>APPLICABILITY</i>
+</p>
+</li>
+<li>
+<p>
+<i>TARIFF</i>
+</p>
+</li>
+<li>
+<p>
+<i>THRESHOLD</i>
+</p>
+</li>
+</ul>
+<p>The application preference <i>CUG Based Charging Applicability</i> is used to enable or disable the feature. It has possible values as 0, 1, 2 and the default value is 0. See charging application preferences for details.</p>
+<p>The cugGroups has the group IDs of the common groups of the calling party and the called party (as shown in the following figure).</p>
+<fig>
+<title>CUG groups in SM GUI</title>
+<!--MMO resource relative URI: ../Graphics/Release_19.0/cug2_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-cug2_default.png" scale="70"/>
+</fig>
+<fig>
+<title>Example: Tariff formula for CUG calls</title>
+<!--MMO resource relative URI: ../Graphics/Release_19.0/ruleCUG_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-rulecug_default.png"/>
+</fig>
+<p>The CDR parameter <uicontrol>CugGroups</uicontrol> is added to the CDR and contains the list of CUG groups of the called and calling party under the following conditions:</p><ol>
+<li>
+<p>The <uicontrol>CugGroups</uicontrol> is enabled in application preference.</p>
+</li>
+<li>
+<p>The calling and called parties contain any common groups.</p>
+</li>
+</ol>
+</section>
+</conbody></concept>

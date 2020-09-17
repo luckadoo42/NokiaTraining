@@ -1,0 +1,2142 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//NSN//DTD DITA Concept//EN" "nsnconcept.dtd">
+		<concept id="id9YZ-09018--PL00-FPZZA-d1e4920"><title>Case 4: Group sharing controls for large enterprise</title><conbody>
+
+<section><title>Overview</title>
+
+<p>Corpus is a large enterprise that wants to track the data consumption between its departments and
+    individual employees. The levels of hierarchy in Corpus is as shown in the following figure:</p>
+<fig>
+<title>Large enterprise levels</title>
+<!--MMO resource relative URI: ../../18.0/graphics/Group_sharing_control_default.png-->
+<image href="../images/group_sharing_control_default.png"/>
+</fig>
+<p>The top-level management is associated with a prepaid bundle for consumption of 1 TB data and
+    unlimited SMS or MMS services. All the levels have unlimited data sharing access. The data
+    consumption is tracked per individual and at the top-level management. When the data consumption
+    exceeds the threshold level defined per individual, an email is sent to the user notifying that
+    the threshold levels are exceeded.</p>
+</section>
+<section><title>Flow of events</title>
+
+<p/><ul>
+
+<li>Provision the Corpus enterprise with devices provisioned in the <uicontrol>Active</uicontrol>
+     state.</li>
+<li>Subscribe the top-level management to the data bundle package of 1 TB data, and unlimited SMS or
+     MMS services.</li>
+<li>Configure all the levels with unlimited data sharing access.</li>
+<li>Verify that an email is sent when the data consumption exceeds the threshold level defined per
+     individual to notify that threshold level is exceeded.</li>
+<li>Execute a CCR-I call for devices - <varname>Device1</varname>, <varname>Device2</varname>, and
+      <varname>Device3</varname>. The call is successful for all three devices and
+      <varname>Dynamic_Past_Usage</varname> is updated for three devices of group usage. All three
+     devices are dormant after call execution, number of dormant lines after CCR-I is 3, and the
+     requested units is allocated to these three devices.</li>
+<li>Execute a CCR-I call for device (<varname>Device4</varname>). Call for
+      <varname>Device4</varname> is successful and the <varname>Device4</varname> turns to dormant.
+     The requested units is allocated to <varname>Device4</varname> and number of dormant lines
+     after the call is 4.</li>
+<li>Execute a CCR-U1 call for <varname>Device4</varname> with low usage. Call for
+      <varname>Device4</varname> is successful and the <varname>Device4</varname> remains dormant.
+     This shows the duration for which the low usage is allowed for low slice allocation. The
+      <varname>Device4 counter1</varname> is sum of usage done by <varname>Device4</varname> from
+     top-group Nokia. The <varname>Device4 counter2</varname> is sum of usage done by all the
+     devices from Nokia group.</li>
+<li>Execute a CCR-U2 call for <varname>Device4</varname> with high usage. Call for
+      <varname>Device4</varname> is successful and <varname>Device4</varname> moves fromdormant to
+     active state, which shows how the high usage allows for high slice allocation. The
+      <varname>Device4</varname> counter1 is sum of usage done by Device4 from top group Nokia. The
+      <varname>Device4 counter2</varname> is sum of usage done by all the devices from Nokia group.
+     Verify that the notifications are sent when the consumption exceeds limits per device.</li>
+<li>Execute a CCR-I call for <varname>Device5</varname> and then excute a CCR-U call with
+     overcommit, such that the milestone is about to be reached for group resource. Call for
+      <varname>Device5</varname> is successful and <varname>Device5</varname> moves from dormant to
+     active state. Verify that RAR is initiated for four devices (<varname>Device1</varname>,
+      <varname>Device2</varname>, <varname>Device3</varname>, and <varname>Device4</varname>) for
+     which reservation is done from group resource as last milestone is about to be reached. The
+      <varname>Device5 counter1</varname> is sum of usage done by <varname>Device5</varname> from
+     top-group Nokia. The <varname>Device5 counter2</varname> is sum of usage done by all the
+     devices from Nokia group resources. Verify that the notifications are sent when the consumption
+     exceeds limits per device.</li>
+<li>Initiate an SMS call for <varname>Device1</varname> and <varname>Device2</varname> devices and
+     verify that SMS call is successful for all devices.</li>
+<li>Initiate an MMS call for <varname>Device1</varname> and <varname>Device2</varname> devices and
+     verify that MMS call is successful for all devices.</li>
+</ul>
+</section>
+<section><title>Provisioning</title>
+
+<note type="attention">
+
+<p>Ensure that after creating a record, you distribute it to ME. Otherwise, the provisioning will not be successful.</p>
+</note>
+<p>Following entities are required for this use case.<table pgwide="1" colsep="1" rowsep="1">
+     <title>Entities for case 4</title>
+     <tgroup cols="2">
+      <colspec colname="col1" colwidth="1*"/>
+      <colspec colname="col2" colwidth="1.51*"/>
+      <thead>
+       <row>
+        <entry>Entity</entry>
+        <entry>Action</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry>Notification preferences</entry>
+        <entry>Select the notification channel as email.</entry>
+       </row>
+       <row>
+        <entry>Notification templates</entry>
+        <entry>Create a notification template and define the text to send to devices when the usage
+         exceeds the defined threshold.</entry>
+       </row>
+       <row>
+        <entry>Notification servers</entry>
+        <entry>Configure a notification server.</entry>
+       </row>
+       <row>
+        <entry>Thresholds</entry>
+        <entry>Create an absolute threshold for device and percentage threshold for milestone for
+         dynamic slice.</entry>
+       </row>
+       <row>
+        <entry>Rates</entry>
+        <entry>Create different rates for volume, money, unit.</entry>
+       </row>
+       <row>
+        <entry>Charging services</entry>
+        <entry>
+         <p>Create the following two charging services:</p>
+         <ul>
+          <li>A charging service <varname>NokiaDataCS</varname> applicable to top-node only with a
+           bucket of 1 TB.</li>
+          <li>A charging service applicable to all other nodes linked to rate created for
+           volume.</li>
+         </ul>
+        </entry>
+       </row>
+       <row>
+        <entry>Lifecycles</entry>
+        <entry>Create lifecycles for accounts, devices, groups, and bundles.</entry>
+       </row>
+       <row>
+        <entry>Bundles</entry>
+        <entry>Create bundles for three levels of hierarchy along with device bundle. Assign 1 TB of
+         bucket only to the top-level node.</entry>
+       </row>
+       <row>
+        <entry>Slicing profile</entry>
+        <entry>Create a slicing profile.</entry>
+       </row>
+       <row>
+        <entry>Counters</entry>
+        <entry>Create counters, such as <varname>Nokia_Counter</varname> and
+          <varname>Emp_Counter</varname> to track the data usage.</entry>
+       </row>
+       <row>
+        <entry>Custom data</entry>
+        <entry>Create a <varname>GroupType</varname> custom data to associate with group.</entry>
+       </row>
+       <row>
+        <entry>Accounts</entry>
+        <entry>Create individual and group accounts and associate them with entity name.</entry>
+       </row>
+       <row>
+        <entry>Groups</entry>
+        <entry>Create group for three levels of hierarchy and associate lifecycle, for example,
+          <varname>EnterpriseGroupLifeCycle</varname> in the current use case. </entry>
+       </row>
+       <row>
+        <entry>Devices</entry>
+        <entry>Create the devices and associate them with device lifecycle.</entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table></p>
+<p>Provision the following data from SM GUI:</p><ol>
+
+<li>Create a notification profile with <emphasis>Channel</emphasis> = <varname>Email</varname> and
+      <emphasis>Notification Type</emphasis> = <varname>THRESHOLD</varname> on the notification
+     server. </li>
+<li>Create a notification template with the text to be sent. <table pgwide="1" colsep="1" rowsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.25*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>Name</entry>
+         <entry><varname>Device_Data_Template</varname></entry>
+        </row>
+        <row>
+         <entry>Notification priority</entry>
+         <entry>Normal</entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <!--MMO resource relative URI: ../graphics/Case4_NT_default.png-->
+     <image href="../images/case4_nt_default.png" scale="50"/>
+    </li>
+<li>Configure the notification server to send an email.</li>
+<li>Create a device threshold following the given steps:<ol>
+      <li>Navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select
+        <uicontrol>Common</uicontrol>. Browse to select <uicontrol>Thresholds</uicontrol> tab from
+       the drop-down list.</li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+       <image href="../images/sdd_button_default.png"/> to create a threshold and configure the
+       absolute start threshold profile as shown in the following figure: <!--MMO resource relative URI: ../graphics/Case4_Devicethreshold_default.png-->
+       <image href="../images/case4_devicethreshold_default.png" placement="break" scale="50"/>
+       <!--MMO resource relative URI: ../graphics/CS_config_in_use_case4_default.png-->
+       <image href="../images/cs_config_in_use_case4_default.png" placement="break" scale="50"/>
+      </li>
+     </ol>
+    </li>
+<li>Define the threshold percentage with empty rule container in the <emphasis>Thresholds</emphasis>
+     entity for dynamic slicing: <table pgwide="1" colsep="1" rowsep="1">
+      <tgroup cols="5">
+       <colspec colname="col1"/>
+       <colspec colname="col2"/>
+       <colspec colname="col3"/>
+       <colspec colname="col4"/>
+       <colspec colname="col5"/>
+       <thead>
+        <row>
+         <entry>
+          <emphasis>Threshold Profile Group</emphasis>
+         </entry>
+         <entry>
+          <emphasis>Threshold Profile</emphasis>
+         </entry>
+         <entry>
+          <emphasis>Thresholds</emphasis>
+         </entry>
+         <entry>
+          <emphasis>Unit Type</emphasis>
+         </entry>
+         <entry>
+          <emphasis>Action</emphasis>
+         </entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>
+          <varname>TPGMilestone</varname>
+         </entry>
+         <entry>
+          <varname>TP0 (PERCENTAGE)</varname>
+         </entry>
+         <entry>
+          <p>
+           <varname>Threshold1 (value=20)</varname>
+          </p>
+          <p>
+           <varname>Threshold2 (value=50)</varname>
+          </p>
+          <p>
+           <varname>Threshold3 (value=80)</varname>
+          </p>
+          <p>
+           <varname>Threshold4 (value=100)</varname>
+          </p>
+         </entry>
+         <entry>
+          <varname>VOLUME</varname>
+         </entry>
+         <entry>
+          <varname>Empty</varname>
+         </entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <!--MMO resource relative URI: ../graphics/Case4_TPGMilestone1_default.png-->
+     <image href="../images/case4_tpgmilestone1_default.png" placement="break" scale="60"/>
+     <!--MMO resource relative URI: ../graphics/Case4_TPGMilestone2_default.png-->
+     <image href="../images/case4_tpgmilestone2_default.png" placement="break" scale="50"/>
+     <!--MMO resource relative URI: ../graphics/Case4_TPGMilestone3_default.png-->
+     <image href="../images/case4_tpgmilestone3_default.png" placement="break" scale="60"/>
+    </li>
+<li>Create different rates for volume, money, and unit. <table pgwide="1" colsep="1" rowsep="1">
+      <tgroup cols="3">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.27*"/>
+       <colspec colname="col3" colwidth="1.3*"/>
+       <thead>
+        <row>
+         <entry>Type</entry>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry morerows="3">Volume </entry>
+         <entry>Name </entry>
+         <entry><varname>R_Vol</varname></entry>
+        </row>
+        <row>
+         <entry>Connection Cost</entry>
+         <entry>0</entry>
+        </row>
+        <row>
+         <entry>Rate Type</entry>
+         <entry>Byte</entry>
+        </row>
+        <row>
+         <entry>Granularity level</entry>
+         <entry>Byte</entry>
+        </row>
+        <row>
+         <entry morerows="3"> Unit </entry>
+         <entry>Name</entry>
+         <entry><varname>R_Unit</varname></entry>
+        </row>
+        <row>
+         <entry>Connection Cost</entry>
+         <entry>0</entry>
+        </row>
+        <row>
+         <entry>Rate Type</entry>
+         <entry>Unit</entry>
+        </row>
+        <row>
+         <entry>Granularity level</entry>
+         <entry>Unit</entry>
+        </row>
+        <row>
+         <entry morerows="3"> Money </entry>
+         <entry>Name</entry>
+         <entry><varname>R_Mon</varname></entry>
+        </row>
+        <row>
+         <entry>Connection Cost</entry>
+         <entry>0</entry>
+        </row>
+        <row>
+         <entry>Rate Type</entry>
+         <entry>Money</entry>
+        </row>
+        <row>
+         <entry>Granularity level</entry>
+         <entry>Money</entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p>Step for volume:</p>
+     <!--MMO resource relative URI: ../graphics/Case4_volstep_default.png-->
+     <image href="../images/case4_volstep_default.png" id="t1" scale="50"/>
+     <p>Step for unit:</p>
+     <!--MMO resource relative URI: ../graphics/Casse4_unit_default.png-->
+     <image href="../images/case4_unit_default.png" id="t2" scale="50"/>
+     <p>Step for money:</p>
+     <!--MMO resource relative URI: ../graphics/Case4_money_default.png-->
+     <image href="../images/case4_money_default.png" id="t3" scale="50"/>
+    </li>
+<li>Create the following charging services - <varname>NokiaDataCS</varname> and
+      <varname>MainBalanceCS</varname>.<ol>
+      <li>Create the charging service <varname>NokiaDataCS</varname> for top-level management and
+       associate a data bucket as shown in the following figure: <!--MMO resource relative URI: ../graphics/Data_bucket_to_CS_use_case4_default.png-->
+       <image href="../images/data_bucket_to_cs_use_case4_default.png" scale="60" placement="break"
+       />
+      </li>
+      <li>Configure the tariff formula as shown in the following figure: <!--MMO resource relative URI: ../graphics/Tariff_formula_in_CS_use_case4_default.png-->
+       <image href="../images/tariff_formula_in_CS_use_case4_default.png" scale="50"/> Here,
+        <varname>T_Data_Pass0.rule0</varname> is for data, <varname>T_Data_Pass0.rule1</varname> is
+       for SMS, and <varname>T_Data_Pass0.rule2</varname> is for MMS. </li>
+      <li>Create the charging service <varname>MainBalanceCS</varname> for remaining nodes (groups,
+       accounts) and define the tariff as shown in the following figure: <!--MMO resource relative URI: ../graphics/Case4_tariff2_default.png-->
+       <image href="../images/case4_tariff2_default.png" scale="50"/>
+      </li>
+     </ol>
+    </li>
+<li>Create the <varname>GroupType</varname> custom data that must be associated with the top-level
+     group. To do this, navigate to <uicontrol>Subscriber Manager</uicontrol> and select the
+      <uicontrol>Custom Data</uicontrol> tab. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png"/> to create the custom data as shown in the
+     following figure. <!--MMO resource relative URI: ../graphics/Case4_Customdata_default.png-->
+     <image href="../images/case4_customdata_default.png"/>
+    </li>
+<li>Create a slicing profile with the following parameters. To do this, navigate to
+      <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select the
+      <uicontrol>Charging</uicontrol> tab. Browse to select <uicontrol>Slicing Profile</uicontrol>
+     from the drop-down list. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png" id="image_fdg_2kt_3lb"/> to create the slicing
+     profile as shown in the following figure.  <!--MMO resource relative URI: ../graphics/Usecase4_SP_default.png-->
+     <image href="../images/usecase4_sp_default.png" placement="break" scale="60"/>
+     Once the <emphasis>GroupType</emphasis> custom data with value Nokia is matched, the action
+      defined in the slicing profile is executed. The dynamic slicing algorithm is used for
+      optimized allocation of slice to the shared resources from the group to the devices. High
+      usage devices get more slice whereas low usage or dormant devices get less slice allocated. If
+      the <emphasis>GroupType</emphasis> of Nokia is not matched, then the values defined for slice
+      size in the slicing profile is used.
+    </li>
+<li>Create the <varname>Nokia_Counter</varname> and <varname>Emp_Counter</varname> to track usage.
+     To do this, navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select
+     the <uicontrol>Common</uicontrol> tab. Browse to select <uicontrol>Counters</uicontrol> and
+     click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png"/> to create the counter. <!--MMO resource relative URI: ../graphics/Case4_Counter1_default.png-->
+     <image href="../images/case4_counter1_default.png" placement="break" scale="60"/>
+    </li>
+<li>Create the following lifecycles:<ul>
+      <li>Create the <varname>DeviceLifeCycle</varname> with <uicontrol>Active</uicontrol>,
+        <uicontrol>Disconnected</uicontrol>, <uicontrol>PreActive</uicontrol>,
+        <uicontrol>ActiveWarned</uicontrol>, <uicontrol>Expired</uicontrol> states and associate it
+       with devices. </li>
+      <li>Create the <varname>EnterpriseAccountLifeCycle</varname> with
+        <uicontrol>Disconnected</uicontrol>, <uicontrol>Active</uicontrol>,
+        <uicontrol>Dormant</uicontrol>, <uicontrol>ActiveWarned</uicontrol>, and
+        <uicontrol>Expired</uicontrol> states and associate it with accounts. </li>
+      <li>Create the <varname>EnterpriseGroupLifeCycle</varname> with <uicontrol>Active</uicontrol>,
+        <uicontrol>Disconnected</uicontrol> and <uicontrol>Inactive</uicontrol> states and associate
+       it with groups. </li>
+      <li>Create the <varname>EnterpriseSubscriptionLifeCycle</varname> with
+        <uicontrol>Active</uicontrol>, <uicontrol>Disconnected</uicontrol>,
+        <uicontrol>PreActive</uicontrol>, and <uicontrol>Inactive</uicontrol> states and associate
+       it with top-level bundle. </li>
+      <li>Create the <varname>MonthlySubsLC</varname> with <uicontrol>Active</uicontrol>,
+        <uicontrol>Disconnected</uicontrol>, <uicontrol>PreActive</uicontrol>, and
+        <uicontrol>Inactive</uicontrol> states and associate it with bundles for other nodes
+       (groups, accounts, devices) in the hierarchy. </li>
+     </ul></li>
+<li>Create the bundles - <varname>NokiaBundle</varname>, <varname>FinanceBundle</varname>,
+      <varname>FinanceManagerBundle</varname>, <varname>FinanceExecutive bundle</varname>,
+      <varname>EngineeringBundle</varname>, <varname>EngineeringManagerBundle</varname>,
+      <varname>EngineeringExecutiveBundle</varname>, <varname>SalesBundle</varname>,
+      <varname>SalesManagerBundle</varname>, and <varname>SalesExecutiveBundle</varname>. To do
+     this, navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select the
+      <uicontrol>Charging</uicontrol> tab. Browse to select <uicontrol>Bundles</uicontrol> and click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png" id="image_yf3_hkt_3lb"/> to create the bundle as
+     shown in the following figure. <!--MMO resource relative URI: ../graphics/Case4_bundlenokia_default.png-->
+     <image href="../images/case4_bundlenokia_default.png" scale="50" placement="break"/>
+     <p>Similarly, create the following bundles:</p>
+     <p><varname>FinanceBundle</varname>:</p><table pgwide="1" colsep="1" rowsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.54*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>Name</entry>
+         <entry><varname>FinanceBundle</varname></entry>
+        </row>
+        <row>
+         <entry>Fee</entry>
+         <entry>10</entry>
+        </row>
+        <row>
+         <entry>Max Renewals</entry>
+         <entry>12</entry>
+        </row>
+        <row>
+         <entry>Charging Service List</entry>
+         <entry><varname>MainBalanceCS</varname></entry>
+        </row>
+        <row>
+         <entry>Entity</entry>
+         <entry><varname>MonthlySubscLC</varname></entry>
+        </row>
+        <row>
+         <entry>Period</entry>
+         <entry><varname>MonthlyRenewSubscLC</varname></entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table><p><varname>FinanceManagerBundle</varname>: </p><table pgwide="1" colsep="1" rowsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.44*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>Name</entry>
+         <entry><varname>FinanceManagerBundle</varname></entry>
+        </row>
+        <row>
+         <entry>Fee</entry>
+         <entry>10</entry>
+        </row>
+        <row>
+         <entry>Max Renewals</entry>
+         <entry>12</entry>
+        </row>
+        <row>
+         <entry>Charging Service List</entry>
+         <entry><varname>MainBalanceCS</varname></entry>
+        </row>
+        <row>
+         <entry>Entity</entry>
+         <entry><varname>MonthlySubscLC</varname></entry>
+        </row>
+        <row>
+         <entry>Period</entry>
+         <entry><varname>MonthlyRenewSubscLC</varname></entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p><varname>FinanceExecutiveBundle</varname>:</p><table pgwide="1" colsep="1" rowsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.43*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>Name</entry>
+         <entry><varname>FinanceExecutiveBundle</varname></entry>
+        </row>
+        <row>
+         <entry>Fee</entry>
+         <entry>10</entry>
+        </row>
+        <row>
+         <entry>Max Renewals</entry>
+         <entry>12</entry>
+        </row>
+        <row>
+         <entry>Charging Service List</entry>
+         <entry><varname>MainBalanceCS</varname></entry>
+        </row>
+        <row>
+         <entry>Entity</entry>
+         <entry><varname>MonthlySubscLC</varname></entry>
+        </row>
+        <row>
+         <entry>Period</entry>
+         <entry><varname>MonthlyRenewSubscLC</varname></entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p><varname>EngineeringBundle</varname>:</p><table pgwide="1" colsep="1" rowsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.41*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>Name</entry>
+         <entry><varname>EngineeringBundle</varname></entry>
+        </row>
+        <row>
+         <entry>Fee</entry>
+         <entry>10</entry>
+        </row>
+        <row>
+         <entry>Max Renewals</entry>
+         <entry>12</entry>
+        </row>
+        <row>
+         <entry>Charging Service List</entry>
+         <entry><varname>MainBalanceCS</varname></entry>
+        </row>
+        <row>
+         <entry>Entity</entry>
+         <entry><varname>MonthlySubscLC</varname></entry>
+        </row>
+        <row>
+         <entry>Period</entry>
+         <entry><varname>MonthlyRenewSubscLC</varname></entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p>
+      <varname>EngineeringManagerBundle</varname>:</p><table pgwide="1" colsep="1" rowsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.44*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>Name</entry>
+         <entry><varname>EngineeringManagerBundle</varname></entry>
+        </row>
+        <row>
+         <entry>Fee</entry>
+         <entry>10</entry>
+        </row>
+        <row>
+         <entry>Max Renewals</entry>
+         <entry>12</entry>
+        </row>
+        <row>
+         <entry>Charging Service List</entry>
+         <entry><varname>MainBalanceCS</varname></entry>
+        </row>
+        <row>
+         <entry>Entity</entry>
+         <entry><varname>MonthlySubscLC</varname></entry>
+        </row>
+        <row>
+         <entry>Period</entry>
+         <entry><varname>MonthlyRenewSubscLC</varname></entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p><varname>EngineeringExecutiveBundle</varname>:</p><table pgwide="1" colsep="1" rowsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.41*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>Name</entry>
+         <entry><varname>EngineeringExecutiveBundle</varname></entry>
+        </row>
+        <row>
+         <entry>Fee</entry>
+         <entry>10</entry>
+        </row>
+        <row>
+         <entry>Max Renewals</entry>
+         <entry>12</entry>
+        </row>
+        <row>
+         <entry>Charging Service List</entry>
+         <entry><varname>MainBalanceCS</varname></entry>
+        </row>
+        <row>
+         <entry>Entity</entry>
+         <entry><varname>MonthlySubscLC</varname></entry>
+        </row>
+        <row>
+         <entry>Period</entry>
+         <entry><varname>MonthlyRenewSubscLC</varname></entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p>
+      <varname>SalesBundle</varname>:</p><table pgwide="1" colsep="1" rowsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.41*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>Name</entry>
+         <entry><varname>SalesBundle</varname></entry>
+        </row>
+        <row>
+         <entry>Fee</entry>
+         <entry>10</entry>
+        </row>
+        <row>
+         <entry>Max Renewals</entry>
+         <entry>12</entry>
+        </row>
+        <row>
+         <entry>Charging Service List</entry>
+         <entry><varname>MainBalanceCS</varname></entry>
+        </row>
+        <row>
+         <entry>Entity</entry>
+         <entry><varname>MonthlySubscLC</varname></entry>
+        </row>
+        <row>
+         <entry>Period</entry>
+         <entry><varname>MonthlyRenewSubscLC</varname></entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p><varname>SalesManagerBundle</varname>:</p><table pgwide="1" colsep="1" rowsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.37*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>Name</entry>
+         <entry><varname>SalesManagerBundle</varname></entry>
+        </row>
+        <row>
+         <entry>Fee</entry>
+         <entry>10</entry>
+        </row>
+        <row>
+         <entry>Max Renewals</entry>
+         <entry>12</entry>
+        </row>
+        <row>
+         <entry>Charging Service List</entry>
+         <entry><varname>MainBalanceCS</varname></entry>
+        </row>
+        <row>
+         <entry>Entity</entry>
+         <entry><varname>MonthlySubscLC</varname></entry>
+        </row>
+        <row>
+         <entry>Period</entry>
+         <entry><varname>MonthlyRenewSubscLC</varname></entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p>
+      <varname>SalesExecutiveBundle</varname>:</p><table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.35*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>Name</entry>
+         <entry><varname>SalesExecutiveBundle</varname></entry>
+        </row>
+        <row>
+         <entry>Fee</entry>
+         <entry>10</entry>
+        </row>
+        <row>
+         <entry>Max Renewals</entry>
+         <entry>12</entry>
+        </row>
+        <row>
+         <entry>Charging Service List</entry>
+         <entry><varname>MainBalanceCS</varname></entry>
+        </row>
+        <row>
+         <entry>Entity</entry>
+         <entry><varname>MonthlySubscLC</varname></entry>
+        </row>
+        <row>
+         <entry>Period</entry>
+         <entry><varname>MonthlyRenewSubscLC</varname>
+         </entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table></li>
+<li>Create the accounts - <varname>NokiaAccount</varname>, <varname>FinanceAccount</varname>,
+      <varname>FinanceManagerAccount</varname>, <varname>FinanceExecutiveAccount</varname>,
+      <varname>EngineeringAccount</varname>, <varname>EngineeringManagerAccount</varname>,
+      <varname>EngineeringExecutiveAccount</varname>, <varname>SalesAccount</varname>,
+      <varname>SalesManagerAccount</varname>, and <varname>SalesExecutiveAccount</varname>. To do
+     this, navigate to <uicontrol>Subscriber Manager</uicontrol> and select the
+      <uicontrol>Accounts</uicontrol> tab. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png" id="image_lpg_34t_3lb"/> to create an account as
+     shown in the following figure. <!--MMO resource relative URI: ../graphics/Case4_Nokia_account1_default.png-->
+     <image href="../images/case4_nokia_account1_default.png" placement="break" scale="60"/>
+     <!--MMO resource relative URI: ../graphics/Case4_Nokia_account2_default.png-->
+     <image href="../images/case4_nokia_account2_default.png" placement="break" scale="60"/>
+     <p>Similarly, create the following accounts:</p>
+     <p>
+      <varname>FinanceAccount</varname>:</p><table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.38*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>Account Id</entry>
+         <entry><varname>FinanceAccount</varname></entry>
+        </row>
+        <row>
+         <entry>Account Type</entry>
+         <entry>Prepaid</entry>
+        </row>
+        <row>
+         <entry>Timezone ID</entry>
+         <entry>EST</entry>
+        </row>
+        <row>
+         <entry>Hour of Day</entry>
+         <entry>05</entry>
+        </row>
+        <row>
+         <entry>Day of Month</entry>
+         <entry>23</entry>
+        </row>
+        <row>
+         <entry>Day of Week</entry>
+         <entry><varname>TUESDAY</varname></entry>
+        </row>
+        <row>
+         <entry>Entity Name</entry>
+         <entry><varname>AccountLC</varname></entry>
+        </row>
+        <row>
+         <entry>Entity State</entry>
+         <entry>Active</entry>
+        </row>
+        <row>
+         <entry>Period Name</entry>
+         <entry><varname>DefaultAccountBillingCycle</varname></entry>
+        </row>
+        <row>
+         <entry>Period State</entry>
+         <entry>Start</entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p>
+      <varname>FinanceManagerAccount</varname>:</p><table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.33*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>Account Id</entry>
+         <entry><varname>FinanceManagerAccount</varname></entry>
+        </row>
+        <row>
+         <entry>Account Type</entry>
+         <entry>Prepaid</entry>
+        </row>
+        <row>
+         <entry>Timezone ID</entry>
+         <entry>EST</entry>
+        </row>
+        <row>
+         <entry>Hour of Day</entry>
+         <entry>05</entry>
+        </row>
+        <row>
+         <entry>Day of Month</entry>
+         <entry>23</entry>
+        </row>
+        <row>
+         <entry>Day of Week</entry>
+         <entry><varname>TUESDAY</varname></entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p>
+      <varname>FinanceExecutiveAccount</varname>:</p><table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.41*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>Account Id</entry>
+         <entry><varname>FinanceExecutiveAccount</varname></entry>
+        </row>
+        <row>
+         <entry>Account Type</entry>
+         <entry>Prepaid</entry>
+        </row>
+        <row>
+         <entry>Timezone ID</entry>
+         <entry>EST</entry>
+        </row>
+        <row>
+         <entry>Hour of Day</entry>
+         <entry>05</entry>
+        </row>
+        <row>
+         <entry>Day of Month</entry>
+         <entry>23</entry>
+        </row>
+        <row>
+         <entry>Day of Week</entry>
+         <entry><varname>TUESDAY</varname></entry>
+        </row>
+        <row>
+         <entry>Entity Name</entry>
+         <entry><varname>AccountLC</varname></entry>
+        </row>
+        <row>
+         <entry>Entity State</entry>
+         <entry>Active</entry>
+        </row>
+        <row>
+         <entry>Period Name</entry>
+         <entry><varname>DefaultAccountBillingCycle</varname></entry>
+        </row>
+        <row>
+         <entry>Period State</entry>
+         <entry>Start</entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p><varname>EngineeringAccount</varname>:</p><table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.38*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>Account ID</entry>
+         <entry><varname>EngineeringAccount</varname></entry>
+        </row>
+        <row>
+         <entry>Account Type</entry>
+         <entry>Prepaid</entry>
+        </row>
+        <row>
+         <entry>Timezone ID</entry>
+         <entry>EST</entry>
+        </row>
+        <row>
+         <entry>Hour of Day</entry>
+         <entry>05</entry>
+        </row>
+        <row>
+         <entry>Day of Month</entry>
+         <entry>23</entry>
+        </row>
+        <row>
+         <entry>Day of Week</entry>
+         <entry><varname>TUESDAY</varname></entry>
+        </row>
+        <row>
+         <entry>Entity Name</entry>
+         <entry><varname>AccountLC</varname></entry>
+        </row>
+        <row>
+         <entry>Entity State</entry>
+         <entry>Active</entry>
+        </row>
+        <row>
+         <entry>Period Name</entry>
+         <entry><varname>DefaultAccountBillingCycle</varname></entry>
+        </row>
+        <row>
+         <entry>Period State</entry>
+         <entry>Start</entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p><varname>EngineeringManagerAccount</varname>:</p><table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.35*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>Account Id</entry>
+         <entry><varname>EngineeringManagerAccount</varname></entry>
+        </row>
+        <row>
+         <entry>Account Type</entry>
+         <entry>Prepaid</entry>
+        </row>
+        <row>
+         <entry>Timezone ID</entry>
+         <entry>EST</entry>
+        </row>
+        <row>
+         <entry>Hour of Day</entry>
+         <entry>05</entry>
+        </row>
+        <row>
+         <entry>Day of Month</entry>
+         <entry>23</entry>
+        </row>
+        <row>
+         <entry>Day of Week</entry>
+         <entry><varname>TUESDAY</varname></entry>
+        </row>
+        <row>
+         <entry>Entity Name</entry>
+         <entry><varname>AccountLC</varname></entry>
+        </row>
+        <row>
+         <entry>Entity State</entry>
+         <entry>Active</entry>
+        </row>
+        <row>
+         <entry>Period Name</entry>
+         <entry><varname>DefaultAccountBillingCycle</varname></entry>
+        </row>
+        <row>
+         <entry>Period State</entry>
+         <entry>Start</entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p><varname>EngineeringExecutiveAccount</varname>:</p><table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.34*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value </entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>Account Id</entry>
+         <entry><varname>EngineeringExecutiveAccount</varname></entry>
+        </row>
+        <row>
+         <entry>Account Type</entry>
+         <entry>Prepaid</entry>
+        </row>
+        <row>
+         <entry>Timezone ID</entry>
+         <entry>EST</entry>
+        </row>
+        <row>
+         <entry>Hour of Day</entry>
+         <entry>05</entry>
+        </row>
+        <row>
+         <entry>Day of Month</entry>
+         <entry>23</entry>
+        </row>
+        <row>
+         <entry>Day of Week</entry>
+         <entry><varname>TUESDAY</varname></entry>
+        </row>
+        <row>
+         <entry>Entity Name</entry>
+         <entry><varname>AccountLC</varname></entry>
+        </row>
+        <row>
+         <entry>Entity State</entry>
+         <entry>Active</entry>
+        </row>
+        <row>
+         <entry>Period Name</entry>
+         <entry><varname>DefaultAccountBillingCycle</varname></entry>
+        </row>
+        <row>
+         <entry>Period State</entry>
+         <entry>Start</entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p><varname>SalesAccount</varname>:</p><table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.33*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>Account Id</entry>
+         <entry><varname>SalesAccount</varname></entry>
+        </row>
+        <row>
+         <entry>Account Type</entry>
+         <entry>Prepaid</entry>
+        </row>
+        <row>
+         <entry>Timezone ID</entry>
+         <entry>EST</entry>
+        </row>
+        <row>
+         <entry>Hour of Day</entry>
+         <entry>05</entry>
+        </row>
+        <row>
+         <entry>Day of Month</entry>
+         <entry>23</entry>
+        </row>
+        <row>
+         <entry>Day of Week</entry>
+         <entry><varname>TUESDAY</varname></entry>
+        </row>
+        <row>
+         <entry>Entity Name</entry>
+         <entry><varname>AccountLC</varname></entry>
+        </row>
+        <row>
+         <entry>Entity State</entry>
+         <entry>Active</entry>
+        </row>
+        <row>
+         <entry>Period Name</entry>
+         <entry><varname>DefaultAccountBillingCycle</varname></entry>
+        </row>
+        <row>
+         <entry>Period State</entry>
+         <entry>Start</entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p><varname>SalesManagerAccount</varname>:</p><table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.4*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>Account Id</entry>
+         <entry><varname>SalesManagerAccount</varname></entry>
+        </row>
+        <row>
+         <entry>Account Type</entry>
+         <entry>Prepaid</entry>
+        </row>
+        <row>
+         <entry>Timezone ID</entry>
+         <entry>EST</entry>
+        </row>
+        <row>
+         <entry>Hour of Day</entry>
+         <entry>05</entry>
+        </row>
+        <row>
+         <entry>Day of Month</entry>
+         <entry>23</entry>
+        </row>
+        <row>
+         <entry>Day of Week</entry>
+         <entry><varname>TUESDAY</varname></entry>
+        </row>
+        <row>
+         <entry>Entity Name</entry>
+         <entry><varname>AccountLC</varname></entry>
+        </row>
+        <row>
+         <entry>Entity State</entry>
+         <entry>Active</entry>
+        </row>
+        <row>
+         <entry>Period Name</entry>
+         <entry><varname>DefaultAccountBillingCycle</varname></entry>
+        </row>
+        <row>
+         <entry>Period State</entry>
+         <entry>Start</entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p><varname>SalesExecutiveAccount</varname>:</p><table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.38*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>Account Id</entry>
+         <entry><varname>SalesExecutiveAccount</varname></entry>
+        </row>
+        <row>
+         <entry>Account Type</entry>
+         <entry>Prepaid</entry>
+        </row>
+        <row>
+         <entry>Timezone ID</entry>
+         <entry>EST</entry>
+        </row>
+        <row>
+         <entry>Hour of Day</entry>
+         <entry>05</entry>
+        </row>
+        <row>
+         <entry>Day of Month</entry>
+         <entry>23</entry>
+        </row>
+        <row>
+         <entry>Day of Week</entry>
+         <entry><varname>TUESDAY</varname></entry>
+        </row>
+        <row>
+         <entry>Entity Name</entry>
+         <entry><varname>AccountLC</varname></entry>
+        </row>
+        <row>
+         <entry>Entity State</entry>
+         <entry>Active</entry>
+        </row>
+        <row>
+         <entry>Period Name</entry>
+         <entry><varname>DefaultAccountBillingCycle</varname></entry>
+        </row>
+        <row>
+         <entry>Period State</entry>
+         <entry>Start</entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+    </li>
+<li>Create the groups - <varname>Nokia</varname>, <varname>Finance</varname>,
+      <varname>FinanceManager</varname>, <varname>FinanceExecutive</varname>,
+      <varname>Engineering</varname>, <varname>EngineeringManager</varname>,
+      <varname>EngineeringExecutive</varname>, <varname>Sales</varname>,
+      <varname>SalesManager</varname>, and <varname>SalesExecutive</varname>. To do this, navigate
+     to <uicontrol>Subscriber Manager</uicontrol> and select the <uicontrol>Groups</uicontrol> tab.
+     Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png" id="image_spn_n4t_3lb"/> to create a group as
+     shown in the following figure. <!--MMO resource relative URI: ../graphics/Case4_Group1_default.png-->
+     <image href="../images/case4_group1_default.png" placement="break"/>
+     <!--MMO resource relative URI: ../graphics/Case4_Group2_default.png-->
+     <image href="../images/case4_group2_default.png" placement="break" scale="60"/>
+     <p>Similarly, create the following groups:</p>
+     <p><varname>Finance</varname> group:</p><table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.33*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>ID</entry>
+         <entry><varname>Finance</varname></entry>
+        </row>
+        <row>
+         <entry>Name</entry>
+         <entry><varname>Finance</varname></entry>
+        </row>
+        <row>
+         <entry>Parent</entry>
+         <entry><varname>Nokia</varname></entry>
+        </row>
+        <row>
+         <entry>Child Group</entry>
+         <entry>
+          <p><varname>FinanceExecutive</varname></p>
+          <p><varname>FinanceManager</varname></p>
+         </entry>
+        </row>
+        <row>
+         <entry>Traversal Order</entry>
+         <entry>Top-Down</entry>
+        </row>
+        <row>
+         <entry>Entity Name</entry>
+         <entry><varname>EnterpriseGroupLifeCycle</varname></entry>
+        </row>
+        <row>
+         <entry>Entity State</entry>
+         <entry>Active</entry>
+        </row>
+        <row>
+         <entry namest="col1" nameend="col2"><uicontrol>Subscriptions</uicontrol></entry>
+        </row>
+        <row>
+         <entry>Bundle Name</entry>
+         <entry><varname>FinanceBundle</varname></entry>
+        </row>
+        <row>
+         <entry>Account Name</entry>
+         <entry><varname>FinanceAccount</varname></entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p><varname>Nokia</varname> group:</p><table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.3*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>ID</entry>
+         <entry><varname>Nokia</varname></entry>
+        </row>
+        <row>
+         <entry>Name</entry>
+         <entry><varname>Nokia</varname></entry>
+        </row>
+        <row>
+         <entry>Child Group</entry>
+         <entry>
+          <p><varname>Engineering</varname></p>
+          <p><varname>Finance</varname></p>
+          <p><varname>Sales</varname></p>
+         </entry>
+        </row>
+        <row>
+         <entry>Traversal Order</entry>
+         <entry>Top-Down</entry>
+        </row>
+        <row>
+         <entry>Entity Name</entry>
+         <entry><varname>EnterpriseGroupLifeCycle</varname></entry>
+        </row>
+        <row>
+         <entry>Entity State</entry>
+         <entry>Active</entry>
+        </row>
+        <row>
+         <entry namest="col1" nameend="col2"><uicontrol>Subscriptions</uicontrol></entry>
+        </row>
+        <row>
+         <entry>Bundle Name</entry>
+         <entry><varname>NokiaBundle</varname></entry>
+        </row>
+        <row>
+         <entry>Account Name</entry>
+         <entry><varname>NokiaAccount</varname></entry>
+        </row>
+        <row>
+         <entry>Administrators</entry>
+         <entry><varname>NokiaAdmin</varname></entry>
+        </row>
+        <row>
+         <entry namest="col1" nameend="col2"><uicontrol>Custom Data</uicontrol></entry>
+        </row>
+        <row>
+         <entry>Key</entry>
+         <entry>GroupType</entry>
+        </row>
+        <row>
+         <entry>Type</entry>
+         <entry>String</entry>
+        </row>
+        <row>
+         <entry>Value</entry>
+         <entry><varname>Nokia</varname></entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p><varname>FinanceExecutive</varname> group:</p><table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.29*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>ID</entry>
+         <entry><varname>FinanceExecutive</varname></entry>
+        </row>
+        <row>
+         <entry>Name</entry>
+         <entry><varname>FinanceExecutive</varname></entry>
+        </row>
+        <row>
+         <entry>Parent</entry>
+         <entry><varname>Finance</varname></entry>
+        </row>
+        <row>
+         <entry>Traversal Order</entry>
+         <entry>Top-Down</entry>
+        </row>
+        <row>
+         <entry>Entity Name</entry>
+         <entry><varname>EnterpriseGroupLifeCycle</varname></entry>
+        </row>
+        <row>
+         <entry>Entity State</entry>
+         <entry>Active</entry>
+        </row>
+        <row>
+         <entry namest="col1" nameend="col2"><uicontrol>Subscriptions</uicontrol></entry>
+        </row>
+        <row>
+         <entry>Bundle Name</entry>
+         <entry><varname>FinanceExecutiveBundle</varname></entry>
+        </row>
+        <row>
+         <entry>Account Name</entry>
+         <entry><varname>FinanceExecutiveAccount</varname></entry>
+        </row>
+        <row>
+         <entry>Devices</entry>
+         <entry><varname>Device2</varname></entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p><varname>Engineering</varname> group:</p><table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.3*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>ID</entry>
+         <entry><varname>Engineering</varname></entry>
+        </row>
+        <row>
+         <entry>Name</entry>
+         <entry><varname>Engineering</varname></entry>
+        </row>
+        <row>
+         <entry>Parent</entry>
+         <entry><varname>Nokia</varname></entry>
+        </row>
+        <row>
+         <entry>Child Group</entry>
+         <entry>
+          <p><varname>EngineeringExecutive</varname></p>
+          <p><varname>EngineeringManager</varname></p>
+         </entry>
+        </row>
+        <row>
+         <entry>Traversal Order</entry>
+         <entry>Top-Down</entry>
+        </row>
+        <row>
+         <entry>Entity Name</entry>
+         <entry><varname>EnterpriseGroupLifeCycle</varname></entry>
+        </row>
+        <row>
+         <entry>Entity State</entry>
+         <entry>Active</entry>
+        </row>
+        <row>
+         <entry namest="col1" nameend="col2"><uicontrol>Subscriptions</uicontrol></entry>
+        </row>
+        <row>
+         <entry>Bundle Name</entry>
+         <entry><varname>EngineeringBundle</varname></entry>
+        </row>
+        <row>
+         <entry>Account Name</entry>
+         <entry><varname>EngineeringAccount</varname></entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p><varname>EngineeringManager</varname> group:</p><table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.33*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>ID</entry>
+         <entry><varname>EngineeringManager</varname></entry>
+        </row>
+        <row>
+         <entry>Name</entry>
+         <entry><varname>EngineeringManager</varname></entry>
+        </row>
+        <row>
+         <entry>Parent</entry>
+         <entry><varname>Engineering</varname></entry>
+        </row>
+        <row>
+         <entry>Traversal Order</entry>
+         <entry>Top-Down</entry>
+        </row>
+        <row>
+         <entry>Entity Name</entry>
+         <entry><varname>EnterpriseGroupLifeCycle</varname></entry>
+        </row>
+        <row>
+         <entry>Entity State</entry>
+         <entry>Active</entry>
+        </row>
+        <row>
+         <entry namest="col1" nameend="col2"><uicontrol>Subscriptions</uicontrol></entry>
+        </row>
+        <row>
+         <entry>Bundle Name</entry>
+         <entry><varname>EngineeringManagerBundle</varname></entry>
+        </row>
+        <row>
+         <entry>Account Name</entry>
+         <entry><varname>EngineeringManagerAccount</varname></entry>
+        </row>
+        <row>
+         <entry> Devices </entry>
+         <entry><varname>Device3</varname></entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p><varname>EngineeringExecutive</varname> group:</p><table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.3*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>ID</entry>
+         <entry><varname>EngineeringExecutive</varname></entry>
+        </row>
+        <row>
+         <entry>Name</entry>
+         <entry><varname>EngineeringExecutive</varname></entry>
+        </row>
+        <row>
+         <entry>Parent</entry>
+         <entry>Engineering</entry>
+        </row>
+        <row>
+         <entry>Traversal Order</entry>
+         <entry>Top-Down</entry>
+        </row>
+        <row>
+         <entry>Entity Name</entry>
+         <entry><varname>EnterpriseGroupLifeCycle</varname></entry>
+        </row>
+        <row>
+         <entry>Entity State</entry>
+         <entry>Active</entry>
+        </row>
+        <row>
+         <entry namest="col1" nameend="col2"><uicontrol>Subscriptions</uicontrol></entry>
+        </row>
+        <row>
+         <entry>Bundle Name</entry>
+         <entry><varname>EngineeringExecutiveBundle</varname></entry>
+        </row>
+        <row>
+         <entry>Account Name</entry>
+         <entry><varname>EngineeringExecutiveAccount</varname></entry>
+        </row>
+        <row>
+         <entry>Devices</entry>
+         <entry><varname>Device4</varname></entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p><varname>Sales</varname> group:</p><table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.38*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>ID</entry>
+         <entry><varname>Sales</varname></entry>
+        </row>
+        <row>
+         <entry>Name</entry>
+         <entry><varname>Sales</varname></entry>
+        </row>
+        <row>
+         <entry>Parent</entry>
+         <entry>Nokia</entry>
+        </row>
+        <row>
+         <entry>Child Group</entry>
+         <entry>
+          <p><varname>SalesManager</varname></p>
+          <p><varname>SalesExecutive</varname></p>
+         </entry>
+        </row>
+        <row>
+         <entry>Traversal Order</entry>
+         <entry>Top-Down</entry>
+        </row>
+        <row>
+         <entry>Entity Name</entry>
+         <entry><varname>EnterpriseGroupLifeCycle</varname></entry>
+        </row>
+        <row>
+         <entry>Entity State</entry>
+         <entry>Active</entry>
+        </row>
+        <row>
+         <entry namest="col1" nameend="col2"><uicontrol>Subscriptions</uicontrol></entry>
+        </row>
+        <row>
+         <entry>Bundle Name</entry>
+         <entry><varname>SalesBundle</varname></entry>
+        </row>
+        <row>
+         <entry>Account Name</entry>
+         <entry><varname>SalesAccount</varname></entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p><varname>SalesManager</varname> group:</p><table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.48*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>ID</entry>
+         <entry><varname>SalesManager</varname></entry>
+        </row>
+        <row>
+         <entry>Name</entry>
+         <entry><varname>SalesManager</varname></entry>
+        </row>
+        <row>
+         <entry>Parent</entry>
+         <entry>Sales</entry>
+        </row>
+        <row>
+         <entry>Traversal Order</entry>
+         <entry>Top-Down</entry>
+        </row>
+        <row>
+         <entry>Entity Name</entry>
+         <entry><varname>EnterpriseGroupLifeCycle</varname></entry>
+        </row>
+        <row>
+         <entry>Entity State</entry>
+         <entry>Active</entry>
+        </row>
+        <row>
+         <entry namest="col1" nameend="col2"><uicontrol>Subscriptions</uicontrol></entry>
+        </row>
+        <row>
+         <entry>Bundle Name</entry>
+         <entry><varname>SalesManagerBundle</varname></entry>
+        </row>
+        <row>
+         <entry>Account Name</entry>
+         <entry><varname>SalesManagerAccount</varname></entry>
+        </row>
+        <row>
+         <entry>Devices</entry>
+         <entry><varname>Device5</varname></entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p><varname>SalesExecutive</varname> group:</p><table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.5*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>ID</entry>
+         <entry><varname>SalesExecutive</varname></entry>
+        </row>
+        <row>
+         <entry>Name</entry>
+         <entry><varname>SalesExecutive</varname></entry>
+        </row>
+        <row>
+         <entry>Parent</entry>
+         <entry>Sales</entry>
+        </row>
+        <row>
+         <entry>Traversal Order</entry>
+         <entry>Top-Down</entry>
+        </row>
+        <row>
+         <entry>Entity Name</entry>
+         <entry><varname>EnterpriseGroupLifeCycle</varname></entry>
+        </row>
+        <row>
+         <entry>Entity State</entry>
+         <entry>Active</entry>
+        </row>
+        <row>
+         <entry namest="col1" nameend="col2"><uicontrol>Subscriptions</uicontrol>
+         </entry>
+        </row>
+        <row>
+         <entry>Bundle Name</entry>
+         <entry><varname>SalesExecutiveBundle</varname></entry>
+        </row>
+        <row>
+         <entry>Account Name</entry>
+         <entry><varname>SalesExecutiveAccount</varname></entry>
+        </row>
+        <row>
+         <entry>Devices</entry>
+         <entry><varname>Device6</varname></entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+    </li>
+<li>Create the devices - <varname>Device1</varname>, <varname>Device2</varname>,
+      <varname>Device3</varname>, <varname>Device4</varname>, <varname>Device5</varname>, and
+      <varname>Device6</varname>. To do this, navigate to <uicontrol>Subscriber Manager</uicontrol>
+     and select the <uicontrol>Devices</uicontrol> tab. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png" id="image_dl5_m4t_3lb"/> to create a device as
+     shown in the following figure. <!--MMO resource relative URI: ../graphics/Case4_Device1_default.png-->
+     <image href="../images/case4_device1_default.png" placement="break" scale="60"/>
+     <!--MMO resource relative URI: ../graphics/Case4_Device2_default.png-->
+     <image href="../images/case4_device2_default.png" placement="break" scale="60"/>
+     <p>Similarly, create the following devices:</p>
+     <p><varname>Device2</varname>:</p><table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.33*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>Name</entry>
+         <entry><varname>Device2</varname></entry>
+        </row>
+        <row>
+         <entry>Identifier Type</entry>
+         <entry>IMSI</entry>
+        </row>
+        <row>
+         <entry>Identifier</entry>
+         <entry><varname>123459999990102</varname></entry>
+        </row>
+        <row>
+         <entry>Identifier Type</entry>
+         <entry>E164</entry>
+        </row>
+        <row>
+         <entry>Identifier</entry>
+         <entry><varname>9999990102</varname></entry>
+        </row>
+        <row>
+         <entry>Notification Profile</entry>
+         <entry>NotificationProfile</entry>
+        </row>
+        <row>
+         <entry>Entity Name</entry>
+         <entry><varname>DeviceLifecycle</varname></entry>
+        </row>
+        <row>
+         <entry>Entity State</entry>
+         <entry>PreActive</entry>
+        </row>
+        <row>
+         <entry>Subscription Index</entry>
+         <entry>Group_First</entry>
+        </row>
+        <row>
+         <entry>Owner</entry>
+         <entry><varname>User1</varname></entry>
+        </row>
+        <row>
+         <entry>Groups</entry>
+         <entry><varname>FinanceExecutive</varname></entry>
+        </row>
+        <row>
+         <entry namest="col1" nameend="col2"><uicontrol>Subscriptions</uicontrol></entry>
+        </row>
+        <row>
+         <entry>Bundle Name</entry>
+         <entry><varname>Device2Bundle</varname></entry>
+        </row>
+        <row>
+         <entry>Account Name</entry>
+         <entry><varname>Device2Account</varname></entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p><varname>Device3</varname>:</p><table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.38*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>Name</entry>
+         <entry><varname>Device3</varname></entry>
+        </row>
+        <row>
+         <entry>Identifier Type</entry>
+         <entry>IMSI</entry>
+        </row>
+        <row>
+         <entry>Identifier</entry>
+         <entry><varname>123459999990103</varname></entry>
+        </row>
+        <row>
+         <entry>Identifier Type</entry>
+         <entry>E164</entry>
+        </row>
+        <row>
+         <entry>Identifier</entry>
+         <entry><varname>9999990103</varname></entry>
+        </row>
+        <row>
+         <entry>Notification Profile</entry>
+         <entry>NotificationProfile</entry>
+        </row>
+        <row>
+         <entry>Entity Name</entry>
+         <entry><varname>DeviceLifecycle</varname></entry>
+        </row>
+        <row>
+         <entry>Entity State</entry>
+         <entry>PreActive</entry>
+        </row>
+        <row>
+         <entry>Subscription Index</entry>
+         <entry>Group_First</entry>
+        </row>
+        <row>
+         <entry>Owner</entry>
+         <entry><varname>User1</varname></entry>
+        </row>
+        <row>
+         <entry>Groups</entry>
+         <entry><varname>EngineeringManager</varname></entry>
+        </row>
+        <row>
+         <entry namest="col1" nameend="col2"><uicontrol>Subscriptions</uicontrol></entry>
+        </row>
+        <row>
+         <entry>Bundle Name</entry>
+         <entry><varname>Device3Bundle</varname></entry>
+        </row>
+        <row>
+         <entry>Account Name</entry>
+         <entry><varname>Device3Account</varname></entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p>
+      <varname>Device4</varname>:</p><table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.33*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>Name</entry>
+         <entry><varname>Device4</varname></entry>
+        </row>
+        <row>
+         <entry>Identifier Type</entry>
+         <entry>IMSI</entry>
+        </row>
+        <row>
+         <entry>Identifier</entry>
+         <entry><varname>123459999990104</varname></entry>
+        </row>
+        <row>
+         <entry>Identifier Type</entry>
+         <entry>E164</entry>
+        </row>
+        <row>
+         <entry>Identifier</entry>
+         <entry><varname>9999990104</varname></entry>
+        </row>
+        <row>
+         <entry>Notification Profile</entry>
+         <entry>NotificationProfile</entry>
+        </row>
+        <row>
+         <entry>Entity Name</entry>
+         <entry><varname>DeviceLifecycle</varname></entry>
+        </row>
+        <row>
+         <entry>Entity State</entry>
+         <entry>PreActive</entry>
+        </row>
+        <row>
+         <entry>Subscription Index</entry>
+         <entry>Group_First</entry>
+        </row>
+        <row>
+         <entry>Owner</entry>
+         <entry><varname>User1</varname></entry>
+        </row>
+        <row>
+         <entry>Groups</entry>
+         <entry><varname>EngineeringExecutive</varname></entry>
+        </row>
+        <row>
+         <entry namest="col1" nameend="col2"><uicontrol>Subscriptions</uicontrol></entry>
+        </row>
+        <row>
+         <entry>Bundle Name</entry>
+         <entry><varname>Device4Bundle</varname></entry>
+        </row>
+        <row>
+         <entry>Account Name</entry>
+         <entry><varname>Device4Account</varname></entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p><varname>Device5</varname>:</p><table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.3*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>Name</entry>
+         <entry><varname>Device5</varname></entry>
+        </row>
+        <row>
+         <entry>Identifier Type</entry>
+         <entry>IMSI</entry>
+        </row>
+        <row>
+         <entry>Identifier</entry>
+         <entry><varname>123459999990105</varname></entry>
+        </row>
+        <row>
+         <entry>Identifier Type</entry>
+         <entry>E164</entry>
+        </row>
+        <row>
+         <entry>Identifier</entry>
+         <entry><varname>9999990105</varname></entry>
+        </row>
+        <row>
+         <entry>Notification Profile</entry>
+         <entry>NotificationProfile</entry>
+        </row>
+        <row>
+         <entry>Entity Name</entry>
+         <entry><varname>DeviceLifecycle</varname></entry>
+        </row>
+        <row>
+         <entry>Entity State</entry>
+         <entry>PreActive</entry>
+        </row>
+        <row>
+         <entry>Subscription Index</entry>
+         <entry>Group_First</entry>
+        </row>
+        <row>
+         <entry>Owner</entry>
+         <entry><varname>User1</varname></entry>
+        </row>
+        <row>
+         <entry>Groups</entry>
+         <entry><varname>SalesManager</varname></entry>
+        </row>
+        <row>
+         <entry namest="col1" nameend="col2"><uicontrol>Subscriptions</uicontrol></entry>
+        </row>
+        <row>
+         <entry>Bundle Name</entry>
+         <entry><varname>Device5Bundle</varname></entry>
+        </row>
+        <row>
+         <entry>Account Name</entry>
+         <entry><varname>Device5Account</varname></entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p><varname>Device6</varname>:</p><table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.3*"/>
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>Name</entry>
+         <entry><varname>Device6</varname></entry>
+        </row>
+        <row>
+         <entry>Identifier Type</entry>
+         <entry>IMSI</entry>
+        </row>
+        <row>
+         <entry>Identifier</entry>
+         <entry><varname>123459999990106</varname></entry>
+        </row>
+        <row>
+         <entry>Identifier Type</entry>
+         <entry>E164</entry>
+        </row>
+        <row>
+         <entry>Identifier</entry>
+         <entry><varname>9999990106</varname></entry>
+        </row>
+        <row>
+         <entry>Notification Profile</entry>
+         <entry><varname>NotificationProfile</varname></entry>
+        </row>
+        <row>
+         <entry>Entity Name</entry>
+         <entry><varname>DeviceLifecycle</varname></entry>
+        </row>
+        <row>
+         <entry>Entity State</entry>
+         <entry>Active</entry>
+        </row>
+        <row>
+         <entry>Subscription Index</entry>
+         <entry><varname>Group_First</varname></entry>
+        </row>
+        <row>
+         <entry>Owner</entry>
+         <entry><varname>User1</varname></entry>
+        </row>
+        <row>
+         <entry>Groups</entry>
+         <entry><varname>SalesExecutive</varname></entry>
+        </row>
+        <row>
+         <entry namest="col1" nameend="col2">
+          <uicontrol>Subscriptions</uicontrol>
+         </entry>
+        </row>
+        <row>
+         <entry>Bundle Name</entry>
+         <entry><varname>Device6Bundle</varname></entry>
+        </row>
+        <row>
+         <entry>Account Name</entry>
+         <entry><varname>Device6Account</varname></entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+    </li>
+<li>Subscribe all the devices in Corpus enterprise to the <varname>Nokia_Counter</varname> usage
+     counter using <emphasis>AddDeviceGroupCounter</emphasis>. The <varname>Nokia_Counter</varname>
+     usage counter tracks the data consumption of all individual devices.</li>
+<li>Subscribe the top-level management in Corpus enterprise to the <varname>Emp_Counter</varname>
+     usage counter using <emphasis>AddDeviceGroupCounter</emphasis>. The
+      <varname>Emp_Counter</varname> usage counter tracks the data consumption of the top-level
+     management. All the individual devices in Corpus consume resources from the top-level
+     management.</li>
+</ol>
+</section>
+</conbody></concept>

@@ -1,0 +1,725 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-chargingserviceentity"><title>Charging Services</title><conbody>
+<section><title>Overview</title>
+<p>The charging service is an encapsulation of resources, such as buckets and counters, and charges or rates. Charging service is the fundamental unit of service offered to subscribers. It defines the method and amount used to charge for a service consumed by the subscribers.</p>
+<p>For example, a charging service is defined for a subscriber to apply a rate plan based on the subscriber location and time of day.</p>
+<p>The given relations are associated with the sub-components of the charging service:</p><ul>
+<li>
+<p>A charging service can contain multiple tariff definitions or references.</p>
+</li>
+<li>
+<p>A charging service can contain zero or more bucket definitions.</p>
+</li>
+<li>
+<p>A charging service can contain zero or more counter definitions.</p>
+</li>
+</ul>
+<note>
+<p>It is not recommended to change bucket name or counter name in the charging service when a subscription is attached with a device or group using the charging service.</p>
+</note>
+</section>
+<section><title>Sorting mechanism for charging services</title>
+<p>For charging a call, all charging services accessible to a device are sorted based on following criteria:</p><ol>
+<li>
+<p>Category consumption order</p>
+</li>
+<li>
+<p>Subscription index: This can be either set to <varname>Device_First</varname> or <varname>Group_First</varname>.</p>
+<p>If a device is attached to multiple groups, for example, Group 1, Group 2, Group 3, then order of groups is considered based on their association with the device. If the association order of groups is Group 2, Group 3, Group 1, then this order is followed while sorting charging services.</p>
+</li>
+<li>
+<p>Hierarchy order defined: This can be either set to <varname>Top-Down</varname> or <varname>Bottom-Up</varname>.</p>
+<p>The hierarchy order of the top-most group in the hierarchy is considered.</p>
+</li>
+<li>
+<p>Charging service priority: Lower the number, higher the priority. If two charging services have same priority, then the next priority criterion is selected, such as creation date or expiry date.</p>
+</li>
+<li>
+<p>Charging service instance creation or expiry date. If the same bundle is purchased twice, then the bundle is selected based on the next priority criterion.</p>
+<p>The charging service instance selection criteria can be one of the following criteria based on your requirement:</p><ul>
+<li>
+<p>Charging service instance creation date: Implies that the bundle created or purchased first is consumed first.</p>
+</li>
+<li>
+<p>Charging service instance expiry date: Implies that the bundle with earliest expiry date is consumed first.</p>
+<p>- If both end time (for periodic lifecycle) and validity time (for entity lifecycle) are available for the subscription, then the minimum of both values is considered.</p>
+<p>- If the subscription has an end time but no validity time, then the subscription end time is considered.</p>
+<p>- If the subscription has a validity time but no end time, then the subscription validity time is considered.</p>
+<p>- If the subscription does not have an end time, then the account end time is considered.</p>
+<p>- If the subscription does not have an end time and validity time, and also account does not have an end time, then the <uicontrol>subscEndTime</uicontrol> parameter in the subscription entity is set to <varname>Null</varname>. While sorting, if the <uicontrol>subscEndTime</uicontrol> is set as <varname>Null</varname>, then that subscription is used at the end.</p>
+</li>
+</ul>
+</li>
+</ol>
+<note>
+<p>If the values of all the listed criteria are same, then the criteria that comes first is used for sorting the charging services.</p>
+</note>
+<sectiondiv>
+<p><b>Configuration to sort CS based on creation or expiry date</b></p>
+<p>Log into the SM GUI, navigate to <uicontrol>Global Configuration</uicontrol> &gt;
+      <uicontrol>Application Preferences</uicontrol> tab and select <uicontrol>Managed
+      Elements</uicontrol> from the hamburger menu ( <!--MMO resource relative URI: ../../Global_Configurations/Graphics/hamburgermenu_default.png-->
+     <image href="../images/img9yz-09126-ug01-pczza-sp1-hamburgermenu_default.png" scale="40"/>
+     ).</p>
+<p>Configure the required value for the following field:<table pgwide="1" colsep="1" rowsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="col2" colwidth="1.74*"/>
+       <thead>
+        <row>
+         <entry>
+          <p>Field</p>
+         </entry>
+         <entry>
+          <p>Description</p>
+         </entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry> CS Selection Order </entry>
+         <entry>
+          <p>This parameter allows you to sort the charging service based on creation time of
+           subscription or end time of a subscription or account when both charging services have
+           same priority (considering all charging service sorting mechanisms are same for both the
+           charging services).</p>
+          <p>Following are the supported values for this parameter:</p>
+          <ul>
+           <li>
+            <p>
+             <varname>ON_CREATION_TIME</varname>: If you select this value, then the charging
+             service is sorted based on the creation time.</p>
+           </li>
+           <li>
+            <p>
+             <varname>ON_END_TIME</varname>: If you select this value, then the charging service is
+             sorted based on end time or validity time of subscription or end time of account,
+             whichever is applicable.</p>
+           </li>
+          </ul>
+          <p>Default value is <varname>ON_CREATION_TIME</varname>.</p>
+         </entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table></p>
+</sectiondiv>
+</section>
+<section id="cs"><title>Configuration</title>
+<p>This section describes the parameters to define a rate charged against a call.</p>
+<note>
+<p>A charging service can have zero or more counter objects in it and the list is optional. If a counter is included in the list, then all the other counter object parameters except the threshold and category consumption list, such as unit type, scope, type become mandatory.</p>
+</note>
+<p>Log into the SM GUI, navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> &gt;
+     <uicontrol>CHARGING</uicontrol> tab and select <uicontrol>Charging Services</uicontrol> from
+    the hamburger menu ( <!--MMO resource relative URI: ../../Global_Configurations/Graphics/hamburgermenu_default.png-->
+    <image href="../images/img9yz-09126-ug01-pczza-sp1-hamburgermenu_default.png" scale="40"/> ). To
+    define a new charging service, click <!--MMO resource relative URI: ../Graphics/Release_18.0/Add_button_default.png-->
+    <image href="../images/img9yz-09126-ug01-pczza-sp1-add_button_default.png" scale="55"/> to add
+    the basic details, buckets and counters, and tariff formula as described in the following
+    table:</p>
+<sectiondiv>
+<p><b>Basic Details</b></p>
+<table pgwide="1" colsep="1" rowsep="1">
+     <title>Parameters for charging service</title>
+     <tgroup cols="4">
+      <colspec colname="col1"/>
+      <colspec colname="COLSPEC0"/>
+      <colspec colname="COLSPEC1"/>
+      <colspec colname="col2"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Parameter</p>
+        </entry>
+        <entry>
+         <p>Description</p>
+        </entry>
+        <entry>
+         <p>Options/ Data type</p>
+        </entry>
+        <entry>
+         <p>Mandatory/Optional</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> Name </entry>
+        <entry> This parameter indicates the name of the charging service. </entry>
+        <entry> String </entry>
+        <entry> Mandatory </entry>
+       </row>
+       <row>
+        <entry> Priority </entry>
+        <entry>
+         <p>This parameter indicates the priority of the charging service. Higher the number, lower
+          is the priority of the charging service. Multiple charging services can have same
+          priority.</p>
+         <p>
+          <b>Note</b>: Ensure that the value of this parameter is greater than zero.</p>
+        </entry>
+        <entry>
+         <p>Integer</p>
+         <p>Valid range: 1 to 2147483647</p>
+        </entry>
+        <entry> Mandatory </entry>
+       </row>
+       <row>
+        <entry> Category </entry>
+        <entry>
+         <p>This parameter indicates the category associated with the charging service.</p>
+         <p>The default value is <varname>DefaultCategory</varname>.</p>
+        </entry>
+        <entry> Select the required category from the predefined categories in the drop-down list. </entry>
+        <entry> Mandatory </entry>
+       </row>
+       <row>
+        <entry> Description </entry>
+        <entry> This parameter indicates the description of the charging service. </entry>
+        <entry> String </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry> Security Domain </entry>
+        <entry> This parameter indicates the security domain associated with the charging service. </entry>
+        <entry> Select the required security domain from the predefined security domains in the
+         drop-down list. </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry morerows="1"> Applicability Condition </entry>
+        <entry>
+         <p>This parameter indicates a rule condition expression evaluated to determine whether the
+          charging service is applicable.</p>
+         <p>The type of charging service can be identified by <i>KindOfUnit</i> provisioned in the
+          applicability condition.</p>
+         <p>Since the charging service entity does not have any attribute <i>Unit-Type</i>, the call
+          common context attribute <i>KindOfUnit</i> should be configured to identify the same.</p>
+         <p>For example: <i>KindOfUnit</i> can either be <varname>TIME</varname>,
+           <varname>VOLUME</varname>, <varname>MONEY</varname>, or <varname>UNIT</varname>. Though
+          applicability condition is not a mandatory parameter, however, to provide the charging
+          service as a unit type, <i>KindOfUnit</i> should be used.</p>
+         <p>
+          <b>Note</b>: The given example is only for reference:</p>
+        </entry>
+        <entry> String </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry nameend="col2" namest="COLSPEC0">
+         <!--MMO resource relative URI: ../Graphics/Release_18.0/CS_applicability_condition_default.png-->
+         <image href="../images/img9yz-09126-ug01-pczza-sp1-cs_applicability_condition_default.png"
+         />
+        </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+<p>After entering the basic details, click <uicontrol>CONTINUE</uicontrol> to open the <uicontrol>Bucket &amp; Counters</uicontrol> page.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Bucket &amp; Counters</b></p>
+<p>For information on buckets, see the <!--xref URI: #bucket_entity--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-bucket_entity"/> section and for information on counters, see the <!--xref URI: c_Common.xml#counter_entity--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-counter_entity"/> section.</p>
+<table id="bucketcounter" pgwide="1" colsep="1" rowsep="1">
+     <title>Parameters for charging service</title>
+     <tgroup cols="4">
+      <colspec colname="col1" colwidth="1.52*"/>
+      <colspec colname="COLSPEC0" colwidth="3.82*"/>
+      <colspec colname="COLSPEC1" colwidth="1*"/>
+      <colspec colname="col2" colwidth="1.12*"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Parameter</p>
+        </entry>
+        <entry>
+         <p>Description</p>
+        </entry>
+        <entry>
+         <p>Options</p>
+        </entry>
+        <entry>
+         <p>Mandatory/ Optional</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry nameend="col2" namest="col1">
+         <b>Bucket</b>
+        </entry>
+       </row>
+       <row>
+        <entry nameend="col2" namest="col1">
+         <p>Select either of the two options:</p>
+         <ul>
+          <li>
+           <p>Select <uicontrol>ADD BUCKET</uicontrol> to create a new bucket definition, which is
+            scoped only to a particular charging service and any other charging service cannot
+            select the bucket definition ID created using this option.</p>
+          </li>
+          <li>
+           <p>Select <uicontrol>SELECT BUCKET</uicontrol> to use a globally created bucket
+            definition. The attributes modified using this option is scoped only to that particular
+            charging service.</p>
+          </li>
+         </ul>
+         <p>The following parameters can be defined or modified using the one of the preceding
+          options:</p>
+        </entry>
+       </row>
+       <row>
+        <entry> Bucket </entry>
+        <entry>
+         <p>This parameter indicates a bucket name.</p>
+         <p>
+          <b>Note:</b> This parameter cannot be modified using the <uicontrol>SELECT
+           BUCKET</uicontrol> option.</p>
+        </entry>
+        <entry> String </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry> Initial Value </entry>
+        <entry> This parameter indicates the initial value associated with the bucket. </entry>
+        <entry> REUnitType </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry rowsep="1"> Unit Type Name </entry>
+        <entry rowsep="1">
+         <p>This parameter indicates the type of unit associated with the bucket.</p>
+         <p>For more information on unit type, see the
+           <!--xref URI: c-Service_Model.xml#REUnitType--><xref
+           keyref="id9YZ-09126-UG01-PCZZA-SP1-REUnitType"/> section.</p>
+         <p>
+          <b>NOTE:</b> This parameter cannot be modified using the <uicontrol>SELECT
+           BUCKET</uicontrol> option.</p>
+        </entry>
+        <entry rowsep="1">
+         <p>Enum</p>
+         <p>Select the required unit type from the predefined set of values in the drop-down
+          list.</p>
+        </entry>
+        <entry rowsep="1"> Optional </entry>
+       </row>
+       <row>
+        <entry> Charging Step </entry>
+        <entry>
+         <p>This parameter allows you to select the charging step created in the <uicontrol>Charging
+           Step</uicontrol> entity.</p>
+         <p>Either <uicontrol>Initial value</uicontrol> or <uicontrol>Charging Step</uicontrol> is
+          mandatory. If <uicontrol>Charging Step</uicontrol> is associated, then the initial value
+          of the bucket is replaced by the first step of <uicontrol>Charging Step</uicontrol>
+          entity.</p>
+        </entry>
+        <entry> Enum </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry> Thresholds </entry>
+        <entry>This parameter indicates the threshold profile group name associated with the bucket.
+         You can select from thresholds already defined. <p><b>Note</b>: For threshold names with
+          more than 25 characters, the x (remove) symbol does not appear. To remove such a threshold
+          from this field, use <b>Backspace</b>.</p></entry>
+        <entry> String </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry> Carry Over </entry>
+        <entry>
+         <p>This parameter indicates whether the bucket balance is carried over to the next period
+          or not.</p>
+         <p>For information on carry-over bundle feature, see
+           <!--xref URI: c-Rating_and_Charging.xml#CarryOverBundle--><xref
+           keyref="id9YZ-09126-UG01-PCZZA-SP1-CarryOverBundle"/> section.</p>
+         <p>By default, this check box is not checked.</p>
+        </entry>
+        <entry> Select this check box to indicate whether carry-over is required. </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry nameend="col2" namest="col1"> The given parameters are enabled when you select the
+          <uicontrol>Carry Over</uicontrol> check box: </entry>
+       </row>
+       <row>
+        <entry> Validity </entry>
+        <entry>
+         <p>This parameter defines the time period for which the carry-over bucket balance is made
+          available to the user.</p>
+         <p>Select either of the following from the drop-down list:</p>
+         <ul>
+          <li>
+           <p>
+            <varname>One Period</varname>: When validity is defined as <varname>One
+            Period</varname>, then the carried over amount is valid till the next billing cycle date
+            or renewal date of its subscription.</p>
+          </li>
+          <li>
+           <p>
+            <varname>Unlimited</varname>
+           </p>
+          </li>
+         </ul>
+         <p>Default value is <varname>One Period</varname>.</p>
+        </entry>
+        <entry> Enum </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry> Bucket Transfer Limit (%) </entry>
+        <entry>
+         <p>This parameter indicates the percentage amount to be considered for carry-over transfer.
+          It is calculated on available balance of regular bucket.</p>
+         <p>Default value is <varname>100</varname> percent.</p>
+        </entry>
+        <entry> Select the required range of percentage between 1 to 100. </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry> Carry Over Transfer Limit () </entry>
+        <entry>
+         <p>This parameter indicates the maximum value the carry-over bucket can hold at the time of
+          renewal.</p>
+         <p>If the value is not null, then the input limit should not be greater than initial value
+          when <uicontrol>Validity</uicontrol> is equal to <varname>One Period</varname>.</p>
+         <p>If the value is null, then it is equal to initial value when
+           <uicontrol>Validity</uicontrol> is equal to <varname>One Period</varname>. The value is
+           <varname>Unlimited</varname> when <uicontrol>Validity</uicontrol> is equal to
+           <varname>Unlimited</varname>.</p>
+         <p>Default value is equal to the <varname>Unlimited</varname>.</p>
+        </entry>
+        <entry> Integer </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry> Consumption Order </entry>
+        <entry>
+         <p>This parameter indicates which bucket (regular bucket or carry-over bucket) is preferred
+          to be used first for any call charges.</p>
+         <p>Select either of the following from the drop-down list:</p>
+         <ul>
+          <li>
+           <p>
+            <varname>Carry Over First</varname>
+           </p>
+          </li>
+          <li>
+           <p>
+            <varname>Regular</varname>
+           </p>
+          </li>
+         </ul>
+         <p>Default value is <varname>Carry Over First</varname>.</p>
+        </entry>
+        <entry> Enum </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry nameend="col2" namest="col1">
+         <uicontrol>Counters</uicontrol>
+        </entry>
+       </row>
+       <row>
+        <entry nameend="col2" namest="col1">
+         <p>Select either of the two options:</p>
+         <ul>
+          <li>
+           <p>Select <uicontrol>ADD COUNTER</uicontrol> to create a new counter definition, which is
+            scoped only to a particular charging service and any other charging service cannot
+            select the counter definition ID created using this option.</p>
+          </li>
+          <li>
+           <p>Select <uicontrol>SELECT COUNTER</uicontrol> to use a globally created counter
+            definition. The attributes modified using this option is scoped only to that particular
+            charging service.</p>
+          </li>
+         </ul>
+         <p>The following parameters can be defined or modified using the one of the preceding
+          options:</p>
+        </entry>
+       </row>
+       <row>
+        <entry> Counters </entry>
+        <entry>
+         <p>This parameter indicates the name of the counter associated with the charging
+          service.</p>
+         <p>
+          <b>Note:</b> This parameter cannot be modified using the <uicontrol>SELECT
+           COUNTER</uicontrol> option.</p>
+        </entry>
+        <entry> String </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry rowsep="1"> Unit Type Name </entry>
+        <entry rowsep="1">
+         <p>This parameter indicates the type of unit associated with the counter.</p>
+         <p>For more information on unit type, see the <!--xref URI: #REUnitType--><xref
+           keyref="id9YZ-09126-UG01-PCZZA-SP1-REUnitType"/> section.</p>
+         <p>
+          <b>Note:</b> This parameter cannot be modified using the <uicontrol>SELECT
+           COUNTER</uicontrol> option.</p>
+        </entry>
+        <entry rowsep="1">
+         <p>Enum</p>
+         <p>Select the required unit type from the predefined set of values in the drop-down
+          list.</p>
+        </entry>
+        <entry rowsep="1"> Optional </entry>
+       </row>
+       <row>
+        <entry> Counter Type </entry>
+        <entry>
+         <p>This parameter indicates the counter type.</p>
+         <p>Select either of the following from the drop-down list:</p>
+         <ul>
+          <li>
+           <p>
+            <varname>USAGE</varname>: Indicates the usage counter.</p>
+          </li>
+          <li>
+           <p>
+            <varname>COST</varname>: Indicates the cost counter. For example, if the
+             <uicontrol>Counter Type</uicontrol> is <varname>COST</varname>, an SMS is sent by the
+            user and the cost of an SMS is 1 dollar, then the cost counter is incremented.</p>
+          </li>
+         </ul>
+         <p>
+          <b>Note:</b> This parameter cannot be modified using the <uicontrol>SELECT
+           COUNTER</uicontrol> option.</p>
+        </entry>
+        <entry> Enum </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry> Usage Limit </entry>
+        <entry>
+         <p>This parameter defines the usage limit applied per counter within a bundle, that is
+          charging service.</p>
+         <p>If this parameter is defined, then percentage type thresholds are allowed in the
+          Thresholds parameter with a symbolic end limit as usage limit. When the counter is
+          selected in a different charging service, this parameter is changed.</p>
+        </entry>
+        <entry> Big decimal </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry> Thresholds </entry>
+        <entry>
+         <p>This parameter indicates the threshold profile group IDs.</p>
+         <ul>
+          <li>
+           <p>If usage limit is applied to a counter, then this parameter acts as the threshold on
+            the usage limit. Also, it adds the percentage threshold on the usage limit.</p>
+          </li>
+          <li>
+           <p>If usage limit is not applied to a counter, then this parameter only allows absolute
+            thresholds on the counter value.</p>
+          </li>
+         </ul>
+        </entry>
+        <entry> List&lt;String&gt; </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry> Overage Limit </entry>
+        <entry>
+         <p>This parameter defines the overage usage limit per counter within a bundle. When a
+          counter is selected in a different charging service, this parameter value can be
+          changed.</p>
+         <p>Once, usage limit of the counter is reached, the overage limit is considered and
+          subsequently triggers all threshold actions for the overage block as defined. The overage
+          is applied repetitively to the counter.</p>
+         <p>The overage limit can be defined only when the usage limit is defined.</p>
+        </entry>
+        <entry> Big decimal </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry> Overage Threshold Profile Group IDs </entry>
+        <entry>
+         <p>This parameter indicates the thresholds applied on the overage limit defined in the
+          counter.</p>
+         <p>As overage limit is repetitive in nature, overage thresholds will be executed
+          repeatedly.</p>
+        </entry>
+        <entry> List&lt;String&gt; </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry> Cap IDs </entry>
+        <entry> This parameter indicates the cap IDs associated with the counter. </entry>
+        <entry> List&lt;String&gt; </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry> OCS Policy Counter </entry>
+        <entry>
+         <p>This parameter indicates the value for the <uicontrol>PolicyCounter</uicontrol> flag is
+          dependent on the given conditions:</p>
+         <ul>
+          <li>
+           <p>
+            <varname>True</varname>: If the <uicontrol>OCS Policy Counter</uicontrol> check box is
+            checked, then the current interface is an Sy interface.</p>
+          </li>
+          <li>
+           <p>
+            <varname>False</varname>: If the <uicontrol>OCS Policy Counter</uicontrol> check box is
+            unchecked, then the current interface is a Gy interface.</p>
+          </li>
+         </ul>
+         <p>Default value is <varname>False</varname>.</p>
+         <p>
+          <b>Note:</b> This parameter cannot be modified using the <uicontrol>SELECT
+           COUNTER</uicontrol> option.</p>
+        </entry>
+        <entry> Select this check box to indicate whether the counter is a policy counter or not. </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry rowsep="0"> Resource Based </entry>
+        <entry rowsep="0">
+         <p>This parameter indicates the value for the <uicontrol>Resource Based</uicontrol> flag.
+          It is only applicable in case of policy counter. This flag distinguishes between the
+          resource and usage counter.</p>
+         <p>
+          <uicontrol>Note:</uicontrol> This flag appears on the SM GUI only when the <uicontrol>OCS
+           Policy Counter</uicontrol> check box is selected.</p>
+         <p>A resource-based counter depends upon resources, whereas usage counter depends on the
+          quantity of reservation or commit done.</p>
+        </entry>
+        <entry rowsep="0"> Select this check box to indicate whether the counter is a resource
+         counter or not. </entry>
+        <entry rowsep="0"> Optional </entry>
+       </row>
+       <row>
+        <entry/>
+        <entry>
+         <p>Supported options are:</p>
+         <ul>
+          <li>
+           <p>
+            <varname>True</varname>: If the <uicontrol>Resource Based</uicontrol> check box is
+            checked, then it is a resource-based counter.</p>
+          </li>
+          <li>
+           <p>
+            <varname>False</varname>: If the <uicontrol>Resource Based</uicontrol> check box is
+            unchecked, then it is a usage-based counter.</p>
+          </li>
+         </ul>
+         <p>Default value is <varname>False</varname>.</p>
+         <p>For more details, see <!--xref URI: c_Common.xml#rbc--><xref
+           keyref="id9YZ-09126-UG01-PCZZA-SP1-counter_entity/rbc"/>.</p>
+         <p>
+          <b>Note:</b> This parameter cannot be modified using the <uicontrol>SELECT
+           COUNTER</uicontrol> option.</p>
+        </entry>
+        <entry/>
+        <entry/>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+<p>After entering the information for buckets and counters, click <uicontrol>CONTINUE</uicontrol> to open the <uicontrol>Tariff Formula</uicontrol> page.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Tariff Formula</b></p>
+<p>Tariff is the core component of the charging service that defines the service logic. It is the encapsulation of rules to determine the rating plan defined for a subscriber. Tariff provides a mechanism to execute a subset of the logic before passing the processing request to a charging service.</p>
+<note type="attention">
+<p>Two resources related to rating cannot be added to the same tariff pass.</p>
+</note>
+<p>For example, the following configuration leads to unexpected result.</p>
+<p>
+<userinput>RATING.Bucket-Selection = “BucketName” and </userinput>
+</p>
+<p>
+<userinput>RATING.Rate (“Rate1”, “Main Balance”)</userinput>
+</p>
+<p>For the preceding configuration to work correctly, you can move the rate configuration to a different tariff pass.</p>
+<table frame="all" colsep="1" rowsep="1">
+     <title>Parameters for charging service</title>
+     <tgroup cols="4">
+      <colspec colname="col1"/>
+      <colspec colname="col3"/>
+      <colspec colname="COLSPEC0"/>
+      <colspec colname="col4"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Parameter</p>
+        </entry>
+        <entry>
+         <p>Description</p>
+        </entry>
+        <entry>
+         <p>Options</p>
+        </entry>
+        <entry>
+         <p>Mandatory/Optional</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> Tariff Formula </entry>
+        <entry>
+         <p>This parameter indicates the tariff name in a pass defined for the charging service.</p>
+         <p>The service operator must enter a unique name for the tariff formula or click
+           <uicontrol>ADD RULE</uicontrol> to enter the rule defined for that pass.</p>
+        </entry>
+        <entry> String </entry>
+        <entry> Mandatory </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+</sectiondiv>
+</section>
+<section><title>Actions associated with a charging service</title>
+<table pgwide="1" colsep="1" rowsep="1">
+    <tgroup cols="2">
+     <colspec colname="col1"/>
+     <colspec colname="col2"/>
+     <thead>
+      <row>
+       <entry>
+        <p>Action</p>
+       </entry>
+       <entry>
+        <p>Description</p>
+       </entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry> Create </entry>
+       <entry> Creates a charging service entity in the database by providing the parameters, such
+        as <uicontrol>Name</uicontrol>, <uicontrol>Priority</uicontrol>, <uicontrol>Applicability
+         Condition</uicontrol> parameters. </entry>
+      </row>
+      <row>
+       <entry> Read </entry>
+       <entry> Displays a particular charging service entity as per the data retrieved from
+        database. </entry>
+      </row>
+      <row>
+       <entry> Update </entry>
+       <entry> Updates a particular charging service entity in database. </entry>
+      </row>
+      <row>
+       <entry> Delete </entry>
+       <entry> Deletes a particular charging service entity from database. </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+<note>
+<p>These actions are valid for only for internal purposes and cannot be accessed using the SM GUI.</p>
+</note>
+</section>
+</conbody></concept>

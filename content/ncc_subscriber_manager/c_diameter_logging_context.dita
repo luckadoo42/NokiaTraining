@@ -1,0 +1,604 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id ="id9YZ-08540-UG05-PCZZA-dialogcon2"><title>Diameter Logging context</title><conbody>
+<section>
+
+<p>The NCC contains a Diameter Logging context that extends the Logging context with a number of
+    Diameter specific attributes and actions. Applicability conditions for these actions are
+    configured using the Diameter Message and Computational contexts. (See the sections about
+    Diameter Message and Computational contexts in this chapter for more information.)</p>
+<p>Since the Diameter Logging context extends the Logging context, it provides the same rule attributes and actions that the Logging context itself does, for example:</p>
+<table colsep="1" pgwide="1" rowsep="1">
+<tgroup cols="4">
+<colspec colname="col1" />
+<colspec colname="col2" />
+<colspec colname="col3" />
+<colspec colname="COLSPEC9" />
+<thead>
+<row>
+<entry>
+<p>Actions</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+<entry>
+<p>Options</p>
+</entry>
+<entry>
+<p>Impact</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+Diameter Logging.Debug 
+</entry>
+<entry>
+This Logs text in the given logger at the DEBUG level.
+</entry>
+<entry>
+("logger", &#8220;text&#8221;)
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Diameter Logging.Logger-Level.Set
+</entry>
+<entry>
+This sets the logging level of the given loggers to a specific level.
+</entry>
+<entry>
+("loggers", "level")
+</entry>
+<entry>
+<p>Low</p>
+<p>Medium to high if triggered often.</p>
+</entry>
+</row>
+<row>
+<entry>
+Diameter Logging.Instance.Logger.Set
+</entry>
+<entry>
+Sets the logger(s) for the Instance logger to the given value.
+</entry>
+<entry>
+("loggers")
+</entry>
+<entry>
+Low
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>The Diameter Logging context adds the following Diameter Message specific actions as shown in the table below. See the sections &#8220;Diameter logging context format&#8221; and &#8220;Diameter logging context fields&#8221; for more information about arguments to these commands.</p>
+<table colsep="1" pgwide="1" rowsep="1">
+<tgroup cols="4">
+<colspec colname="col1" />
+<colspec colname="col2" />
+<colspec colname="col3" />
+<colspec colname="COLSPEC10" />
+<thead>
+<row>
+<entry>
+<p>Actions</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+<entry>
+<p>Options</p>
+</entry>
+<entry>
+<p>Impact</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+Get-Request
+</entry>
+<entry morerows="1">
+These two commands get the Diameter request or answer as a string using the specified format and fields and can then be used in the rules in any way (logged, manipulated, examined). 
+</entry>
+<entry morerows="1">
+("format", "fields")
+</entry>
+<entry morerows="1">
+Low
+</entry>
+</row>
+<row>
+<entry>
+Get-Answer
+</entry>
+</row>
+<row>
+<entry>
+Global.Instance.Log-Request
+</entry>
+<entry morerows="1">
+These two commands log the Diameter request or answer using the Global.Instance logger and logging level with the specified format and fields.
+</entry>
+<entry morerows="1">
+("format", "fields")
+</entry>
+<entry morerows="1">
+Low
+</entry>
+</row>
+<row>
+<entry>
+Global.Instance.Log-Answer
+</entry>
+</row>
+<row>
+<entry>
+Instance.Log-Request
+</entry>
+<entry morerows="1">
+These two commands log the Diameter request or answer using the message scoped Instance logger and logging level with the specified format and fields.
+</entry>
+<entry morerows="1">
+("format", "fields")
+</entry>
+<entry morerows="1">
+Low
+</entry>
+</row>
+<row>
+<entry>
+Instance.Log-Answer
+</entry>
+</row>
+<row>
+<entry>
+Log-Request
+</entry>
+<entry morerows="1">
+<p>These two commands log the Diameter request or answer to the given logger(s) at the provided level using the specified format and fields.</p>
+<p>See the sections &#8220;Diameter logging context format&#8221; and &#8220;Diameter logging context fields&#8221; for more information about arguments to these commands.</p>
+</entry>
+<entry morerows="1">
+("loggers", "level", "format", "fields")
+</entry>
+<entry morerows="1">
+Low
+</entry>
+</row>
+<row>
+<entry>
+Log-Answer
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<sectiondiv>
+<p><b>Diameter logging context format</b></p>
+<p>The &#8220;format&#8221; parameter for the Diameter Message specific actions specifies the format of the logger Diameter message and can be one of Basic, Brief, or Detailed. Basic provides a one line log message with a minimum number of AVPs (the same AVPs as per the Field of the same name). Brief returns a brief summary of the Diameter message. Returns a detailed format with the provided fields.</p>
+<p>The Diameter Logging context provides the following format Rule Constants. A Rule constant is a rule attribute whose value never changes.</p>
+<table colsep="1" pgwide="1" rowsep="1">
+<tgroup cols="2">
+<colspec colname="col1" />
+<colspec colname="col3" />
+<thead>
+<row>
+<entry>
+<p>Constant</p>
+</entry>
+<entry>
+<p>Summary</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+
+<b>Format.Basic</b>
+
+</entry>
+<entry>
+<p>For example:</p>
+<p>Rx AA-Request from host 'clientHost.clientRealm' to 'clientHost2.clientRealm2' with session-id 'host.routingExample.com;1876543210;523'</p>
+<p>
+<b>Note:</b> The fields value of rule attribute is ignored when using the Basic format. </p>
+</entry>
+</row>
+<row>
+<entry>
+
+<b>Format.Brief</b>
+
+</entry>
+<entry>
+<p>For example:</p>
+<p>
+<systemoutput>DiameterRequest [</systemoutput>
+</p>
+<p>
+<systemoutput> Application: Gx</systemoutput>
+</p>
+<p>
+<systemoutput> Command: CCR</systemoutput>
+</p>
+<p>
+<systemoutput> Diameter AVPs:</systemoutput>
+</p>
+<p>
+<systemoutput>   Session-Id: UTF8String="session-0000000519712136"</systemoutput>
+</p>
+<p>
+<systemoutput>   Origin-Host: Identity=loaderHost1.loaderRealm</systemoutput>
+</p>
+<p>
+<systemoutput>   Origin-Realm: Identity=loaderRealm</systemoutput>
+</p>
+<p>
+<systemoutput>   Destination-Host: Identity=tpapps.realm</systemoutput>
+</p>
+<p>
+<systemoutput>   Destination-Realm: Identity=realm</systemoutput>
+</p>
+<p>
+<systemoutput>   Auth-Application-Id: Unsigned32=16777238</systemoutput>
+</p>
+<p>
+<systemoutput>   CC-Request-Type: Integer32(Enumerated)=1</systemoutput>
+</p>
+<p>
+<systemoutput>   CC-Request-Number: Unsigned32=0</systemoutput>
+</p>
+<p>
+<systemoutput>   Subscription-Id: [Grouped]</systemoutput>
+</p>
+<p>
+<systemoutput>    Subscription-Id-Type:   Integer32(Enumerated)=1</systemoutput>
+</p>
+<p>
+<systemoutput>    Subscription-Id-Data: UTF8String="123456000000000" </systemoutput>
+</p>
+</entry>
+</row>
+<row>
+<entry>
+
+<b>Format.Detailed</b>
+
+</entry>
+<entry>
+<p>For example:</p>
+<p>
+<systemoutput>DiameterRequest [</systemoutput>
+</p>
+<p>
+<systemoutput> Application-Id = 16777238&#160;(Gx) </systemoutput>
+</p>
+<p>
+<systemoutput> Command=272 (CCR)</systemoutput>
+</p>
+<p>
+<systemoutput> Flags= 192 (REQ PXY)</systemoutput>
+</p>
+<p>
+<systemoutput> HopByHop (client) = 1396703234</systemoutput>
+</p>
+<p>
+<systemoutput> HopByHop (server) = 14680065</systemoutput>
+</p>
+<p>
+<systemoutput> EndToEnd = -1396703230</systemoutput>
+</p>
+<p>
+<systemoutput> Reception Address = /135.121.114.184:3868</systemoutput>
+</p>
+<p>
+<systemoutput>  DiameterAVP [code=263, name=Session-Id, vendorId=0,flags#0=-M-,value#0:UTF8String="session-0000000519712136"]</systemoutput>
+</p>
+<p>
+<systemoutput>  DiameterAVP [code=264, name=Origin-Host, vendorId=0,flags#0=-M-,value#0:Identity=loaderHost1.loaderRealm]</systemoutput>
+</p>
+<p>
+<systemoutput>  DiameterAVP [code=296, name=Origin-Realm, vendorId=0,flags#0=-M-,value#0:Identity=loaderRealm]</systemoutput>
+</p>
+<p>
+<systemoutput>  DiameterAVP [code=293, name=Destination-Host, vendorId=0,flags#0=-M-,value#0:Identity=tpapps.realm]</systemoutput>
+</p>
+<p>
+<systemoutput>  DiameterAVP [code=283, name=Destination-Realm, vendorId=0,flags#0=-M-,value#0:Identity=realm]</systemoutput>
+</p>
+<p>
+<systemoutput>  DiameterAVP [code=258, name=Auth-Application-Id, vendorId=0,flags#0=-M-,value#0:Unsigned32=16777238]</systemoutput>
+</p>
+<p>
+<systemoutput>  DiameterAVP [code=416, name=CC-Request-Type, vendorId=0,flags#0=-M-,value#0:Integer32(Enumerated)=1]</systemoutput>
+</p>
+<p>
+<systemoutput>  DiameterAVP [code=415, name=CC-Request-Number, vendorId=0,flags#0=-M-,value#0:Unsigned32=0]</systemoutput>
+</p>
+<p>
+<systemoutput>  DiameterAVP [code=443, </systemoutput>
+<systemoutput> name=Subscription-Id, vendorId=0,flags#0=M,value#0:GroupedAVP= { AVP#0=DiameterAVP [code=450, name=Subscription-Id-Type, vendorId=0,flags#0=-M-,value#0:Integer32(Enumerated)=1], AVP#1=DiameterAVP [code=444, name=Subscription-Id-Data, vendorId=0,flags#0=-M-,value#0:UTF8String="123456000000000"]}]</systemoutput>
+</p>
+<p>
+<systemoutput> Attribute[</systemoutput>
+</p>
+<p>
+<systemoutput>  name=Lifecycle, </systemoutput>
+</p>
+<p>
+<systemoutput>  value=Message type: server, request arrival time: 1479144370858, request completion time: 0, response arrival time: 0, response completion time: 0]</systemoutput>
+</p>
+<p>
+<systemoutput> Attribute[</systemoutput>
+</p>
+<p>
+<systemoutput>  name=agent.diameter.IgnoreMayBlock</systemoutput>
+</p>
+<p>
+<systemoutput>  value=false]</systemoutput>
+</p>
+<p>
+<systemoutput> Attribute[</systemoutput>
+</p>
+<p>
+<systemoutput>  name=agent.diameter.listener</systemoutput>
+</p>
+<p>
+<systemoutput>  value=</systemoutput>
+<systemoutput>com.nextenso.diameter.agent.peer.Peer$RequestProcessingListener@3bc52da9]</systemoutput>
+</p>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<note>
+
+<p>See the section &#8220;Tracing usage examples&#8221; for more usage examples.</p>
+</note>
+</sectiondiv>
+<sectiondiv>
+<p><b>Diameter logging context fields</b></p>
+<p>This is the comma-separated lists of fields to be returned from the Request or Answer. This can be any of the Headers, AVPs or Attributes associated with the Request/Answer as follows: </p><ul>
+
+<li>
+<p>
+<b>Headers</b>
+</p><ul>
+
+<li>
+<p>Application-Id</p>
+</li>
+<li>
+<p>Command</p>
+</li>
+<li>
+<p>Flags</p>
+</li>
+<li>
+<p>Client-Hop-by-Hop</p>
+</li>
+<li>
+<p>Server-Hop-by-Hop</p>
+</li>
+<li>
+<p>End-to-End</p>
+</li>
+<li>
+<p>Reception-Address</p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<b>AVPs</b>
+</p>
+<p>Any dot-separated AVP name path, for example: Session-Id or Subscription-Id.Subscription-Data.</p>
+</li>
+<li>
+<p>
+<b>Attributes</b>
+</p><ul>
+
+<li>
+<p>Displays any of the attributes the system assigns to the message as it is processed.</p>
+</li>
+<li>
+<p>Expected to be used by Nokia representatives for debugging than for general message logging.</p>
+</li>
+<li>
+<p>No defined list of attributes, a user must log a message and determine which if any attributes are desired for further logging. </p>
+</li>
+</ul>
+</li>
+</ul>
+<p>The Diameter Logging context provides the following field Rule Constants. A Rule constant is a rule attribute whose value never changes.</p>
+<table colsep="1" pgwide="1" rowsep="1">
+<tgroup cols="3">
+<colspec colname="col2" />
+<colspec colname="col3" />
+<colspec colname="COLSPEC11" />
+<thead>
+<row>
+<entry>
+<p>Constant</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+<entry>
+<p>Impact</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+
+<b>Field.Basic </b>
+
+</entry>
+<entry>
+ The following set of fields will be logged: Application name, Command name, Origin-host / Origin-realm (or reference thereof), Destination-host / Destination-realm (or reference thereof) and Session-id.
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+
+<b>Field.All </b>
+
+</entry>
+<entry>
+Indicates ALL Headers and ALL AVPs
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+
+<b>Field.All-With-Attributes</b>
+
+</entry>
+<entry>
+Indicates ALL Headers, ALL AVPs and ALL Attributes
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+
+<b>Field.All-AVPs</b>
+
+</entry>
+<entry>
+Indicates ALL AVPs
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+
+<b>Field.All-Attributes</b>
+
+</entry>
+<entry>
+Indicates ALL Attributes
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+
+<b>Field.All-Headers</b>
+
+</entry>
+<entry>
+Indicates ALL Headers
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+<p>
+<b>Field.Header.Application-Id</b>
+</p>
+<p>
+<b>Field.Header.Command</b>
+</p>
+<p>
+<b>Field.Header.Flags</b>
+</p>
+<p>
+<b>Field.Header.Client-Hop-by-Hop</b>
+</p>
+<p>
+<b>Field.Header.Server-Hop-by-Hop</b>
+</p>
+<p>
+<b>Field.Header.End-to-End</b>
+</p>
+<p>
+<b>Field.Header.Reception-Address</b>
+</p>
+</entry>
+<entry>
+Returns header values
+</entry>
+<entry>
+Low
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>Additional AVP Rule Constants for use in "fields" are as shown in the following table:</p>
+<table colsep="1" pgwide="1" rowsep="1">
+<tgroup cols="3">
+<colspec colname="col1" />
+<colspec colname="col2" />
+<colspec colname="col3" />
+<thead>
+<row>
+<entry>
+<p>Constant</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+<entry>
+<p>Impact</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+&lt;AVP name from message context&gt;.Name
+</entry>
+<entry>
+<p>This is the name of the AVP. For example:</p>
+<p>GxCCR.Subscription-Id.Name</p>
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+&lt;AVP name from message context&gt;.Path
+</entry>
+<entry>
+<p>This is the dot separated path of the AVP. For example:</p>
+<p>GxCCR.Subscription-Id.Subscription-Data.Path</p>
+</entry>
+<entry>
+Low
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+</section>
+</conbody></concept>

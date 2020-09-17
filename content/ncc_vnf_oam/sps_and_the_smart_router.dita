@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="id9YZ-09126-MT00-REZZA-SP2-d1e28652"><title>NCC and the Smart Router</title><taskbody id="d1e28741"><context>
+<sectiondiv>
+<p><b>Smart Router overview</b></p>
+<p>Using the NCC configured as the Smart Router, the NCC converts 5G HTTP/2 protocol messages to the
+          Diameter protocol allowing the messages to be routed to a Drouter and then to SurePay. The
+          protocol conversion and routing function are done for both inbound and outbound messages.
+          For example, inbound N40 requests are routed by the Smart Router to a Drouter and then
+          Surepay as GyCCRs and responses are routed as GyCCAs, which are converted back to their
+          N40 NCHF equivalent before being sent to the SMF. The conversions are done for
+          NCHF_Converged_Charging messages (create, update, and delete).</p>
+<p>
+          <!--xref URI: #callflowsurepaya-->
+          <xref keyref="id9YZ-09126-MT00-REZZA-SP2-d1e28652/callflowsurepaya"/> shows the NCC acting
+          as a router for SurePay interworking.</p>
+<fig id="callflowsurepaya">
+<title>NCC acting as a router for SurePay interworking</title>
+<!--MMO resource relative URI: ../Graphics/router4surepay1_default.png-->
+  <image href="../images/surepay1_default.png"/>
+</fig>
+<p>When a request is received at the NCC Smart Router (router function in NCC) the following tasks
+          are performed:</p><ol>
+<li>
+<p>H2D Converter: Converts HTTP request to a Diameter request.</p>
+</li>
+<li>
+<p>Smart Router Plugin: Process Diameter output message and response received from SurePay.</p>
+</li>
+<li>
+<p>D2H Converter: Converts Diameter response to an HTTP response.</p>
+</li>
+</ol>
+<p>
+          <!--xref URI: callflowsurepaya-->
+          <xref keyref="id9YZ-09126-MT00-REZZA-SP2-d1e28652/callflowsurepaya"/> shows the call flow
+          for NCC to SurePay interworking.</p>
+<fig id="callflowsurepaya-n23cb8">
+<title>Call flow for NCC to Surepay interworking</title>
+  <image href="../images/callflowspstosurepay2_default.png"/>
+</fig>
+<p>The Set used to store session mappings is RoutingSessMap and it is in the dscglobal space, so it is replicated to all related MEs. </p>
+<fig>
+<title>Session mapping records</title>
+<!--MMO resource relative URI: ../Graphics/surpaysessionmap_default.png-->
+  <image href="../images/surpaysessionmap_default.png"/>
+</fig>
+</sectiondiv>
+<note>This procedure must be performed by Nokia Services personnel.<p/></note></context>
+<steps>
+<step>
+        <cmd>Perform a full installation of the NCC. For more information on installing the NCC, see
+          the <i>NCC-Installation and Upgrade Guide.</i>.</cmd>
+        <info/>
+      </step>
+<step>
+        <cmd>Perform one of the following as required. Here you are setting the converter definition
+          to modify the http plugin sequence.</cmd>
+        <info>
+          <ol id="ol_rdt_ynx_tmb">
+            <li>If this is a standalone configuration, manually edit the following in the
+              tpa.properties file.<p>For the Http plugin sequence converter:</p><p>
+                <userinput>http.plugins.integrated=systemtype=INTEGRATED%requestsequence=HTTP to
+                  Diameter Plugin:smartrouter </userinput>
+              </p><p>
+                <userinput>http.plugins.io=</userinput>
+              </p><p>
+                <userinput>http.plugins.processor=</userinput>
+              </p><p>Then manually edit the following for the Diameter application:</p><p>
+                <userinput>dcp.plugins.integrated=systemtype=INTEGRATED%requestsequence=HTTP to
+                  Diameter Plugin:smartrouter </userinput>
+              </p><p>
+                <userinput>dcp.plugins.io=</userinput>
+              </p><p>
+                <userinput>dcp.plugins.processor=</userinput>
+              </p><p>
+                <userinput>dcp.clientplugins.integrated=INTEGRATED%requestsequence=Smart
+                  Router:%responsesequence=Smart Router:</userinput>
+              </p><p>
+                <userinput>dcp.clientplugins.io= </userinput>
+              </p><p>
+                <userinput>dcp.clientplugins.processor=</userinput>
+              </p></li>
+            <li/>
+          </ol>
+        </info>
+        <substeps>
+          <substep>
+            <cmd>If this is a distributed configuration:</cmd>
+            <info>
+              <ul id="ul_ylw_b4x_tmb">
+                <li>
+                  <p>Update ETCD keys for the following properties:</p>
+                  <p>For the Http plugin sequence converter:</p>
+                  <p>
+                    <userinput>http.plugins.integrated= </userinput>
+                  </p>
+                  <p>
+                    <userinput>http.plugins.io= </userinput>
+                  </p>
+                  <p>
+                    <userinput>http.plugins.processor=systemtype=PROCESSOR%requestsequence=HTTP to
+                      Diameter Plugin:smartrouter</userinput>
+                  </p>
+                  <p>Then manually edit the following for the Diameter application:</p>
+                  <p>
+                    <userinput>dcp.plugins.integrated=</userinput>
+                  </p>
+                  <p>
+                    <userinput>dcp.plugins.io=</userinput>
+                  </p>
+                  <p>
+                    <userinput>dcp.plugins.processor=systemtype=PROCESSOR%requestsequence=Smart
+                      Router:,Rule Engine:%responsesequence=Smart Router:</userinput>
+                  </p>
+                  <p>
+                    <userinput>dcp.clientplugins.integrated=INTEGRATED%requestsequence=Smart
+                      Router:%responsesequence=Smart Router:</userinput>
+                  </p>
+                  <p>
+                    <userinput>dcp.clientplugins.io= </userinput>
+                  </p>
+                  <p>
+                    <userinput>dcp.clientplugins.processor=</userinput>
+                  </p>
+                </li>
+                <li>
+                  <p>Restart all the Diameter application nodes.</p>
+                </li>
+              </ul>
+            </info>
+          </substep>
+        </substeps>
+      </step>
+<step><cmd>Run the twiddle command:</cmd><info><p>
+<codeph>/opt/tpa/bin/twiddle localhost invoke com.nokia.tpapps.http:service=HttpApplicationPluginManagerService reloadPluginsConfigFromProperties</codeph>
+</p><p>
+<codeph>/opt/tpa/bin/twiddle localhost invoke com.alcatel.tpapps.ddm:service=DDM reloadPluginsConfigFromProperties</codeph>
+</p></info></step>
+<step>
+        <cmd>Configure the Diameter Routing table (dsclocal.DiamRouteCfg) with the target peer(s)
+          (either Surepay DRouter or directly connected Surepay OCS node) as shown in the
+          following:</cmd>
+        <info>
+          <fig>
+            <codeblock>aql&gt; select * from dsclocal.DiamRouteCfg
+
+[
+    [
+        {
+          "routeConfigs": [
+            {
+              "applications": [
+                4
+              ],
+              "priority": 2,
+              "active": 1,
+              "originHost": "DRouter1",
+              "realm": "LUCENT.COM",
+              "type": 1,
+              "description": "Diameter"
+            },
+            {
+              "applications": [
+                16777302
+              ],
+              "priority": 2,
+              "active": 1,
+              "originHost": " DRouter1",
+              "realm": "LUCENT.COM",
+              "type": 1,
+              "description": "Diameter"
+            },
+            {
+              "applications": [
+                167773025
+              ],
+              "priority": 2,
+              "active": 1,
+              "originHost": " DRouter1",
+              "realm": "LUCENT.COM",
+              "type": 1,
+              "description": "Diameter"
+            },
+          "schemaVersion": 20060000006,
+          "id": {
+            "geoRedSiteName": "tpapps.realm",
+            "hostName": "Vodafone-AppNode.Demo"
+          }
+        }
+    ],
+    [
+        {
+          "Status": 0
+        }
+    ]
+]</codeblock>
+          </fig>
+        </info>
+      </step>
+<step>
+        <cmd>If a DRouter is being used for routing in step 4, configure the following file with the
+          list of DRouters to which the Surepay OCSs are connected. These are the routing peer(s)
+          for the converted Nchf messages and they should be a subset of the items provisioned in
+          step 4. This is the routing strategy for the Smart Router plugin. </cmd>
+        <info>
+          <p>Enter the following command:</p>
+          <p>
+            <codeph>/opt/tpa/conf/sac/RoutingStrategyConfiguration.xml</codeph>
+          </p>
+          <p>The following is an example of the RoutingStrategyConfiguration.xml:</p>
+          <fig>
+            <title>Routing Strategy</title>
+            <!--MMO resource relative URI: ../Graphics/routingstrat2_default.png-->
+            <image href="../images/routingstrat2_default.png"/>
+          </fig>
+          <p>This xml is in accordance with the schema defined in
+            /opt/tpa/schemas/RoutingStrategyConfig.xsd.</p>
+        </info>
+      </step>
+<step>
+        <cmd>Configure the Http/Diameter conversion per request in the file as follows: </cmd>
+        <substeps id="substeps_as1_kwb_zmb">
+          <substep>
+            <cmd><cmdname>Gy interface</cmdname></cmd>
+            <info><i>/opt/tpa/osgi/server/all/conf/httpservice/smartrouter/NchfToCreditControlConversion.xml</i></info>
+          </substep>
+          <substep>
+            <cmd><cmdname>N28 interface:</cmdname></cmd>
+            <info>
+              <p><i>/opt/tpa/osgi/server/all/conf/httpservice/smartrouter/PCFSpendingLimitControlServiceConversion.xml</i></p>
+              <p>Add the following specific settings for routing purposes. (The destinationRealm
+                should be the realm used for the SurePay OCS.)</p>
+              <fig id="fig_tvc_2wb_zmb">
+                <codeblock>===== Http to Diameter specific configurations starts here =====    &lt;httpToDiameterConfig&gt;
+        &lt;localProcessing&gt;false&lt;/localProcessing&gt;
+        &lt;sessionIdFormat&gt;
+            &lt;rfc3588&gt;true&lt;/rfc3588&gt;
+            &lt;senderIdentity&gt;Example-AppNode.Demo&lt;/senderIdentity&gt;
+        &lt;/sessionIdFormat&gt; 
+        &lt;originHost&gt;Example-AppNode.Demo&lt;/originHost&gt;
+        &lt;originRealm&gt;Demo&lt;/originRealm&gt; 
+        &lt;destinationRealm&gt;LUCENT.COM&lt;/destinationRealm&gt;
+    &lt;/httpToDiameterConfig&gt;</codeblock>
+              </fig>
+            </info>
+          </substep>
+        </substeps>
+      </step>
+</steps>
+</taskbody></task>

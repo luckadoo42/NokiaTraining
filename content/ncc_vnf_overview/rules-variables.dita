@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9YZ-09018-UG00-PCZZA-d1e14783"><title>Rules, Variables, and Rule System Versioning</title><conbody>
+<section><title>Overview</title>
+<p>Each application (Policy, NCC, and Diameter Rule Engine) has its own rule system version (RSV).
+                All rule groups and variables are part of a container called a Rule System Version
+                (RSV). The RSV container supports rule operations such as rule or variable
+                authoring, cloning, exporting, and importing. This is essential for the purpose of
+                the rule logic being modified. An RSV is created on the Service Manager and then the
+                entire RSV is distributed to the Managed Elements (MEs), which are the NCC sites.
+                Each application in the same NCC can have different RSVs but all of the RSVs must be
+                of the same release.</p>
+<note>If an RSV is more than 5MB in size, it is not possible to perform an export of the RSV using a
+                Chrome browser. This is a limitation of the browser. Nokia suggests that you use a
+                Mozilla Firefox browser for an operation of this magnitude. To do so, you must
+                change the default setting in Mozilla Firefox, as follows:<ul>
+                    <li>
+                        <p>Navigate to “about:config” in the Firefox address bar.</p>
+                    </li>
+                    <li>
+                        <p>Search for “dom.storage.default_quota”, which is set to 5120 by
+                            default.</p>
+                    </li>
+                    <li>
+                        <p>Set the value to 7000 (to export an RSV of 7MB) or an appropriate size
+                            that is higher to be able to export the RSV.</p>
+                    </li>
+                </ul></note>
+<p>A rule system version contains the entire collection of rules, policy logic, and/or rule variable
+                definitions that drive the application specific NCC rule engines. An RSV captures a
+                series of triggers and associated rule groups that implement a customized NCC
+                message modification and additional behavior each time a Diameter message is
+                received.</p>
+<p>When a rule system version is activated, all rule groups that belong to the rule system version are evaluated and the rules can be executed by the Rules Engine as triggered in an order of precedence.</p>
+<p>The NCC supports the export and import of the entire rule system version for each application,
+                with its associated policies, profiles, rules, and templates between NCC systems
+                running the same release. </p>
+<p>A Default rule system version is created for each application automatically when you start the
+                NCC for the first time after installation. The Default rule system version contains
+                all of the triggers and rule groups that are required for the startup of an
+                application, and on initial startup of the application, appears in the GUI in the
+                Active state. </p>
+<p>The Default rule system version is read-only. You can use the Default rule system version as the active version; however, if you need to modify or create rules, you must clone the Default rule system version to create a new version for your system. This version is created in a draft state and can be promoted to the active state when ready.</p>
+<p>You can delete any of the Draft versions or Release versions. An Active rule system version cannot be modified or deleted. You can extensively modify any version that is in a Draft state. Only the Description field of a rule system version in a Release state can be modified. When you clone or create a new rule system version, the new rule system version is in a Draft state.</p>
+</section>
+<section><title>Policy RSV</title>
+<p>All of your Policy rules and rule variables are set in the Rules and Variables tab of the Policy
+                GUI.</p>
+<p>For the Policy application, you can create and manage new and existing versions of the rule
+                system configuration, along with provisioned/predefined rules, conditional policy,
+                and notification templates. Rule provisioning begins in the Rules and Variables tab.
+                When you configure the parameters of Basic Details in the Rules and Variables tab
+                you are configuring a rule system version (a set of rule groups and variables) for
+                Policy.</p>
+<p>Rule system version functions cannot be performed on a per-rule basis. Rule system versioning
+                allows multiple versions of the entire collection of rules with associated policies,
+                custom data profiles, and notification templates for each application to exist on
+                the NCC. </p>
+<p>Rule groups, rule variables, rules, triggers, notification templates, custom data, and associated policies that are contained within a rule system version can only be modified when they are in the Draft state.</p>
+</section>
+<section><title>NCC RSV </title>
+<p>For NCC, rules are generally part of a specific profile and therefore not available in a Rule
+                System Version form; however, rule variables for the NCC application with their
+                Triggers can be set in the Variables tab of the SM Charging GUI.</p>
+<p>More than one instance of the RSV can exist, but only one RSV with the state Active can exist at
+                any time. You do not need to execute any specific action on an RSV for the NCC
+                application. </p>
+<p>The default RSV defined in the ChargingRuleSystemVersion data set does not contain definitions of
+                rule groups. Rule groups are defined indirectly in other NCC objects by specifying a
+                collection of rules. The NCC database data set holding the RSV definitions has the
+                name “ChargingRuleSystemVersion”.</p>
+</section>
+<section><title>RSV states</title>
+<p>Each rule system version, whether it is imported or created using the NCC SM, can exist in one of
+                the following states:</p><ul>
+<li>
+<p>Active: a read-only system configuration that is the active version of the rules and is currently
+                        running on the NCC application; there is only one version in this state at
+                        any given time</p>
+</li>
+<li>
+<p>Release: a version that is completely configured and saved; the release version is usually one
+                        that has been demoted from active but is available to become the Active
+                        version again if needed. When a rule system is made the active rule system
+                        for an NCC site, the previously active rule system is still available as a
+                        Release version, but is no longer active, which facilitates a quick rollback
+                        to the previous rule system if required. Changes are not allowed unless you
+                        clone it again and make it a draft version.</p>
+</li>
+<li>
+<p>Draft: a version of the rule system version that can be modified</p>
+</li>
+</ul>
+<p>A new rule system version is created in a Draft state, ready for modification. You can use the
+                new draft version to configure all of your rules, and then promote the rule system
+                version state to Active as required. When a rule system version becomes the Active
+                version, all of its rules, rule dictionaries, notification templates, notification
+                server configurations, and associated policies are reloaded into the respective
+                Policy or NCC rules engine replacing all previously active rules. The Default rule
+                system version remains visible on the ME after you promote your draft version to the
+                Active state. However, the Default rule system version now goes into a Release
+                state. The only states available to the Default rule system version are Active and
+                Release; there is no Draft state.</p>
+<p>In a geo-redundant deployment at the ME level, SM is managing multiple NCC sites and simply
+                activating an RSV in one ME does not activate that RSV in the other site. You must
+                provision and activate the RSV on each geo-redundantly related ME.</p>
+<note>The NCC RSV operates in a slightly different manner as is explained in the section “NCC
+                RSV”.</note>
+<p>The general workflow for rule system versioning in Policy is:</p><ul>
+<li>
+<p>create or modify rules in a Draft version</p>
+</li>
+<li>
+<p>change the Draft version to a Release or an Active version. </p>
+<p>All rules attribute dictionaries, provisioned/predefined rules, notification templates, rule variables, and notification server configurations are loaded when a version is promoted to the Active version.</p>
+</li>
+<li>
+<p>if necessary, change the Release version to the Active version; all rules attribute dictionaries, provisioned/predefined rules, notification templates, rule variables, and notification server configurations are loaded when a version is promoted to the Active version.</p>
+</li>
+<li>
+<p>provision and activate the RSV on each geo-redundantly related ME, as necessary</p>
+</li>
+<li>
+<p>create subsequent versions as Draft versions and change the versions as required</p>
+</li>
+</ul>
+<p>Only one rule system version can be in an Active state at any time. When a Release version is promoted to the Active state, the last Active version is automatically demoted to a Release state.</p>
+<p>Each rule system version requires a unique name. The Description field on Release and Draft
+                versions can always be modified. The timestamp is automatically created by the NCC
+                application when you save.</p>
+<p>See the Operations, Administration, and Maintenance Guide for more information about provisioning Rules, Variables, and Rule System Versions.</p>
+</section>
+</conbody></concept>

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e6203"><title>Mapping internal names with external names of policy counters</title><conbody>
+<section><title>Overview</title>
+<p>For subscriber's policy counters and their status, OCS and PCRF communicate through the Sy
+                interface. The PCRF can have its own policy counter identifiers, and these may be
+                required in the policy counter status reports. NCC supports maintaining both
+                internal (OCS) policy counter ID and external (PCRF) policy counter ID and define a
+                mapping between the two.</p>
+<p>To achieve this, a mapping table is created with the mapping of internal and external counters. In the map, the key must have internal counter name and the value must have the external counter name. The name of the mapping table is then configured in a rule variable in the GY_CREDIT_REQUEST trigger.</p>
+</section>
+<section><title>Configuration</title><ol>
+<li><p>Create a mapping table (in <b>Policy &amp; Charging Configuration</b> → <b>COMMON</b> → ☰ →
+                            <b>Mapping Tables</b>) containing one map key and one map value. Provide
+                        the internal counter names in map key and external counter names in map
+                        value.</p><p>Define map structure with one map key and one map value as
+                        shown in the following figure:</p>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.9/mapPCIDmap_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-mappcidmap_default.png"/>
+                    <p>Configure map values as shown in the following figure:</p>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.9/Pc_complexMap_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-pc_complexmap_default.png"/>
+                </li>
+<li><p>Create a rule variable in the GY_CREDIT_REQUEST trigger, and configure the name of the
+                        mapping table in the default value field. The default value for this field
+                        is set as <systemoutput>PolicyCounterMap</systemoutput>. Change this to
+                        provide the name of the appropriate mapping table.</p>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.9/PCmapRule_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-pcmaprule_default.png"/>
+                </li>
+</ol>
+</section>
+<section><title>Additional information</title><ul>
+<li>
+<p>This feature is applicable only for PUSH mode, in which all available policy counters are sent in SLA.</p>
+</li>
+<li>
+<p>The CDRs generated for Sy interface contain the internal counter names.</p>
+</li>
+<li>
+<p>If a corresponding external counter name is not found for an internal counter, then the internal counter name is sent to PCRF. </p>
+</li>
+<li>
+<p>If multiple internal counter names are mapped to a single external policy counter name, then any one of the internal counters is sent to PCRF in SLA or SNR.</p>
+</li>
+</ul>
+</section>
+<section><title>Example</title>
+<p>Consider the following mapping table:</p>
+<table colsep="1" rowsep="1">
+                <tgroup cols="2">
+                    <colspec colname="col2"/>
+                    <colspec colname="col3"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>OCS counter ID</p>
+                            </entry>
+                            <entry>
+                                <p>PCRF counter ID</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> C1 </entry>
+                            <entry> PC_1 </entry>
+                        </row>
+                        <row>
+                            <entry> C2 </entry>
+                            <entry> PC_2 </entry>
+                        </row>
+                        <row>
+                            <entry> C3 </entry>
+                            <entry> PC_1 </entry>
+                        </row>
+                        <row>
+                            <entry> C4 </entry>
+                            <entry> - </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<p>Following reports are prepared:</p><ul>
+<li>
+<p>Policy-Counter-Status-Report {Policy-Counter-Identifier = "PC_1",Policy-Counter-Status = "Value1"}</p>
+</li>
+<li>
+<p>Policy-Counter-Status-Report {Policy-Counter-Identifier = "PC_2",Policy-Counter-Status = "Value2"}</p>
+</li>
+<li>
+<p>Policy-Counter-Status-Report {Policy-Counter-Identifier = "C4",Policy-Counter-Status = "Value4"}</p>
+</li>
+</ul>
+<note><ol>
+<li>
+<p>C1 and C3 have same external counter name, hence one is chosen randomly.</p>
+</li>
+<li>
+<p>C4 is sent to PCRF as no explicit mapping found.</p>
+</li>
+</ol>
+</note>
+<p>This only impacts Spending-Limit-Answer (SLA) and Spending-Status-Notification-Request (SNR). OCS sends SLA/SNR with all policy counters by mapping their internal names to the external names and their status attached to the given Subscription-Id. </p>
+<p>The flows of Spending-Limit-Request (SLR), Spending-Status-Notification-Answer (SNA), Session-Termination-Request (STR), and Session-Termination-Answer (STA) have no impact.</p>
+</section>
+</conbody></concept>

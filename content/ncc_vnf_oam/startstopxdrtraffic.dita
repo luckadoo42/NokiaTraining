@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-startstopxdrtraffic"><title>xdr-traffic-control</title><conbody>
+<section><title>Overview</title>
+<p>This tool resides on the database nodes and is used to enable or disable incoming XDR traffic on a particular site such that the XDR traffic is either accepted or rejected. </p>
+</section>
+<section><title>Syntax</title>
+<p>The tool can be executed using tpaadmin from the /opt/tpa/bin directory with the following command:</p>
+<p>
+<userinput>sudo ./xdr-traffic-control [-a | -r | -h]</userinput>
+</p>
+<p>Where:</p>
+<table>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+<p>Argument</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+no arguments
+</entry>
+<entry>
+Displays this help information.
+</entry>
+</row>
+<row>
+<entry>
+-h
+</entry>
+<entry>
+Displays this help information.
+</entry>
+</row>
+<row>
+<entry>
+-r
+</entry>
+<entry>
+Reject the incoming XDR traffic.
+</entry>
+</row>
+<row>
+<entry>
+-a
+</entry>
+<entry>
+Accept the incoming XDR traffic.
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section><title>Example output</title>
+<p>The log outputs for this command are stored in /opt/tpa/logs/TPA_system.log. </p>
+<p>Output similar to the following are displayed by this command with the -a argument:</p>
+<fig>
+<codeblock>$ sudo ./xdr-traffic-control -a
+Doing precheck....
+Precheck ok, atleast 1 DB Host '192.168.5.54' is active
+INFO: Starting to Start XDR on '192.168.5.54'
+ERROR: '/etc/firewalld/direct.xml' not present
+Start XDR traffic on '192.168.5.54' unsuccessful,see logs
+INFO: Starting to Start XDR on '192.168.5.53'
+Firewall already 'accept' in '/etc/firewalld/direct.xml'
+Start XDR traffic on '192.168.5.53' successful
+INFO: Starting to Start XDR on '192.168.5.56'
+INFO:Backup firewall successful
+Start incoming XDR traffic successful on this host
+Start XDR traffic on '192.168.5.56' successful
+INFO: Starting to Start XDR on '192.168.5.55'
+INFO:Backup firewall successful
+Start incoming XDR traffic successful on this host
+Start XDR traffic on '192.168.5.55' successful</codeblock>
+</fig>
+<p>Output similar to the following are displayed by this command with the -r argument:</p>
+<fig>
+<codeblock>2$ sudo ./xdr-traffic-control -r
+Doing precheck....
+Precheck ok, atleast 1 DB Host '192.168.5.54' is active
+INFO: Starting to Stop XDR on '192.168.5.54'
+Firewall already 'reject' in '/etc/firewalld/direct.xml'
+Stop XDR traffic on '192.168.5.54' successful
+INFO: Starting to Stop XDR on '192.168.5.53'
+Firewall already 'reject' in '/etc/firewalld/direct.xml'
+Stop XDR traffic on '192.168.5.53' successful
+INFO: Starting to Stop XDR on '192.168.5.56'
+INFO:Backup firewall successful
+Stop incoming XDR traffic successful on this host
+Stop XDR traffic on '192.168.5.56' successful
+INFO: Starting to Stop XDR on '192.168.5.55'
+Firewall already 'reject' in '/etc/firewalld/direct.xml'
+Stop XDR traffic on '192.168.5.55' successful</codeblock>
+</fig>
+</section>
+<section><title>Example details in system.log file</title>
+<p>The following is an example of the output from the TPA_system.log when the -a argument was used:</p>
+<fig>
+<codeblock>2018.03.13 18:15:06 +0530 sps-me-2-oame-1  'xdr-traffic-control' tool starts
+2018.03.13 18:15:06 +0530 sps-me-2-oame-1  Doing precheck....
+2018.03.13 18:15:06 +0530 sps-me-2-oame-1  Precheck ok, atleast 1 DB Host '192.168.5.54' is active
+2018.03.13 18:15:09 +0530 sps-me-2-oame-1  INFO: Starting to Start XDR on '192.168.5.54'
+2018.03.13 18:15:09 +0530 sps-me-2-oame-1  Start XDR traffic on '192.168.5.54' unsuccessful,see logs
+2018.03.13 18:15:09 +0530 sps-me-2-oame-1  ERROR: Unable to execute /usr/bin/ssh -q 192.168.5.54 /usr/bin/sudo /opt/tpa/sbin/modify-xdr-firewall -a 2&gt;&amp;1 on '192.168.5.54'
+See TPA_system.logs on '192.168.5.54'
+2018.03.13 18:15:09 +0530 sps-me-2-oame-1  INFO: Starting to Start XDR on '192.168.5.53'
+2018.03.13 18:15:10 +0530 sps-me-2-oame-1  Start XDR traffic on '192.168.5.53' successful
+2018.03.13 18:15:10 +0530 sps-me-2-oame-1  INFO: Starting to Start XDR on '192.168.5.56'
+2018.03.13 18:15:11 +0530 sps-me-2-oame-1  Start XDR traffic on '192.168.5.56' successful
+2018.03.13 18:15:11 +0530 sps-me-2-oame-1  INFO: Starting to Start XDR on '192.168.5.55'
+2018.03.13 18:15:12 +0530 sps-me-2-oame-1  DEBUG: Received parameters: check ACTIVE
+2018.03.13 18:15:12 +0530 sps-me-2-oame-1  DEBUG: Current SPS HA MBean state is: 'KING'
+2018.03.13 18:15:12 +0530 sps-me-2-oame-1  DEBUG: Saving last HA state of 'active'.
+2018.03.13 18:15:13 +0530 sps-me-2-oame-1  Start XDR traffic on '192.168.5.55' successful
+2018.03.13 18:15:13 +0530 sps-me-2-oame-1  'xdr-traffic-control' tool ends</codeblock>
+</fig>
+<p>The following is an example of the output from the TPA_system.log when the -r argument was used:</p>
+<fig>
+<codeblock>2018.03.14 11:57:30 +0530 sps-me-2-oame-1  'xdr-traffic-control' tool starts
+  47495 2018.03.14 11:57:30 +0530 sps-me-2-oame-1  Doing precheck....
+  47496 2018.03.14 11:57:30 +0530 sps-me-2-oame-1  Precheck ok, atleast 1 DB Host '192.168.5.54' is active
+  47497 2018.03.14 11:57:33 +0530 sps-me-2-oame-1  INFO: Starting to Stop XDR on '192.168.5.54'
+  47498 2018.03.14 11:57:34 +0530 sps-me-2-oame-1  Stop XDR traffic on '192.168.5.54' successful
+  47499 2018.03.14 11:57:34 +0530 sps-me-2-oame-1  INFO: Starting to Stop XDR on '192.168.5.53'
+  47500 2018.03.14 11:57:35 +0530 sps-me-2-oame-1  DEBUG: Received parameters: check ACTIVE
+  47501 2018.03.14 11:57:36 +0530 sps-me-2-oame-1  Stop XDR traffic on '192.168.5.53' successful
+  47502 2018.03.14 11:57:36 +0530 sps-me-2-oame-1  INFO: Starting to Stop XDR on '192.168.5.56'
+  47503 2018.03.14 11:57:36 +0530 sps-me-2-oame-1  DEBUG: Current SPS HA MBean state is: 'KING'
+  47504 2018.03.14 11:57:36 +0530 sps-me-2-oame-1  DEBUG: Saving last HA state of 'active'.
+  47505 2018.03.14 11:57:37 +0530 sps-me-2-oame-1  Stop XDR traffic on '192.168.5.56' successful
+  47506 2018.03.14 11:57:37 +0530 sps-me-2-oame-1  INFO: Starting to Stop XDR on '192.168.5.55'
+  47507 2018.03.14 11:57:39 +0530 sps-me-2-oame-1  Stop XDR traffic on '192.168.5.55' successful
+  47508 2018.03.14 11:57:39 +0530 sps-me-2-oame-1  'xdr-traffic-control' tool ends</codeblock>
+</fig>
+<p>Nokia recommends that whatever argument is used (-a or -r), you need to see the TPA_system.logs on the host on which the command is executed.</p>
+<p>In the case of the -a argument used here as an example, you would see information like the following:</p>
+<fig>
+<codeblock>2018.03.13 18:15:09 +0530 sps-me-2-db-1  'modify-xdr-firewall' starts
+2018.03.13 18:15:09 +0530 sps-me-2-db-1  ERROR: '/etc/firewalld/direct.xml' not present
+2018.03.13 18:15:09 +0530 sps-me-2-db-1  'modify-xdr-firewall' ends</codeblock>
+</fig>
+</section>
+</conbody></concept>

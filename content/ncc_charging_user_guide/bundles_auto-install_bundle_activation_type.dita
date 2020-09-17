@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="section_rz5_5cr_ymb">
+<title>Auto-install bundle activation type</title>
+<body>
+    <p>Operators can define an auto-install travel pack at top-group level (company level), then on
+      receiving a call for Devices that are directly or indirectly attached to the top-group, a new
+      subscription allocated to the child group. The new subscription can also be attached to the
+      Device based on certain conditions. There can be more than one auto-install travel pack
+      defined at top-group level and more than one can be automatically installed (subscribed) to a
+      user.</p>
+    <p>Bundles are managed at top-group level, that is, any changes made to the top-group such as
+      removal or addition of a new bundle gets reflected in a new call for all child groups based on
+      applicability condition. For example, when a subscriber is surfing in a zone in which a bundle
+      can be applied, then such bundle is added automatically at child group level if it does not
+      exist yet.</p>
+    <p>Following are the two types of travel packs:</p>
+    <ul id="ul_n5z_c4r_ymb">
+      <li><b>Auto-install travel pack</b>: When a bucket is consumed but is still reporting usage
+        and is applicable for the bundle, then the bucket must be renewed with a new validity time
+        of 1 month. This date is used to compare the expiry time with other type of bundles with
+        same priority, the one that expires first must be used first.<p>If the bundle expires (after
+          1 month), then the bundle/buckets are renewed only if still in the region where the bundle
+          is applicable and reporting usage. It must be valid for 1 month. This date is used to
+          compare the expiry time to select bundles.</p></li>
+      <li><b>Unlimited auto-install travel pack</b>: The bucket/bundle is renewed on expiry date and
+        not on bucket exhaustion.</li>
+    </ul>
+    <note>Multiple auto-install bundle can be attached with entity. More than one bundle can be
+      attached through auto-install bundle provided the bundle name is different. Rules can also
+      provide multiple bundle output and can be attached at same time to provided entity. Future
+      activation is not supported for new bundle subscribed using auto-install option.</note>
+    <p>When an auto-install bundle activation type is selected, you can define an
+        <b>Add-subscription</b> event to apply a subscription to a Group/Device automatically by
+      bundle and threshold rules on meeting certain conditions. </p>
+    <p>The syntax for the <b>Add-Subscription</b> rule action is as follows:</p>
+    <codeblock>Bundle.Add-Subscription("Bundle Name","AccountId", "DestinationEntity")</codeblock>
+    <p>and</p>
+    <codeblock>Bundle.Add-Subscription("Bundle Name","AccountId", "DestinationEntity", "Units to compare")</codeblock>
+    <p>where</p>
+    <ul id="ul_fgm_r3r_ymb">
+      <li><b>Bundle Name</b> is the new bundle name to subscribe.</li>
+      <li><b>AccountId</b> is the Account name used for charging the new subscription. If it is NA,
+        then the Account from already attached subscription, that is, first subscription attached to
+        Group or Device is used.</li>
+      <li><b>DestinationEntity</b> is the location where new bundle is attached. Following are the
+          options:<ul id="ul_qb3_bjr_ymb">
+          <li><b>SELF</b>: The same entity on which the auto-install bundle is configured.</li>
+          <li><b>IMMEDIATE_NEXT_ENTITY</b>: The subscription obtained from the auto-install bundle
+            is attached to the next (child) entity (Group/Device) of the Group for which bundle
+            rules are executed.</li>
+          <li><b>DEVICE</b>: The subscription obtained from the auto-install bundle is attached to
+            the Device for which the call is received.</li>
+        </ul></li>
+      <li><b>Units to compare</b> is used when a customer wants bundle on exhaustion. This value and
+        add subscription information are added in threshold. This value must be inline with the
+        value on which the threshold Add-Subscription action is applied. </li>
+    </ul>
+    <p><b>Example</b></p>
+    <codeblock scale="80">if 
+   @Zone_ID="2"
+ then
+   Bundle.Add-Subscription("Bun1-0500782", "NA", DestinationEntityType_IMMEDIATE_NEXT_ENTITY)</codeblock>
+    <p>The syntax for the <b>Bundle-Name</b> rule action is as follows:</p>
+    <codeblock>Bundle.Bundle Name = "Bundle Name"</codeblock>
+    <p>where <b>Bundle Name</b> is the new bundle name to subscribe. In this case, Account from
+      already attached subscription, that is, the first subscription attached to Group/Device is
+      used and Destination Entity is SELF.</p>
+    <section id="section_vmz_p4b_1nb"><title>Auto-install bundle activation type (with threshold
+        rule)</title><p>The <b>Add-Subscription</b> and <b>Bundle-Name</b> rules for auto-install
+        bundle can be defined in the Threshold entity.</p><note>While configuring rule to add new
+        subscription from Threshold, if the Bucket_Balance_Value is provided in the rule input, then
+        it is ignored. </note><p>The syntax for the <b>Add-Subscription</b> rule action is as
+        follows. Note that, in the following Bundle.Add-Subscription action, the
+        Bucket_Balance_Value field should not be provided. If provided, then this value is
+        ignored.</p><codeblock>Bundle.Add-Subscription("Bundle_Name_STRING","Account_Id_STRING", "Destination_Entity_ENUM")</codeblock>where<ul
+        id="ul_d3j_gmr_ymb">
+        <li><b>Bundle_Name_STRING</b> is the new bundle name to subscribe.</li>
+        <li><b>Account_Id_STRING</b> is the Account name used for charging the new subscription. If
+          it is NA, then the Account from already attached subscription, that is, first subscription
+          attached to Group or Device is used.</li>
+        <li><b>Destination_Entity_ENUM</b> is the location where new bundle is attached. Following
+          are the options:<ul id="ul_e3j_gmr_ymb">
+            <li><b>SELF</b>: The same entity on which the threshold is configured, that is, if
+              entity counter, then its on same entity. If subsription counter, then it is on entity
+              for which the subscription is configured.</li>
+            <li><b>IMMEDIATE_NEXT_ENTITY</b>: The child entity of the entity fetched in Bundle
+              Name.</li>
+            <li><b>DEVICE</b>: The Device for which the call is received.</li>
+          </ul></li>
+      </ul><p>The syntax for the <b>Bundle-Name</b> rule action is as
+      follows:</p><codeblock>Bundle.Bundle-Name = "Bundle-Name"</codeblock>where <b>Bundle-Name</b>
+      is the new bundle name to subscribe. In this case, Account from already attached subscription,
+      that is, the first subscription attached to Group/Device is used and Destination Entity is
+        SELF.<p>Example:</p><image placement="break" href="../images/threshold_autoinstall.png"
+        id="image_f3m_wmr_ymb" scale="50"/></section>
+  </body>
+</topic>

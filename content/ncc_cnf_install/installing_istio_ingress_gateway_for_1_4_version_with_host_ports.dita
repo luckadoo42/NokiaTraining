@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="installing_istio_ingress_gateway_for_1_4_version_with_host_ports">
+    <title>Installing Istio Ingress gateway for 1.4 version with host ports</title>
+    <taskbody>
+        <context>
+            <p>This procedure provides instructions on how to install an Istio Ingress gateway for
+                1.4 version in a non-Istio-system namespace. In the initial NCC CNF version, the
+                Istio Ingress gateway is set up within the same namespace as NCC CNF.</p>
+        </context>
+        <steps>
+            <step>
+                <cmd>Fetch Istio Ingress assets from GitLab by entering:</cmd>
+                <info>
+                    <codeblock>curl -O https://scm.cci.nokia.net/ssirsamk/bcmt-istio-separate-ingress/-/archive/bcmt_hostnetwork_ingress_1.4/bcmt-istio-separate-ingress-bcmt_hostnetwork_ingress_1.4.zip</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Unzip the file by entering:</cmd>
+                <info>
+                    <codeblock>unzip bcmt-istio-separate-ingress-bcmt_hostnetwork_ingress_1.4.zip</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>For each namespace, deploy an Istio Ingress controller as follows:</cmd>
+                <info>
+                    <ul id="ul_nnd_gn4_ymb">
+                        <li>Set the variables as
+                            follows:<codeblock>RELEASENAME=ingressgateway-$NAMESPACE
+ISTIO_LABEL=$NAMESPACE</codeblock></li>
+                        <li>Find a node where host ports such as 443 and 80 are free. <note>This can
+                                be any worker or edge node which already does not use these host
+                                ports.</note>Example:<codeblock>kubectl get nodes
+NAME            STATUS   ROLES    AGE   VERSION
+aem0004node02   Ready    &lt;none>   81d   v1.17.4
+aem0004node03   Ready    &lt;none>   81d   v1.17.4
+NODE_NAME=aem0004node02</codeblock></li>
+                    </ul>
+                </info>
+            </step>
+            <step>
+                <cmd>Install the Helm chart while leaving the other values untouched by
+                    entering:</cmd>
+                <info>
+                    <note><codeph>RELEASENAME</codeph> must be unique for each Ingress gateway in a
+                        namespace.</note>
+                    <codeblock>helm install -f bcmt-istio-separate-ingress.yaml \
+--name $RELEASENAME \
+--set sps-ingressgateway.labels."istio"=$ISTIO_LABEL \
+--set sps-ingressgateway.nodeSelector."kubernetes\.io/hostname=$NODE_NAME" \
+./charts/gateways/ --namespace $NAMESPACE</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Return to the working directory by entering:</cmd>
+                <info>
+                    <codeblock>cd ..</codeblock>
+                </info>
+            </step>
+        </steps>
+    </taskbody>
+</task>

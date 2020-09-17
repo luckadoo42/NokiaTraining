@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+		<task id="id9YZ-09018-IN00-RJZZA-Uploading-QCOW2-images"><title>Uploading images to OpenStack</title><taskbody id="d1e5228"><context><sectiondiv>
+				<p><b>Overview</b></p>
+				<p>This procedure provides instructions on how to upload the QCOW2 images to
+					OpenStack. In addition to uploading the QCOW2 images, this procedure provides
+					instructions on how to tune the network performance in OpenStack. This tuning is
+					needed for Nokia internal performance testing and customer deployments and is
+					achieved by enabling the virtio-net multi-queue.</p>
+				<note>
+					<p>In OpenStack environmnet, the virtio-net multi-queue allows to scale the
+						network performance with increased number of vCPUs, by letting vCPUs
+						transfer packets through more than one virtqueue pair at a time.</p>
+				</note>
+			</sectiondiv>To upload the QCOW2 images to OpenStack:</context><steps>
+
+<step id="Multi-queue_step"><cmd>Upload the QCOW2 images to the OpenStack Image service (Glance) and enable the virtio-net multi-queue as follows:</cmd><info><ul>
+
+<li>
+<p>During the upload, to each image add the following:</p>
+<p>
+<codeph>--property hw_vif_multiqueue_enabled=true</codeph>
+</p>
+<p>For example,</p>
+<p>
+								<codeph>S glance image-create --name &lt;NCC&gt;.&lt;image name or
+									id&gt; \</codeph>
+							</p>
+<p>
+<codeph>--disk-format qcow2 \</codeph>
+</p>
+<p>
+								<codeph>--file &lt;NCC&gt;.&lt;image name or id&gt;.qcow2 \</codeph>
+							</p>
+<p>
+<codeph>--container-format bare --property hw_vif_multiqueue_enabled=true</codeph>
+</p>
+</li>
+</ul><p>For more information on &lt;multiqueue/config&gt; parameter, see <!--xref URI: t-install-VNF-Extension.xml#System_leve_keys_table--><xref keyref="id9YZ-09018-IN00-RJZZA-SPS_worksheet/System_leve_keys_table"/>.</p></info></step>
+<step>
+				<cmd>For every NCC flavor modify the OpenStack flavor as follows:</cmd>
+				<info>
+					<codeblock>openstack flavor set &lt;flavor-name&gt; --property hw:vif_multiqueue_enabled=true</codeblock>
+				</info>
+			</step>
+</steps>
+</taskbody></task>

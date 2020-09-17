@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="setting_up_a_web_sso_realm_with_users_for_sps">
+    <title>Setting up a Web SSO realm with users for NCC</title>
+    <taskbody>
+        <context>
+            <p>This procedure provides instructions on how to set up a Web SSO realm and users for
+                NCC.</p>
+        </context>
+        <steps>
+            <step>
+                <cmd>Create an input <filepath>values_keycloak_config_loader.yaml</filepath> file by
+                    entering:</cmd>
+                <info>
+                    <codeblock>cat &lt;&lt;EOF > values_keycloak_config_loader.yaml
+global:
+  # Set the registry to the desired value:
+  registry: "csf-docker-delivered.repo.lab.pl.alcatel-lucent.com"  
+  #podNamePrefix: ${POD_NAME_PREFIX}
+  #containerNamePrefix: ${CONTAINER_NAME_PREFIX}
+ 
+#Set image address to desired value:
+imageRepo: os_base/centos-micro
+ 
+istio:
+  version: ${ISTIO_VERSION}
+  enabled: true
+  egress:
+    restricted: true
+    
+  # Keycloak properties to load the realm and users.
+  # Use the same Domain name of SM as keycloak and SM use the same ingress gateway and namespace.
+keycloak:
+  host: "${CKEY_FQDN}"
+  path: "/auth"
+  port: ${HTTP_INGRESS_PORT}
+  protocol: https
+  adminUser: "admin"
+  adminPassword: "admin"
+EOF</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Create a resource sizing file by entering:</cmd>
+                <info>
+                    <codeblock>if [[ -e ../configuration-examples/sizing/sizing_keycloak_config_loader_lab.yaml ]]; then
+ cp ../configuration-examples/sizing/sizing_keycloak_config_loader_lab.yaml .
+else
+ cp ../configuration-examples/sizing/lab/sizing_keycloak_config_loader_lab.yaml .
+fi</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Set up the example NCC realm file and user file by entering:</cmd>
+                <info>
+                    <codeblock>cat &lt;&lt;EOF > sps-auth.yaml
+keycloak:
+  realm: "sps-auth"
+EOF
+ 
+ 
+cp ../configuration-examples/sps-auth-keycloak-*.json .
+ 
+ 
+#Run these commands in sequence to create realm and users yaml input files so it can be merged into a values.yaml.
+cat sps-auth-keycloak-realm-example.json > sps-realm.yaml
+sed -i -e 's/^/  /' sps-realm.yaml
+sed -i '1 i\realmJson: |-' sps-realm.yaml
+cat sps-auth-keycloak-users-example.json > sps-users.yaml
+sed -i -e 's/^/  /' sps-users.yaml
+sed -i '1 i\usersJson: |-' sps-users.yaml
+ 
+ 
+OVERRIDE_FILES="values_keycloak_config_loader.yaml sizing_keycloak_config_loader_lab.yaml sps-auth.yaml sps-realm.yaml sps-users.yaml"</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Merge Override files for NCC realm by entering:</cmd>
+                <info>
+                    <codeblock>docker run --rm -v ${PWD}:/workdir:z registry1-docker-io.repo.lab.pl.alcatel-lucent.com/mikefarah/yq yq m -x $OVERRIDE_FILES > sps_keycloak_config_loader.yaml</codeblock>
+                </info>
+            </step>
+        </steps>
+    </taskbody>
+</task>

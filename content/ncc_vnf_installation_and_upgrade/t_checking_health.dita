@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+		<task id="id9YZ-09018-IN00-RJZZA-Checking-health"><title>Checking health of NCC</title><taskbody id="d1e10341"><context><sectiondiv>
+				<p><b>Overview</b></p>
+				<p>This procedure provides instructions on how to check whether the NCC is healthy
+					or not. If the results of any of the health checks indicate the system is
+					unhealthy then do not proceed with upgrade until the issues have been resolved.
+					All steps in this procedure must be performed as the “root” user.</p>
+			</sectiondiv>To check the health of the NCC:</context><steps>
+
+<step>
+				<cmd>Log in to the NCC as the “root” user.</cmd>
+				<info/>
+			</step>
+<step><cmd>Check status on the OAME VM by entering:</cmd><info><p>
+<codeph>/opt/tpa/bin/sps-status</codeph>
+</p><p>All instances listed in the output must have a status of UP. For additional information about the
+						sps-status command, see the section: “sps-status tool” in the <i>NCC VNF
+							Administration Guide</i>.</p></info></step>
+<step><cmd>Check HA role for OAME, IOHO and IOHD (IOHD is for ME and IG sites only) by entering:</cmd><info><p>
+<codeph>ha check</codeph>
+</p><p>Ensure that each plugin appears as Active or Standby (based on the respective ha role status), and OK.</p></info></step>
+<step><cmd>Check the alarms on the OAME VM by entering:</cmd><info><p>
+<codeph>curl http://127.0.0.1:8182/api/alma/alarms -v | python -m json.tool</codeph>
+</p><note>
+
+<p>Any unexplained alarms should be investigated before continuing with the upgrade procedure.</p>
+</note></info></step>
+</steps>
+</taskbody></task>

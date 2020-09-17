@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//NSN//DTD DITA Concept//EN" "nsnconcept.dtd">
+<concept id="id9yz-09126-mt02-rezza-devopspatch"><title>sps-patch script</title><conbody>
+<section><title>Description</title>
+<p>This script is used to installs an sps-patch on a VNF.</p>
+<p>This tool may require a significant amount of time to run and may affect traffic such that it may cause the entire site to go down. It is recommended that this tool is used during a maintenance window.</p>
+</section>
+<section><title>Syntax</title>
+<p>To back out of a patch:</p>
+<p>
+<codeph>sps-patch -b -d /opt/sps/downloads/SPS_20_3_R1_SP1_PP2.tgz -j &lt;path_to_vnf_conf&gt; -b [-c &lt;file&gt;] [-d] [-n &lt;nodes&gt;|-t &lt;types&gt;] [-s &lt;speed&gt;] -v &lt;vnf_conf&gt;</codeph>
+</p>
+<p>To install a patch:</p>
+<p>
+<codeph>sps-patch -i [-c &lt;file&gt;] [-d] -f &lt;file&gt;|-u &lt;url&gt; [-n &lt;nodes&gt;|-t &lt;types&gt;] [-s &lt;speed&gt;] -v &lt;vnf_conf&gt;</codeph>
+</p>
+<p>To list the patch status:</p>
+<p>
+<codeph>sps-patch -l [-c file&gt;] [-d] [-n nodes&gt;|-t types&gt;] -v vnf_conf&gt;</codeph>
+</p>
+<table colsep="1" rowsep="1" frame="all">
+                <tgroup cols="2">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Code</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>
+                                <codeph>-h</codeph>
+                            </entry>
+                            <entry> Displays usage/help information. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-b </codeph>
+                            </entry>
+                            <entry> Back out the patch. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-c &lt;file&gt;</codeph>
+                            </entry>
+                            <entry> The full path of the clouds-config.yaml file. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-d </codeph>
+                            </entry>
+                            <entry> Enable debug logging. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-f &lt;file&gt;</codeph>
+                            </entry>
+                            <entry> The patch tar file path. Required by -i, and mutually exclusive
+                                with -u. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-i </codeph>
+                            </entry>
+                            <entry> Install the patch. This will only install the patch in nodes
+                                that have not been attempted yet or nodes that failed in previous
+                                attempts. Combine this with -r to install patches from scratch.
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-j &lt;path_to_vnf_conf&gt;</codeph>
+                            </entry>
+                            <entry> The full path of the VNF CONF json file. This is required by
+                                patching operations. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-l</codeph>
+                            </entry>
+                            <entry> List patching status. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-n &lt;nodes&gt;</codeph>
+                            </entry>
+                            <entry> Specify node names (comma-separated host names) the operation is
+                                applied to. The internal IP addresses can also be used. Optional and
+                                mutually exclusive with -t. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-r </codeph>
+                            </entry>
+                            <entry> Use -r together with -i to re-install a patch from scratch,
+                                including nodes that have already succesfully applied the patch.
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-s &lt;speed&gt;</codeph>
+                            </entry>
+                            <entry> Specify the speed of patching, (how many nodes in parallel to be
+                                applied at a time for each node type). If the given speed number is
+                                greater than the half of the node number, the latter will be
+                                applied. Must be a positive integer. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-t &lt;types&gt;</codeph>
+                            </entry>
+                            <entry>
+                                <p>A comma-separated list of node types to which you can apply the
+                                    patch. Optional and mutually exclusive with -n. The actual
+                                    supported types depend on the NCC deployment. The types listed
+                                    here are examples and may not be supported by all NCC
+                                    deployments.</p>
+                                <p>The valid types are: </p>
+                                <ul>
+                                    <li>
+                                        <p>auxiliary</p>
+                                    </li>
+                                    <li>
+                                        <p>cdr</p>
+                                    </li>
+                                    <li>
+                                        <p>comsvc</p>
+                                    </li>
+                                    <li>
+                                        <p>db</p>
+                                    </li>
+                                    <li>
+                                        <p>diameterapp</p>
+                                    </li>
+                                    <li>
+                                        <p>iohd</p>
+                                    </li>
+                                    <li>
+                                        <p>ioho, </p>
+                                    </li>
+                                    <li>
+                                        <p>oame</p>
+                                    </li>
+                                    <li>
+                                        <p>smapp</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-u &lt;url&gt;</codeph>
+                            </entry>
+                            <entry> The URL to grab the patch tar file. Supports HTTP, HTTPS, and
+                                FTP protocols. Required by -i, and mutually exclusive with -f.
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-v &lt;vnf_conf&gt;</codeph>
+                            </entry>
+                            <entry> The full path of the VNF CONF json file. </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+</section>
+</conbody></concept>

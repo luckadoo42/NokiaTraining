@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ncc_scheduled_backup">
+    <title>NCC scheduled backup</title>
+    <body>
+        <p>The scheduled backups for NCC Aerospike DB and CSDC component are not enabled by default.
+            After installing NCC they can be enabled, if desired.</p>
+        <p>The default schedules for the cron jobs that perform scheduled backups for sps-centralmanagement
+            (Aerospike DB) and CSDC are set to the same value: "0 2 * * *" which means daily at
+            2am.</p>
+        <section id="section_y5q_nlp_wmb">
+            <title>Update schedules for scheduled backups</title>
+            <p>To update the cronJob schedules defined at install time for either one of the BR
+                policies created by NCC, a helm upgrade must be performed to provide the new value
+                for the cronJob schedules and reuse old values for all other properties.</p>
+            <p><b>To enable or disable scheduled backups</b><ol id="ol_vql_vlp_wmb">
+                    <li>Set the following variables to appropriate values, for
+                        example:<codeblock>NAMESPACE=sps-btel
+CBUR_MASTER_NAMESPACE=ncms</codeblock></li>
+                    <li>The scheduled backups can be enabled/disabled for a specific BrPolicy. Find
+                        the desired BrPolicy name which will be enabled or
+                        disabled.<codeblock>kubectl get br -n $NAMESPACE</codeblock></li>
+                    <li>Use the BrPolicy name to enable/disable the desired scheduled backup with
+                        the following
+                            command.<codeblock>BR_POLICY_NAME=&lt;backup_policy></codeblock>where:<ul
+                            id="ul_wsr_dmp_wmb">
+                            <li><codeph>&lt;policy></codeph> is the name of the scheduled backup
+                                policy which will be enabled or disabled.</li>
+                        </ul></li>
+                    <li>Use the following command to check information about the current cronJob
+                        specs, whether scheduled backups are enabled or disabled, and the Backup
+                        History
+                        data.<codeblock>kubectl describe br $BR_POLICY_NAME -n $NAMESPACE</codeblock></li>
+                    <li>Run the following command to enable scheduled backups for the policy
+                        specified in
+                        <codeph>BR_POLICY_NAME</codeph>.<codeblock>curl -vkL -X PUT "http://cbur-master-cbur.$CBUR_MASTER_NAMESPACE.svc.cluster.local:80/v2/cronjob/$NAMESPACE/$BR_POLICY_NAME?query_from=k8swatcher" -H  "accept: application/json"</codeblock></li>
+                    <li>Run the following command to disable scheduled backups for the policy
+                        specified
+                        <codeph>BR_POLICY_NAME</codeph>.<codeblock>curl -vkL -X DELETE "http://cbur-master-cbur.$CBUR_MASTER_NAMESPACE.svc.cluster.local:80/v2/cronjob/$NAMESPACE/$BR_POLICY_NAME?query_from=k8swatcher" -H  "accept: application/json"
+</codeblock></li>
+                    <li>Check the current cronJobs for scheduled backups in the namespace with the
+                        following
+                        command.<codeblock>kubectl get cronjob -n $CBUR_MASTER_NAMESPACE</codeblock></li>
+                </ol></p>
+        </section>
+    </body>
+</topic>

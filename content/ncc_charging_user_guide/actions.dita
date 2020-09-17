@@ -1,0 +1,2218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-actions"><title>Actions associated with lifecycles</title><conbody>
+<section><title>Action definition</title>
+<p>An action is an attribute of a transition and can be invoked during a transition. Actions are executed in the order that they are provisioned. Some actions may trigger events and also broadcast those events to related entities. However, broadcasting of events is based on the action input parameter. </p>
+<p>The following table lists the source and destination entities involved in broadcasting
+                    events:<table pgwide="1" colsep="1" rowsep="1">
+                    <tgroup cols="3">
+                        <colspec colname="col1" colwidth="1.18*"/>
+                        <colspec colname="col2" colwidth="1*"/>
+                        <colspec colname="col3" colwidth="2.19*"/>
+                        <thead>
+                            <row>
+                                <entry>
+                                    <p>Lifecycle Type</p>
+                                </entry>
+                                <entry>
+                                    <p>Source Entity</p>
+                                </entry>
+                                <entry>
+                                    <p>Destination Entity</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry> Periodic/Entity </entry>
+                                <entry> Subscription </entry>
+                                <entry>
+                                    <p>Device/Group (depending on type of Subscription) linked to
+                                        invoking subscription</p>
+                                    <p>Account (to both periodic and entity lifecycle type)</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> Periodic/Entity </entry>
+                                <entry> Account </entry>
+                                <entry> Subscription (to both periodic and entity lifecycle type)
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> Entity </entry>
+                                <entry> Device </entry>
+                                <entry> Subscription (to both periodic and entity lifecycle type)
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> Entity </entry>
+                                <entry> Group </entry>
+                                <entry> Subscription (to both periodic and entity lifecycle type)
+                                </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table></p>
+<note>
+<p>When adding an action to a transition, Nokia recommends adding at most one action that generates a success or failure event. For example, if you have <i>Add Subscription Action</i> configured in a transition, you can add Send Notification Action to the same transition since the latter does not generate any success or failure events.</p>
+<p>Nokia does not recommend to have in the same transition two or more actions that generate a success or failure event for example, two <i>Add Subscription Actions</i> configured in the same transition.</p>
+</note>
+</section>
+<section id="lcaction"><title>Lifecycle actions</title>
+<p>The following table lists and describes lifecycle actions.</p>
+<table pgwide="1" colsep="1" rowsep="1" scale="80">
+                <title>Lifecycle actions</title>
+                <tgroup cols="4">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <colspec colname="COLSPEC0"/>
+                    <colspec colname="COLSPEC1"/>
+                    <thead>
+                        <row>
+                            <entry morerows="1">
+                                <p>Action</p>
+                            </entry>
+                            <entry morerows="1">
+                                <p>Description</p>
+                            </entry>
+                            <entry nameend="COLSPEC1" namest="COLSPEC0">
+                                <p>Parameters</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p>Mandatory</p>
+                            </entry>
+                            <entry>
+                                <p>Optional</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry rowsep="0"> Add Subscription Action </entry>
+                            <entry rowsep="0">
+                                <p>This action allows you to add a new subscription to a specified
+                                    bundle as a result of a trigger from an account or subscription
+                                    lifecycle transition.</p>
+                                <p>When Add Subscription Action executes in a subscription lifecycle
+                                    (for example, subscription ABC) the following takes place: </p>
+                                <ul>
+                                    <li>
+                                        <p>The newly created subscription (for example, subscription
+                                            XYZ) is added to all the devices and groups currently
+                                            linked to the subscription ABC.</p>
+                                    </li>
+                                    <li>
+                                        <p>The subscription XYZ is owned by the same account that
+                                            owns the subscription ABC.</p>
+                                    </li>
+                                </ul>
+                                <p>When <uicontrol> Add Subscription Action</uicontrol> executes in
+                                    an account lifecycle, the newly created subscription is added to
+                                    all the devices and groups currently linked to the account by
+                                    means of a subscription.</p>
+                            </entry>
+                            <entry rowsep="0"> Bundle Id </entry>
+                            <entry rowsep="0">
+                                <p/>
+                                <ul>
+                                    <li>
+                                        <p>Fee Override (decimal number greater than zero, defaults
+                                            to null)</p>
+                                    </li>
+                                    <li>
+                                        <p>Ignore Barred Account (defaults to false)</p>
+                                    </li>
+                                    <li>
+                                        <p>Ignore Barred Device or Group (defaults to true)</p>
+                                    </li>
+                                    <li>
+                                        <p>Taxation profile</p>
+                                        <p>Note that the Taxation profile field is applicable only
+                                            if some fee amount is given for the action inside the
+                                            lifecycle.</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry rowsep="0"/>
+                            <entry rowsep="0">
+                                <p>The account whose lifecycle is being triggered owns the new
+                                    subscription.</p>
+                                <p>If a device is currently linked to the account by means of a
+                                    subscription (directly, not using groups), then the device is
+                                    linked to the new subscription.</p>
+                                <p>If a group is currently linked to the account by means of a
+                                    subscription (directly, not using parent groups), then the group
+                                    is linked to the new subscription.</p>
+                                <p>This action provides an option to override Bundle Fee. This fee
+                                    is used as an input to calculate total amount to be deducted
+                                    from account, based on the number of devices and groups linked
+                                    to the account by a subscription.</p>
+                                <p>Add Subscription Action generates Add Subscription Action Success
+                                    Event or Add Subscription Action Failure Event to the lifecycle
+                                    of the account or the subscription that invoked Add Subscription
+                                    Action. It also generates Subscription Added Event to other
+                                    related entities.</p>
+                            </entry>
+                            <entry rowsep="0"/>
+                            <entry rowsep="0"/>
+                        </row>
+                        <row>
+                            <entry/>
+                            <entry>
+                                <p>The following examples illustrate how you can use this
+                                    action:</p>
+                                <ul>
+                                    <li>
+                                        <p>A subscription expires and a new one is automatically
+                                            added to take its place.</p>
+                                    </li>
+                                    <li>
+                                        <p>A device is active for 90 days and a new subscription is
+                                            added for a special 90-day bonus.</p>
+                                    </li>
+                                    <li>
+                                        <p>A group is active for 30 days and a new subscription is
+                                            added to the group.</p>
+                                    </li>
+                                    <li>
+                                        <p>An account pays 100 dollars for an additional
+                                            subscription.</p>
+                                    </li>
+                                    <li>
+                                        <p>Device is barred and the new subscription addition is
+                                            successful when the <uicontrol>Ignore Barred Device or
+                                                Group</uicontrol> flag is checked.</p>
+                                    </li>
+                                    <li>
+                                        <p>Device is in Final state and subscription addition
+                                            through GUI/REST is unsuccessful.</p>
+                                    </li>
+                                </ul>
+                                <p>See <!--xref URI: #AddSubscriptionActionFigure--><xref
+                                        keyref="id9YZ-09126-UG01-PCZZA-SP1-Actions/addsubscriptionactionfigure"
+                                    /> for an illustration.</p>
+                                <p>If the tax is not found in the lifecycle, then it is fetched from
+                                    bundle or account.</p>
+                            </entry>
+                            <entry/>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry> Cancel Period Action </entry>
+                            <entry>
+                                <p>This action allows you to cancel a period.</p>
+                                <p>This action is used in a PERIOD lifecycle of an account or
+                                    subscription.</p>
+                                <p>This action does the following:</p>
+                                <ul>
+                                    <li>
+                                        <p>Generates Cancel Period Event</p>
+                                    </li>
+                                    <li>
+                                        <p>Sets to null Start Time and End Time of the entity whose
+                                            lifecycle is being cancelled</p>
+                                    </li>
+                                </ul>
+                                <p>If Cancel Period Event transition does not exist in the lifecycle
+                                    being cancelled, the state parameter of the entity referencing
+                                    this lifecycle is updated to the initial state (initial=true) of
+                                    this lifecycle.</p>
+                            </entry>
+                            <entry> No mandatory parameters </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry> Charge Fee Action </entry>
+                            <entry>
+                                <p>This action allows an operator to charge a fee on a subscription
+                                    or an account. In case this is used in a subscription lifecycle,
+                                    the account referenced by the subscription is the one picked up
+                                    for charging. If this is used in an account lifecycle, the
+                                    account entity is used directly. This action generates Charge
+                                    Fee Action Success Event or Charge Fee Action Failure Event to
+                                    the related entities, depending on the result of its execution. </p>
+                                <p>When <i>Charge Fee</i> action is triggered inside any other state
+                                    apart from initial state of periodic lifecycle of a
+                                    subscription, NCC checks for <i>Charge Fee</i> action in the <i>
+                                        Fee reference for Prorate</i> and a valid future activation
+                                    date for charge fee prorate as applicable.</p>
+                                <p>If a valid discount (0 to 100) is provided, the calculated
+                                    discount fee is applied on the prorated fee (if applicable).</p>
+                                <p>If this lifecycle of the subscription and current state is
+                                    initial state, then the bundle fee discounts are applied here as
+                                    per subscriptions. If it is a group subscription, then all
+                                    eligible discounts instances attached to the group are only
+                                    applied here. The similar scenario is followed for a device.</p>
+                                <p>For more information on eligible discount instances, see the
+                                        <xref
+                                        href="discount.dita#id9yz-09126-ug01-pczza-sp1-d1e144758/Eligiblediscountinstances"
+                                    /> section.</p>
+                                <p>
+                                    <b>Note:</b> The discount as input is different from bundle fee
+                                    discount, which comes from the discount entity
+                                    configuration.</p>
+                                <p>If there is any tax applicable, then it is calculated on the
+                                    discounted fee.</p>
+                                <p>If the taxation reference is not given inside the lifecycle, that
+                                    is, Taxation profile is not given in the <uicontrol>Charge Fee
+                                        Action</uicontrol>, then the tax is not applied. There is no
+                                    fallback on the bundle or account if the taxation reference is
+                                    not given inside the lifecycle.</p>
+                            </entry>
+                            <entry> No mandatory parameters </entry>
+                            <entry>
+                                <p/>
+                                <ul>
+                                    <li>
+                                        <p>Allow Event Broadcast (defaults to false)</p>
+                                    </li>
+                                    <li>
+                                        <p>Taxation profile</p>
+                                        <p>Note that the Taxation profile field is applicable only
+                                            if some fee amount is given for the action inside the
+                                            lifecycle.</p>
+                                    </li>
+                                    <li>
+                                        <p>discount</p>
+                                        <p>Discount percentage provided as an input parameter
+                                            through rules or lifecycle configuration.</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Delete Entity </entry>
+                            <entry> This action deletes an ENTITY lifecycle. To delete an entity
+                                immediately, configure a looping transition with Delete Entity
+                                action and a timer less or equal to zero. To delete an entity at
+                                some time in the future, use a timer greater than zero. </entry>
+                            <entry> No mandatory parameters </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry> DeleteExpiredEntityAction </entry>
+                            <entry>
+                                <p>This action deletes expired entities and currently, it is
+                                    supported only for discount instances.</p>
+                                <p>If endTime + interval &lt; current time, then this action deletes
+                                    entity.</p>
+                                <p>endTime = endTime of Entity</p>
+                                <p>interval = value given in the <i>interval</i> parameter in this
+                                    action. Its unit is hours.</p>
+                                <p>Default value is <varname>0</varname>.</p>
+                                <p>
+                                    <b>NOTE:</b> The <i>interval</i> parameter provides time after
+                                    which entity is expired. The unit is measured in hours.</p>
+                            </entry>
+                            <entry> No mandatory parameters </entry>
+                            <entry>
+                                <p>Allow Event Broadcast (defaults to false)</p>
+                                <p>Interval (defaults to <varname>0</varname>) unit in hours</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry rowsep="0"> Delete Subscription Action </entry>
+                            <entry rowsep="0">
+                                <p>This action allows you to delete a subscription.</p>
+                                <p>Delete Subscription Action is supported in account, device and
+                                    subscription lifecycles only.</p>
+                                <p>When Delete Subscription Action executes in a subscription
+                                    lifecycle, the following applies: </p>
+                                <ul>
+                                    <li>
+                                        <p>If Bundle ID is provided and it matches the id of the
+                                            bundle that the subscription is linked to, Delete
+                                            Subscription Action applies to this subscription. If
+                                            Bundle ID does not match, Delete Subscription Action
+                                            does not execute.</p>
+                                    </li>
+                                    <li>
+                                        <p>If Bundle ID is not provided, Delete Subscription Action
+                                            applies to the subscription regardless of which bundle
+                                            this subscription is linked to.</p>
+                                    </li>
+                                </ul>
+                                <p>When Delete Subscription Action executes in an account or device
+                                    lifecycle, the following applies to the subscriptions linked to
+                                    this account: </p>
+                                <ul>
+                                    <li>
+                                        <p>If Bundle ID is provided, Delete Subscription Action
+                                            applies to the subscriptions linked to the specified
+                                            Bundle ID.</p>
+                                    </li>
+                                    <li>
+                                        <p>If Bundle ID is not provided, Delete Subscription Action
+                                            applies to all subscriptions linked to this account or
+                                            device (in case of device lifecycle) regardless of which
+                                            bundles these subscriptions are linked to.</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry rowsep="0"> No mandatory parameters </entry>
+                            <entry rowsep="0"> Bundle ID </entry>
+                        </row>
+                        <row>
+                            <entry rowsep="0"/>
+                            <entry rowsep="0">
+                                <p>When Delete Subscription Action executes in a device,
+                                    subscription or account lifecycle, this action does the
+                                    following for all applicable subscriptions:</p>
+                                <ul>
+                                    <li>
+                                        <p>If the final state is configured in the lifecycle of an
+                                            applicable subscription, the following applies:</p>
+                                        <ul>
+                                            <li>
+                                                <p>If Entity Removed Event is configured from the
+                                                  subscription’s current to the final state, Delete
+                                                  Subscription Action triggers Entity Removed Event
+                                                  transition with all actions, if any, associated
+                                                  with this transition.</p>
+                                            </li>
+                                            <li>
+                                                <p>If Entity Removed Event is not configured from
+                                                  the subscription’s current state to the final
+                                                  state, Delete Subscription Action explicitly sets
+                                                  the subscription’s state to the final state. </p>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <p>If there is no final state in the lifecycle of an
+                                            applicable subscription, this subscription is deleted
+                                            immediately and removed from the groups and devices
+                                            linked to this subscription.</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry rowsep="0"/>
+                            <entry rowsep="0"/>
+                        </row>
+                        <row>
+                            <entry/>
+                            <entry>
+                                <p>To fully delete a subscription, you must configure in the
+                                    lifecycle of this subscription a looping transition with Delete
+                                    Entity action in the final state.</p>
+                                <p>See <!--xref URI: #DeleteSubscriptionActionFigure--><xref
+                                        keyref="id9YZ-09126-UG01-PCZZA-SP1-Actions/deletesubscriptionactionfigure"
+                                    /> for an illustration.</p>
+                            </entry>
+                            <entry/>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry> Empty Subscription Action </entry>
+                            <entry>
+                                <p>This action is applicable the periodic lifecycle and entity
+                                    lifecycle attached to a subscription. This action sets the
+                                    current value of all buckets including carry-over bucket to
+                                    zero. In case of carry-over bucket, the initial value is also
+                                    set to zero. The current value of all counters is set to zero.
+                                    In general, this action is configured on the Repeat Cycle Event
+                                    with transition of Lifecycle to a state having the
+                                        <varname>barred</varname> flag checked. It ensures that the
+                                    subscription resources are emptied and subscription is not
+                                    recurrent.</p>
+                                <p>For Subscription having Step bucket, when the Empty Subscription
+                                    Action is triggered on it, then currentChargingStep and
+                                    currentChargingStepUpTime are not altered.</p>
+                            </entry>
+                            <entry> No mandatory parameters </entry>
+                            <entry>
+                                <p>Allow Event Broadcast</p>
+                                <p>(defaults to false)</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry rowsep="0"> Renew Subscription Action </entry>
+                            <entry rowsep="0">
+                                <p>This action allows you to renew a subscription and charge fees
+                                    associated with renewal.</p>
+                                <p>This action can only be used in a PERIOD lifecycle of an account
+                                    or subscription.</p>
+                                <p>If this action executes in an account lifecycle, scenario 1
+                                    applies.</p>
+                                <p>If this action executes in a subscription lifecycle, scenario 2
+                                    applies.</p>
+                                <p>Account is barred and renew subscription is unsuccessful when the
+                                        <uicontrol>Ignore Barred Account</uicontrol> flag is
+                                    unchecked. Account is barred and renew subscription is
+                                    successful when the <uicontrol>Ignore Barred Account</uicontrol>
+                                    flag is checked.</p>
+                                <p>If the Device or Group is barred with the <uicontrol>Ignore
+                                        Barred Device or Group</uicontrol> flag as false, then the
+                                    renewal of that particular subscription is unsuccessful. </p>
+                            </entry>
+                            <entry rowsep="0"> No mandatory parameters </entry>
+                            <entry rowsep="0">
+                                <p/>
+                                <ul>
+                                    <li>
+                                        <p>Renewal Fee</p>
+                                    </li>
+                                    <li>
+                                        <p>Bundle ID</p>
+                                    </li>
+                                    <li>
+                                        <p>Allow Event Broadcast </p>
+                                        <p>(If the action is configured in account lifecycle, then
+                                            default value is true else in case of subscription
+                                            lifecycle, default value is false)</p>
+                                    </li>
+                                    <li>
+                                        <p>Ignore Barred Account</p>
+                                        <p>(defaults to false)</p>
+                                    </li>
+                                    <li>
+                                        <p>Ignore Barred Device or Group</p>
+                                        <p>(defaults to true)</p>
+                                    </li>
+                                    <li>
+                                        <p>Taxation profile</p>
+                                        <p>Note that the Taxation profile field is applicable only
+                                            if some fee amount is given for the action inside the
+                                            lifecycle.</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry/>
+                            <entry>
+                                <p>To calculate the amount of applicable fees, the following
+                                    applies:</p>
+                                <p>If Renewal Fee is provided, then Renewal Fee overrides both Fee
+                                    Override that might be specified for a subscription and Bundle
+                                    Fee specified for the bundle of this subscription.</p>
+                                <p>The following formula is used to calculate the amount of
+                                    applicable fees for renewing one subscription:</p>
+                                <p>amount of fees = (Renewal Fee (if provided) OR Fee Override (if
+                                    specified) OR Bundle Fee) </p>
+                                <p>The renewal discounts are applied here as per subscriptions. If
+                                    it is a group subscription, then only all eligible discount
+                                    instances are attached to the group are applied here.</p>
+                                <p>The similar scenario is applicable for the device.</p>
+                                <p>For information on eligibility of discount instances, refer to
+                                    the
+                                        <!--xref URI: c-Service_Model.xml#Eligiblediscountinstances--><xref
+                                        href="discount.dita#id9yz-09126-ug01-pczza-sp1-d1e144758/Eligiblediscountinstances"
+                                    /> section.</p>
+                                <p>If there is an update in the billing cycle information, the
+                                    prorating is done based on the prorating flags configured in the
+                                    bundle.</p>
+                                <p>If the taxation reference is not given inside the lifecycle, that
+                                    is, Taxation profile is not given in the <uicontrol>Renew
+                                        Subscription Action</uicontrol>, then the tax related
+                                    information is fetched from bundle or account.</p>
+                            </entry>
+                            <entry/>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry rowsep="0">
+                                <p>Renew Subscription Action (continued)</p>
+                                <p>Scenario 1 (account lifecycle)</p>
+                            </entry>
+                            <entry rowsep="0">
+                                <p>This part describes scenario 1, when Renew Subscription Action
+                                    executes in an account PERIOD lifecycle. For scenario 2, when
+                                    Renew Subscription Action executes in a subscription PERIOD
+                                    lifecycle, go to the next part.</p>
+                                <p>This action can be used in the PERIOD lifecycle of the account
+                                    that owns a subscription(s). This action can be applied only to
+                                    those subscriptions of this account whose Subscription Renewal
+                                    Mode is set to RESET_ONLY or NONE, which is true under the
+                                    following conditions:</p>
+                                <ul>
+                                    <li>
+                                        <p>Subscription Renewal Mode is set to RESET_ONLY if Reset
+                                            Subscription Action is configured in the PERIOD
+                                            lifecycle of a subscription but Renew Subscription
+                                            Action is not configured in this lifecycle.</p>
+                                    </li>
+                                    <li>
+                                        <p>Subscription Renewal Mode is set to NONE if neither Reset
+                                            Subscription Action nor Renew Subscription Action is
+                                            configured in the PERIOD lifecycle of a subscription.
+                                            This includes the case when a subscription does not have
+                                            a PERIOD lifecycle associated with it.</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry rowsep="0"/>
+                            <entry rowsep="0"/>
+                        </row>
+                        <row>
+                            <entry rowsep="0"/>
+                            <entry rowsep="0">
+                                <p>When Renew Subscription Action executes in an account lifecycle,
+                                    the following applies:</p>
+                                <ul>
+                                    <li>
+                                        <p>If no Bundle Id is provided, then this action applies to
+                                            all subscriptions linked to this account.</p>
+                                    </li>
+                                    <li>
+                                        <p>If Bundle Id is provided, then this action applies to the
+                                            subscriptions linked to this account that match Bundle
+                                            Id.</p>
+                                    </li>
+                                    <li>
+                                        <p>If both parameters, Bundle Id and Renewal Fee, are
+                                            provided, Renewal Fee is applied to each applicable
+                                            subscription that matches Bundle Id.</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry rowsep="0"/>
+                            <entry rowsep="0"/>
+                        </row>
+                        <row>
+                            <entry rowsep="0"/>
+                            <entry rowsep="0">
+                                <p>When executed in an account lifecycle, this action does the
+                                    following in the order listed:</p>
+                                <ul>
+                                    <li>
+                                        <p>This action defines which subscriptions linked to this
+                                            account can be renewed based on their remainingRenewals
+                                            parameter. If remainingRenewals is not specified, the
+                                            action omits this step.</p>
+                                        <ul>
+                                            <li>
+                                                <p>If a subscription has reached its maximum number
+                                                  of renewals: its remainingRenewals is less or
+                                                  equal to zero, then Max Renewals Reached Event is
+                                                  generated in the ENTITY and PERIOD lifecycle of
+                                                  this subscription.</p>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <p>For postpaid account with <uicontrol>Deduct Postpaid Fee
+                                                Flag</uicontrol> as true in the charging application
+                                            preferences or prepaid account, the Renew Subscription
+                                            Action calculates the amount of all applicable fees for
+                                            renewing all applicable subscriptions.</p>
+                                        <ul>
+                                            <li>
+                                                <p>If the account does not have enough funds to
+                                                  renew all applicable subscriptions, then Not
+                                                  Enough Funds Event is generated in the ENTITY and
+                                                  PERIOD lifecycles of this account and the ENTITY
+                                                  and PERIOD lifecycles of all subscriptions that
+                                                  failed to renew.</p>
+                                            </li>
+                                            <li>
+                                                <p>If the account has enough funds to renew all
+                                                  applicable subscriptions, then the calculated
+                                                  amount is deducted from this account and the
+                                                  action proceeds.</p>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <p>For all applicable subscriptions, this action decrements
+                                            remainingRenewals.</p>
+                                    </li>
+                                    <li>
+                                        <p>For each applicable subscription, this action checks if
+                                            its Subscription Renewal Mode is NONE.</p>
+                                        <ul>
+                                            <li>
+                                                <p>If this is true, this action resets buckets,
+                                                  thresholds and counters of the subscription to
+                                                  initial values.</p>
+                                            </li>
+                                            <li>
+                                                <p>If the reset is successful, Subscription Renewed
+                                                  Event is generated in the ENTITY and PERIOD
+                                                  lifecycles of the subscription.</p>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <p>If all the above steps complete successfully,
+                                            Subscription Renewed Event is generated in the ENTITY
+                                            and PERIOD lifecycles of the account whose lifecycle is
+                                            being triggered.</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry rowsep="0"/>
+                            <entry rowsep="0"/>
+                        </row>
+                        <row>
+                            <entry/>
+                            <entry>
+                                <b>NOTE:</b> When Renew Subscription Action executes in an account
+                                lifecycle, this action resets device policy counters and other
+                                counters, including group and Sy counters, linked to this account
+                                either through group or device subscriptions. </entry>
+                            <entry/>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry rowsep="0">
+                                <p>Renew Subscription Action (continues)</p>
+                                <p> Scenario 2 (subscription lifecycle)</p>
+                            </entry>
+                            <entry rowsep="0">
+                                <p>This part describes scenario 2, when Renew Subscription Action
+                                    executes in a subscription PERIOD lifecycle. For Scenario 1,
+                                    when Renew Subscription Action executes in an account PERIOD
+                                    lifecycle, go to the previous part.</p>
+                                <p>Scenario 2 of Renew Subscription Action can only be used in a
+                                    subscription PERIOD lifecycle. This scenario works only on those
+                                    subscriptions whose Subscription Renewal Mode is set to
+                                    BILLING_ONLY or ALL, which is true under the following
+                                    conditions:</p>
+                                <ul>
+                                    <li>
+                                        <p>Subscription Renewal Mode is set to BILLING_ONLY if the
+                                            bundle, the subscription refers to, defines
+                                            billing-related information (dayOfMonth, hourOfDay,
+                                            dayOfWeek). This is irrespective of presence of Renew
+                                            Subscription Action or Reset Subscription Action.</p>
+                                    </li>
+                                    <li>
+                                        <p>Subscription Renewal Mode is set to ALL if bundle does
+                                            not define billing-related information and Renew
+                                            Subscription Action is configured in the PERIOD
+                                            lifecycle of a subscription. This is irrespective of
+                                            presence of Reset Subscription Action.</p>
+                                    </li>
+                                </ul>
+                                <p>In scenario 2, Bundle ID parameter is irrelevant.</p>
+                            </entry>
+                            <entry rowsep="0"/>
+                            <entry rowsep="0"/>
+                        </row>
+                        <row>
+                            <entry/>
+                            <entry>
+                                <p>When executed in a subscription lifecycle, Renew Subscription
+                                    Action does the following in the order listed:</p>
+                                <ul>
+                                    <li>
+                                        <p>Checks if the maximum number of remaining renewals has
+                                            been reached for this subscription: remainingRenewals is
+                                            less or equal to zero.</p>
+                                        <ul>
+                                            <li>
+                                                <p>If this is true, then Max Renewals Reached Event
+                                                  is generated in the ENTITY and PERIOD lifecycles
+                                                  of the subscription.</p>
+                                            </li>
+                                            <li>
+                                                <p>If this is not true, the action proceeds.</p>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <p>Checks if this subscription is linked to a postpaid
+                                            account with <uicontrol>Deduct Postpaid Fee
+                                                Flag</uicontrol> as true in the charging application
+                                            preferences or prepaid account, and if this account has
+                                            enough funds to pay all applicable fees:</p>
+                                        <ul>
+                                            <li>
+                                                <p>If the account does not have enough funds, then
+                                                  Not Enough Funds Event is generated in the ENTITY
+                                                  and PERIOD lifecycles of the subscription.</p>
+                                            </li>
+                                            <li>
+                                                <p>If the account has enough funds, then the amount
+                                                  of applicable fees is deducted from the account
+                                                  and the action proceeds.</p>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <p>Decrements remainingRenewals of this subscription</p>
+                                    </li>
+                                    <li>
+                                        <p>Resets buckets, thresholds and counters of this
+                                            subscription to initial values</p>
+                                    </li>
+                                    <li>
+                                        <p>If all the above steps complete successfully,
+                                            Subscription Renew Event is generated in the ENTITY and
+                                            PERIOD lifecycles of this subscription.</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry/>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry rowsep="0"> Reset Account Action </entry>
+                            <entry rowsep="0">
+                                <p>This action is applicable only to the periodic lifecycle attached
+                                    to an account. </p>
+                                <p>The following list provides details on the actions that NCC takes
+                                    upon execution of the Reset Account Action:</p>
+                                <ul>
+                                    <li>
+                                        <p>It resets the account balance to given reset value or to
+                                            zero if the reset value is not provided.</p>
+                                    </li>
+                                    <li>
+                                        <p>It preserve the values of balance and available balance
+                                            attributes of account balance before account reset.
+                                            Also, it saves the timestamp of reset.</p>
+                                    </li>
+                                    <li>
+                                        <p>It resets the thresholds linked to the given account
+                                            based on account balance, that is, reset thresholds
+                                            below the reset value.</p>
+                                    </li>
+                                    <li>
+                                        <p>It generates events for success and failure scenarios
+                                            (that is, when overage limit is greater than reset
+                                            value).</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry rowsep="0"> No mandatory parameters </entry>
+                            <entry rowsep="0">
+                                <p/>
+                                <ul>
+                                    <li>
+                                        <p>Reset Value (defaults to 0)</p>
+                                    </li>
+                                    <li>
+                                        <p>Allow Event Broadcast (defaults to False)</p>
+                                    </li>
+                                    <li>
+                                        <p>Ignore Barred Account (defaults to False)</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry/>
+                            <entry>
+                                <p>The <userinput>Account Reset Action</userinput> may not be
+                                    successful in the following cases:</p>
+                                <ul>
+                                    <li>
+                                        <p>When an account is in the final state.</p>
+                                    </li>
+                                    <li>
+                                        <p>When an account is in barred state and <uicontrol>Ignore
+                                                Barred Account</uicontrol> flag is unchecked.
+                                            However, the account reset can be successful in barred
+                                            state if the <uicontrol>Ignore Barred
+                                                Account</uicontrol> flag is checked.</p>
+                                    </li>
+                                    <li>
+                                        <p>When the reset value is less than the overage limit of an
+                                            account.</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry/>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry rowsep="0"> Reset Period Action </entry>
+                            <entry rowsep="0">
+                                <p>This action can be used in PERIOD lifecycles only.</p>
+                                <p>This action calculates Start Time and End Time for a period, for
+                                    example, a billing cycle. Note that End Time and Start Time are
+                                    intended for use in PERIOD lifecycles only. You should not use
+                                    End Time and Start Time in ENTITY lifecycles.</p>
+                                <p>The calculation handles 28-31 days in month. If End Time is
+                                    outside of the valid range, the last day of the last month is
+                                    used.</p>
+                                <p>The calculation differs whether the period is the first cycle or
+                                    it is a subsequent cycle.</p>
+                                <p>If the period is the first cycle, then the following applies:</p>
+                                <ul>
+                                    <li>
+                                        <p>Start Time is set to the current time</p>
+                                    </li>
+                                    <li>
+                                        <p>End Time is based on the account billing-related
+                                            information or bundle billing related information
+                                            (dayOfMonth, dayOfWeek, hourOfDay) and does not exceed
+                                            periodLength of the period.</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry rowsep="0"> No mandatory parameters </entry>
+                            <entry rowsep="0"/>
+                        </row>
+                        <row>
+                            <entry rowsep="0"/>
+                            <entry rowsep="0">
+                                <p>The dayOfMonth support 1 to 31 and Exact values, where Exact when
+                                    selected aligns the dayOfMonth to subscription purchase date. </p>
+                                <p>The dayOfWeek supports Sunday to Saturday and Exact values, where
+                                    Exact when selected aligns the dayOfWeek to subscription
+                                    purchase date. </p>
+                                <p>The hourOfDay supports 0 to 23, Exact, Start of new day values.
+                                    When <b>Exact</b> is selected, the end time in end date has same
+                                    value as subscription start time. When <b>Start of new day</b>
+                                    is selected, the end date and time is aligned to 00:00:00 of
+                                    next day. For example, if a monthly subscription is purchased on
+                                    20th March 13:45:00, then if this option is selected, then the
+                                    end date and time of the subscription is set to 21st April
+                                    00:00:00. </p>
+                                <p>See <!--xref URI: #dayofm--><xref
+                                        keyref="id9YZ-09126-UG01-PCZZA-SP1-Actions/dayofm"/> for
+                                    examples.</p>
+                                <p>Operators can change the billing cycle reset date for the account
+                                    and subscriptions based on the logic mentioned at
+                                        <!--xref URI: #bcrhandling--><xref
+                                        keyref="id9YZ-09126-UG01-PCZZA-SP1-Actions/bcrhandling"/>.
+                                    For examples related to BCR time reset, see
+                                        <!--xref URI: #scenariobcr--><xref
+                                        keyref="id9YZ-09126-UG01-PCZZA-SP1-Actions/scenariobcr"
+                                    />.</p>
+                            </entry>
+                            <entry rowsep="0"/>
+                            <entry rowsep="0"/>
+                        </row>
+                        <row>
+                            <entry rowsep="0"/>
+                            <entry rowsep="0">
+                                <p>If the period is a subsequent cycle, then the following
+                                    applies:</p>
+                                <ul>
+                                    <li>
+                                        <p>Start Time is set to the current End Time</p>
+                                    </li>
+                                    <li>
+                                        <p>EndTime is recalculated according to the new Start Time,
+                                            account billing-related information or bundle billing
+                                            related information and periodLength.</p>
+                                    </li>
+                                </ul>
+                                <p>However, if the current time is less than the current End Time,
+                                    Start Time and End Time is not reset.</p>
+                            </entry>
+                            <entry rowsep="0"/>
+                            <entry rowsep="0"/>
+                        </row>
+                        <row>
+                            <entry/>
+                            <entry>
+                                <p>Depending on periodLength and without exceeding it, the following
+                                    applies to calculate End Time for various cycles:</p>
+                                <ul>
+                                    <li>
+                                        <p>DAY cycles, hourOfDay is used to calculate End Time</p>
+                                    </li>
+                                    <li>
+                                        <p>WEEK cycles, dayOfWeek is used to calculate End Time,
+                                            counting from 12 a.m.</p>
+                                    </li>
+                                    <li>
+                                        <p>MONTH and YEAR cycles, dayOfMonth is used to calculate
+                                            End Time, counting from 12 a.m.</p>
+                                    </li>
+                                    <li>
+                                        <p>HOUR and MINUTE cycles fractional cycles are handled as
+                                            full cycles</p>
+                                    </li>
+                                    <li>
+                                        <p>SECOND cycles, End Time is based on periodLength only</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry/>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry rowsep="0"> Reset Period Action (continued) </entry>
+                            <entry rowsep="0">
+                                <p>In addition, a set of conditions applies to the following special
+                                    cases:</p>
+                                <p>
+                                    <i>MONTH cycles</i>
+                                </p>
+                                <ul>
+                                    <li>
+                                        <p>If Start Time day is less than dayOfMonth or equal to it,
+                                            then Start Time month is calculated as the first month
+                                            of the cycle. Otherwise, the first month of the cycle is
+                                            the following month. </p>
+                                        <p>The following examples illustrate the above
+                                            statement:</p>
+                                        <ul>
+                                            <li>
+                                                <p>Start Time is 2016/12/02 12:30:00, dayOfMonth=31,
+                                                  periodLength is 3 MONTHS</p>
+                                                <p>End Time is 2017/02/28 00:00:00</p>
+                                            </li>
+                                            <li>
+                                                <p>Start Time is 2016/12/02 12:30:00, dayOfMonth=1,
+                                                  periodLength is 3 MONTHS</p>
+                                                <p>End Time is 2017/03/01 00:00:00</p>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry rowsep="0"/>
+                            <entry rowsep="0"/>
+                        </row>
+                        <row>
+                            <entry rowsep="0"/>
+                            <entry rowsep="0">
+                                <p>
+                                    <i>WEEK cycles</i>
+                                </p>
+                                <ul>
+                                    <li>
+                                        <p>If Start Time weekday is less than dayOfWeek or equal to
+                                            it, then Start Time week is calculated as the first week
+                                            of the cycle. Otherwise, the first week of the cycle is
+                                            the following week. </p>
+                                        <p>The following examples illustrate the above
+                                            statement:</p>
+                                        <ul>
+                                            <li>
+                                                <p>Start Time is Tuesday 2017/05/02 12:30:00,
+                                                  dayOfWeek=5 (Friday), periodLength is 3 WEEKS</p>
+                                                <p>End Time is 2017/05/19 00:00:00</p>
+                                            </li>
+                                            <li>
+                                                <p>Start Time is Tuesday 2017/05/02 12:30:00,
+                                                  dayOfWeek=1 (Monday), periodLength is 3 WEEKS</p>
+                                                <p>End Time is 2017/05/22 00:00:00</p>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry rowsep="0"/>
+                            <entry rowsep="0"/>
+                        </row>
+                        <row>
+                            <entry/>
+                            <entry>
+                                <p>
+                                    <i>DAY cycles</i>
+                                </p>
+                                <ul>
+                                    <li>
+                                        <p>If Start Time hour is less than hourOfDay, then the day
+                                            of Start Time is the first day of the cycle. Otherwise,
+                                            the first day of the cycle is the following day.</p>
+                                        <p>The following examples illustrate the above
+                                            statement:</p>
+                                        <ul>
+                                            <li>
+                                                <p>Start Time is 2017/05/20 12:30:00, hourOfDay=0,
+                                                  periodLength is 5 DAYS</p>
+                                                <p>End Time is 2017/05/25 00:00:00</p>
+                                            </li>
+                                            <li>
+                                                <p>Start Time is 2017/05/20 00:30:00, hourOfDay=12,
+                                                  periodLength is 5 DAYS</p>
+                                                <p>End Time is 2017/05/24 12:00:00</p>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                                <p>See <!--xref URI: #dayofm--><xref
+                                        keyref="id9YZ-09126-UG01-PCZZA-SP1-Actions/dayofm"/> for
+                                    examples.</p>
+                                <p>See <!--xref URI: #ResetPeriodActionFigure--><xref
+                                        keyref="id9YZ-09126-UG01-PCZZA-SP1-Actions/resetperiodactionfigure"
+                                    /> for an illustration.</p>
+                            </entry>
+                            <entry/>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry> Reset Period Action (continued) </entry>
+                            <entry>
+                                <p>The following examples illustrate how HOUR, MINUTE, and SECOND
+                                    cycles are calculated.</p>
+                                <ul>
+                                    <li>
+                                        <p>2 HOUR periodLength and 17:45:23 current time</p>
+                                        <ul>
+                                            <li>
+                                                <p>first cycle Start Time is 17:45:23, End Time is
+                                                  19:00:00</p>
+                                            </li>
+                                            <li>
+                                                <p>subsequent cycle Start Time is 19:00:00, End Time
+                                                  is 21:00:00</p>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <p>5 MINUTE periodLength and 17:45:23 current time</p>
+                                        <ul>
+                                            <li>
+                                                <p>first cycle Start Time is 17:45:23, End Time is
+                                                  17:50:00</p>
+                                            </li>
+                                            <li>
+                                                <p>subsequent cycle Start Time is 17:50:00, End Time
+                                                  is 17:55:00</p>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <p>40 SECOND periodLength and 17:45:23 current time</p>
+                                        <ul>
+                                            <li>
+                                                <p>first cycle Start Time is 17:45:23, End Time is
+                                                  17:46:03</p>
+                                            </li>
+                                            <li>
+                                                <p>subsequent cycle Start Time is 17:46:03, End Time
+                                                  is 17:46:43</p>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                                <p>The diagram below this table illustrates the execution of Reset
+                                    Period Action in the account PERIOD lifecycle.</p>
+                            </entry>
+                            <entry/>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry> Reset Subscription Action </entry>
+                            <entry>
+                                <p>This action resets a subscription. This works only on the
+                                    subscriptions whose Subscription Renewal Mode is set to
+                                    RESET_ONLY or BILLING_ONLY.</p>
+                                <p>This action is used in the PERIOD lifecycle of subscriptions
+                                    only. If the Device or Group is barred with Ignore Barred Device
+                                    or Group flag as false, then reset subscription is unsuccessful. </p>
+                                <p>This action executes as follows:</p>
+                                <ul>
+                                    <li>
+                                        <p>This action resets buckets, thresholds and counters of a
+                                            subscription to initial values.</p>
+                                    </li>
+                                    <li>
+                                        <p>If the above step succeeds, the Subscription Reset Event
+                                            is generated in the ENTITY and PERIOD lifecycles of this
+                                            subscription.</p>
+                                    </li>
+                                </ul>
+                                <p>If there is an update in the billing cycle information, the
+                                    prorating is done based on the prorating flags configured in the
+                                    bundle.</p>
+                            </entry>
+                            <entry> No mandatory parameters </entry>
+                            <entry>
+                                <p/>
+                                <ul>
+                                    <li>
+                                        <p>Allow Event Broadcast (defaults to false)</p>
+                                    </li>
+                                    <li>
+                                        <p>Ignore Barred Device or Group (defaults to true)</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry rowsep="0"> Send Notification Action </entry>
+                            <entry rowsep="0">
+                                <p>This action sends a request to the notification server.</p>
+                                <p>Send Notification Action can be used in device, account and
+                                    subscription lifecycles.</p>
+                                <ul>
+                                    <li>
+                                        <p>When this action executes in a lifecycle of a device,
+                                            this device is used to invoke the notification
+                                            client.</p>
+                                    </li>
+                                    <li>
+                                        <p>When this action executes in a lifecycle of an account,
+                                            this actions attempts to find the device that belongs to
+                                            the administrator of the account.</p>
+                                        <ul>
+                                            <li>
+                                                <p>If such a device does not exist, the action ends
+                                                  without sending a notification.</p>
+                                            </li>
+                                            <li>
+                                                <p>If the device is found, this device is used to
+                                                  invoke the notification client.</p>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <p>When this action executes in a lifecycle of a
+                                            subscription, this action finds the account that this
+                                            subscription is linked to and then proceeds in the same
+                                            way as when this action executes in a lifecycle of an
+                                            account.</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry rowsep="0"> Notification Template Id </entry>
+                            <entry rowsep="0">
+                                <p>
+                                    <i>Rules</i>: This parameter provides the rule for the lifecycle
+                                    entity and contains the rules and conditions in a defined
+                                    format.</p>
+                                <p>
+                                    <b>Note:</b> The <uicontrol>Rules</uicontrol> box becomes
+                                    visible only when the user selects the action as <i>Send
+                                        Notification</i>. For any other action, this box is not
+                                    available.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry rowsep="1"/>
+                            <entry rowsep="1"> The lifecycle rule applies a condition based on the
+                                custom data of a device or group and <i>Notification Template
+                                Id</i>. It then selects a new Notification Template Id to send the
+                                notification to the Notification Server. </entry>
+                            <entry rowsep="1"/>
+                            <entry rowsep="1"/>
+                        </row>
+                        <row>
+                            <entry rowsep="0"> Send SNR Action </entry>
+                            <entry rowsep="0">
+                                <p>This action allows you to send SNR to indicate the change in
+                                    state of configured policy counter to policy module.</p>
+                                <p>This action can be used in both PERIOD and ENTITY lifecycles for
+                                    the following entities only:</p>
+                                <ul>
+                                    <li>
+                                        <p>Device</p>
+                                    </li>
+                                    <li>
+                                        <p>Subscription</p>
+                                    </li>
+                                    <li>
+                                        <p>Account</p>
+                                    </li>
+                                </ul>
+                                <p>This action is not applicable for Group and User entity.</p>
+                            </entry>
+                            <entry rowsep="0"> Once this is selected, you must enter Policy Counter
+                                Name and Policy Counter State </entry>
+                            <entry rowsep="0">
+                                <p/>
+                                <ul>
+                                    <li>
+                                        <p>Policy Counter Name</p>
+                                    </li>
+                                    <li>
+                                        <p>Policy Counter Status</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry rowsep="0"> Send SNR Action (continued)</entry>
+                            <entry rowsep="0"> Under this action, one pair of policy counter and
+                                corresponding counter state is mandatory. However, such multiple
+                                pairs can be added with this action. The Send S N R Action can be
+                                attached along with another action also in the same transition, but
+                                only one such entry is allowed. </entry>
+                            <entry rowsep="0"/>
+                            <entry rowsep="0"/>
+                        </row>
+                        <row>
+                            <entry rowsep="0"> Send SNR Action (continued)</entry>
+                            <entry rowsep="0">
+                                <p>Following is the behavior of Send SNR Action when attached with
+                                    different entities:</p>
+                                <ul>
+                                    <li>
+                                        <p>
+                                            <uicontrol>Device</uicontrol>: In this case, all the
+                                            policy counters attached with both device and device
+                                            subscription are processed for SNR.</p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <uicontrol>Subscription</uicontrol>: In this case, all
+                                            the policy counters attached directly to the
+                                            subscription are processed for SNR. If the subscription
+                                            is of type Device Subscription, then the SNR is sent to
+                                            the concerned device only, but if the subscription is of
+                                            type Group subscription, then the SNR is sent to all the
+                                            devices of that group.</p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <uicontrol>Account</uicontrol>: In this case, the policy
+                                            counters attached to device or through device
+                                            subscription or group subscription are processed for
+                                            SNR.</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry rowsep="0"/>
+                            <entry rowsep="0"/>
+                        </row>
+                        <row>
+                            <entry rowsep="0"> Send SNR Action (continued)</entry>
+                            <entry rowsep="0"> All the input policy counters are processed and
+                                corresponding SNR request is prepared, even if they are not present
+                                in Sy session of the device, as the state is provided as input. </entry>
+                            <entry rowsep="0"/>
+                            <entry rowsep="0"/>
+                        </row>
+                        <row>
+                            <entry rowsep="0"> Send SNR Action (continued)</entry>
+                            <entry rowsep="0">
+                                <p>For all policy counters, the following logic is used to examine
+                                    the applicability for SNR request:</p>
+                                <ul>
+                                    <li>
+                                        <p>
+                                            <uicontrol>Input Counters</uicontrol>: These counters
+                                            are provided as input of Send S N R Action. SNR is sent
+                                            mandatorily for policy counters which are not present in
+                                            Sy session of the device. If counter is present in the
+                                            session, SNR is sent only if the given state and state
+                                            in the session is mismatched.</p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <uicontrol>Usage Counters</uicontrol>: If this counter
+                                            is provided as input to the action, then input state is
+                                            compared with state in session, if the counter is
+                                            present in session. In case of mismatch of state or
+                                            counter not present in session, it becomes applicable
+                                            for the SNR. But if this counter is not provided as
+                                            input, then its state is read from attached threshold
+                                            profile and compared with the state in session. If there
+                                            is any difference, then it is considered for SNR
+                                            request.</p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <uicontrol>Resource Counters</uicontrol>: See the <xref
+                                                href="counter_entity.dita#id9yz-09126-ug01-pczza-sp1-counter_entity/snr"
+                                            /> for details on how the SNR processing is done for
+                                            resource based counters.</p>
+                                    </li>
+                                </ul>
+                                <p>If the configured policy counter is not attached to the device,
+                                    then no SNR is sent. If counters are not configured in the Send
+                                    SNR action, but attached to entity on which action is invoked,
+                                    it is re-evaluated to check the applicability and if applicable,
+                                    SNR is sent.</p>
+                            </entry>
+                            <entry rowsep="0"/>
+                            <entry rowsep="0"/>
+                        </row>
+                        <row>
+                            <entry rowsep="1"> Send SNR Action (continued)</entry>
+                            <entry rowsep="1">
+                                <p>The following example illustrate the logic of the Send S N R
+                                    Action:</p>
+                                <p>Consider an iPhone having Policy Counters C1 to C5 and these are
+                                    also present in the iPhone's (device’s) Sy session. With time,
+                                    few more policy counters are attached to iPhone, such as C6 to
+                                    C10. The Send S N R Action is configured in the entity lifecycle
+                                    of a device with input: C1,S1; C4,S4;C7,S7.</p>
+                                <p>On triggering action, for counters C1 and C4 state is not
+                                    calculated since state is already provided as input. If new
+                                    state of counter is different from state present in Sy session,
+                                    SNR is sent. C7 is also sent in SNR as it is given as input,
+                                    although it is not present in the Sy session. In addition to
+                                    this, other counters are also evaluated and sent in SNR, if they
+                                    are applicable to their states.</p>
+                            </entry>
+                            <entry rowsep="1"/>
+                            <entry rowsep="1"/>
+                        </row>
+                        <row>
+                            <entry> Trigger Event Action </entry>
+                            <entry>
+                                <p>This actions allows you to trigger an event in the lifecycle of
+                                    the other type for the same entity.</p>
+                                <p>This action is used in the DefaultAccountLifeCycle, when an
+                                    account is created, to trigger Start Cycle Event in the PERIOD
+                                    lifecycle of the DefaultAccountBillingCycle.</p>
+                                <p>Also, this action is used in DefaultSubscriptionLifeCycle, when a
+                                    subscription is created, to trigger Start Cycle Event in the
+                                    PERIOD lifecycle of the DefaultSubscriptionBillingCycle, if it
+                                    is associated to the subscription.</p>
+                            </entry>
+                            <entry> Event Name </entry>
+                            <entry>
+                                <p>Allow Event Broadcast </p>
+                                <p>(defaults to false)</p>
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<fig id="addsubscriptionactionfigure">
+<title>Add Subscription Action (ASA)</title>
+<image href="../images/img9yz-09126-ug01-pczza-sp1-addsubscriptionaction-diag1_default.png"/>
+                <p/>
+<image href="../images/img9yz-09126-ug01-pczza-sp1-asadiag2_default.png"/>
+</fig>
+            <p/>
+<fig id="deletesubscriptionactionfigure">
+<title>Delete Subscription Action (DSA)</title>
+<image href="../images/img9yz-09126-ug01-pczza-sp1-dsa-diag1_default.png"/>
+                <p/>
+<image href="../images/img9yz-09126-ug01-pczza-sp1-dsa-diag2_default.png"/>
+</fig>
+            <p/>
+<fig id="resetperiodactionfigure">
+<title>Reset Period Action</title>
+<image href="../images/img9yz-09126-ug01-pczza-sp1-resetperiodaction_default.png"/>
+</fig>
+</section>
+<section id="bcrhandling"><title>Handling BCR time when account renewal fails</title>
+<p>The following figure shows the BCR time handling logic:</p>
+<fig>
+<image href="../images/img9yz-09126-ug01-pczza-sp1-bcr_handling_default.png"/>
+</fig>
+<p>When an Account renewal fails, all the subscriptions linked to the Account gets barred depending on the lifecycle configuration. If the Account balance is topped up midway before the BCR, the subscriptions become active but they are valid only until next BCR date. </p>
+<p>Operators can change this behavior and set the billing cycle reset time to align to the recharge date, depending on the lifecycle periodicity. If the recharge amount is insufficient for renewal, billing cycle reset time is not modified. If a bundle has its own periodicity, the subscription's BCR date is updated irrespective of the Account billing information. </p>
+<sectiondiv>
+<p><b>Recommended configurations</b></p>
+<p>
+<uicontrol>Billing information configuration in Bundle and Account</uicontrol>
+</p>
+<p>The following parameters define the inputs for BCR alignment to a particular date and time depending on the lifecycle periodicity. For example, if the periodicity is monthly, set the <uicontrol>Day of Month</uicontrol> parameter to <varname>Exact</varname> value.</p><ul>
+<li>
+<p>Day of Week</p>
+</li>
+<li>
+<p>Hour of Day</p>
+</li>
+<li>
+<p>Day of Month</p>
+</li>
+</ul>
+</sectiondiv>
+<sectiondiv>
+<p><b>Lifecycle configuration</b></p>
+<p>Account can be recharged using Adjust Balance API, Set Balance API, or Reset Account Action. When there is a positive top-up of Account, the Account Recharged Event is triggered. </p>
+<p>There are two possible configurations of lifecycle as follows:</p><ul>
+<li>
+<p>
+<b>Configuration 1</b>: If subscriptions are renewed through Account lifecycle, then configure Account periodic lifecycle and Subscription entity lifecycle.</p>
+</li>
+<li>
+<p>
+<b>Configuration 2</b>: If subscriptions are renewed through their own lifecycle outside the Account BCR, then configure Subscription periodic lifecycle.</p>
+</li>
+</ul>
+<p>Following is the Account monthly lifecycle configuration for <b>Configuration 1</b> where the subscriptions are renewed through Account lifecycle:</p>
+<p>Configure three transition states namely <uicontrol>Active</uicontrol>, <uicontrol>Disconnected</uicontrol>, <uicontrol>Suspended</uicontrol>. </p>
+<fig>
+<image href="../images/img9yz-09126-ug01-pczza-sp1-lc_monthly1_default.png"/>
+</fig>
+<p>Active state has the following events:</p><ol>
+<li>
+<p>
+<userinput>Start Cycle Event</userinput> has <userinput>Reset Period Action</userinput>.</p>
+</li>
+<li>
+<p>
+                            <userinput>Repeat Cycle Event</userinput> has <userinput>Renew
+                                Subscription Action</userinput>. If the <userinput>Renew
+                                Subscription Action</userinput> is not successful, that is, Account
+                            balance is not sufficient to renew subscription, then <userinput>Not
+                                Enough Funds Event</userinput> is triggered and the Account moves to
+                            Suspended state. </p>
+</li>
+<li>
+<p>
+<userinput>Subscription Renewed Event</userinput> has <userinput>Reset Period Action</userinput>. Account remains in the Active state.</p>
+</li>
+<li>
+<p>
+<userinput>Not Enough Funds Event</userinput>: This event is triggered when the <userinput>Renew Subscription Action</userinput> fails and it moves the Account to suspended state.</p>
+</li>
+</ol>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/LC_monthly2_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-lc_monthly2_default.png"/>
+</fig>
+<p>Suspended state has the following events:</p><ul>
+<li>
+<p>
+<userinput>Account Recharged Event</userinput>: This event is triggered when an Account is topped up. <userinput>Renew Subscription Action</userinput> is configured for this event to renew the subscription after the recharge. If the renewal is successful, then the <userinput>Subscription Renewed Event</userinput> which is the success case is triggered. In this case, the next BCR date gets aligned to the recharge date.</p>
+</li>
+<li>
+<p>
+<userinput>Subscription Renewed Event</userinput>: This event is triggered when the subscription is renewed successfully. In this event, the <userinput>Reset Period Action</userinput> is configured which calculates and aligns the BCR date to recharge date.</p>
+</li>
+</ul>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/LC_monthly3_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-lc_monthly3_default.png"
+                        scale="50"/>
+</fig>
+<p>
+<uicontrol>Subscription Entity Lifecycle</uicontrol>
+</p>
+<p>Configure three transition states namely <uicontrol>Inactive</uicontrol>, <uicontrol>Removed</uicontrol>, <uicontrol>Active</uicontrol>. </p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/LC_ESub1_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-lc_esub1_default.png"/>
+</fig>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/LC_Esub_1_1_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-lc_esub_1_1_default.png"/>
+</fig>
+<p>Inactive state has the following events:</p><ul>
+<li>
+<p>
+<userinput>Activate</userinput>: This event activates the subscription.</p>
+</li>
+<li>
+<p>
+<userinput>Entity Removed Event</userinput>: This event removes the subscription.</p>
+</li>
+<li>
+<p>
+<userinput>Subscription Renewed Event</userinput>: This event is triggered if the subscription is renewed successfully and the subscription moves to Active state. Since this event is triggered from Account lifecycle, the <uicontrol>Accept Broadcast Message</uicontrol> flag must be selected.</p>
+</li>
+</ul>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/LC_Esub2_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-lc_esub2_default.png"
+                        scale="50"/>
+</fig>
+<p>Active state has the following events:</p><ul>
+<li>
+<p>
+<userinput>Deactivate</userinput>: This event moves the subscription to Inactive state.</p>
+</li>
+<li>
+<p>
+<userinput>Start Cycle Event</userinput>
+</p>
+</li>
+<li>
+<p>
+<userinput>Not Enough Funds Event</userinput>: This event is triggered if the subscription is not renewed successfully and the subscription moves to Inactive state. Since this event is triggered from Account lifecycle, the <uicontrol>Accept Broadcast Message</uicontrol> flag must be selected.</p>
+</li>
+</ul>
+<p>Following is the Subscription monthly periodic lifecycle configuration for <b>Configuration 2</b> where the subscriptions are renewed through their own lifecycle and not aligned with Account for renewal:</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/LC_PSub1_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-lc_psub1_default.png"
+                        scale="50"/>
+</fig>
+<p>Active state has the following events:</p><ul>
+<li>
+<p>
+<userinput>Start Cycle Event</userinput>
+</p>
+</li>
+<li>
+<p>
+<userinput>Repeat Cycle</userinput>: <userinput>Renew Subscription Action</userinput> is configured in this event.</p>
+</li>
+<li>
+<p>
+<userinput>Subscription Renewed Event</userinput>: This event is triggered when the subscription is renewed successfully, and the next BCR date is calculated. The subscription remains in Active state.</p>
+</li>
+<li>
+<p>
+<userinput>Not Enough Funds Event</userinput>: This event is triggered when the subscription renewal fails and subscription moves to Suspended state.</p>
+</li>
+</ul>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/LC_PSub2_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-lc_psub2_default.png"/>
+</fig>
+<p>Suspended state has the following events:</p><ul>
+<li>
+<p>
+<userinput>Account Recharged Event</userinput>: This event is triggered whenever the Account is recharged. Since this event is triggered from Account lifecycle, the <uicontrol>Accept Broadcast Message</uicontrol> flag must be selected to receive and process the actions.</p>
+</li>
+<li>
+<p>
+<userinput>Subscription Renewed Event</userinput>: If the renewal is successful, then the next BCR date is calculated and the subscription is moved to Active state. At this stage, the subscription date is aligned to recharge date.</p>
+</li>
+</ul>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/LC_PSub3_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-lc_psub3_default.png"
+                        scale="50"/>
+</fig>
+</sectiondiv>
+</section>
+<section id="scenariobcr"><title>Scenarios for BCR time handling</title>
+<p>Consider the following scenarios: </p><ul>
+<li>
+<p>
+<uicontrol>Scenario 1</uicontrol>: Subscription renewal fails when renewed through Account due to insufficient balance.</p>
+</li>
+<li>
+<p>
+<uicontrol>Scenario 2</uicontrol>: Subscription renewal with its own renewal lifecycle fails due to insufficient balance.</p>
+</li>
+<li>
+<p>
+<uicontrol>Scenario 3</uicontrol>: Renewal of both type of subscriptions that are mentioned in the preceding list (scenario 1 and 2) fail due to insufficient balance.</p>
+</li>
+</ul>
+<sectiondiv>
+<p><b>Common configuration for preceding scenarios:</b></p><ul>
+<li>
+<p>Account Account1 has Subscription S1 which does not have its own periodic lifecycle and directly linked and renewed through Account.</p>
+</li>
+<li>
+<p>Same account Account1 has Subscription S2 which has its own periodic lifecycle, getting renewed at a different date (outside Account BCR) and linked to the Account only for renewal fund.</p>
+</li>
+<li>
+<p>Account's BCR = 1st of every month</p>
+</li>
+<li>
+<p>Subscription S2's BCR = 15th of every month</p>
+</li>
+</ul>
+<note>
+<p>Ensure that you have configured charging service before configuring bundles.</p>
+</note>
+<p>Following is the configuration for bundles: </p>
+<table pgwide="1" colsep="1" rowsep="1">
+                    <title>Bundle B1 configuration (without periodic lifecycle)</title>
+<tgroup cols="2">
+                        <colspec colname="col1" colwidth="1*"/>
+                        <colspec colname="col2" colwidth="1*"/>
+<thead>
+<row>
+<entry>
+<p>Parameter</p>
+</entry>
+<entry>
+<p>Value</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+                                <entry> Name </entry>
+                                <entry> B1 </entry>
+</row>
+<row>
+                                <entry> Charging Service List </entry>
+                                <entry> CS1 </entry>
+</row>
+<row>
+                                <entry> Fee </entry>
+                                <entry> 10 </entry>
+</row>
+<row>
+                                <entry> Bundle Activation Type </entry>
+                                <entry> NORMAL </entry>
+</row>
+<row>
+                                <entry> Entity </entry>
+<entry>
+<p>Subsc_ELC</p>
+<p>
+                                        <uicontrol>Note:</uicontrol> For the scenarios, the
+                                        previously configured lifecycle is used.</p>
+</entry>
+</row>
+<row>
+                                <entry> Period </entry>
+                                <entry> N/A </entry>
+</row>
+<row>
+                                <entry> Hour of Day </entry>
+                                <entry> N/A </entry>
+</row>
+<row>
+                                <entry> Day of Month </entry>
+                                <entry> N/A </entry>
+</row>
+<row>
+                                <entry> Day of Week </entry>
+                                <entry> N/A </entry>
+</row>
+<row>
+                                <entry> Max Renewals </entry>
+                                <entry> N/A </entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<table pgwide="1" colsep="1" rowsep="1">
+                    <title>Bundle B2 configuration (with periodic lifecycle)</title>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+<p>Parameter</p>
+</entry>
+<entry>
+<p>Value</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+                                <entry> Name </entry>
+                                <entry> B2 </entry>
+</row>
+<row>
+                                <entry> Charging Service List </entry>
+                                <entry> CS2 </entry>
+</row>
+<row>
+                                <entry> Fee </entry>
+                                <entry> 20 </entry>
+</row>
+<row>
+                                <entry> Bundle Activation Type </entry>
+                                <entry> NORMAL </entry>
+</row>
+<row>
+                                <entry> Entity </entry>
+                                <entry> DefaultSubscriptionLifecycle </entry>
+</row>
+<row>
+                                <entry> Period </entry>
+                                <entry> SubsPeriodicLC_RENEWMONTHLY </entry>
+</row>
+<row>
+                                <entry> Hour of Day </entry>
+                                <entry> 02 </entry>
+</row>
+<row>
+                                <entry> Day of Month </entry>
+                                <entry> Exact </entry>
+</row>
+<row>
+                                <entry> Day of Week </entry>
+                                <entry> MONDAY </entry>
+</row>
+<row>
+                                <entry> Max Renewals </entry>
+                                <entry> N/A </entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>Following is the Account configuration:</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/account_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-account_default.png"
+                        scale="60"/>
+</fig>
+<p>Device subscribes to Subscription S1 with bundle B1 and subscription's end date gets aligned to the Account's end date:</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/account_b1_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-account_b1_default.png"
+                        scale="50"/>
+</fig>
+<p>Device subscribes to Subscription S2 with bundle B2 on 15th of the month:</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/account_b2_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-account_b2_default.png"
+                        scale="50"/>
+</fig>
+</sectiondiv>
+<sectiondiv id="brenew1">
+<p><b>Scenario 1: Subscription renewal through Account fails</b></p>
+<p>
+<uicontrol>Pre-condition:</uicontrol>The renewal of Subscription S1 fails due to insufficient balance in Account on 1st of month and subscription moves to the Suspended state. Recharge is done on 5th of month which is sufficient for renewal of Subscription S1. </p>
+<p>
+<uicontrol>Flow of events:</uicontrol>
+</p>
+<p>On 1st of the month, Account BCR happens, subscription renewal fails due to insufficient balance. Account and Subscription S1 moves to the Suspended state. Note that Subscription S2 with is in Active state since it has its own periodic lifecycle.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/account_device_overview1_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-account_device_overview1_default.png"
+                        scale="50"/>
+</fig>
+<p>On 5th of the month, Account is recharged. Subscription S1 becomes active and the end date is aligned to 5th. </p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/account_device_overview2_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-account_device_overview2_default.png"
+                        scale="50"/>
+</fig>
+<p>On 15th of the month, Subscription S2 is renewed successfully.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/account_device_overview3_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-account_device_overview3_default.png"
+                        scale="50"/>
+</fig>
+<p>
+                    <uicontrol>Post-condition:</uicontrol></p><ul>
+<li>
+<p>Account's BCR gets aligned to 5th.</p>
+</li>
+<li>
+<p>No change in Subscription S2 BCR as balance is sufficient to renew Subscription S2 on 15th.</p>
+</li>
+</ul>
+</sectiondiv>
+<sectiondiv id="brenew2">
+<p><b>Scenario 2: Subscription renewal with bundle having its own lifecycle fails due to insufficient balance </b></p>
+<p>
+<uicontrol>Pre-condition:</uicontrol>The renewal of Subscription S1 fails due to insufficient balance in Account on 5th of month and subscription moves to the Suspended state. Recharge is done on 10th of month which is sufficient for renewal of Subscription S1 but not sufficient to renew Subscription S2. On 15th of month, renewal of Subscription S2 fails and the subscription moves to Suspended state. Recharge is done on 20th of the month. </p>
+<p>Consider that the Account <uicontrol>Start Time</uicontrol> is Jun 5, 2020 10:00 AM IST and <uicontrol>End Time</uicontrol> is Jul 5, 2020 12:00 AM IST.</p>
+<p>
+<uicontrol>Flow of events:</uicontrol>
+</p>
+<p>On 5th of the month, Account BCR happens and the renewal fails due to insufficient balance to renew Subscription S1. Account and Subscription S1 are suspended. </p>
+<p>On 10th of the month, Account is recharged. The end date gets aligned to recharge date. That is, Account <uicontrol>Start Time</uicontrol> is Jul 10, 2020 1:00 PM IST and <uicontrol>End Time</uicontrol> is changed to Aug 10, 2020 12:00 AM IST. </p>
+<p>On 15th of the month, Subscription S2 renewal fails due to insufficient balance and Subscription S2 moves to suspended state.</p>
+<p>On 20th of the month, Account is recharged, Subscription S2 is renewed, moves to Active state, and End date is set to recharge date. That is, Period End Date: Aug 20, 2020 2:00 AM and Period Start Date: Jul 20, 2020 5:00 PM IST.</p>
+<p>
+<uicontrol>Post-condition:</uicontrol>
+</p><ul>
+<li>
+<p>Account's BCR gets aligned to 10th of the month.</p>
+</li>
+<li>
+<p>Subscription's BCR gets aligned to 20th of the month.</p>
+</li>
+</ul>
+</sectiondiv>
+<sectiondiv id="brenew3">
+<p><b>Scenario 3: Renewal of both subscriptions in scenario 1 and scenario 2 fail due to insufficient balance</b></p>
+<p>
+<uicontrol>Pre-condition</uicontrol>: The renewal of Subscription S1 fails due to insufficient balance in Account on 10th of month and subscription moves to suspended state. The renewal of Subscription S2 fails due to insufficient balance in Account on 20th of month and the subscription moves to the Suspended state. Recharge is done on 25th of the month which is sufficient to renew both subscriptions S1 and S2. </p>
+<p>Consider that the Account <uicontrol>Start Time</uicontrol> is Jul 10, 2020 1:00 PM IST and <uicontrol>End Time</uicontrol> is Aug 10, 2020 12:00 AM IST and End Time of Subscription S2 is Aug 20, 2020 2:00 AM IST. The Account balance is 0, which means there is no fund to renew subscriptions S1 and S2.</p>
+<p>
+<uicontrol>Flow of events:</uicontrol>
+</p>
+<p>On 10th of the month, Account renewal fails due to insufficient balance to renew Subscription S1. Account and Subscription S1 are suspended. </p>
+<p>On 20th of the month, Subscription S2 renewal fails due to insufficient balance and Subscription S2 moves to the Suspended state. </p>
+<p>On 25th of the month, Account is recharged with sufficient balance needed to renew subscriptions, the subscriptions S1 and S2 are renewed and moved to Active state. The End date of Account is set to recharge date, that is, Sep 25, 2020 12:00 AM IST, and Subscription S2 is set to Sep 25, 2020 2:00 AM IST.</p>
+<p>
+<uicontrol>Post-condition:</uicontrol>
+</p><ul>
+<li>
+<p>Account's BCR gets aligned to 25th of the month.</p>
+</li>
+<li>
+<p>Subscription's BCR gets aligned to 25th of the month.</p>
+</li>
+</ul>
+</sectiondiv>
+</section>
+<section id="dayofm"><title>Scenarios for Day of Month, Hour of Day, Day of Week parameters</title>
+<p>Following table shows the End time result for different values used for Day of month and Hour of day parameters:</p>
+<table pgwide="1" colsep="1" rowsep="1">
+<tgroup cols="4">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<colspec colname="col3"/>
+<colspec colname="col5"/>
+<thead>
+<row>
+<entry>
+<p>Case</p>
+</entry>
+<entry>
+<p>Day of month</p>
+</entry>
+<entry>
+<p>Hour of day</p>
+</entry>
+<entry>
+<p>End time</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+                            <entry> Case 1 </entry>
+                            <entry> 1 to 31 </entry>
+                            <entry> 0 to 23 </entry>
+                            <entry> For implementation details of this case, see
+                                    <!--xref URI: #lcaction--><xref
+                                    keyref="id9YZ-09126-UG01-PCZZA-SP1-Actions/lcaction"/>, Reset
+                                Period Action. </entry>
+</row>
+<row>
+                            <entry> Case 2 </entry>
+                            <entry> 1 to 31 </entry>
+                            <entry> Exact </entry>
+<entry>
+<p>Hour for Monthly Lifecycle is ignored  </p>
+<p>Hour for Daily Lifecycle is considered</p>
+</entry>
+</row>
+<row>
+                            <entry> Case 3 </entry>
+                            <entry> 1 to 31 </entry>
+                            <entry> Start of new day </entry>
+<entry>
+<p>Hour for Monthly Lifecycle is ignored  </p>
+<p>Hour for Daily Lifecycle with 00:00 is considered</p>
+</entry>
+</row>
+<row>
+                            <entry> Case 4 </entry>
+                            <entry> Exact </entry>
+                            <entry> 0 to 23 </entry>
+                            <entry> Hour for both Monthly and Daily Lifecycle is considered </entry>
+                        </row>
+                        <row>
+                            <entry> Case 5 </entry>
+                            <entry> Exact </entry>
+                            <entry> Start of new day </entry>
+                            <entry> Hour for both Monthly and Daily Lifecycle with 00:00 is
+                                considered </entry>
+                        </row>
+                        <row>
+                            <entry> Case 6 </entry>
+                            <entry> Exact </entry>
+                            <entry> Exact </entry>
+                            <entry> Hour for both Monthly and Daily Lifecycle is considered </entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>The following table shows the End time for Day of month = Exact and Hour of day = Start of new day.</p>
+<table pgwide="1" colsep="1" rowsep="1">
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<colspec colname="col3"/>
+<thead>
+<row>
+<entry>
+<p>Example</p>
+</entry>
+<entry>
+<p>Start Time</p>
+</entry>
+<entry>
+<p>End Time</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+                            <entry> Example 1 </entry>
+<entry>
+<p>17th December 2019 at 00:00:00 HRS</p>
+<p>(with a periodicity of 1 month)</p>
+</entry>
+                            <entry> 17th January 2020 at 00:00:00 HRS </entry>
+</row>
+<row>
+                            <entry> Example 2 </entry>
+<entry>
+<p>17th December 2019 at 00:00:00 HRS</p>
+<p>(with a periodicity of 1 month)</p>
+</entry>
+                            <entry> 18th January 2020 at 00:00:00 HRS </entry>
+</row>
+<row>
+                            <entry> Example 3 </entry>
+<entry>
+<p>17th December 2019 at 01:00:00 HRS</p>
+<p>(with a periodicity of 1 month)</p>
+</entry>
+                            <entry> 18th January 2020 at 00:00:00 HRS </entry>
+</row>
+<row>
+                            <entry> Example 4 </entry>
+<entry>
+<p>17th December 2019 at 16:34:20 HRS</p>
+<p>(with a periodicity of 1 month)</p>
+</entry>
+                            <entry> 18th January 2020 at 00:00:00 HRS </entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>Following table shows the End time result for different values used for Day of week and Hour of day parameters:</p>
+<table pgwide="1" colsep="1" rowsep="1">
+<tgroup cols="4">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<colspec colname="col3"/>
+<colspec colname="col5"/>
+<thead>
+<row>
+<entry>
+<p>Case</p>
+</entry>
+<entry>
+<p>Day of week</p>
+</entry>
+<entry>
+<p>Hour of day</p>
+</entry>
+<entry>
+<p>End time</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+                            <entry> Case 1 </entry>
+                            <entry> Sunday to Saturday </entry>
+                            <entry> 0 to 23 </entry>
+                            <entry> For implementation details of this case, see
+                                    <!--xref URI: #lcaction--><xref
+                                    keyref="id9YZ-09126-UG01-PCZZA-SP1-Actions/lcaction"/>, Reset
+                                Period Action. </entry>
+</row>
+<row>
+                            <entry> Case 2 </entry>
+                            <entry> Sunday to Saturday </entry>
+                            <entry> Exact </entry>
+<entry>
+<p>Hour for Weekly Lifecycle is ignored  </p>
+<p>Hour for Daily Lifecycle is considered</p>
+</entry>
+</row>
+<row>
+                            <entry> Case 3 </entry>
+                            <entry> Sunday to Saturday </entry>
+                            <entry> Start of new day </entry>
+<entry>
+<p>Hour for Weekly Lifecycle is ignored  </p>
+<p>Hour for Daily Lifecycle with 00:00 is considered</p>
+</entry>
+</row>
+<row>
+                            <entry> Case 4 </entry>
+                            <entry> Exact </entry>
+                            <entry> 0 to 23 </entry>
+                            <entry> Hour for both Weekly and Daily Lifecycle is considered </entry>
+                        </row>
+                        <row>
+                            <entry> Case 5 </entry>
+                            <entry> Exact </entry>
+                            <entry> Start of new day </entry>
+                            <entry> Hour for both Weekly and Daily Lifecycle with 00:00 is
+                                considered </entry>
+                        </row>
+                        <row>
+                            <entry> Case 6 </entry>
+                            <entry> Exact </entry>
+                            <entry> Exact </entry>
+                            <entry> Hour for both Weekly and Daily Lifecycle is considered </entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>If the timed transition in an Account or Subscription Entity Lifecycle or Period Lifecycle has Billing Information and has any of the following combinations, the following table shows the State time (timer of lifecycle state) result: </p>
+<table id="tlc" pgwide="1" colsep="1" rowsep="1">
+                <title>Timer</title>
+<tgroup cols="4">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<colspec colname="col3"/>
+<colspec colname="col5"/>
+<thead>
+<row>
+<entry>
+<p>Case</p>
+</entry>
+<entry>
+<p>Day of month</p>
+</entry>
+<entry>
+<p>Hour of day</p>
+</entry>
+<entry>
+<p>State time</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+                            <entry> Case 1 </entry>
+                            <entry> 1-31 </entry>
+                            <entry> 0 to 23 </entry>
+                            <entry> No change in the existing implementation. See
+                                    <!--xref URI: #TimerParameters--><xref
+                                    keyref="id9YZ-09126-UG01-PCZZA-SP1-Lifecycleparameters/TimerParameters"
+                                /> for more details. </entry>
+                        </row>
+                        <row>
+                            <entry> Case 2 </entry>
+                            <entry> 1-31 </entry>
+                            <entry> Exact </entry>
+                            <entry> No change in the existing implementation. See
+                                    <!--xref URI: #TimerParameters--><xref
+                                    keyref="id9YZ-09126-UG01-PCZZA-SP1-Lifecycleparameters/TimerParameters"
+                                /> for more details. </entry>
+                        </row>
+                        <row>
+                            <entry> Case 3 </entry>
+                            <entry> 1-31 </entry>
+                            <entry> Start of new day </entry>
+                            <entry> No change in the existing implementation. See
+                                    <!--xref URI: #TimerParameters--><xref
+                                    keyref="id9YZ-09126-UG01-PCZZA-SP1-Lifecycleparameters/TimerParameters"
+                                /> for more details. </entry>
+                        </row>
+                        <row>
+                            <entry> Case 4 </entry>
+                            <entry> Exact </entry>
+                            <entry> 0 to 23 </entry>
+<entry>
+<p>Hour of Day is considered.</p>
+<p>Now()+offset(units,timeUnit) with HourOfDay and 00:00.</p>
+</entry>
+</row>
+<row>
+                            <entry> Case 5 </entry>
+                            <entry> Exact </entry>
+                            <entry> Start of new day </entry>
+<entry>
+<p>Both conditions with 00:00 is considered.</p>
+<p>Now()+offset(units,timeUnit) + Next Day with 00:00.</p>
+</entry>
+</row>
+<row>
+                            <entry> Case 6 </entry>
+                            <entry> Exact </entry>
+                            <entry> Exact </entry>
+                            <entry> No change in the existing implementation. See
+                                    <!--xref URI: #TimerParameters--><xref
+                                    keyref="id9YZ-09126-UG01-PCZZA-SP1-Lifecycleparameters/TimerParameters"
+                                /> for more details. </entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>The following table shows the State time for Day of month = Exact and Hour of day = Start of new day.</p>
+<table pgwide="1" colsep="1" rowsep="1">
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<colspec colname="col3"/>
+<thead>
+<row>
+<entry>
+<p>Example</p>
+</entry>
+<entry>
+<p>System Time</p>
+</entry>
+<entry>
+<p>State Time</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+                            <entry> Example 1 </entry>
+                            <entry> 17th December 2019 at 00:00:00 HRS </entry>
+                            <entry> 17th January 2020 at 00:00:00 HRS </entry>
+</row>
+<row>
+                            <entry> Example 2 </entry>
+                            <entry> 17th December 2019 at 00:01:00 HRS </entry>
+                            <entry> 18th January 2020 at 00:00:00 HRS </entry>
+</row>
+<row>
+                            <entry> Example 3 </entry>
+                            <entry> 17th December 2019 at 01:00:00 HRS </entry>
+                            <entry> 18th January 2020 at 00:00:00 HRS </entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>Following table shows the State time (time of lifecycle state) result for different values used for Day of week and Hour of day parameters:</p>
+<table pgwide="1" colsep="1" rowsep="1">
+<tgroup cols="4">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<colspec colname="col3"/>
+<colspec colname="col5"/>
+<thead>
+<row>
+<entry>
+<p>Case</p>
+</entry>
+<entry>
+<p>Day of week</p>
+</entry>
+<entry>
+<p>Hour of day</p>
+</entry>
+<entry>
+<p>State time</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+                            <entry> Case 1 </entry>
+                            <entry> Sunday to Saturday </entry>
+                            <entry> 0 to 23 </entry>
+                            <entry> No change in the existing implementation. See
+                                    <!--xref URI: #TimerParameters--><xref
+                                    keyref="id9YZ-09126-UG01-PCZZA-SP1-Lifecycleparameters/TimerParameters"
+                                /> for more details. </entry>
+                        </row>
+                        <row>
+                            <entry> Case 2 </entry>
+                            <entry> Sunday to Saturday </entry>
+                            <entry> Exact </entry>
+                            <entry> No change in the existing implementation. See
+                                    <!--xref URI: #TimerParameters--><xref
+                                    keyref="id9YZ-09126-UG01-PCZZA-SP1-Lifecycleparameters/TimerParameters"
+                                /> for more details. </entry>
+                        </row>
+                        <row>
+                            <entry> Case 3 </entry>
+                            <entry> Sunday to Saturday </entry>
+                            <entry> Start of new day </entry>
+                            <entry> No change in the existing implementation. See
+                                    <!--xref URI: #TimerParameters--><xref
+                                    keyref="id9YZ-09126-UG01-PCZZA-SP1-Lifecycleparameters/TimerParameters"
+                                /> for more details. </entry>
+                        </row>
+                        <row>
+                            <entry> Case 4 </entry>
+                            <entry> Exact </entry>
+                            <entry> 0 to 23 </entry>
+<entry>
+<p>Hour of Day is considered.</p>
+<p>Now()+offset(units,timeUnit) with HourOfDay and 00:00.</p>
+</entry>
+</row>
+<row>
+                            <entry> Case 5 </entry>
+                            <entry> Exact </entry>
+                            <entry> Start of new day </entry>
+<entry>
+<p>Both conditions with 00:00 is considered.</p>
+<p>Now()+offset(units,timeUnit) + Next Day with 00:00.</p>
+</entry>
+</row>
+<row>
+                            <entry> Case 6 </entry>
+                            <entry> Exact </entry>
+                            <entry> Exact </entry>
+                            <entry> No change in the existing implementation. See
+                                    <!--xref URI: #TimerParameters--><xref
+                                    keyref="id9YZ-09126-UG01-PCZZA-SP1-Lifecycleparameters/TimerParameters"
+                                /> for more details. </entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+</conbody></concept>

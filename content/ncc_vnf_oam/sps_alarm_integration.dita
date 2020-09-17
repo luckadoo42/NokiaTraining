@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-d1e28359"><title>NCC Alarm Integration </title><conbody>
+<section id="IANAnumber"><title>Configuring the IANA number</title>
+<p>The current supported NetAct release for SPS 19.9 is NetAct 19 SP1909. You may need to change the AlarmIANAID parameter (IANA number) to 28458 if you have upgraded from an earlier release. If the IANA number was 1751, you must change it to 28458.</p>
+<note>Contact Nokia Support to change any IANA number. This procedure must be performed by Nokia
+                Support.</note>
+<note>For NCC and NetAct integration. the Maximum Transmission Unit (MTU) size on an external
+                network should be the same on the NCC and the NetAct.</note>
+</section>
+<section><title>Sample alarm and snmp service status check for NetAct integration</title>
+<p>Contact Nokia Support. This procedure must be performed by Nokia Support personnel only.</p>
+<p>The following describes the script for raising and deleting a dummy alarm for “Unified Logging” using CSF APIs. You can: check the alarm output, clear the alarm, and check the snmp service status.</p><ul>
+<li>
+<p>
+<!--xref URI: #executcheckscript-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-d1e28359/executcheckscript"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #changparam-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-d1e28359/changparam"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #checkalarm-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-d1e28359/checkalarm"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #clearalarm-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-d1e28359/clearalarm"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #snmpservice-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-d1e28359/snmpservice"/>
+</p>
+</li>
+</ul></section>
+    <section id="executcheckscript"><title>Generating and verifying dummy alarm</title>
+<p>The script can be executed by the “root” user only and is available from the OAME nodes as:</p>
+<p>
+<userinput>python /usr/lib/alma/alarm-sender/unified-logging-api/new_alarm.py</userinput>
+</p>
+<p>The default configuration of the script, which will generate a dummy alarm for id 10000, is as follows:</p>
+<fig>
+<codeblock>#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+import unified_logging
+from unified_logging import *
+from logging_config_rsyslog_tcp import LoggingConfig
+
+logger = Logger(LoggingConfig().data)
+logger.set({'systemid':'systemid','host':'host','system':'system'})
+alarm = Alarm()
+alarm.set_alarm_mandatory_fields(AlarmTask.NOTIFY,
+                                 'alarm_name',
+                                 PerceivedSeverity.INDET,
+                                 'alarm_key',
+                                 'alarm_text',
+                                 '0',
+                                 '0')
+alarm.set_alarm_id(10000)
+alarm.set_timezone("Asia/Shanghai")
+logger.critical(alarm)
+</codeblock>
+</fig>
+<p>For alarms in fastpass mode, the generated dummy alarm can be checked by entering: </p>
+<p>
+<userinput>tail -f /var/log/calm/alma.log</userinput>
+</p>
+<p>Output similar to the following should appear:</p>
+<fig>
+<codeblock>2019-05-06 06:21:56,098 [ALMA|-|-|DefaultUDPTransportMapping_127.0.0.1/1162|INFO|c.n.c.a.a.s.SouthboundAlarmEventHandler] Handle raised Alarm : sourceProblem[10000], sourceObject[system-system/host-host].
+2019-05-06 06:21:56,179 [ALMA|-|-|getTaskExecutor-1|INFO|o.s.a.m.s.NotificationOriginatorImpl] Notification 1.3.6.1.4.1.94.7.1.3.0.5 reported with [1.3.6.1.4.1.94.7.1.4.2.1.2.0 = system-system/host-host, 1.3.6.1.4.1.94.7.1.4.2.1.1.0 = 96, 1.3.6.1.4.1.94.7.1.4.2.1.3.0 = 07:e3:05:05:16:15:38:00:2d:05:00, 1.3.6.1.4.1.94.7.1.4.2.1.4.0 = 10000, 1.3.6.1.4.1.94.7.1.4.2.1.5.0 = alarm_name, 1.3.6.1.4.1.94.7.1.4.2.1.6.0 = 0, 1.3.6.1.4.1.94.7.1.4.2.1.7.0 = , 1.3.6.1.4.1.94.7.1.4.2.1.8.0 = 0, 1.3.6.1.4.1.94.7.1.4.2.1.9.0 = 0, 1.3.6.1.4.1.94.7.1.4.2.1.10.0 = 96, 1.3.6.1.4.1.94.7.1.4.2.1.14.0 = , 1.3.6.1.4.1.94.7.1.4.2.1.15.0 = , 1.3.6.1.4.1.94.7.1.4.2.1.16.0 = , 1.3.6.1.4.1.94.7.1.4.2.1.17.0 = , 1.3.6.1.4.1.94.7.1.4.2.1.18.0 = , 1.3.6.1.4.1.94.7.1.4.2.1.19.0 = , 1.3.6.1.4.1.94.7.1.4.2.1.20.0 = ] for context
+2019-05-06 06:21:57,427 [ALMA|-|-|DefaultUDPTransportMapping_127.0.0.1/1162|INFO|c.n.c.a.a.s.SouthboundAlarmEventHandler] Handle raised Alarm : sourceProblem[10000], sourceObject[system-system/host-host].
+2019-05-06 06:21:57,498 [ALMA|-|-|getTaskExecutor-2|INFO|o.s.a.m.s.NotificationOriginatorImpl] Notification 1.3.6.1.4.1.94.7.1.3.0.5 reported with [1.3.6.1.4.1.94.7.1.4.2.1.2.0 = system-system/host-host, 1.3.6.1.4.1.94.7.1.4.2.1.1.0 = 96, 1.3.6.1.4.1.94.7.1.4.2.1.3.0 = 07:e3:05:05:16:15:38:00:2d:05:00, 1.3.6.1.4.1.94.7.1.4.2.1.4.0 = 10000, 1.3.6.1.4.1.94.7.1.4.2.1.5.0 = alarm_name, 1.3.6.1.4.1.94.7.1.4.2.1.6.0 = 0, 1.3.6.1.4.1.94.7.1.4.2.1.7.0 = , 1.3.6.1.4.1.94.7.1.4.2.1.8.0 = 0, 1.3.6.1.4.1.94.7.1.4.2.1.9.0 = 0, 1.3.6.1.4.1.94.7.1.4.2.1.10.0 = 96, 1.3.6.1.4.1.94.7.1.4.2.1.14.0 = , 1.3.6.1.4.1.94.7.1.4.2.1.15.0 = , 1.3.6.1.4.1.94.7.1.4.2.1.16.0 = , 1.3.6.1.4.1.94.7.1.4.2.1.17.0 = , 1.3.6.1.4.1.94.7.1.4.2.1.18.0 = , 1.3.6.1.4.1.94.7.1.4.2.1.19.0 = , 1.3.6.1.4.1.94.7.1.4.2.1.20.0 = ] for context</codeblock>
+</fig>
+<p>For alarms in generic mode (for example,non-fastpass mode), the generated dummy alarm can be checked by entering: </p>
+<p>
+<userinput>tail -f /var/log/calm/alma.log</userinput>
+</p>
+<p>Output similar to the following should appear:</p>
+<fig>
+<codeblock>2019-07-19 07:18:47,215 [ALMA|-|-|DefaultUDPTransportMapping_127.0.0.1/1162|INFO|c.n.c.a.a.s.SouthboundAlarmEventHandler] Handle raised Alarm : sourceProblem[10000], sourceObject[system-system/host-host].
+2019-07-19 07:18:47,421 [ALMA|-|-|getTaskExecutor-4|INFO|o.s.a.m.s.NotificationOriginatorImpl] Notification 1.3.6.1.4.1.28458.2.78.5.6.11 reported with [1.3.6.1.4.1.28458.2.78.5.6.9.1.2.5.49.49.55.52.52 = host#system, 1.3.6.1.4.1.28458.2.78.5.6.9.1.3.5.49.49.55.52.52 = 3, 1.3.6.1.4.1.28458.2.78.5.6.9.1.4.5.49.49.55.52.52 = 1563506326, 1.3.6.1.4.1.28458.2.78.5.6.9.1.5.5.49.49.55.52.52 = 75, 1.3.6.1.4.1.28458.2.78.5.6.9.1.6.5.49.49.55.52.52 = alarm_name, 1.3.6.1.4.1.28458.2.78.5.6.9.1.7.5.49.49.55.52.52 = 3, 1.3.6.1.4.1.28458.2.78.5.6.9.1.8.5.49.49.55.52.52 = 11744, 1.3.6.1.4.1.28458.2.78.5.6.9.1.9.5.49.49.55.52.52 = , 1.3.6.1.4.1.28458.2.78.5.6.9.1.14.5.49.49.55.52.52 = , 1.3.6.1.4.1.28458.2.78.5.6.9.1.15.5.49.49.55.52.52 = , 1.3.6.1.4.1.28458.2.78.5.6.9.1.16.5.49.49.55.52.52 = , 1.3.6.1.4.1.28458.2.78.5.6.9.1.17.5.49.49.55.52.52 = , 1.3.6.1.4.1.28458.2.78.5.6.9.1.18.5.49.49.55.52.52 = , 1.3.6.1.4.1.28458.2.78.5.6.9.1.19.5.49.49.55.52.52 = , 1.3.6.1.4.1.28458.2.78.5.6.9.1.20.5.49.49.55.52.52 = system, 1.3.6.1.4.1.28458.2.78.5.6.9.1.21.5.49.49.55.52.52 = 2, 1.3.6.1.4.1.28458.2.78.5.6.9.1.22.5.49.49.55.52.52 = 0, 1.3.6.1.4.1.28458.2.78.5.6.9.1.23.5.49.49.55.52.52 = 1] for context
+2019-07-19 07:18:47,422 [ALMA|-|-|getTaskExecutor-4|INFO|o.s.a.m.s.NotificationOriginatorImpl] Sent notification with ID 11 TRAP[requestID=1647163036, errorStatus=Success(0), errorIndex=0, VBS[1.3.6.1.2.1.1.3.0 = 0:38:06.94; 1.3.6.1.6.3.1.1.4.1.0 = 1.3.6.1.4.1.28458.2.78.5.6.11; 1.3.6.1.4.1.28458.2.78.5.6.9.1.2.5.49.49.55.52.52 = host#system; 1.3.6.1.4.1.28458.2.78.5.6.9.1.3.5.49.49.55.52.52 = 3; 1.3.6.1.4.1.28458.2.78.5.6.9.1.4.5.49.49.55.52.52 = 1563506326; 1.3.6.1.4.1.28458.2.78.5.6.9.1.5.5.49.49.55.52.52 = 75; 1.3.6.1.4.1.28458.2.78.5.6.9.1.6.5.49.49.55.52.52 = alarm_name; 1.3.6.1.4.1.28458.2.78.5.6.9.1.7.5.49.49.55.52.52 = 3; 1.3.6.1.4.1.28458.2.78.5.6.9.1.8.5.49.49.55.52.52 = 11744; 1.3.6.1.4.1.28458.2.78.5.6.9.1.9.5.49.49.55.52.52 = ; 1.3.6.1.4.1.28458.2.78.5.6.9.1.14.5.49.49.55.52.52 = ; 1.3.6.1.4.1.28458.2.78.5.6.9.1.15.5.49.49.55.52.52 = ; 1.3.6.1.4.1.28458.2.78.5.6.9.1.16.5.49.49.55.52.52 = ; 1.3.6.1.4.1.28458.2.78.5.6.9.1.17.5.49.49.55.52.52 = ; 1.3.6.1.4.1.28458.2.78.5.6.9.1.18.5.49.49.55.52.52 = ; 1.3.6.1.4.1.28458.2.78.5.6.9.1.19.5.49.49.55.52.52 = ; 1.3.6.1.4.1.28458.2.78.5.6.9.1.20.5.49.49.55.52.52 = system; 1.3.6.1.4.1.28458.2.78.5.6.9.1.21.5.49.49.55.52.52 = 2; 1.3.6.1.4.1.28458.2.78.5.6.9.1.22.5.49.49.55.52.52 = 0; 1.3.6.1.4.1.28458.2.78.5.6.9.1.23.5.49.49.55.52.52 = 1]] to CommunityTarget[address=10.99.9.9/162,version=1,timeout=5000,retries=0,securityLevel=1,securityModel=1,securityName=public,preferredTransports=null]</codeblock>
+</fig>
+</section>
+    <section id="changparam"><title>Changing the parameters in the dummy alarm</title>
+<p>You can change the parameters in the default script if you absolutely need different parameters. The AlarmName, severity, AlarmEventType, ProbableCause, and AlarmNumber parameters in the default script are configurable into the script. For example, the following shows the same script with parameters that differ from the default script:</p>
+<fig>
+<codeblock>#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import unified_logging
+from unified_logging import *
+from logging_config_rsyslog_tcp import LoggingConfig
+
+logger = Logger(LoggingConfig().data)
+logger.set({'systemid':'systemid','host':'host','system':'system'})
+alarm = Alarm()
+alarm.set_alarm_mandatory_fields(AlarmTask.NOTIFY,
+                              'NodeSysUpTimeLessThreshold',
+                                 PerceivedSeverity.CRIT,
+                                'alarm_key',
+                                 'alarm_text',
+                                 '11',            
+                                 '351')
+alarm.set_alarm_id(3001215)
+alarm.set_timezone("Asia/Shanghai")
+logger.critical(alarm)</codeblock>
+</fig>
+<p>The following is returned (tail -f /var/log/calm/alma.log) from the script above with the changed values:</p>
+<fig>
+<codeblock>2019-05-06 07:13:40,871 [ALMA|-|-|DefaultUDPTransportMapping_127.0.0.1/1162|INFO|c.n.c.a.a.s.SouthboundAlarmEventHandler] Handle raised Alarm : sourceProblem[3001215], sourceObject[system-system/host-host].
+2019-05-06 07:13:40,935 [ALMA|-|-|getTaskExecutor-5|INFO|o.s.a.m.s.NotificationOriginatorImpl] Notification 1.3.6.1.4.1.94.7.1.3.0.5 reported with [1.3.6.1.4.1.94.7.1.4.2.1.2.0 = system-system/host-host, 1.3.6.1.4.1.94.7.1.4.2.1.1.0 = 98, 1.3.6.1.4.1.94.7.1.4.2.1.3.0 = 07:e3:05:05:17:0d:28:08:2d:05:00, 1.3.6.1.4.1.94.7.1.4.2.1.4.0 = 3001215, 1.3.6.1.4.1.94.7.1.4.2.1.5.0 = NodeSysUpTimeLessThreshold, 1.3.6.1.4.1.94.7.1.4.2.1.6.0 = 1, 1.3.6.1.4.1.94.7.1.4.2.1.7.0 = , 1.3.6.1.4.1.94.7.1.4.2.1.8.0 = 351, 1.3.6.1.4.1.94.7.1.4.2.1.9.0 = 11, 1.3.6.1.4.1.94.7.1.4.2.1.10.0 = 98, 1.3.6.1.4.1.94.7.1.4.2.1.14.0 = , 1.3.6.1.4.1.94.7.1.4.2.1.15.0 = , 1.3.6.1.4.1.94.7.1.4.2.1.16.0 = , 1.3.6.1.4.1.94.7.1.4.2.1.17.0 = , 1.3.6.1.4.1.94.7.1.4.2.1.18.0 = , 1.3.6.1.4.1.94.7.1.4.2.1.19.0 = , 1.3.6.1.4.1.94.7.1.4.2.1.20.0 = ] for context
+2019-05-06 07:13:41,853 [ALMA|-|-|DefaultUDPTransportMapping_127.0.0.1/1162|INFO|c.n.c.a.a.s.SouthboundAlarmEventHandler] Handle raised Alarm : sourceProblem[3001215], sourceObject[system-system/host-host].
+2019-05-06 07:13:41,907 [ALMA|-|-|getTaskExecutor-1|INFO|o.s.a.m.s.NotificationOriginatorImpl] Notification </codeblock>
+</fig>
+</section>
+    <section id="checkalarm"><title>Checking the raised alarms on OAME</title>
+<p>Use the following command to get all alarms from CALM:</p>
+<p>
+<userinput>curl -X GET http://127.0.0.1:8182/api/alma/alarms | python -m json.tool</userinput>
+</p>
+<p>Output similar to the following should appear:</p>
+<fig>
+<codeblock>{
+    "@type": "alma_model_alarm",
+    "alarmCode": "UNIFIED_LOGGING_ALARM_EVENT",
+    "augmentations": [],
+    "augmentations_count": 0,
+    "createdAt": "2019-05-07T21:58:36.103-04:00",
+    "enterprise": "",
+    "id": "98",
+    "lastSourceEventTime": "2019-05-07T21:58:36.103-04:00",
+    "links": [
+            {
+       "@href": "/api/alma/alarms/197/augmentations/pageFiltered",
+       "@method": "get",
+       "@rel": "pagefilteredaugmentations"
+       },
+       {
+       "@href": "/api/alma/alarms/acknowledgeall",
+       "@method": "post",
+       "@rel": "acknowledgeall"
+       },
+       {
+       "@href": "/api/alma/alarms/197",
+       "@method": "get",
+       "@rel": "self"
+       },
+       {
+       "@href": "/api/alma/alarms/197",
+       "@method": "put",
+       "@rel": "update"
+       },
+       {
+       "@href": "/api/alma/alarms/197/acknowledge",
+       "@method": "post",
+       "@rel": "acknowledge"
+       },
+       {
+       "@href": "/api/alma/alarms/page",
+       "@method": "get",
+       "@rel": "page"
+       },
+       {
+       "@href": "/api/alma/alarms/197/augmentations/page",
+       "@method": "get",
+       "@rel": "pageaugmentations"
+       },
+       {
+       "@href": "/api/alma/alarms/197/meta",
+       "@method": "get",
+       "@rel": "listmeta"
+       },
+       {
+       "@href": "/api/alma/alarms/197/augmentations",
+       "@method": "get",
+       "@rel": "listaugmentations"
+       },
+       {
+       "@href": "/api/alma/alarms/197/unacknowledge",
+       "@method": "post",
+       "@rel": "unacknowledge"
+       },
+       {
+       "@href": "/api/alma/alarms/pageFiltered",
+       "@method": "get",
+       "@rel": "pageFiltered"
+       },
+       {
+       "@href": "/api/alma/alarms/",
+       "@method": "get",
+       "@rel": "list"
+       },
+       {
+       "@href": "/api/alma/alarms/197/clear",
+       "@method": "post",
+       "@rel": "clear"
+       }
+       ],
+   "meta": [
+          {
+               "key": "urn:alarm:translated:sourceAdapter",
+                "value": "Unified Logging Alarm"
+          },
+          {
+                "key": "urn:alarm:translated:sourceObject",
+                "value": "system-system/host-sps-ig-oame-0"
+           },
+           {
+                "key": "urn:alarm:translated:category",
+                "value": "Harmonized Alarm"
+           },
+           {
+                "key": "urn:alarm:translated:text",
+                "value": "NodeSysUpTimeLessThreshold"
+           }
+        ],
+        "mocs": "",
+        "noiEventType": "11",
+        "noiProbableCause": "351",
+        "severity": "CRITICAL",
+        "sourceAdapter": "SNMP_SOUTHBOUND_ADAPTER",
+        "sourceObject": "system-system/host-sps-ig-oame-0",
+        "sourceProblem": "3001215",
+        "text": "NodeSysUpTimeLessThreshold",
+        "toBeCleared": true
+    }
+]</codeblock>
+</fig>
+</section>
+    <section id="clearalarm"><title>Clearing the raised alarms on OAME</title>
+<p>From the command above:</p>
+<p>
+<userinput>curl -X GET http://127.0.0.1:8182/api/alma/alarms | python -m json.tool</userinput> search for the alarm that needs to be cleared. Copy the alarm-Id from the output of the above command. The alarm-id is in the “id” field of the GET command output. </p>
+<p>Execute the following command with the copied alarm-Id to clear the alarm.</p>
+<p>
+<userinput>curl -X POST http://127.0.0.1:8182/api/alma/alarms/98/clear</userinput>
+</p>
+</section>
+    <section id="snmpservice"><title>Checking the snmp service status</title>
+<p>Enter the following command:</p>
+<p>
+<userinput>systemctl status calm-alma</userinput>
+</p>
+<p>Output similar to the following should appear:</p>
+<note>In the below output, “Active: active (running)” means service is in running state. For any
+                other status please contact Nokia Support.</note>
+<fig>
+<codeblock>calm-alma.service - CALM alarm-manager service
+   Loaded: loaded (/usr/lib/systemd/system/calm-alma.service; disabled; vendor preset: disabled)
+   Active: active (running) since Mon 2019-05-06 06:02:34 EDT; 18h ago
+Main PID: 20160 (java)
+   CGroup: /system.slice/calm-alma.service
+           └[boxh  ]20160 java -Dhint=alma -Dmq=none -Djava.security.egd=file:/dev/./urandom -Dalma.hostUUID=6b948bfa-718a-4ad1-b6c4-29183ac9e2d7 -Dlogback.con...</codeblock>
+</fig>
+</section>
+</conbody></concept>

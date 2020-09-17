@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9YZ-09018-UG00-PCZZA-d1e7034">
+<title>TCP and SCTP for Diameter</title>
+<conbody>
+<section>
+<title>Overview</title>
+<p>This section describes two Diameter nodes sharing a direct TCP or SCTP transport connection,
+                                                  which are commonly called Diameter peers. The NCC
+                                                  and Diameter support both TCP and SCTP as a
+                                                  transport layer protocol for Diameter peers. The
+                                                  base Diameter protocol is run on port 3868 for
+                                                  both TCP and SCTP. See RFC 6733 (Diameter) and RFC
+                                                  4960 (SCTP) for more information.</p>
+</section>
+<section>
+<title>TCP</title>
+<p>Transmission Control Protocol (TCP) provides a communication service at an intermediate level
+                                                  between the NCC and the Internet Protocol (IP).
+                                                  Data transmission in TCP is byte-stream oriented
+                                                  such that the data is transported as a consecutive
+                                                  stream of bytes between two endpoints.</p>
+<p>The following figure shows a typical TCP message exchange where synchronization and
+                acknowledgment messages are exchanged between communicating hosts. The TCP
+                handshaking mechanism is designed so that two computers attempting to communicate
+                can negotiate the parameters of the network TCP socket connection before
+                transmitting data. TCP knows whether the network TCP socket connection is opening,
+                synchronizing, or established using the SYN and ACK messages when establishing a
+                network TCP socket connection.</p>
+<fig>
+<title>TCP flow</title>
+<!--MMO resource relative URI: ../Graphics/tcpflow_default.gif-->
+<image href="../images/tcpflow_default.gif"/>
+</fig>
+<p>A single TCP connection is identified by a combination of IP addresses and virtual
+                port numbers used by both ends. IP handles the actual delivery of the data, but TCP
+                keeps track of the individual units of data segments that a message is divided into
+                for efficient routing through the network. During communication, additional numbers
+                are used to keep track of the order or sequence in which the data segments are
+                transmitted. The sequence number indicates what order the segments of data should be
+                reassembled. Finally, a maximum transmission size is constantly being negotiated via
+                a fall-back mechanism called windowing. The combination of port numbers, sequence
+                numbers and window sizes constitutes a connection.</p>
+<p>TCP guarantees that all bytes received will be identical with bytes sent and in the
+                correct order. Positive acknowledgment with retransmission is used to guarantee
+                reliability of packet transfers requiring the receiver to respond with an
+                acknowledgment message as it receives the data. The sender keeps a record of each
+                packet it sends. The sender also maintains a timer from when the packet was sent,
+                and retransmits a packet if the timer expires before the message has been
+                acknowledged. The timer is needed in case a packet gets lost or corrupted.</p>
+<p>See the Installation and Upgrade Guide and Diameter Configuration Guide for more information.</p>
+</section>
+<section>
+<title>SCTP</title>
+<p>Stream Control Transmission Protocol (SCTP) is a reliable data transfer protocol in the transport
+                                                  layer that operates over IP, like TCP, to
+                                                  transport telecommunication signaling messages
+                                                  between peers. SCTP allows for data to be sent
+                                                  reliably as an ordered or unordered transmission
+                                                  type. The NCC uses the unordered (default)
+                                                  transmission type for SCTP multi-homing. Data
+                                                  transmission using SCTP is message-oriented for
+                                                  which SCTP makes an explicit demarcation of user
+                                                  message boundaries thereby delivering each message
+                                                  as a complete read. The following figure shows a
+                                                  typical SCTP message exchange where
+                                                  synchronization and acknowledgment messages are
+                                                  exchanged between communicating hosts. </p>
+<fig>
+<title>SCTP flow</title>
+<!--MMO resource relative URI: ../Graphics/sctpflow_default.png-->
+<image href="../images/sctpflow_default.png"/>
+</fig>
+<p>The NCC supports SCTP multi-homing as the ability of an SCTP association to support multiple IP
+                                                  addresses or interfaces at a given end point. A
+                                                  connection between two endpoints in the context of
+                                                  SCTP is called an “association”. An SCTP endpoint
+                                                  is represented to its peers as a combination of a
+                                                  set of eligible destination transport addresses to
+                                                  which SCTP packets can be sent. The support of
+                                                  more than one IP address allows data to be
+                                                  re-routed to alternative destination IP addresses
+                                                  during network failure conditions.</p>
+<p>SCTP multi-homing supports creating groups of local IP addresses for an SCTP connection on the
+                                                  NCC. This enables the NCC to share only a specific
+                                                  subset of local IP addresses with a given peer.
+                                                  Each peer is associated with an address group so
+                                                  that when a Diameter connection is established,
+                                                  only IP addresses defined in that address group
+                                                  are advertised to the peer.</p>
+<p>The SCTP IP addresses are configured prior to installation in the VNF_conf.json file
+                by the vnfeditor and in the VNFD_EXTENSIONS.json file. These IP addresses are
+                advertised by the local server as IPv4/IPv6 Address parameter AVPs in the SCTP
+                INIT/INIT-ACK message generated during the SCTP association establishment, and will
+                be used by the remote SCTP end point to transmit data over the SCTP association.
+                These IP addresses are also advertised by the local server in Diameter
+                Capabilities-Exchange Request/Answer (CER/CEA) messages in the Host-IP-Address AVP.
+                You can configure an SCTP Diameter group with a single SCTP IP address or you can
+                configure an SCTP Diameter group with two or more IP addresses for SCTP
+                multi-homing.</p>
+<p>See the Installation and Upgrade Guide and Diameter Configuration Guide for more information.</p>
+<sectiondiv>
+<p><b>Tuning linux kernel parameters for SCTP</b></p>
+<p>SCTP is ready for deployment after instantiation. You have already set up your
+                    local address groups at installation and you can add Diameter peers with
+                    multiple IP address connections through the SM GUI. The following SCTP linux
+                    kernel parameters are set with default values:</p>
+<ul>
+<li>
+<p>net.sctp.association_max_retrans – the default value is 10</p>
+</li>
+<li>
+<p>net.sctp.hb_interval - the default value is 1000ms </p>
+</li>
+<li>
+<p>net.sctp.pf_retrans - the default value is 0 </p>
+</li>
+<li>
+<p>net.sctp.path_max_retrans - the default value is 4 </p>
+</li>
+<li>
+<p>net.sctp.addr_scope_policy - the default value is 3</p>
+</li>
+</ul>
+<p>These linux kernel parameters related to SCTP failovers can be tuned using the “configure-sctp
+                                                  tool. See the “configure-sctp” tool in the
+                                                  <i>Tools</i> chapter of the <i>NCC Operation,
+                                                  Administration, and Maintenance Guide</i>.</p>
+</sectiondiv>
+</section>
+</conbody>
+</concept>

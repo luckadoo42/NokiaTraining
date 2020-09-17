@@ -1,0 +1,441 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-events"><title>Events associated with lifecycles</title><conbody>
+<section><title>Event definition</title>
+<p>An event signifies that something happens on an entity. An event may signify a success or a failure. As a result of an event, an entity may or may not transition from one state to another. Events provide an option for you to configure transitions and all the actions that you choose to associate with these transitions.</p>
+<p>For example, when a call comes in, the system analyzes the call and launches a Device Attachment
+                Event for the calling device. If <i>Device Attachment Event</i> is configured in the
+                device lifecycle as a transition, the event is handled and the transition is
+                executed as defined by you.</p>
+<p>The lifecycle framework has built-in and user-defined. The user-defined events are also known as custom events. The built-in events are defined in the system and related to the following common scenarios:</p><ul>
+<li>
+<p>Attaching a device</p>
+</li>
+<li>
+<p>Charging a fee</p>
+</li>
+<li>
+<p>Adding a subscription</p>
+</li>
+<li>
+<p>Renewing a subscription</p>
+</li>
+<li>
+<p>Resetting a subscription</p>
+</li>
+<li>
+<p>Deleting a subscription</p>
+</li>
+<li>
+<p>Starting a PERIOD lifecycle</p>
+</li>
+<li>
+<p>Cancelling a PERIOD lifecycle</p>
+</li>
+<li>
+<p>Deleting a lifecycle entity</p>
+</li>
+</ul>
+<p>The built-in events allow you to configure transitions for the above common scenarios. If you choose to configure a transition based on a built-in event, the name of that transition must match the name of the corresponding built-in event. For example, if you choose to configure a transition based on Device Attachment Event, the name of that transition must be Device Attachment Event. In such cases, event names serve as transition names.</p>
+<p>The transition based on built-in events are controlled by certain conditions. If these conditions are configured and evaluate to true, only then the transition is executed, else it is bypassed.</p>
+<p>A custom event is created when you specify an event for a transition and give this event a name that does not match any of the built-in events. For the transitions based on custom events, conditions parameter configuration is irrelevant.</p>
+<p>The events associated with a lifecycle can be triggered by and using the following:</p><ul>
+<li>
+<p>predefined trigger point in the system (built-in)</p>
+</li>
+<li>
+<p>lifecycle web service ‘trigger’ operation (built-in and custom)</p>
+</li>
+<li>
+<p>lifecycle action with predefined success and failure events (built-in)</p>
+</li>
+<li>
+<p>Trigger Event Action (built-in and custom)</p>
+</li>
+<li>
+<p>timers (built-in and custom)</p>
+</li>
+</ul>
+<p>Most of built-in events are triggered by lifecycle actions. For example, Charge Fee Action triggers Charge Fee Action Success Event or Charge Fee Action Failure Event, depending on the result of its execution. Some built-in events are triggered when something occurs in the system. For example, Device Attachment Event is triggered by the call control module when a device attaches successfully.</p>
+<p>Custom events are commonly used in transitions with timers. When a timer executes, the transition is triggered. An example of a timed transition is the looping transition with event Delete and a timer set to 24 hours defined in the majority of ENTITY default lifecycles. </p>
+</section>
+<section><title>Lifecycle built-in events</title>
+<p>Certain built-in events consist of <i>Accept Broadcast Message</i> as one of the input parameters. This input parameter defines the condition for execution of the transition. If sender and destination entities are different and flag is configured, only then the transition is executed. However, if the sender and destination entities are same, then this condition check is bypassed and the transition is always executed. </p>
+<p>The following table lists and describes the built-in events associated with lifecycles. Note that the parameters in the <uicontrol>bold</uicontrol> font are visible on SM GUI and others are internal to the logic. Operators cannot configure these internal parameters for corresponding events. When these events are generated internally by linked actions, the lifecycle logic sets and passes these parameters to the events. </p>
+<table pgwide="1" colsep="1" rowsep="1">
+                <title>Lifecycle built-in events</title>
+                <tgroup cols="3">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <colspec colname="COLSPEC0"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Event name</p>
+                        </entry>
+                            <entry>
+                                <p>Description</p>
+                         </entry>
+                            <entry>
+                                <p>Parameters</p>
+                         </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>Account Commit Success Event</entry>
+                            <entry>This event is generated when the BOU activation fee reserved
+                                from Account is successfully committed.</entry>
+                            <entry>
+                                <uicontrol>Accept Broadcast Message</uicontrol> (defaults to false)
+                         </entry>
+                        </row>
+                        <row>
+                            <entry>Account Recharged Event</entry>
+                            <entry>
+                                <p>This event is generated when an account is credited. Account
+                                    credit can occur in the following ways:</p>
+                                <ul>
+                                    <li>
+                                        <p>Adjusting account balance with a positive value.</p>
+                                    </li>
+                                    <li>
+                                        <p>Setting the account balance to a value greater than
+                                            current account balance</p>
+                                    </li>
+                                    <li>
+                                        <p>If the account balance is reset to a value greater than
+                                            the current value</p>
+                                    </li>
+                                </ul>
+                                <p>
+                                    <uicontrol>Note:</uicontrol> This event is applicable for
+                                    Account and Subscription lifecycles only.</p>
+                         </entry>
+                            <entry>
+                                <uicontrol>Accept Broadcast Message</uicontrol> (defaults to false)
+                         </entry>
+                        </row>
+                        <row>
+                            <entry>Account Reservation Failure Event</entry>
+                            <entry>This event is generated when reservation of BOU activation fee
+                                from Account fails mainly due to insufficient balance in Account to
+                                pay for BOU activation fee.</entry>
+                            <entry>
+                                <uicontrol>Accept Broadcast Message</uicontrol> (defaults to false)
+                         </entry>
+                        </row>
+                        <row>
+                            <entry>Account Reservation Success Event</entry>
+                            <entry>This event is generated when the BOU activation fee is
+                                successfully reserved from Account.</entry>
+                            <entry>
+                                <uicontrol>Accept Broadcast Message</uicontrol> (defaults to false)
+                         </entry>
+                        </row>
+                        <row>
+                            <entry>Add Subscription Action Failure Event</entry>
+                            <entry>This event is generated by <i>Add Subscription Action</i> to
+                                signal failure. This event is only sent to the lifecycle that
+                                executed <i>Add Subscription Action</i>.</entry>
+                            <entry>
+                                <p>This event contains the following parameters:</p>
+                                <ul>
+                                    <li>
+                                        <p>
+                                            <uicontrol>Bundle ID</uicontrol>
+                                        </p>
+                                    </li>
+                                    <li>
+                                        <p>Fee Override (if any)</p>
+                                    </li>
+                                    <li>
+                                        <p>Reason for rejection (for example, not enough funds or
+                                            account barred or Device or Group Barred/Final)</p>
+                                    </li>
+                                </ul>
+                         </entry>
+                        </row>
+                        <row>
+                            <entry>Add Subscription Action Success Event</entry>
+                            <entry>This event is generated by <i>Add Subscription Action</i> to
+                                signal success. This event is only sent to the lifecycle that
+                                executed <i>Add Subscription Action</i>.</entry>
+                            <entry>
+                                <p>This event contains the following parameters:</p>
+                                <ul>
+                                    <li>
+                                        <p>Subscription ID</p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <uicontrol>Bundle ID</uicontrol>
+                                        </p>
+                                    </li>
+                                    <li>
+                                        <p>Fee Override (if any)</p>
+                                    </li>
+                                </ul>
+                         </entry>
+                        </row>
+                        <row>
+                            <entry>Cancel Period Event</entry>
+                            <entry>The event to cancel a PERIOD lifecycle.</entry>
+                            <entry>No parameters</entry>
+                        </row>
+                        <row>
+                            <entry>Charge Fee Action Failure Event</entry>
+                            <entry>This event occurs when an account does not have enough funds to
+                                deduct the fee specified for <i>Charge Fee Action</i>. This event
+                                might trigger shifting back to the previous state or sending a
+                                notification.</entry>
+                            <entry>
+                                <p>
+                                    <uicontrol>Accept Broadcast Message</uicontrol>
+                                </p>
+                                <p>(defaults to false)</p>
+                         </entry>
+                        </row>
+                        <row>
+                            <entry>Charge Fee Action Success Event</entry>
+                            <entry>This event occurs when Charge Fee Action successfully deducts
+                                the specified fee from an account.</entry>
+                            <entry>
+                                <p>
+                                    <uicontrol>Accept Broadcast Message</uicontrol>
+                                </p>
+                                <p>(defaults to false)</p>
+                         </entry>
+                        </row>
+                        <row>
+                            <entry>DeleteExpiredEntitySuccessEvent</entry>
+                            <entry>This event occurs when action <i>DeleteExpiredEntityAction</i>
+                                successfully deletes the expired entities.</entry>
+                            <entry>
+                                <p>
+                                    <uicontrol>Accept Broadcast Message</uicontrol>
+                                </p>
+                                <p>(defaults to false)</p>
+                         </entry>
+                        </row>
+                        <row>
+                            <entry>Device Attachment Event</entry>
+                            <entry>
+                                <p>This event occurs when NCC receives a CCR-I, CCR-E, or
+                                    SLR-Initial request for a device. </p>
+                         </entry>
+                            <entry>No parameters</entry>
+                        </row>
+                        <row>
+                            <entry>Entity Removed Event</entry>
+                            <entry>The event to indicate that an entity has moved to the final
+                                state.</entry>
+                            <entry>No parameters</entry>
+                        </row>
+                        <row>
+                            <entry>Max Renewals Reached Event</entry>
+                            <entry>This event is generated by the <i>Renew Subscription Action</i>
+                                to indicate that a subscription has reached its maximum number of
+                                renewals. This event contains the ID of that subscription.</entry>
+                            <entry>
+                                <p>This event contains the following parameters:</p>
+                                <ul>
+                                    <li>
+                                        <p>
+                                            <uicontrol>Bundle ID</uicontrol>
+                                        </p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <uicontrol>Accept Broadcast Message</uicontrol>
+                                            (defaults to false)</p>
+                                    </li>
+                                </ul>
+                         </entry>
+                        </row>
+                        <row>
+                            <entry>Not Enough Funds Event</entry>
+                            <entry>This event is generated by the <i>Renew Subscription Action</i>
+                                when subscription renewal fails because of insufficient funds in a
+                                prepaid account.</entry>
+                            <entry>
+                                <p>This event contains the following parameters:</p>
+                                <ul>
+                                    <li>
+                                        <p>
+                                            <uicontrol>List of Bundle IDs</uicontrol>
+                                        </p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <uicontrol>Accept Broadcast Message</uicontrol>
+                                            (defaults to false)</p>
+                                    </li>
+                                </ul>
+                         </entry>
+                        </row>
+                        <row>
+                            <entry>Reset Account Action Failure Event</entry>
+                            <entry>This event is generated when an account reset fails due to
+                                overage limit greater than reset value.</entry>
+                            <entry>
+                                <uicontrol>Accept Broadcast Message</uicontrol> (defaults to false)
+                         </entry>
+                        </row>
+                        <row>
+                            <entry>Reset Account Action Success Event</entry>
+                            <entry>This event occurs when an account is successfully reset.</entry>
+                            <entry>
+                                <uicontrol>Accept Broadcast Message</uicontrol> (defaults to false)
+                         </entry>
+                        </row>
+                        <row>
+                            <entry>Start Cycle Event</entry>
+                            <entry>The event to start a PERIOD lifecycle.</entry>
+                            <entry>No parameters</entry>
+                        </row>
+                        <row>
+                            <entry>Subscription Added Event</entry>
+                            <entry>
+                                <p>This event occurs as a result of the following:</p>
+                                <ul>
+                                    <li>
+                                        <p>A new subscription is added using service manager.</p>
+                                    </li>
+                                    <li>
+                                        <p>Add <i>Subscription Action</i> executes in a subscription
+                                            lifecycle.</p>
+                                    </li>
+                                    <li>
+                                        <p>Add <i>Subscription Action</i> executes in an account
+                                            lifecycle.</p>
+                                    </li>
+                                </ul>
+                                <p>Depending on the origin of <i>Subscription Added Event</i>, this
+                                    event occurs as follows:</p>
+                                <ul>
+                                    <li>
+                                        <p>When a new subscription is added through Service Manager,
+                                            this event is sent to the account, devices and groups
+                                            linked to the new subscription.</p>
+                                    </li>
+                                    <li>
+                                        <p>When <i>Add Subscription Action</i> executes in a
+                                            subscription lifecycle, this event is sent to the
+                                            account, devices and groups linked to the new
+                                            subscription.</p>
+                                    </li>
+                                    <li>
+                                        <p>When <i>Add Subscription Action</i> executes in an
+                                            account lifecycle, this event is sent to the devices and
+                                            groups linked to the new subscription.</p>
+                                    </li>
+                                </ul>
+                         </entry>
+                            <entry>
+                                <p>Subscription Added Event contains the following parameters:</p>
+                                <ul>
+                                    <li>
+                                        <p>Subscription ID</p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <uicontrol>Bundle ID</uicontrol>
+                                        </p>
+                                    </li>
+                                    <li>
+                                        <p>Fee Override</p>
+                                    </li>
+                                </ul>
+                         </entry>
+                        </row>
+                        <row>
+                            <entry>Subscription Deleted Event</entry>
+                            <entry>This event is generated by the <i>Delete Entity Action</i> in
+                                case of Subscription Entity only to the linked account. It indicates
+                                that this particular subscription has been deleted
+                                successfully.</entry>
+                            <entry>
+                                <p>This event contains the following parameters:</p>
+                                <ul>
+                                    <li>
+                                        <p>
+                                            <uicontrol>Bundle ID</uicontrol>
+                                        </p>
+                                    </li>
+                                    <li>
+                                        <p>Subscription Instance</p>
+                                    </li>
+                                </ul>
+                         </entry>
+                        </row>
+                        <row>
+                            <entry>Subscription Empty Event</entry>
+                            <entry>This event is generated by the <i>Empty Subscription Action</i>
+                                to indicate that the subscription has been successfully
+                                emptied.</entry>
+                            <entry>
+                                <p>This event contains the following parameters:</p>
+                                <ul>
+                                    <li>
+                                        <p>
+                                            <uicontrol>Bundle ID</uicontrol>
+                                        </p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <uicontrol>Accept Broadcast Message</uicontrol>
+                                            (defaults to false)</p>
+                                    </li>
+                                </ul>
+                         </entry>
+                        </row>
+                        <row>
+                            <entry>Subscription Renewed Event</entry>
+                            <entry>This event is generated by the <i>Renew Subscription Action</i>
+                                to signal successful renewal. This event contains a list of
+                                subscription IDs that have been renewed.</entry>
+                            <entry>
+                                <p>This event contains the following parameters:</p>
+                                <ul>
+                                    <li>
+                                        <p>List of Subscription IDs that have been renewed</p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <uicontrol>List of Bundle IDs</uicontrol>
+                                        </p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <uicontrol>Accept Broadcast Message</uicontrol>
+                                            (defaults to false)</p>
+                                    </li>
+                                </ul>
+                         </entry>
+                        </row>
+                        <row>
+                            <entry>Subscription Reset Event</entry>
+                            <entry>This event is generated by the <i>Reset Subscription Action</i>
+                                to signal that a subscription has been successfully reset.</entry>
+                            <entry>
+                                <p>This event contains the following parameters:</p>
+                                <ul>
+                                    <li>
+                                        <p>
+                                            <uicontrol>Bundle ID</uicontrol>
+                                        </p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <uicontrol>Accept Broadcast Message</uicontrol>
+                                            (defaults to false)</p>
+                                    </li>
+                                </ul>
+                        </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+</section>
+</conbody></concept>

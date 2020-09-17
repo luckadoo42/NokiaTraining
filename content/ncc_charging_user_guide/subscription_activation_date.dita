@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e193419"><title>Subscription activation date </title><conbody>
+<section><title>Overview</title>
+<p>This feature allows you to send the start date of the bundle subscription in the provisioning request so that the subscription can be activated at a future date. Operators can create a subscription for device or group with subscription activation date in future. Subscription is available for use once the activation date is reached.</p>
+<p>For example, a user purchases an offer on November 20, 2018 but it is not activated for charging purpose until December 1, 2018 at 0:00.</p>
+</section>
+<section><title>Configuring a subscription activation date</title>
+<p>An optional parameter <uicontrol>activationTime</uicontrol> in subscription is available in the SM GUI, REST API, or SOAP API of the subscription request. The <uicontrol>activationTime</uicontrol> parameter includes both date and time information.</p><ul>
+<li>
+<p>If the <uicontrol>activationTime</uicontrol> parameter is in past, then a subscription or bundle having a periodic lifecycle attached to a device or group is added depending on the value of the system parameter flag named as <uicontrol>Max Past LifeCycle Trigger Count</uicontrol>. For more information on this flag, refer to <!--xref URI: ../Topics/t-Application_preferences.xml#system_pref--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-system_pref"/> section.</p>
+</li>
+<li>
+<p>If the <uicontrol>activationTime</uicontrol> parameter is configured, then the activation of subscription is considered accordingly.</p>
+</li>
+</ul>
+<note>
+<p>Consider the following assumptions:</p><ul>
+<li>
+<p>The subscription end time is calculated based on the timezone configured in an account.</p>
+</li>
+<li>
+<p>The creation time is set to the current time, that is <i>Now</i> even when the bundle activation date or bundle activation time is in past.</p>
+</li>
+<li>
+<p>No validity time is considered while provisioning.</p>
+</li>
+<li>
+<p>The entity lifecycle (ELC) changes as per the past activation date is not yet supported. As defined, the entity lifecycle is always driven by events and periodic lifecycle is always driven by passage of time, which means for periodic lifecycle, we have a fixed periodic length which does not change for many lifecycles. There is no fixed length for entity lifecycle. Therefore, the ELC validity time is always calculated from current time, that is <i>Now</i>.</p>
+</li>
+<li>
+<p>Prorate is not supported for past activation time</p>
+</li>
+</ul>
+</note>
+<sectiondiv>
+<p><b>Steps</b></p>
+<p>Following are the steps to configure the subscription activation date:</p><ol>
+<li>
+<p>Configure a lifecycle transition with a timer event with base field as <uicontrol>activationTime</uicontrol> that makes a transition from barred state to active state. If you have entered this date in the subscription request, a timer based event is created in TEM with the time as mentioned in <uicontrol>activationTime</uicontrol>. When the future date arrives, the subscription is moved to <varname>Active</varname> state, that is, unbarred state.</p>
+</li>
+<li>
+<p>In addition to the preceding configuration, the bundle lifecycle must also have a transition. That is, after subscription creation, the subscription entity moves to a barred state so that it is not used before its <varname>Active</varname> state is reached.</p>
+</li>
+</ol>
+<p>Prorate of subscription is considered when it is activated on the date provided in <uicontrol>activationTime</uicontrol>.</p>
+</sectiondiv>
+</section>
+<section><title>Configuring a subscription periodic lifecycle</title>
+<p>Configure the following data:</p><ol>
+<li>
+<p>Configure a subscription periodic lifecycle with state --&gt; <varname>Begin</varname> (<userinput>Initial Flag</userinput> checked) with a <userinput>Start Cycle Event</userinput> or timer of zero seconds. </p>
+</li>
+<li>
+<p>The moment the <userinput>Start Cycle Event</userinput> comes from entity lifecycle of subscription or zero seconds expires, periodic lifecycle of subscription moves to a new state <varname>PreActive</varname> with <varname>Barring</varname> state checked. This makes sure that the subscription is not used when created.</p>
+</li>
+<li>
+<p>The <userinput>PreActive</userinput> state has a timer configured whose <uicontrol>Base Date Field</uicontrol> is set to <varname>Activation Time</varname>. Since this is a reference to the <uicontrol>activationTime</uicontrol>, once this date is reached, the periodic lifecycle of subscription moves to a new state <varname>Active</varname> with the <i>Barring</i> flag unchecked. The subscription can be used and further configuration such as <userinput>Repeat Cycle Event</userinput> can be done as needed.</p>
+</li>
+</ol>
+</section>
+</conbody></concept>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="topology_parameters">
+    <title>Topology data parameters</title>
+    <conbody>
+        <p>This section describes how to configure a CNF's <codeph>topologydata</codeph> parameters
+            in the SPS Helm chart. The configuration of these parameters depend on the following: </p>
+        <p>
+            <ul id="ul_iym_gc2_vlb">
+                <li>Deployment model used: Independent ME pairs, Networked ME pairs, or Integrated
+                    SM and ME (IG).</li>
+                <li>Number of CNFs in the deployment.</li>
+                <li>Whether or not geo-redundancy is used.</li>
+            </ul>
+        </p>
+        <p>The following applies to the configuration of the <codeph>topologydata</codeph>
+            parameters:</p>
+        <ul id="ul_cg5_hy4_bmb">
+            <li>The values used for <codeph>xdrproxy.externalIPs</codeph> and
+                    <codeph>xdrproxy.externalPort</codeph> are always equal to
+                    <codeph>topology.spssite.id.xdr.externalips</codeph> and
+                    <codeph>topology.spssite.id.xdr.externalport.</codeph></li>
+            <li>The <codeph>topology.spssite.id.xdr.externalips</codeph> and
+                    <codeph>topology.spssite.id.xdr.externalport</codeph> are used to configure
+                    <codeph>xdr.dc &lt;site>.node-address-port.</codeph>  in the
+                    <filepath>/opt/tpa/aerospike/etc/aerospike/aerospike.conf</filepath> file (on
+                the aerospike container/pod).</li>
+            <li>The values for xdrproxy.externalIPs and xdrproxy.externalPort are used to configure
+                the xdrproxy-service<i>(i.e., the corresponding service (load-balancer) for the
+                    xdrproxy pod’s External IPs and Port as seen via the kubectl get/describe
+                    service CLIs)</i>, however, <xref
+                    href="https://jiradc2.int.net.nokia.com/browse/SPSP3-669" format="html"
+                    scope="external">SPSP3-669</xref> tracks the plan for these parameters to be
+                removed and the site’s topology.spssite.id.xdr.externalips and
+                topology.spssite.id.xdr.externalport to be used to configure the
+                xdrproxy-service.</li>
+            <li>For one SPS site, there will always be a single <b>xdrproxy.externalPort</b> and
+                    <b>topology.spssite.id.xdr.externalport </b><u>mapped with</u> one or more
+                    <b>xdrproxy.externalIPs</b> and
+                    <b>topology.spssite.id.xdr.externalips</b><i>(this applies weather the external
+                    IPs are on the same network/subnet or separate ones)</i>.</li>
+            <li>For example, if one external IP 10.12.34.56 is used, then it will be mapped to the
+                external port 3008 (assuming that is the port value used for that SPS site). </li>
+            <li>If let’s say two external IPs 10.12.34.56 and 10.12.34.87 are used, then both will
+                be mapped to the external port 3008 (assuming that is the port value used for that
+                SPS site). </li>
+            <li>On one BCMT cluster where one SM and one ME (or two SMs or two MEs) are installed
+                each under its own separate namespace, the <b>xdrproxy.externalPort</b> and
+                    <b>topology.spssite.id.xdr.externalport</b> for each SPS site will have to be
+                different. </li>
+            <li>For example, one SPS site would use the default <b>3008</b>, while the other SPS
+                site would use <b>3009</b>.</li>
+            <li>The Router in VzW is using the ME without the <b>spspartition</b> configured under
+                the topology and the <b>matesite</b> will be used. This <u>Router ME</u> would also
+                have the xdrproxy installed, so if “1 ME + 1 SM + 1 Router” are in the same BCMT
+                cluster under different namespaces, then the SM would use <b>3008</b>, the ME would
+                use <b>3009</b>, and the Router would use <b>3010</b>.</li>
+        </ul>
+    </conbody>
+</concept>

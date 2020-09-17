@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+		<concept id="id9YZ-09018-UG00-PCZZA-d1e8183"><title>Network deployment</title><conbody>
+		    <p>A network deployment of NCC includes a pair of Service Managers (SMs) and one or more
+            pairs of Managed Elements (MEs).</p>
+        <section id="section_xsy_ws3_nlb">
+            <title>SM pair</title>
+            <p>SM operates in active/active mode and uses database cross-site replication to keep
+                data synchronized between the two SMs. SM serves as the entry point into the NCC
+                deployment for all GUI and API gateway APIs such as provisioning, mobile
+                applications interactions, and so on. When new devices/groups/accounts are
+                provisioned, and if the provisioning request does not select the home NCC ME, the SM
+                then uses a least-loaded algorithm to assign that entity to a primary ME as well as
+                a secondary ME. SM maintains a view of the location of all entities and which MEs
+                are serving as the primary/secondary ME for each. </p>
+            <p>Although SM operates in active/active mode, back-to-back related provisioning
+                transactions (for example, provisioning multiple devices in the same account) should
+                always be sent to the same SM to avoid any race conditions between those
+                transactions and the cross-site data replication.</p>
+            <p>Operators might choose to deploy an SM to be co-resident with one of the MEs in their
+                network, to share common resources and reduce overall network footprint. This does
+                not impact the deployment models described in this chapter related to geographic
+                redundancy.</p>
+        </section>
+        <section id="section_cdy_ht3_nlb">
+            <title>ME pairs</title>
+            <p>An NCC deployment includes one or more pairs of MEs in active/active mode. There is
+                only one data partition and each ME serves as primary for half of the
+                device/group/account entities with the other ME as secondary, and vice-versa. If one
+                ME fails, all its traffic is processed by the other ME in the pair. Thus, each ME
+                must be engineered to reserve 50% of its capacity for these failure scenarios.</p>
+            <p>The following picture shows this scenario.</p>
+            <fig id="fig_es4_pr5_cmb">
+                <title>One ME processing all traffic (scenario)</title>
+                <image placement="break"
+                    href="../images/cnf_overview_one-ME-processing-all-traffic.GIF" align="center"
+                    id="image_fs4_pr5_cmb" scale="30"/>
+            </fig>
+            <p>The MEs maintain mapping data of which MEs are currently the active home for
+                particular subscribers/devices. The scope of that mapping data depends on whether
+                the network has deployed Independent ME pairs or Networked ME pairs.</p>
+            <p><b>Independent ME pairs</b></p>
+            <p>In networks deploying the Independent ME pairs model, the operator’s network is
+                responsible for routing all incoming traffic to the proper pair of MEs. The ME
+                receiving the incoming message can then determine whether it is serving as the
+                current active home for the subscriber / device of that message, or whether it needs
+                to forward the message to the other ME in the pair. The index mapping tables used
+                for site routing are limited in scope to only the subscribers / devices in that
+                particular ME pair.</p>
+            <p>The following diagram shows independent ME pairs.</p>
+            <fig id="fig_bc1_llz_cmb">
+                <title>Independent ME pairs</title>
+                <image placement="break" href="../images/cnf_overview_Independent-ME-pairs.GIF"
+                    scale="25" align="center" id="image_cc1_llz_cmb"/>
+            </fig>
+            <p><b>Networked ME pairs</b></p>
+            <p>In networks deploying the Networked ME pairs model, the operator’s network can route
+                incoming messages to any of the MEs. The ME receiving the incoming message can then
+                determine whether it is serving as the current active home for the subscriber /
+                device of that message, or whether it needs to forward the message to another ME in
+                the network. In this deployment model, every ME can forward a message to any other
+                ME in the network, not limited to just the other ME in this pair. This simplifies
+                the responsibilities of the operator’s routing.</p>
+            <p>An NCC deployment can have multiple pairs of MEs. Each pair contains one data
+                partition and device/group/account data is replicated only within that particular
+                pair. Traffic failover always occurs only within that particular pair. The global
+                mapping tables on the ME contain the data for all MEs in the entire network, not
+                just for this pair. In this way, a call can land on any ME in any pair and it is
+                correctly routed to the active ME for that device. So, while the
+                device/group/account data is replicated only within the single pair of MEs, the
+                global mapping tables are N-way replicated between all MEs. With this NCC
+                architecture, there is no need for external network routers. This architecture also
+                allows devices to roam between regions and have their transactions always routed
+                back to the home NCC, regardless of which ME pair received the transaction from the
+                roaming device.</p>
+            <p>With networked ME pairs, similar to independent ME pairs, the majority of data is
+                replicated only within that particular ME pair. The difference is that with
+                networked ME pairs, the index mapping tables used for site routing to the currently
+                active home ME, is replicated amongst all MEs in the network. Thus, if there are six
+                MEs in the network, this index mapping data is six-way replicated across all the
+                MEs. An update by any one of the MEs is replicated to all others</p>
+            <p>The following figure shows networked ME pairs.</p>
+            <fig id="fig_a2t_ms5_cmb">
+                <title>Networked ME pairs</title>
+                <image placement="break" href="../images/cnf_overview_networked-ME-pairs.GIF"
+                    scale="30" align="center" id="image_b2t_ms5_cmb"/>
+            </fig>
+        </section>
+</conbody></concept>

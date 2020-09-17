@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="t_cbam_procedure">
+    <title>Modifying value of VNF package zip file </title>
+    <taskbody>
+        <context>For the NCC VNF package zip file that you are loading to the catalog contains more
+            than 1000 entries, you must modify
+                the<cmdname>"cbam/cluster/components/catalog/max_allowed_files_in_cache_per_vnf_package"</cmdname>.
+            If you do not increase the limit, the upload of the VNF package fails on CBAM. <p>The
+                following procedure must be executed only once on CBAM:</p></context>
+        <steps>
+            <step>
+                <cmd>Run the following command on CBAM VM cli:</cmd>
+                <info><cmdname>ectl set
+                        cbam/cluster/components/catalog/max_allowed_files_in_cache_per_vnf_package
+                        2000</cmdname></info>
+            </step>
+            <step>
+                <cmd>Reconfigure CBAM using the following command:</cmd>
+                <info><cmdname>ectl -u cbam:cbam set /actions/reconfigure start</cmdname></info>
+                <info>This command takes around 20 minutes to reconfigure CBAM.</info>
+            </step>
+            <step>
+                <cmd>Since step2 takes around 20 minutes to reconfigure CBAM, user can monitor
+                    reconfiguration service status using the following command:</cmd>
+                <info><cmdname>journalctl -fu cbam-reconfigure.service</cmdname></info>
+                <stepresult><b>cbam.local systemd[1]: Started
+                    cbam-reconfigure.service.</b></stepresult>
+            </step>
+        </steps>
+    </taskbody>
+</task>

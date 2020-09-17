@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="updating_lookup_tables">
+    <title>Updating lookup tables using update_db_table.sh</title>
+    <conbody>
+        <p>To update lookup tables, a script named <codeph>update_db_table.sh</codeph> may be run,
+            which imports data into existing (draft) lookup tables. The datasets to be imported must
+            be in CSV format, with a header that contains the same columns, in the same order as the
+            lookup table to which the data is imported.</p>
+        <p>When updating lookup tables with the script, it may be chosen to clean old data from the
+            table before adding new data or to only append the new data to the table. Note that if
+            new data is appended, it should made certain the data imported does not breach any
+            database unique constraints.</p>
+        <p>If any errors occur during the import, the database transaction is rolled back and the
+            data in the table is reverted to as it was before executing the script. Beside the
+            validation done at database level, the script does not validate the data itself in any
+            way. The validation takes place when the draft data is published by the Configuration
+            stream.</p>
+        <p>The script has been tested with large datasets (1 million rows), and it is performant
+            enough for such a task. The dataset may be split into multiple files and the script run
+            multiple times concurrently.</p>
+        <p>After importing the data, to publish the data to the database, follow the instructions in
+                <xref
+                href="SPS_CDR_Streams_Operation_and_Maintenance_Guide_publishing_lookup_configuration_to_database.dita#SPS_CDR_Streams_Operation_and_Maintenance_Guide_publishing_lookup_configuration_to_database"
+            /> .</p>
+        <p><b>Configuration</b></p>
+        <p>DB connection information must be stored in
+                <codeph>/opt/comptel/eventlink/.mds.rc</codeph> file,  on the processing host.</p>
+        <p><b>Usage</b></p>
+        <codeblock>update_db_table.sh -f filename -t db_table_name -d delimiter -C</codeblock>
+        <p><codeph>-f</codeph>: CSV file path </p>
+        <p><codeph>-t</codeph>: DB lookup table name </p>
+        <p><codeph>-d</codeph>: delimiter (optional field). Default=(,) </p>
+        <p><codeph>-C</codeph>: clean up the table before adding new data (optional), if not
+            included, the data is appended to the table.</p>
+        <p><b>Example:</b></p>
+        <p>Example lookup table, named LT_EXAMPLE_TABLE, with columns as follows: </p>
+        <simpletable frame="all" relcolwidth="1* 1* 1* 1* 1*" id="simpletable_ff5_1pd_ymb">
+            <strow>
+                <stentry>
+                    <p>ID (int)</p>
+                </stentry>
+                <stentry>
+                    <p>NAME (varchar)  </p>
+                </stentry>
+                <stentry>
+                    <p>VALUE (varchar)</p>
+                </stentry>
+            </strow>
+        </simpletable>
+        <p>CSV file (<codeph>LT_EXAMPLE_DATA.csv</codeph>):</p>
+        <codeblock>ID,NAME,VALUE
+1,Field1,Value1
+2,Field2,Value2
+</codeblock>
+        <p>To clean up the old data from the lookup table first and then insert new data: </p>
+        <codeblock>update_db_table.sh -f LT_EXAMPLE_DATA.csv -t LT_EXAMPLE_TABLE -C</codeblock>
+        <p>To append the lookup table with new data:</p>
+        <codeblock>update_db_table.sh -f LT_EXAMPLE_DATA.csv -t LT_EXAMPLE_TABLE</codeblock>
+    </conbody>
+</concept>

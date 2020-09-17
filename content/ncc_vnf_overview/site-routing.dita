@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9YZ-09018-UG00-PCZZA-d1e8646">
+<title>Site routing</title>
+<conbody>
+<section>
+<title>Site routing overview</title>
+<p>Site routing allows routing decisions that are made within geo-redundant NCC sites to be
+                persisted. The task of site routing is performed by the Site Routing plugin.
+                Typically, when a Diameter message is received, some part of that message is
+                extracted and stored in the NCC database for future use. The message is checked to
+                see if it has reached the appropriate site and if so, the message is processed. If
+                it has not reached the appropriate site, the message is checked to see if it can be
+                forwarded. The message can be forwarded to the primary site or the secondary site if
+                the primary site is down.</p>
+<p>For example, assume that a destination within a geo-redundant NCC site is configured in a
+                Diameter message when a GxCCR-I message is sent. Suppose that the NCC site later
+                receives an Rx message that has similar (but not identical) information. The site
+                database can then be queried for session mappings and use that information to route
+                the Rx message. If a match is found, the Rx message destination is modified, the
+                message is routed to the primary or secondary based on their state, thus ensuring
+                that the Rx message is handled by the site that is supposed to handle the Gx
+                message.</p>
+<p>When processing a message (for example, gx ccr-i), or a generated message (for
+                example, Gx rar) on the secondary site, the identity of the primary is used for the
+                Diameter message response (or generated message). </p>
+<note>
+<p>If the primary site is in service, the secondary site will not process on behalf
+                    of the primary site.</p>
+</note>
+</section>
+<section>
+<title>Site routing plugin</title>
+<p>The Site Routing plugin, is a Diameter application plugin that runs on the Diameter
+                application blades and processes Diameter application messages for the Gx, Gy, Rx
+                and Sy protocols in geo-redundant deployments. The Site Routing plugin is in the
+                request sequence chain before the PCRF and Charging plugins. The plugin name used in
+                the sequence is "Site Routing".</p>
+<p>The Site Routing plugin does work in the request chain. The general flow is:</p>
+<ul>
+<li>
+<p>Determine if a scenario exists for the Diameter application (e.g. Gx) and
+                        command (e.g. CCR-I). The Site Routing Plugin looks at the active
+                        PolicySessionMap and the ChargingSessionMap to determine if there is a
+                        matching scenario. To accept the request, the Request Type of the scenario
+                        is used to match the incoming message's application (e.g., Gx) and command
+                        type (e.g., CCR), and if applicable CCR Request Type (e.g., initial). If the
+                        scenario that matches the request is accepted, it is processed; otherwise,
+                        it will move to the next Application plugin in the in-bound sequence.</p>
+</li>
+<li>
+<p>Processing determines whether to forward the message, process locally, or
+                        reject. In processing the request, the Site Routing Plugin retrieves the
+                        scenario found in the "Accept Request" phase and looks up the primary and
+                        secondary site for the request based on the available Lookups.</p>
+</li>
+</ul>
+<p>The following table describes the Diameter and request messages that are
+                supported.</p>
+<table colsep="1" rowsep="1">
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+                                Diameter application
+                            </entry>
+<entry>
+                                Diameter request
+                            </entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry> Rx </entry>
+<entry> AAR, STR </entry>
+</row>
+<row>
+<entry> Gx </entry>
+<entry> CCR </entry>
+</row>
+<row>
+<entry> Sd </entry>
+<entry> CCR </entry>
+</row>
+<row>
+<entry> Sy </entry>
+<entry> SNR, SLR, STR </entry>
+</row>
+<row>
+<entry> Gy </entry>
+<entry> CCR </entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>Whether a request should be routed or processed locally is described in the following Site
+                processing behaviors table. When the primary and secondary sites for a request are
+                not the local site and both of those sites are in service, the NCC routes the
+                request to the primary site. If routing to the primary site fails, the NCC will try
+                to route it to the secondary site, so that when it gets there, it can be routed to
+                the primary site. If the primary site has gone out of service in the mean time, the
+                secondary site will process the request on behalf of the primary site.</p>
+<table colsep="1" pgwide="1" rowsep="1">
+<title>Site processing behaviors</title>
+<tgroup cols="5">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<colspec colname="col3"/>
+<colspec colname="col4"/>
+<colspec colname="col5"/>
+<thead>
+<row>
+<entry>
+                                Primary site
+                            </entry>
+<entry>
+                                In service
+                            </entry>
+<entry>
+                                Secondary Site
+                            </entry>
+<entry>
+                                In service
+                            </entry>
+<entry>
+                                Action taken
+                            </entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry> local </entry>
+<entry> yes </entry>
+<entry> Non-local </entry>
+<entry> yes </entry>
+<entry> Processed on Primary locally </entry>
+</row>
+<row>
+<entry> local </entry>
+<entry> yes </entry>
+<entry> Non-local </entry>
+<entry> no </entry>
+<entry> Processed on Primary locally </entry>
+</row>
+<row>
+<entry> Non-local </entry>
+<entry> yes </entry>
+<entry> local </entry>
+<entry> yes </entry>
+<entry> Processed on Primary </entry>
+</row>
+<row>
+<entry> Non-local </entry>
+<entry> no </entry>
+<entry> local </entry>
+<entry> yes </entry>
+<entry> Processed locally on Secondary </entry>
+</row>
+<row>
+<entry> Non-local </entry>
+<entry> yes </entry>
+<entry> Non-local </entry>
+<entry> yes </entry>
+<entry> Processed on Primary or Secondary </entry>
+</row>
+<row>
+<entry> Non-local </entry>
+<entry> no </entry>
+<entry> Non-local </entry>
+<entry> yes </entry>
+<entry> Processed on Secondary </entry>
+</row>
+<row>
+<entry> Non-local </entry>
+<entry> yes </entry>
+<entry> Non-local </entry>
+<entry> no </entry>
+<entry> Processed on Primary </entry>
+</row>
+<row>
+<entry> Non-local </entry>
+<entry> no </entry>
+<entry> Non-local </entry>
+<entry> no </entry>
+<entry> Not processed, rejected </entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>If the message is rejected, the plugin responds immediately with a failure reason. If
+                the message is routed, it forwards the message on to either the primary or secondary
+                site for the device. If the message is processed locally it is passed to the next
+                plugin in the request chain. </p>
+<note>
+<p>On rare occasion, it can happen that if you have two devices with the same IP
+                    address but a different APN, only one of the devices will win at being processed
+                    if the messages arrive close together.</p>
+</note>
+</section>
+<section>
+<title>Site routing and session mapping</title>
+<p>Site routing uses session mappings to help route the traffic to the correct site. Session mapping
+                records are created in both Charging and Policy when a session is created. They are
+                removed when the session is torn down (whether by a session termination or an
+                audit). These session mappings allow NCC to lookup information like the primary site
+                and secondary site. </p>
+<p>The session mapping records are as follows: </p>
+<ul>
+<li>
+<p>
+<b>PolicySessionMap</b>
+</p>
+</li>
+<li>
+<p>
+<b>ChargingSessionMap</b>
+</p>
+</li>
+</ul>
+<p>Both the PolicySessionMap and the ChargingSessionMap occupy the dscglobal namespace
+                and are replicated to all related MEs.  </p>
+<p>For the PolicySessionMap, the following table describes the commands and mappings.
+                The commands always carry a session ID and key to the session.</p>
+<table colsep="1" rowsep="1">
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+                                Command
+                            </entry>
+<entry>
+                                Mapping
+                            </entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry> Gx CCR-I </entry>
+<entry>
+<p>- session mapping - used to route subsequent Gx update and
+                                    terminate messages, which may not contain subscription Id</p>
+<p>- ipv4 mapping - IPv4 - provides key to the primary ID and
+                                    secondary ID; used to route Rx attachment messages that may not
+                                    contain subscription ids, but contain an ipv4 address</p>
+<p>- ipv6 mapping - IPv6 - provides key to the primary ID and
+                                    secondary ID; used to route Rx attachment messages that may not
+                                    contain subscription ids, but contain an ipv6 address </p>
+</entry>
+</row>
+<row>
+<entry> Rx AAR </entry>
+<entry> - session mapping - used to route subsequent Rx AAR and STR
+                                messages, which may not contain subscription Id </entry>
+</row>
+<row>
+<entry> Sy SLR (on sending) </entry>
+<entry> - session mapping - used to route Sy-SNRs  that come from the
+                                OCS </entry>
+</row>
+<row>
+<entry> Sd TSR (on sending) </entry>
+<entry> - used to route Sd-CCR from the gateway </entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>For the ChargingSessionMap, the following table describes the commands and mappings. </p>
+<table colsep="1" rowsep="1">
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+                                Command
+                            </entry>
+<entry>
+                                Mapping
+                            </entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry> Gy CCR-I </entry>
+<entry> - session mapping - used to route subsequent Gy update and
+                                terminate messages, which may not contain a device </entry>
+</row>
+<row>
+<entry> Sy SLR (on receiving) </entry>
+<entry> - session mapping - used to route subsequent Sy SLR and STR
+                                messages to the charging server </entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section>
+<title>Routing outbound request message</title>
+<p>The NCC-ME may initiate outbound request messages to the gateway (or Diameter agent), for
+                example: Gx RAR, Rx RAR.</p>
+<p>There are two ways to route the NCC triggered outbound request message to the gateway:</p>
+<ul>
+<li>
+<p>If NCC is connected directly to the gateway, the policy or charging application will directly
+                        route the request out to the gateway.</p>
+</li>
+<li>
+<p>If there is no direct Diameter connection to the gateway or the Diameter connection is currently
+                        not active, then this NCC (first site) needs to send the request to another
+                        NCC (second site), which then forwards the outbound request to the gateway.
+                        In order to support this functionality, the first site needs to provision a
+                        proper Diameter routing profile for the outbound request, and the
+                        SiteRouting plugin in the second site will find a proper Diameter peer and
+                        forward the outbound request to the gateway.  This is supported for NCC
+                        initiated GX, RX, SD, SY, and GY messages.</p>
+</li>
+</ul>
+</section>
+<section>
+<title>Logging</title>
+<p>Logging for Site Routing includes enabling debug or trace level logging for the
+                following packages: </p>
+<ul>
+<li>
+<p>com.alcatel.tpapps.ddmapps.siterouting</p>
+</li>
+<li>
+<p>com.nokia.tpapps.spccontrol.siterouting</p>
+</li>
+<li>
+<p>com.alcatel.tpapps.pcrf.server.siteroute</p>
+</li>
+</ul>
+<p>See the <i>NCC-Administration Guide</i> for information about Site Routing metrics.</p>
+</section>
+</conbody>
+</concept>

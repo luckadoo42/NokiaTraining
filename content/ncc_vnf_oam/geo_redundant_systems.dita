@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-d1e85442"><title>Geo-redundant systems</title><conbody>
+<section><title>Behaviours of functions and services in a geo-redundant system</title>
+<p>The following table describes how specific functions and services perform in a geo-redundant
+                system. Generally, the NCC applications are unaware of site ownership for
+                subscribers/devices, and there are "work delivery" functions that deliver workload
+                (Diameter, Subscriber provisioning, Ud) to either the primary or secondary site for
+                the subscriber/device. That is, except when a Secondary owning site generates
+                Diameter messages, and it must use the Diameter Identity of the Primary owning site.
+                These "work delivery" functions are aware of the primary/secondary owning site of a
+                subscriber/device and the geo-redundant status of the primary site. </p>
+<table pgwide="1" colsep="1" rowsep="1">
+                <title>Behaviors of functions and services in a geo-redundant system</title>
+                <tgroup cols="4">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <colspec colname="col3"/>
+                    <colspec colname="COLSPEC0"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Function/Service</p>
+                            </entry>
+                            <entry>
+                                <p>If in Normal mode</p>
+                            </entry>
+                            <entry>
+                                <p>If the Primary site for the subscriber/device is considered
+                                    down</p>
+                            </entry>
+                            <entry>
+                                <p>Notes</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> Subscriber/device provisioning updates </entry>
+                            <entry> SM pushes updates to the primary owning site. </entry>
+                            <entry> SM pushes updates to the Secondary owning site. </entry>
+                            <entry> Whatever Managed Element gets the work, it will do it. This
+                                includes the case where the SM pushes the update to the secondary
+                                site, and the Secondary site believes the Primary is up.  </entry>
+                        </row>
+                        <row>
+                            <entry> Ud (subscriber notification) </entry>
+                            <entry> SM pushes the notifications to the primary owning site. </entry>
+                            <entry> SM pushes the notifications to the Secondary owning site. </entry>
+                            <entry> Whatever Managed Element gets the work, it will do it. This
+                                includes the case where the SM pushes the notifications to the
+                                secondary site, and the Secondary site believes the Primary is up. 
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Rule action that results in a subscriber update </entry>
+                            <entry> Site executing the rule does the work. </entry>
+                            <entry> Site executing the rule does the work. </entry>
+                            <entry> Typically, the rule is triggered by a provisioning update or
+                                Diameter message that is directed to the correct site. </entry>
+                        </row>
+                        <row>
+                            <entry> Unknown subscriber/device audit (external SPR) </entry>
+                            <entry> TEM only creates the event on the primary owning site for the
+                                subscriber/device. </entry>
+                            <entry> TEM creates the event on the Secondary owning site. </entry>
+                            <entry> TEM triggers the event on the active NCC for the entity (primary
+                                or secondary). </entry>
+                        </row>
+                        <row>
+                            <entry> External SPR Audits </entry>
+                            <entry> TEM only creates the event on the primary owning site for the
+                                subscriber/device. </entry>
+                            <entry> TEM creates the event on the Secondary owning site. </entry>
+                            <entry> TEM triggers the event on the active NCC for the entity (primary
+                                or secondary). </entry>
+                        </row>
+                        <row>
+                            <entry> Rule System Activation </entry>
+                            <entry> RSVs can be activated from any site. </entry>
+                            <entry> RSVs can be activated from any site. </entry>
+                            <entry> — </entry>
+                        </row>
+                        <row>
+                            <entry> Session Audits </entry>
+                            <entry> TEM triggers the work on the primary owning site for the
+                                subscriber/device associated with the session. </entry>
+                            <entry> TEM triggers the work on the secondary owning site for the
+                                subscriber/device. </entry>
+                            <entry> TEM triggers the event on the active NCC for the entity (primary
+                                or secondary). </entry>
+                        </row>
+                        <row>
+                            <entry> Destination Session Mappings </entry>
+                            <entry> NA </entry>
+                            <entry> NA </entry>
+                            <entry> The mappings are not versioned so if a new record with the same
+                                key is created, it is overwritten by the existing one. </entry>
+                        </row>
+                        <row>
+                            <entry> Lifecycle </entry>
+                            <entry> Site receiving the trigger does the work (transitions/actions). </entry>
+                            <entry> Site receiving the trigger does the work (transitions/actions). </entry>
+                            <entry> If the primary is up, the trigger is received on the owning
+                                primary site of an entity (account, device, etc). </entry>
+                        </row>
+                        <row>
+                            <entry> Scheduled lifecycle operations (Ex: bill cycle, etc) </entry>
+                            <entry> TEM triggers this work on the primary owning site for the entity
+                                (account, device, etc). </entry>
+                            <entry> TEM triggers this work on the secondary owning site for the
+                                entity (account, device, etc). </entry>
+                            <entry> — </entry>
+                        </row>
+                        <row>
+                            <entry> TEM functionality </entry>
+                            <entry> TEM retrieves all of the records for each partition with an
+                                expired timestamp and then triggers events on those entities for
+                                which that NCC is the active home. That is, events for entities
+                                owned by the NCC on which TEM is running. </entry>
+                            <entry> TEM will generate triggers for entities owned by that NCC. </entry>
+                            <entry> Applications should process whatever triggers they receive from
+                                TEM.  If an NCC just comes back up and the TEM records haven't been
+                                replicated yet (with an updated timestamp or deleted), that NCC
+                                might think it needs to do an audit or a bill cycle reset,
+                                etc.</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+</section>
+</conbody></concept>

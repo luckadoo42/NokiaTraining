@@ -1,0 +1,1286 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e166236"><title>Mapping tables</title><conbody>
+<section><title>Overview</title>
+<p>The mapping tables enables to create read-only complex and simple mapping tables as ordered lists of keys mapped to ordered lists of values. A mapping provides a lookup that can have multiple input fields (keys) and multiple output fields.</p>
+<note>
+<p>A user can have a single key and output field to produce a simple mapping using the same tools as mentioned in the <uicontrol>Mapping Tables</uicontrol> menu.</p>
+</note>
+<p>A mapping table defines the input key fields (what it is mapping from), and the output fields (what it is mapping to). The number of input and output fields, and their respective types are assigned by the user. The meaning of the keys and values are customer specific and the meaning of each field is defined using rules. Each call on the mapping tables performs one or more lookups in various tables. The values in one table, can be keys into another table, so tables can be interdependent (one-way).</p>
+<p>NCC supports large list or group mappings used in rules to provide lookups in policy and
+    charging. The mappings are independent of the rules themselves. When data is added to a map, all
+    of the input and output fields must be provided so that when a lookup is done into a map, only
+    an exact match of all input fields (keys) is found. The keys and the combinations of keys in
+    each row must be unique. Multiple entries in complex mapping tables cannot have the same key
+    value.</p>
+<p>Multiple entries in the complex map do not have the same key value(s). There can only be one row with the same key values. The row successfully added at the end, with a specific set of keys, is the set of values returned. If you try to add the same row again, it is either blocked or overwrites the pervious row.</p>
+<note>
+<p>Click the <i>Summary Icon</i> ( <!--MMO resource relative URI: ../Graphics/Release_19.9/Distribute_summary_icon_default.png-->
+     <image href="../images/img9yz-09126-ug01-pczza-sp1-distribute_summary_icon_default.png"
+      scale="40"/> ) on the first page of the mapping tables (<uicontrol>Policy &amp; Charging
+      Configuration</uicontrol> &gt; <uicontrol>COMMON</uicontrol> tab and select <uicontrol>Mapping
+      Tables</uicontrol>) in the SM GUI, it displays the list of the complex maps provisioned on
+     different MEs.</p>
+</note>
+</section>
+<section id="Mappingtableconfig"><title>Configuration</title>
+<p>The mapping makes use of generic bindings and caches entries into an in-memory map but are configured in the SM GUI.</p>
+<p>Log into SM GUI, navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> &gt;
+     <uicontrol>COMMON</uicontrol> tab and select <uicontrol>Mapping Tables</uicontrol> from the
+    hamburger menu (☰). To define a new mapping table, click <!--MMO resource relative URI: ../Graphics/Release_18.0/Add_button_default.png-->
+    <image href="../images/img9yz-09126-ug01-pczza-sp1-add_button_default.png" scale="40"/> to add
+    the basic details and profile configuration as described in the given table:</p>
+<table pgwide="1" colsep="1" rowsep="1">
+    <tgroup cols="4">
+     <colspec colname="col1"/>
+     <colspec colname="col2"/>
+     <colspec colname="col3"/>
+     <colspec colname="col4"/>
+     <thead>
+      <row>
+       <entry>
+        <p>Parameter</p>
+       </entry>
+       <entry>
+        <p>Description</p>
+       </entry>
+       <entry>
+        <p>Options</p>
+       </entry>
+       <entry>
+        <p>Mandatory/Optional</p>
+       </entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry> Map Name </entry>
+       <entry> This parameter indicates a unique name of the map. </entry>
+       <entry> String </entry>
+       <entry> Mandatory </entry>
+      </row>
+      <row>
+       <entry morerows="1"> Reference Based Map </entry>
+       <entry>
+        <p>This parameter can be either set to <varname>True</varname> or <varname>False</varname>
+         by selecting the check box on the SM GUI.</p>
+        <p>If this parameter is set as <varname>True</varname>, then the complex map is a
+         reference-based map, which means that the map values inside this map are names of an
+         existing complex map.</p>
+        <p>This parameter must be true for version based map.</p>
+        <p>
+         <b>Note</b>:</p>
+        <ul>
+         <li>
+          <p>If a map is being referenced by another map, which is a reference-based map, then that
+           map cannot be deleted until that reference is removed.</p>
+         </li>
+         <li>
+          <p>When a user tries to provision a reference-based map, all the complex maps referenced
+           by that map must be provisioned on that selected ME. Otherwise, provisioning is not
+           allowed for that reference map.</p>
+         </li>
+         <li>
+          <p>When trying to undistribute a non-reference complex map from a selected ME, the SM
+           server checks whether that map is being referred by another reference-based maps, which
+           are not provisioned on same ME. Otherwise, the undistribution is prohibited.</p>
+         </li>
+         <li>
+          <p>By default, this parameter value is set as <varname>False</varname>. However, if a user
+           updates this flag to <varname>True</varname>, then the SM server validates all values in
+           that map exist as complex map in complex map table, but not as a reference-based map, and
+           that map is not referenced inside another reference based map. Otherwise, the SM server
+           does not allow this flag to be updated to <varname>True</varname>.</p>
+         </li>
+        </ul>
+       </entry>
+       <entry> Boolean </entry>
+       <entry> Optional </entry>
+      </row>
+      <row>
+       <entry nameend="col4" namest="col2">
+        <p>
+         <b>Additional information:</b> In case of reference-based map, the <i>[value]</i> is a
+         drop-down list in the SM GUI that presents the record values of existing complex maps. This
+         list can be filtered as per the key name specified in the <i>[key]</i>. For example, if the
+          <i>[key]</i> is set as <varname>CDC</varname>, then the <i>[value]</i> displays all the
+         complex maps having <varname>CDC</varname> as a sub-string in its name.</p>
+        <p>Here the key name is not case-sensitive and the map key displays maps with names
+          <varname>CDC_1</varname> or <varname>CDC_2</varname>.</p>
+        <p>
+         <b>Note:</b> If user selects the check box <i>Show All Refs</i>, then values as per key
+         name are not filtered.</p>
+        <!--MMO resource relative URI: ../Graphics/Release_19.9/Reference_based_flag_default.png-->
+        <image href="../images/img9yz-09126-ug01-pczza-sp1-reference_based_flag_default.png"/>
+       </entry>
+      </row>
+      <row>
+       <entry morerows="1"> Version </entry>
+       <entry>
+        <p>This parameter allows a user to create multiple complex maps with the same name and
+         different versions.</p>
+        <p>The maximum number of characters allowed in this attribute is 50. The ID field for
+         versioned map includes a version-suffix consisting of a field separator character || and
+         version as an user input. For example, map having id <varname>test||v1</varname>, which
+         indicates the map name is <varname>test</varname> and version is <varname>v1</varname>.</p>
+        <p>This parameter is allowed only when the <i>Reference Based Map</i> flag is set as
+          <varname>True</varname>.</p>
+        <p>
+         <b>Note:</b> Only one version of a given complex map can be distributed on a selected ME at
+         a given time.</p>
+        <p>The <i>Version</i> attribute is only maintained in the SM server in the complex map
+         table. While configuring the rules in the RSV, a user does not mention the complex map
+         version. Complex map versioning allows a user to update a complex map data without updating
+         the rule system.</p>
+       </entry>
+       <entry> String and read-only </entry>
+       <entry> Optional </entry>
+      </row>
+      <row>
+       <entry nameend="col4" namest="col2">
+        <p>
+         <b>Example:</b> Consider there is an existing distributed complex map
+          <varname>REFMAP</varname> on a selected ME. A user needs to update few fields of this map.
+         The rules in the RSV are referring to the <varname>REFMAP</varname> key.</p>
+        <p>The user clones the <varname>REFMAP</varname> with version <varname>v2019</varname> and
+         updates the desired fields in the newly created complex map. The user then distributes this
+         map (which means the <varname>REFMAP</varname> with version <varname>v2019</varname>) to
+         the selected ME.</p>
+        <p>The SM server automatically computes the delta between the two version of
+          <varname>REFMAP</varname> on the selected ME and distributes the contents, which were
+         changed on the selected ME. The distributed map in the ME has the same name
+          <varname>REFMAP</varname>.</p>
+        <!--MMO resource relative URI: ../Graphics/Release_19.9/Version_field_example_default.png-->
+        <image href="../images/img9yz-09126-ug01-pczza-sp1-version_field_example_default.png"/>
+       </entry>
+      </row>
+      <row>
+       <entry morerows="1"> Pattern Type </entry>
+       <entry> This parameter allows a user to select <varname>REGEX_PATTERN</varname> or
+         <varname>IP_SUBNET_PATTERN</varname> while defining a mapping table. </entry>
+       <entry> Enum </entry>
+       <entry> Optional </entry>
+      </row>
+      <row>
+       <entry nameend="col4" namest="col2">
+        <p>A user can select either of the following values from the <i>Pattern Type</i> drop-down
+         list:</p>
+        <ul>
+         <li>
+          <p>
+           <varname>REGEX_PATTERN</varname>: For this <i>Pattern Type</i>, during network call
+           processing, the input keys (such as incoming through AVP) is matched in the complex map
+           using regular expression pattern matching algorithm.</p>
+          <p>The sorting order of characters is defined as:</p>
+          <p>~, }, |, {, z, y, x, w, v, u, t, s, r, q, p, o, n, m, l, k, j, i, h, g, f, e, d, c, b,
+           a, `, _, ^, ], [, Z, Y, X, W, V, U, T, S, R, Q, P, O, N, M, L, K, J, I, H, G, F, E, D, C,
+           B, A, @, ?, &gt;, =, &lt;, ;, :, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, /, ., -, ,, +, *, ), (, ',
+           &amp;, %, $, #, !</p>
+          <p>
+           <b>Note:</b> The regex-based keys should be provisioned keeping in mind that during a
+           Diameter call, input keys (like MCC, MNC, or SGSN) are matched with mapping table entries
+           and the very first match is returned.</p>
+          <p>For example, if the following keys are present in the complex map ( reverse natural
+           sorted order):</p>
+          <!--MMO resource relative URI: ../Graphics/Release_20.0/Regex_image1_default.png-->
+          <image href="../images/img9yz-09126-ug01-pczza-sp1-regex_image1_default.png"/>
+          <p>For input as <i>key1</i> = <varname>INDIA</varname> and <i>key2</i>
+            =<varname>Himachal</varname>, the value returned is <varname>Zone1</varname>. Although
+           both the entries match but the first match is returned.</p>
+          <p>
+           <b>Note:</b> If the mapping table has the row with <i>key1</i> = <varname>INDIA</varname>
+           and <i>key2</i> =<varname>Himachal</varname> with <i>Value1</i> =
+            <varname>Zone3</varname>, then <varname>Zone3</varname> is returned.</p>
+         </li>
+         <li>
+          <p>
+           <varname>IP_SUBNET_PATTERN</varname>: For this <i>Pattern Type</i>, during network call
+           processing, the input keys (such as incoming through AVP) is matched in the complex map
+           using IP address prefix or subnet concept, which means the given IP address resides in
+           the IP address range using the provided subnet. The value of the first match of the row
+           from complex map is returned.</p>
+          <!--MMO resource relative URI: ../Graphics/Release_20.0/IP_subnet_image1_default.png-->
+          <image href="../images/img9yz-09126-ug01-pczza-sp1-ip_subnet_image1_default.png"/>
+          <p>For a given input, <i>key1</i> = <varname>10.75.61.94</varname> and <i>key2</i> =
+            <varname>10.10.10.10</varname>, <i>Zone1</i> value is returned.</p>
+          <p>Another example for IPv6 is:</p>
+          <!--MMO resource relative URI: ../Graphics/Release_20.0/IP_subnet_image2_default.png-->
+          <image href="../images/img9yz-09126-ug01-pczza-sp1-ip_subnet_image2_default.png"/>
+          <p>For given input, <i>key1</i> = <varname>fe80:0:0:0:0:0:c0a8:11</varname> and
+            <i>key2</i> = <varname>ffff:fff:abce:1:1:1:c0a8:f</varname>, <i>Zone1</i> value is
+           returned.</p>
+         </li>
+        </ul>
+        <p>
+         <b>NOTE:</b>
+        </p>
+        <ul>
+         <li>
+          <p>The values for the first matched row from the complex map is returned. the first
+           matched row is returned after considering that complex map rows are sorted in the reverse
+           natured order.</p>
+         </li>
+         <li>
+          <p>For reference-based map, all the versions of that map should have same <i>Pattern
+            Type</i> value. Otherwise, it may lead to data inconsistency during a network call.</p>
+         </li>
+         <li>
+          <p>If the <i>Pattern Type</i> is set as <varname>REGEX_PATTERN</varname>, then only
+           Regex-based matching is done. Similarly, if the <i>Pattern Type</i> is set as
+            <varname>IP_SUBNET_PATTERN</varname>, then only IP subnet matching is performed.</p>
+         </li>
+        </ul>
+       </entry>
+      </row>
+      <row>
+       <entry> Map Keys </entry>
+       <entry>
+        <p>This parameter indicates the name of the first <i>Key</i> column. This is the header row,
+         which indicates meaning to each field.</p>
+        <p>The first column in the example table <!--xref URI: #ComplexMappingTable--><xref
+          keyref="id9YZ-09126-UG01-PCZZA-SP1-d1e166236/complexmappingtable"/> defines the key for
+         the row. You can have up to 10 keys.</p>
+       </entry>
+       <entry> String </entry>
+       <entry> Mandatory </entry>
+      </row>
+      <row>
+       <entry nameend="col4" namest="col1">
+        <b>ADD KEY</b>
+       </entry>
+      </row>
+      <row>
+       <entry> Map Values </entry>
+       <entry>
+        <p>This parameter indicates the name of the first <i>Value</i> column. This is the header
+         row which indicates your meaning to each <i>Value</i> field in the row.</p>
+        <p>In the example table <!--xref URI: #ComplexMappingTable--><xref
+          keyref="id9YZ-09126-UG01-PCZZA-SP1-d1e166236/complexmappingtable"/>, each row must consist
+         of exactly m values, where m can be between 1 and M, each value can contain up to 1024
+         characters, with a maximum of 1 MB for an entire row of values.</p>
+       </entry>
+       <entry> String </entry>
+       <entry> Mandatory </entry>
+      </row>
+      <row>
+       <entry nameend="col4" namest="col1">
+        <b>ADD VALUE</b> &gt; <b>Import Mapping Table from File</b>
+       </entry>
+      </row>
+      <row>
+       <entry> Import File </entry>
+       <entry> Click the <uicontrol>BROWSE</uicontrol> button to select the .CSV file that you want
+        to import. </entry>
+       <entry/>
+       <entry> Optional </entry>
+      </row>
+      <row>
+       <entry> Overwrite </entry>
+       <entry> This parameter defines whether mapping table structure is derived from a .CSV file. </entry>
+       <entry> Select this check box to derive the mapping table structure from a .CSV file. </entry>
+       <entry> Optional </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+<note>
+<p>Consider the following points while configuring a complex map:</p><ul>
+<li>
+<p>A user can specify the version while creating or cloning a given map. Once a map is created, the version cannot be added or modified in the existing map. However, if there are two versions of a complex map and one of the maps having the <i>Version</i> field empty while the other map having the <i>Version</i> field non-empty; both are treated two maps with different versions. For example, a user creates a map with name <varname>test</varname> and empty version and one more map with same name <varname>test</varname> and version <varname>v1</varname>. In this case, the SM server creates two maps; one with id <varname>test</varname> and other with id <varname>test||v1</varname>. Both maps with the same map name are treated as two versions of a map with the name <varname>test</varname>.</p>
+</li>
+<li>
+<p>The SM server can have multiple complex maps with the same name and different versions but ME can have only a single complex map with a unique name and without a version.</p>
+</li>
+<li>
+<p>If one of the version of given map is already provisioned on a selected ME, then while selecting another version of same complex map for distribution on the same ME, the SM server computes the delta between the two versions of same map and sends only the changes found between the two version of complex map on the selected ME.</p>
+</li>
+<li>
+<p>If there is an existing map which was not reference-based, then one more version of that map is not allowed to be created or cloned. To create a new version of already existing non-reference map, a user updates the already existing map as reference based map.</p>
+</li>
+<li>
+<p>Already existing map can be updated to reference based map only when all the entries in that map exist as complex map in complex map table. Complex maps having non-empty version (say v2) cannot be changed  to non-reference map.</p>
+</li>
+<li>
+<p>If user clones a new version of an existing non-reference map by setting the <i>Reference Based Map</i> flag as <varname>True</varname>, then the SM server first checks that all the entries from which map is being cloned exist as a complex map. If all the values exist as a complex map in SM server, then the SM server clones the new map as a reference-based map.</p>
+</li>
+<li>
+<p>To support the version of any existing map, which was created as non-reference map before application upgrade (for example <varname>refMap</varname>), user can clone or create next version of the existing map as reference-based map with same name and non-empty version attribute. SM server validates the already existing map has entries exist as complex map in complex map table. If validation is successful, then the SM server creates a new version of existing map and auto-updates the already existing non-reference map to reference based map (<varname>refMap</varname> without version). For example, consider there is an already existing map say refMap. If user tries to create next version (<codeph>map Name</codeph> = <varname>refMap</varname> and <i>version</i> = <varname>v1</varname>) of this map by selecting <i>Reference Based Map</i> flag as <varname>True</varname>, then the SM server validates the entries in old
+version (<varname>refMap</varname>) of same map. If all the entries (map values) are name of another existing complex map record, then the SM server allows the user to create next version of same map and automatically updates the old map (<varname>refMap</varname>) as reference-based map.</p>
+</li>
+<li>
+<p>It is recommended to define all versions of a given map with same nomenclature.</p>
+</li>
+<li>
+<p>The <i>Reference Based Map</i> flag cannot be updated when a given map has more versions or the <i>Version</i> field of that map is non-empty. Nested referencing is not allowed because using a reference based map inside other reference based may lead to unexpected behaviour.</p>
+</li>
+<li>
+      <p>All the values inside the reference based maps should not be null. However, if a user needs
+       to create a complex map entry with a null value, then one of the keys must be defined with
+       name as <varname>PLACEHOLDER</varname> (which is case-insensitive) as shown in the following
+       screenshot:</p>
+      <!--MMO resource relative URI: ../Graphics/Release_19.9/Placeholder_image_default.png-->
+      <image href="../images/img9yz-09126-ug01-pczza-sp1-placeholder_image_default.png" scale="45"/>
+     </li>
+</ul>
+</note>
+<p>The following example enables to create a map with the number of rows and columns: . The ComplexMappingTable example is for demonstration purposes only:<table id="complexmappingtable"><title>ComplexMappingTable example</title>
+<tgroup cols="5">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<colspec colname="col3"/>
+<colspec colname="col4"/>
+<colspec colname="col5"/>
+<thead>
+<row>
+<entry>
+<p>(Key_1)</p>
+</entry>
+<entry>
+<p>(Key_2)</p>
+<p>...</p>
+</entry>
+<entry>
+<p>(Value 0)</p>
+</entry>
+<entry>
+<p>(Value 1)</p>
+</entry>
+<entry>
+<p>(Value 2)</p>
+<p>...</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+&lt;KeyName&gt;
+</entry>
+<entry>
+&lt;KeyName&gt;
+</entry>
+<entry>
+&lt;value&gt;
+</entry>
+<entry>
+&lt;value&gt;
+</entry>
+<entry>
+&lt;value&gt;
+</entry>
+</row>
+<row>
+<entry>
+&lt;KeyName&gt;
+</entry>
+<entry>
+&lt;KeyName&gt;
+</entry>
+<entry>
+&lt;value&gt;
+</entry>
+<entry>
+&lt;value&gt;
+</entry>
+<entry>
+&lt;value&gt;
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table></p>
+<note><ul>
+<li>
+<p>Comma(,) is allowed in only keys of map. To support comma character in the keys, the SM server uses backslash (\) as a special character. Therefore, backslash character in key values should not be used as it can lead to inconsistent behavior. If there is a coma based key value. For example, "key1,key2", SM server stores it as key1\\,key2 and GUI displays it as key1,key2.</p>
+</li>
+<li>
+<p>For the supported string, long, and double value types, the value(s) must be able to parse the value and type as required in the following Oracle documentation:</p>
+<p>- <xref format="html" href="https://docs.oracle.com/javase/7/docs/api/java/lang/long.html" scope="external"/>
+</p>
+<p>- <xref format="html" href="https://docs.oracle.com/javase/7/docs/api/java/lang/double.html" scope="external"/>
+</p>
+</li>
+</ul>
+</note>
+<sectiondiv>
+<p><b>Additional information</b></p><ul>
+<li>
+<p>A map in the provisioned state cannot be updated or deleted.</p>
+</li>
+<li>
+<p>Whenever a user provisions a complex map on an ME, the SM server sets its state on the SM GUI to <varname>IN_PROGRESS</varname>, which means the provisioning of all entries in that map is ongoing. In that state, all operations like delete, update, retry, or provision are not allowed. However, if for some reason, a record gets locked in the <varname>IN_PROGRESS</varname>, then the user can use the reset option (or REST API) present in distribution box of the SM GUI but the reset option should be only used when provisioning of that record is not ongoing. Otherwise, it can lead to data inconsistency.</p>
+</li>
+<li><p>If any ME goes offline permanently, then undistribution on that ME does not work and the
+       record gets locked in the <varname>DELETE_ATTEMPTED</varname> state. To remove such ME from
+       distribution list of already provisioned record, the reset button is used, which removes the
+       MEs whose state is <varname>DELETE_ATTEMPTED</varname> from the distribution list. However,
+       this option does not make any correction in data inconsistency between an ME and SM server.
+       The reset option should be used only when ME is not reachable and when provisioning operation
+       for the same record is not ongoing.</p>
+      <!--MMO resource relative URI: ../Graphics/Release_19.6/Undistribution_mapping_tables_default.png-->
+      <image href="../images/img9yz-09126-ug01-pczza-sp1-undistribution_mapping_tables_default.png"
+      />
+     </li>
+</ul>
+</sectiondiv>
+</section>
+<section><title>Prefixes support in complex maps</title>
+<p>The prefix matching feature allows a user to provision a complex map having keys with different Regex or IP subnet pattern. For example, abc * or 123.247.32*. During a network call, AVPs are passed as keys are matched with keys provisioned with these patterns. This feature allows to provision a complex map with less number of entries when different set of AVPs lead to the same set of values.</p>
+<p>The NCC system determines the zone for data calls based on MCC, MNC, and SGSN IP address received
+    in the CCR message using rule and mapping table configuration. To minimize the issues of
+    handling huge data and complex configuration, the charging and policy supports the following
+    prefixes or wildcard characters in the mapping tables:</p><ul>
+<li>
+<p>* (0 to n occurrence)</p>
+</li>
+<li>
+<p>? (Single characters)</p>
+</li>
+<li>
+<p>[-] (Range)</p>
+</li>
+<li>
+<p>(|) OR</p>
+</li>
+<li>
+<p>{n} where n is the number of occurrences</p>
+</li>
+<li>
+<p>[^] Not operator</p>
+</li>
+</ul>
+<p>For information on how to provision prefix matching in a complex map, see the <i>Pattern Type</i> definition in the <!--xref URI: #Mappingtableconfig--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-d1e166236/Mappingtableconfig"/> section.</p>
+<sectiondiv>
+<p><b>Example of complex map provisioned without prefix</b></p>
+<table pgwide="1" colsep="1" rowsep="1">
+     <tgroup cols="2">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Key</p>
+        </entry>
+        <entry>
+         <p>Value</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> 40410 </entry>
+        <entry> INDIA </entry>
+       </row>
+       <row>
+        <entry> 40411 </entry>
+        <entry> INDIA </entry>
+       </row>
+       <row>
+        <entry> 40412 </entry>
+        <entry> INDIA </entry>
+       </row>
+       <row>
+        <entry> 30301 </entry>
+        <entry> SINGAPORE </entry>
+       </row>
+       <row>
+        <entry> 30302 </entry>
+        <entry> SINGAPORE </entry>
+       </row>
+       <row>
+        <entry> 30303 </entry>
+        <entry> SINGAPORE </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+<table pgwide="1" colsep="1" rowsep="1">
+     <title>Using Regex pattern</title>
+     <tgroup cols="2">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Key</p>
+        </entry>
+        <entry>
+         <p>Value</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> 4041? </entry>
+        <entry> INDIA </entry>
+       </row>
+       <row>
+        <entry> 3030* </entry>
+        <entry> SINGAPORE </entry>
+       </row>
+       <row>
+        <entry> * </entry>
+        <entry> ASIA </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example of complex map provisioned without prefix</b></p>
+<table pgwide="1" colsep="1" rowsep="1">
+     <tgroup cols="2">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Key</p>
+        </entry>
+        <entry>
+         <p>Value</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> 10.23.29.112 </entry>
+        <entry> INDIA </entry>
+       </row>
+       <row>
+        <entry> 10.23.29.255 </entry>
+        <entry> INDIA </entry>
+       </row>
+       <row>
+        <entry> 10.23.29.19 </entry>
+        <entry> INDIA </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+<table pgwide="1" colsep="1" rowsep="1">
+     <title>Using IP subnet pattern</title>
+     <tgroup cols="2">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Key</p>
+        </entry>
+        <entry>
+         <p>Value</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> 10.23.29.0/24 </entry>
+        <entry> INDIA </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+</sectiondiv>
+</section>
+<section><title>Using mapping values in rules</title>
+<p>When you have defined the keys and values in the mapping tables, you can use them in various rule scenarios by providing functions to get the value required in the rule. For example:</p>
+<userinput>QOS_MANAGEMENT.Max-Requested-Bandwidth-UL = ComplexMap.Get-Row-Long("abc", 1)</userinput>
+<p>In the above case, <i>ComplexMap.Get-Row-Long("abc", 1)</i> is the function for a specific value and type. The following functions are available by type to get values from a complex mapping table:</p><ul>
+<li>
+<p>
+<i>Load-Row</i>: If the row is successfully loaded, then this function returns an output as <varname>TRUE</varname> else <varname>FALSE</varname>. This function takes a row from the specified complex map (specified my <i>mapName</i>) that matches a list of keys and places it in the <i>ComplexMap context</i> under the <i>rowLabel</i>. Going forward, the individual values in that entry are referenced by <i>rowLabel</i> and index value.</p>
+<p>The usage is defined as follows:</p><ul>
+<li>
+<p>
+<userinput>ComplexMap.Load-Row-1Key(String mapName, String key1, String rowLabel)</userinput>
+</p>
+</li>
+<li>
+<p>
+<userinput>ComplexMap.Load-Row-2Key(String mapName, String key1,String key2, String rowLabel)</userinput>
+</p>
+</li>
+<li>
+<p>....</p>
+</li>
+<li>
+<p>
+<userinput>ComplexMap.Load-Row-10Key(String mapName, String key1,..., String key10, String rowLabel)</userinput>
+</p>
+</li>
+</ul>
+<p>The source context is ComplexMap and the parameters are defined in the following way:</p><ul>
+<li>
+<p>
+<i>mapName</i>: The name of the ComplexMap from which you want to load the row. </p>
+</li>
+<li>
+<p>
+<i>keys</i>: The list of key strings that make up the row.</p>
+</li>
+<li>
+<p>
+<i>rowlLabel</i>: A label used by other functions to reference the row.  Ensure you make this globally unique if, within the same rule invocation, you are manipulating multiple rows in the same or different complex maps. You assign the rowLabel in the same manner as a variable: <userinput>get (Key1, Key2, value...)(rowlabelName)</userinput>
+</p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<i>Get-Row-Integer</i>: This returns the value from <i>rowlLabel</i> row at <i>valueIndex</i> index as an integer. The row is loaded using the <i>Load-Row</i> function before executing this command. <i>Get-Row-Integer</i> converts the underlying string representation into the integer. The integer must be a integer parsed and within the specified range.</p>
+<p>A row index of 0 refers to the first value in the table and the usage is defined in the following way:</p>
+<p>
+<userinput>ComplexMap.Get-Row-Integer(String “rowLabel”, Integer “valueIndex”)</userinput>
+</p>
+<p>The source context is ComplexMap and the following parameters are defined:</p><ul>
+<li>
+<p>
+<i>rowlLabel</i>: The label assigned to the row when using the <i>Load-Row</i> function. </p>
+</li>
+<li>
+<p>
+<i>valueIndex</i>: The column in the row where the value is stored.</p>
+</li>
+<li>
+<p>For the supported value type, the value(s) must be analyzed in accordance with the following:</p>
+<p>
+<xref format="html" href="https://docs.oracle.com/javase/7/docs/api/java/lang/long.html" scope="external"/>
+</p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<i>Get-Row-String</i>: This returns the value from a <i>rowlLabel</i> row at <i>valueIndex</i> index as a string. The row is loaded using the <i>Load-Row</i> function before executing this command. <i>Get-Row-String</i> converts the underlying string representation into the StringValueType.</p>
+<p>A row index of 0 refers to the first value in the table and the usage is defined in the following way:</p>
+<p>
+<userinput>ComplexMap.Get-Row-String(String “rowLabel”, Integer “valueIndex”)</userinput>
+</p>
+<p>The source context is ComplexMap and the following parameters are defined:</p><ul>
+<li>
+<p>
+<i>rowlLabel</i>: The label assigned to the row when using the <i>Load-Row</i> function. </p>
+</li>
+<li>
+<p>
+<i>valueIndex</i>: The column in the row where the value is stored.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<i>Get-Row-Boolean</i>: This returns the value from a <i>rowlLabel</i> row at <i>valueIndex</i> index as <varname>True</varname> or <varname>False</varname>. The row is loaded using the <i>Load-Row</i> function before executing this command. <i>Get-Row-Boolean</i> converts the underlying string representation into the EnumValueType (BooleanEnum).</p>
+<p>A row index of 0 refers to the first value in the table and the usage is defined in the following way:</p>
+<p>
+<userinput>ComplexMap.Get-Row-Boolean(String “rowLabel”, Integer “valueIndex”)</userinput>
+</p>
+<p>The source context is ComplexMap and the following parameters are defined:</p><ul>
+<li>
+<p>
+<i>rowlLabel</i>: The label assigned to the row when using the <i>Load-Row</i> function. </p>
+</li>
+<li>
+<p>
+<i>valueIndex</i>: The column in the row where the value is stored.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<i>Get-Row-Decimal</i>: This returns the value from a <i>rowlLabel</i> row at <i>valueIndex</i> index as a decimal. The row is loaded using the <i>Load-Row</i> function before executing this command. <i>Get-Row-Decimal</i> converts the underlying string representation into the DecimalValueType.</p>
+<p>A row index of 0 refers to the first value in the table and the usage is defined in the following way:</p>
+<p>
+<userinput>ComplexMap.Get-Row-Decimal(String “rowLabel”, Integer “valueIndex”)</userinput>
+</p>
+<p>The source context is ComplexMap and the following parameters are defined:</p><ul>
+<li>
+<p>
+<i>rowlLabel</i>: The label assigned to the row when using the <i>Load-Row</i> function. </p>
+</li>
+<li>
+<p>
+<i>valueIndex</i>: The column in the row where the value is stored.</p>
+</li>
+<li>
+<p>For the supported value type, the value(s) must be analyzed in accordance with the following:</p>
+<p>
+<xref format="html" href="https://docs.oracle.com/javase/7/docs/api/java/lang/double.html" scope="external"/>
+</p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<i>Get-Row-IPAddress</i>: This returns the value from a <i>rowlLabel</i> row at <i>valueIndex</i> index as an IP address in the supported IPv4 or IPv6 format. The row is loaded using the <i>Load-Row</i> function before executing this command. <i>Get-Row-IPAddress</i> converts the underlying string representation into the IPAddressValueType.</p>
+<p>A row index of 0 refers to the first value in the table and the usage is defined in the following way:</p>
+<p>
+<userinput>ComplexMap.Get-Row-IP_AddressValueType(String “rowLabel”, Integer “valueIndex”)</userinput>
+</p>
+<p>The source context is ComplexMap and the following parameters are defined:</p><ul>
+<li>
+<p>
+<i>rowlLabel</i>: The label assigned to the row when using the <i>Load-Row</i> function.</p>
+</li>
+<li>
+<p>
+<i>valueIndex</i>: The column in the row where the value is stored.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<i>Get-Row-Input-Key</i>: This returns the comma separated keys from the row label. These keys are loaded during the <i>Load-Row</i> function for fetching the data from a mapping table. These keys serve as input for the <i>Load-Row</i> function.</p>
+<p>The usage is defined as follows:</p>
+<p>
+<userinput>COMPLEX_MAP.Get-Row-Input-Key(String "rowLabel" )</userinput>
+</p>
+</li>
+<li>
+<p>
+<i>Get-Row-Input-Key-By-Index</i>: This returns the only a specific key fetched with the help of <i>keyIndex</i>. This key is loaded during the <i>Load-Row</i> function for fetching the data from a mapping table.</p>
+<p>The usage is defined as follows:</p>
+<p>
+<userinput>COMPLEX_MAP.Get-Row-Input-Key-By-Index (String "rowLabel", Integer keyIndex )</userinput>
+</p>
+<p>A key  index of 0 refers to the first key.</p>
+</li>
+<li>
+<p>
+<i>Get-Row-Key</i>: For complex pattern type <varname>REGEX_PATTERN</varname> or <varname>IP_SUBNET_PATTERN</varname>, this returns the complex map row keys with which the provided input keys are matched (using regular expression algorithm or IP subnet matching). This key is loaded during the <i>Load-Row</i> function for fetching the data from a mapping table.</p>
+<p>The usage is defined as follows:</p>
+<p>
+<userinput>COMPLEX_MAP.Get-Row-Key ( String "rowLabel" )</userinput>
+</p>
+</li>
+<li>
+<p>
+<i>Get-Row-Key-By-Index</i>: For complex pattern type <varname>REGEX_PATTERN</varname> or <varname>IP_SUBNET_PATTERN</varname>, this returns only a specific key fetched by providing the <i>keyIndex</i>. This key is loaded during the <i>Load-Row</i> function for fetching the data from a mapping table.</p>
+<p>The usage is defined as follows:</p>
+<p>
+<userinput>COMPLEX_MAP.Get-Row-Key-By-Index (String "rowLabel", Integer "keyIndex" )</userinput>
+</p>
+<p>A key  index of 0 refers to the first key.</p>
+</li>
+</ul>
+</section>
+<section><title>Mapping table examples</title>
+<sectiondiv>
+<p><b>Setting the upload and download bandwidth for a session example</b></p>
+<p>Based on a <i>Device Type</i> and <i>Carrier</i>, set the upload and download bandwidth for the session whether the SPR device information contains the following custom data:</p><ul>
+<li>
+<p>
+<i>Key1</i> = <i>CUSTOM_ATTRIBUTE_NAME</i> = <varname>Carrier</varname>, <i>value</i> = <varname>nameOfCarrier</varname>
+</p>
+</li>
+<li>
+<p>
+<i>Key2</i> = <i>CUSTOM_ATTRIBUTE_NAME</i> = <varname>Device</varname>, value = <varname>nameOfCarrier</varname>
+</p>
+</li>
+</ul>
+<p>The <uicontrol>CarrierDeviceMappingTable</uicontrol> table is considered to define a complex map. For reference, see the  <!--xref URI: #CarrierDeviceMappingTable--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-d1e166236/carrierdevicemappingtable"/>.</p><ul>
+<li>
+<p>The header row, indicates your meaning for each field.</p>
+</li>
+<li>
+<p>The first two columns in the example define the key for the row. <varname>abc+xyz</varname> is the key for row 1.</p>
+</li>
+<li>
+<p>The last four columns in the example define the value for the row. <varname>lteAPN,2000,2000,abc-xyz-LTE</varname> is the value for the row.</p>
+</li>
+<li>
+<p>In a given table, each row must consist of exactly n keys (where n can be between 1 and N).</p>
+</li>
+<li>
+<p>In a given table, each row must consist of exactly m values (where m can be between 1 and M).</p>
+</li>
+</ul>
+<table id="carrierdevicemappingtable" colsep="1" rowsep="1">
+     <title>CarrierDeviceMappingTable example</title>
+     <tgroup cols="6">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <colspec colname="col3"/>
+      <colspec colname="col4"/>
+      <colspec colname="col5"/>
+      <colspec colname="col6"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Carrier </p>
+         <p>(Key_1)</p>
+        </entry>
+        <entry>
+         <p>Device Type </p>
+         <p>(Key_2)</p>
+        </entry>
+        <entry>
+         <p>APN</p>
+         <p>(Value 0)</p>
+        </entry>
+        <entry>
+         <p>Upload Bandwidth</p>
+         <p>(Value 1)</p>
+        </entry>
+        <entry>
+         <p>Download Bandwidth</p>
+         <p>(Value 2)</p>
+        </entry>
+        <entry>
+         <p>CDR</p>
+         <p>(Value 3)</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> abc </entry>
+        <entry> xyz </entry>
+        <entry> lteAPN </entry>
+        <entry> 2000 </entry>
+        <entry> 2000 </entry>
+        <entry> abc-xyz-LTE </entry>
+       </row>
+       <row>
+        <entry> MNO </entry>
+        <entry> xyz </entry>
+        <entry> lteAPN </entry>
+        <entry> 3000 </entry>
+        <entry> 3000 </entry>
+        <entry> MNO-xyz-LTE </entry>
+       </row>
+       <row>
+        <entry> MNO </entry>
+        <entry> BB </entry>
+        <entry> 3G-APN </entry>
+        <entry> 2000 </entry>
+        <entry> 2000 </entry>
+        <entry> MNO-BB-3G </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+<p>You can create the following rule to accomplish:</p><ul>
+<li>
+<p>Loading the row into the ComplexMap context, under the label <varname>bandwidthSelectionRow</varname>.</p>
+</li>
+<li>
+<p>Set the <varname>Max-Requested-Bandwidth-UL</varname> value in the <i>QOS_MANAGEMENT</i> result context to have the value from the second values column.</p>
+</li>
+<li>
+<p>Set the <varname>Max-Requested-Bandwidth-DL</varname> value in the <i>QOS_MANAGEMENT</i> result context to have the value from the third values column.</p>
+</li>
+</ul>
+<p>In this example, the row is loaded into the ComplexMap context, under the <i>bandwidthSelectionRow</i> rowLabel. Then in the second step, we set the <varname>Max-Requested-Bandwidth-UL</varname> value in the QOS_MANAGEMENT result context, to have the value from the second values column. Then in the third step, we set the Max-Requested-Bandwidth-UL and DL values in the QOS_MANAGEMENT result context, to have the values from the values column.</p>
+<table pgwide="1" colsep="1" rowsep="1">
+     <tgroup cols="2">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <thead>
+       <row>
+        <entry>
+         <p>If...</p>
+        </entry>
+        <entry>
+         <p>Then...</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry>
+         <userinput>ComplexMap.Load-Row("CarrierDeviceMappingTable", "abc", "xyz”)",
+          "bandwidthSelectionRow")</userinput>
+        </entry>
+        <entry>
+         <userinput>QOS_MANAGEMENT.Max-Requested-Bandwidth-UL =
+          ComplexMap.Get-Row-Long("bandwidthSelectionRow", 1)</userinput>
+         <userinput>QOS_MANAGEMENT.Max-Requested-Bandwidth-DL =
+          ComplexMap.Get-Row-Long("bandwidthSelectionRow", 2)</userinput>
+        </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+</sectiondiv>
+<sectiondiv>
+    <p><b>Simple mapping example </b></p>
+    <p>Based on a simple mapping, you can map a keyword to one or more fields (as a row) or list of
+     rows. For example, the keyword France could be associated with a single or a list of MCCs. From
+     the time that association is made, the rules engine recognizes this keyword in a way that the
+     user can type location = France.</p><p>Consider the following table named
+      <varname>EuropeTable</varname> as one you might use to define a simple map. In this example,
+     if the AVP value in the Gx CCR message matches, the map lookup results in the following
+     way:</p><p>
+     <i>Called-Station-ID</i> = <varname>lteAPN</varname> in the CCR which matches complex map
+     lookup result.</p>
+    <userinput>GX.3GPP-User-Location-Info.User-Location-Identity-Type[SAI].MCC = 208 which also
+     matches the map lookup result.</userinput>
+    <p>With this result, the example then assigns the following QoS value to the session via the CCA
+     response:</p>
+    <userinput>Max-Requested-Bandwidth-UL = 3000</userinput>
+    <userinput>Max-Requested-Bandwidth-DL = 3000</userinput>
+    <p>rowLabel: APN-MCCSelectionRow</p>
+    <table pgwide="1" colsep="1" rowsep="1">
+     <title>EuropeTable example</title>
+     <tgroup cols="4">
+      <colspec colname="col1"/>
+      <colspec colname="COLSPEC0"/>
+      <colspec colname="col4"/>
+      <colspec colname="col6"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Country </p>
+         <p>(Key 1)</p>
+        </entry>
+        <entry>
+         <p>APN</p>
+         <p>(Value 0)</p>
+        </entry>
+        <entry>
+         <p>MCC</p>
+         <p>(Value 1)</p>
+        </entry>
+        <entry>
+         <p>CDR</p>
+         <p>(Value 2)</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> France </entry>
+        <entry> lteAPN </entry>
+        <entry> 208 </entry>
+        <entry> France-LTE </entry>
+       </row>
+       <row>
+        <entry> Germany </entry>
+        <entry> lteAPN </entry>
+        <entry> 262 </entry>
+        <entry> Germany-LTE </entry>
+       </row>
+       <row>
+        <entry> Italy </entry>
+        <entry> lteAPN </entry>
+        <entry> 222 </entry>
+        <entry> Italy-LTE </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+    <table pgwide="1" colsep="1" rowsep="1">
+     <tgroup cols="2">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <thead>
+       <row>
+        <entry>
+         <p>If...</p>
+        </entry>
+        <entry>
+         <p>Then...</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry>
+         <userinput> ComplexMap.Load-Row(“EuropeTable”, “France”, “APN-MCCSelectionRow”) = true and
+          Gx.Called-Station-ID = ComplexMap.Get-Row-String("APN-MCCSelectionRow ", 0)and
+          GX.3GPP-User-Location-Info.User-Location-Identity-Type[SAI].MCC =
+          ComplexMap.Get-Row-String("APN-MCCSelectionRow", 1)</userinput>
+        </entry>
+        <entry>
+         <userinput>Max-Requested-Bandwidth-UL = 3000</userinput>
+         <userinput>QOS_MANAGEMENT.Max-Requested-Bandwidth-DL = 3000</userinput>
+        </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+   </sectiondiv>
+<sectiondiv>
+<p><b>Mapping two keywords to one or more fields example</b></p>
+<p>Based on a mapping table, you can map two keywords to one or more fields (as a row) or list of rows. For example, with Key1 equal to MCCMNC, and Key2 equal to callSubType, each row could be associated with values that map a specific rate to a specific country. From the time that association is made, the rules engine recognizes this keyword in a way that allows the user to type in the MCCMNC + callSubType to retrieve the rate charged for a specific country. The map is as follows:</p>
+<table pgwide="1" colsep="1" rowsep="1">
+     <title>Rate by country</title>
+     <tgroup cols="4">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <colspec colname="col3"/>
+      <colspec colname="col4"/>
+      <thead>
+       <row>
+        <entry>
+         <p>MCCMNC</p>
+         <p>Key1</p>
+        </entry>
+        <entry>
+         <p>callSubType</p>
+         <p>Key2</p>
+        </entry>
+        <entry>
+         <p>Rate</p>
+         <p>Value1</p>
+        </entry>
+        <entry>
+         <p>Country</p>
+         <p>Value2</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> 322124 </entry>
+        <entry> VOLTE </entry>
+        <entry> rate1  </entry>
+        <entry> Germany </entry>
+       </row>
+       <row>
+        <entry> 456234  </entry>
+        <entry> VOLTE </entry>
+        <entry> rate1  </entry>
+        <entry> USA </entry>
+       </row>
+       <row>
+        <entry> 456122  </entry>
+        <entry> VOLTE </entry>
+        <entry> rate2  </entry>
+        <entry> Canada </entry>
+       </row>
+       <row>
+        <entry> 322124 </entry>
+        <entry> PS-Data </entry>
+        <entry> rate1  </entry>
+        <entry> Germany </entry>
+       </row>
+       <row>
+        <entry> 456234 </entry>
+        <entry> PS-Data </entry>
+        <entry> rate1  </entry>
+        <entry> USA </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example for reference-based map</b></p>
+<p>Following is the example of reference-based map (<varname>REFMAP</varname>, version = v1) with version v1:</p><ol>
+<li>
+<p>Create a device.</p>
+</li>
+<li>
+<p>Create string based device custom data <varname>CD_APN</varname>.</p>
+</li>
+<li>
+<p>Create two complex maps <varname>APN_1</varname> and <varname>QOS_1</varname> (non-referenced based maps).</p>
+</li>
+<li>
+<p>Create reference based complex map with name <varname>REFMAP</varname> with version v1. Here the values <varname>QOS_1</varname> and <varname>APN_1</varname> are the map names or reference of existing maps created above.</p>
+<p>
+<b>APN_1 example</b>
+</p>
+<table pgwide="1" colsep="1" rowsep="1">
+       <tgroup cols="2">
+        <colspec colname="col1"/>
+        <colspec colname="col2"/>
+        <thead>
+         <row>
+          <entry>
+           <p>Key1</p>
+          </entry>
+          <entry>
+           <p>Value1</p>
+          </entry>
+         </row>
+        </thead>
+        <tbody>
+         <row>
+          <entry> APNNAME </entry>
+          <entry> auto_apn </entry>
+         </row>
+         <row>
+          <entry> APNEPC </entry>
+          <entry> apnEpc </entry>
+         </row>
+        </tbody>
+       </tgroup>
+      </table>
+<p>
+<b>QOS_1 example</b>
+</p>
+<table pgwide="1" colsep="1" rowsep="1">
+       <tgroup cols="2">
+        <colspec colname="col1"/>
+        <colspec colname="col2"/>
+        <thead>
+         <row>
+          <entry>
+           <p>Key1</p>
+          </entry>
+          <entry>
+           <p>Value1</p>
+          </entry>
+         </row>
+        </thead>
+        <tbody>
+         <row>
+          <entry> BR_DL </entry>
+          <entry> 4500 </entry>
+         </row>
+        </tbody>
+       </tgroup>
+      </table>
+<p>
+<b>REFMAP example</b>
+</p>
+<table pgwide="1" colsep="1" rowsep="1">
+       <tgroup cols="2">
+        <colspec colname="col1"/>
+        <colspec colname="col2"/>
+        <thead>
+         <row>
+          <entry>
+           <p>Key1</p>
+          </entry>
+          <entry>
+           <p>Value1</p>
+          </entry>
+         </row>
+        </thead>
+        <tbody>
+         <row>
+          <entry> QOS </entry>
+          <entry> QOS_1 </entry>
+         </row>
+         <row>
+          <entry> APN </entry>
+          <entry> APN_1 </entry>
+         </row>
+        </tbody>
+       </tgroup>
+      </table>
+</li>
+<li><p>Create an RSV and create two rule variables <varname>APNGROUP</varname> and
+        <varname>QOSGOUP</varname> in the <i>QOS_MANAGEMENT</i> trigger.</p>
+      <p>
+       <b>APNGROUP</b>
+      </p><table pgwide="1" colsep="1" rowsep="1">
+       <tgroup cols="2">
+        <colspec colname="col1"/>
+        <colspec colname="col2"/>
+        <thead>
+         <row>
+          <entry>
+           <p>If...</p>
+          </entry>
+          <entry>
+           <p>Then...</p>
+          </entry>
+         </row>
+        </thead>
+        <tbody>
+         <row>
+          <entry> COMPLEX_MAP.Load-Row-1Key ( "REFMAP", "APN", "REFMAPROWS" ) = BooleanEnum_TRUE </entry>
+          <entry> COMPLEX_MAP.Get-Row-String ( "REFMAPROWS", 0) </entry>
+         </row>
+        </tbody>
+       </tgroup>
+      </table>
+      <p>
+       <b>QOSGOUP</b>
+      </p><table pgwide="1" colsep="1" rowsep="1">
+       <tgroup cols="2">
+        <colspec colname="col1"/>
+        <colspec colname="col2"/>
+        <thead>
+         <row>
+          <entry>
+           <p>If...</p>
+          </entry>
+          <entry>
+           <p>Then...</p>
+          </entry>
+         </row>
+        </thead>
+        <tbody>
+         <row>
+          <entry> COMPLEX_MAP.Load-Row-1Key ( "REFMAP", "QOS", "REFMAPROWS" ) = BooleanEnum_TRUE </entry>
+          <entry> COMPLEX_MAP.Get-Row-String ( "REFMAPROWS", 0) </entry>
+         </row>
+        </tbody>
+       </tgroup>
+      </table>
+      <!--MMO resource relative URI: ../Graphics/Release_19.9/reference_based_map_example_default.png-->
+      <image href="../images/img9yz-09126-ug01-pczza-sp1-reference_based_map_example_default.png"/>
+      <p>Above rule variables fetch complex maps <varname>APN_1</varname> and
+        <varname>QOS_1</varname> from reference map <varname>REFMAP</varname>.</p>
+     </li>
+<li><p>Add two rule groups <varname>RT_APN</varname> and <varname>RT_QOS</varname> with the
+       following condition using above rule variables.</p>
+      <p>
+       <b>RT_APN</b>
+      </p><table pgwide="1" colsep="1" rowsep="1">
+       <tgroup cols="2">
+        <colspec colname="col1"/>
+        <colspec colname="col2"/>
+        <thead>
+         <row>
+          <entry>
+           <p>If...</p>
+          </entry>
+          <entry>
+           <p>Then...</p>
+          </entry>
+         </row>
+        </thead>
+        <tbody>
+         <row>
+          <entry> COMPLEX_MAP.Load-Row-1Key (@APNGROUP, "APNNAME", "setapn" ) = BooleanEnum_TRUE and
+           GX_MSG_SESSION.Called-Station-ID = COMPLEX_MAP.Get-Row-String ( "setapn", 0) </entry>
+          <entry> SPR_DEVICE.Custom-Data-Add ( "CD_APN", COMPLEX_MAP.Get-Row-String ( "setapn", 0 )
+           ) </entry>
+         </row>
+        </tbody>
+       </tgroup>
+      </table>
+      <p>
+       <b>RT_QOS</b>
+      </p><table pgwide="1" colsep="1" rowsep="1">
+       <tgroup cols="2">
+        <colspec colname="col1"/>
+        <colspec colname="col2"/>
+        <thead>
+         <row>
+          <entry>
+           <p>If...</p>
+          </entry>
+          <entry>
+           <p>Then...</p>
+          </entry>
+         </row>
+        </thead>
+        <tbody>
+         <row>
+          <entry> COMPLEX_MAP.Load-Row-1Key ( @QOSGROUP, "BR_DL", "setqos" ) = BooleanEnum_TRUE </entry>
+          <entry> DSC.APN-Aggregate-Max-Bitrate-DL = COMPLEX_MAP.Get-Row-Long ( "setqos", 0 )
+          </entry>
+         </row>
+        </tbody>
+       </tgroup>
+      </table>
+      <!--MMO resource relative URI: ../Graphics/Release_19.9/Mapping_table_rule_example_default.png-->
+      <image href="../images/img9yz-09126-ug01-pczza-sp1-mapping_table_rule_example_default.png"/>
+     </li>
+<li>
+<p>Trigger GX call and see the custom data is attached to the device and QOS is updated as given in complex map.</p>
+<p>If user has to make any modifications in the map <varname>REFMAP</varname>, then the user can clone new version of same map (REFMAP,version:v2) make the changes, provision it on selected ME without any change on RSV.</p>
+</li>
+</ol>
+</sectiondiv>
+</section>
+</conbody></concept>

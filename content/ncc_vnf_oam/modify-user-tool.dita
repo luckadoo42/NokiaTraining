@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-modify-user-tool"><title>modify-user tool</title><conbody>
+<section><title>Description</title>
+<p>This tool modifies a user. This tool is a centralized version of <codeph>usermod</codeph>. It runs on OAME nodes and distributes the operation to all the specified nodes. The options applicable to <codeph>usermod</codeph> are directly passed to it. For information on <codeph>usermod</codeph> options, see <codeph>usermod</codeph> manual.</p>
+</section>
+<section><title>Syntax</title>
+<p>
+<codeph>modify-user [options] [user]</codeph>
+</p>
+<table>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+<p>Code</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+<codeblock>-B</codeblock>
+</entry>
+<entry>
+Enables debug logging.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-C</codeblock>
+</entry>
+<entry>
+Continues to run the previously failed operation.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-F</codeblock>
+</entry>
+<entry>
+Forces to run the current operation regardless of previous failures.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-h</codeblock>
+</entry>
+<entry>
+ Displays this help message and exits.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-H &lt;HOST_NAMES&gt;</codeblock>
+</entry>
+<entry>
+Specifies which host names (comma-separated) the operation is applied to. The internal IP addresses can also be used. Overrides <codeph>-T</codeph>. 
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-P</codeblock>
+</entry>
+<entry>
+Purges failure tracking files.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-T &lt;NODE_TYPES&gt;</codeblock>
+</entry>
+<entry>
+<p>Specifies which node types (comma-separated) the operation is applied to.</p>
+<p>The valid values are:</p><ul>
+<li>
+<p>for ME: all, auxiliary, cdr, comsvc, db, diameterapp, iohd, ioho, oame</p>
+</li>
+<li>
+<p>for SM: all, auxiliary, db, ioho, oame, smapp</p>
+</li>
+</ul>
+</entry>
+</row>
+<row>
+<entry>
+Applicable <codeph>usermod</codeph> options
+</entry>
+<entry/>
+</row>
+<row>
+<entry>
+<codeph>-a</codeph>
+</entry>
+<entry>
+Appends the user to the supplemental GROUPS mentioned by <codeph>-G</codeph> option without removing the user from other groups.
+</entry>
+</row>
+<row>
+<entry>
+<codeph>-c &lt;COMMENT&gt;</codeph>
+</entry>
+<entry>
+New value of the GECOS field.
+</entry>
+</row>
+<row>
+<entry>
+<codeph>-d &lt;HOME_DIR&gt;</codeph>
+</entry>
+<entry>
+Home directory of the new account.
+</entry>
+</row>
+<row>
+<entry>
+<codeph>-e &lt;EXPIRE_DATE&gt;</codeph>
+</entry>
+<entry>
+Sets the account’s expiration date to EXPIRE_DATE.
+</entry>
+</row>
+<row>
+<entry>
+<codeph>-f &lt;INACTIVE&gt;</codeph>
+</entry>
+<entry>
+Sets password to INACTIVE after expiration.
+</entry>
+</row>
+<row>
+<entry>
+<codeph>-g &lt;GROUP&gt;</codeph>
+</entry>
+<entry>
+Forces to use GROUP as a new primary group.
+</entry>
+</row>
+<row>
+<entry>
+<codeph>-G &lt;GROUPS&gt;</codeph>
+</entry>
+<entry>
+New list of supplementary GROUPS.
+</entry>
+</row>
+<row>
+<entry>
+<codeph>-l &lt;NEW_LOGIN&gt;</codeph>
+</entry>
+<entry>
+New value of the login name.
+</entry>
+</row>
+<row>
+<entry>
+<codeph>-L</codeph>
+</entry>
+<entry>
+Locks the user account.
+</entry>
+</row>
+<row>
+<entry>
+<codeph>-m</codeph>
+</entry>
+<entry>
+Moves contents of the home directory to a new location (use only with <codeph>-d</codeph>).
+</entry>
+</row>
+<row>
+<entry>
+<codeph>-o</codeph>
+</entry>
+<entry>
+Allows to use duplicate (non-unique) UID.
+</entry>
+</row>
+<row>
+<entry>
+<codeph>-R &lt;CHROOT_DIR&gt;</codeph>
+</entry>
+<entry>
+Directory to chroot into.
+</entry>
+</row>
+<row>
+<entry>
+<codeph>-s &lt;SHELL&gt;</codeph>
+</entry>
+<entry>
+New login shell for the user account.
+</entry>
+</row>
+<row>
+<entry>
+<codeph>-u &lt;UID&gt;</codeph>
+</entry>
+<entry>
+New UID for the user account.
+</entry>
+</row>
+<row>
+<entry>
+<codeph>-U</codeph>
+</entry>
+<entry>
+Unlocks the user account.
+</entry>
+</row>
+<row>
+<entry>
+<codeph>-Z &lt;SEUSER&gt;</codeph>
+</entry>
+<entry>
+New SELinux user mapping for the user account.
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section><title>Example output</title>
+<fig>
+<codeblock>[root@sps-me-oame-0 ~]# /opt/tpa/sbin/modify-user -T all -s /bin/sh newuser1
+&lt;2018.12.04 16:09:53 -0500&gt;&lt;sps-me-oame-0&gt;&lt;modify-user&gt; INFO: Checking if the current operation is allowed. 
+&lt;2018.12.04 16:09:53 -0500&gt;&lt;sps-me-oame-0&gt;&lt;modify-user&gt; INFO: Taking the operation '/usr/sbin/usermod -s "/bin/sh"  newuser1' on 'all'.
+&lt;2018.12.04 16:09:54 -0500&gt;&lt;sps-me-oame-0&gt;&lt;modify-user&gt; INFO: The operation succeeded on all target nodes.
+&lt;2018.12.04 16:09:54 -0500&gt;&lt;sps-me-oame-0&gt;&lt;modify-user&gt; INFO: Done with success.</codeblock>
+</fig>
+</section>
+</conbody></concept>

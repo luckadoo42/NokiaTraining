@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="updating_hpa_configuration">
+    <title>Updating HPA configuration</title>
+    <conbody>
+        <p>The HPA configuration can be updated at the time of installation and post-installation
+            using <codeph>helm upgrade</codeph> command. For information about <codeph>helm</codeph>
+            and its options, see <codeph>helm</codeph> documentation. </p>
+        <p>The following examples show how to update the HPA configuration parameters in the input
+            file for the SPS Helm chart.</p>
+        <section id="section_hbg_mg1_5kb">
+            <title>Updating minReplicas</title>
+            <p>From the directory where the Helm chart and Overrides file are located, enter:</p>
+            <codeblock>helm upgrade &lt;release> -n &lt;namespace> sps-chart-&lt;version>.tgz -f &lt;override_file>.yaml  --set=&lt;instance>.hpa.minReplicas=1 </codeblock>
+            <p>For example:</p>
+            <codeblock>helm upgrade sps -n sps-btel sps-chart-20.6.1-89.tgz -f overrides-sps.yaml  --set=charging.hpa.minReplicas=1</codeblock>
+        </section>
+        <section id="section_pym_mg1_5kb">
+            <title>Updating maxReplicas</title>
+            <p>From the directory where the Helm chart and Overrides file are located, enter:</p>
+            <codeblock>helm upgrade &lt;release> -n &lt;namespace> sps-chart-&lt;version>.tgz -f &lt;override_file>.yaml --set=&lt;instance>.hpa.maxReplicas=9</codeblock>
+            <p>For example:</p>
+            <codeblock>helm upgrade sps -n sps-btel sps-chart-20.6.1-89.tgz -f overrides-sps.yaml --set=charging.hpa.maxReplicas=9</codeblock>
+        </section>
+        <section id="section_o2z_jg1_5kb"><title>Updating CPU utilization</title><p>To update the
+                CPU utilization parameter, do the following:</p><ol id="ol_zvf_tyv_zkb">
+                <li>Find out the current CPU utilization by entering:<codeblock>kubectl -n sps get  hpa</codeblock><note>
+                        <p>Do not use the Kubernetes GUI to find out whether or not the current CPU
+                            utilization exceeds the target CPU utilization. Use <codeph>kubectl -n
+                                sps get hpa</codeph> command for this purpose.</p>
+                    </note></li>
+                <li>From the directory where the Helm chart and Overrides file are located,
+                    enter:<codeblock>helm3 upgrade &lt;release> -n &lt;namespace> sps-chart-&lt;version>.tgz -f &lt;overrides_file>.yaml --set=&lt;instance>.hpa.averageCpuUtilization=55</codeblock></li>
+            </ol>For example:<ol id="ol_kjy_wbw_zkb">
+                <li><codeblock>[root@sps103 /]# kubectl -n sps get hpa</codeblock><b>Expected
+                        outcome</b><itemgroup>
+                        <pre>NAME         REFERENCE               TARGETS  MINPODS MAXPODS REPLICAS AGE</pre>
+                        <pre>sps-charging Deployment/sps-charging 151%/75% 1       8       8        3d1h</pre>
+                        <pre>sps-smapp    Deployment/sps-smapp    18%/80%  1       10      1        3d1h</pre>
+                    </itemgroup></li>
+                <li><codeblock>[root@sps103 /]# helm3 upgrade sps -n sps-btel sps-chart-20.6.1-89.tgz -f overrides-sps.yaml --set=charging.hpa.averageCpuUtilization=80</codeblock><b>Expected
+                        outcome</b><itemgroup>
+                        <pre>NAME         REFERENCE               TARGETS  MINPODS MAXPODS REPLICAS AGE</pre>
+                        <pre>sps-charging Deployment/sps-charging 155%/80% 1       10      10       3d1h</pre>
+                        <pre>sps-smapp    Deployment/sps-smapp    18%/80%  1       10      1        3d1h</pre>
+                    </itemgroup></li>
+            </ol></section>
+    </conbody>
+</concept>

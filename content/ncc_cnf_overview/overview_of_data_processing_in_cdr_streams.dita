@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topicID2">
+        <title>Overview of data processing in CDR streams</title>
+        <body>
+            <p>NCC CDR Streams consists of five separate Data Refinery streams performing
+            functionalities such as receiving input, performing required transformation and
+            generating output. The three main streams process the data – Kafka input stream,
+            Business logic stream and Output stream. The other two are supportive streams for
+            configuration and maintenance purposes. While being processed by the streams, the data
+            is stored securely in an in-memory datastore (Redis), later on referred to as “the
+            database”.</p>
+            <p>Kafka input stream receives event data records (EDRs) and charging data records
+            (CDRs) from different components in Nokia Converged Charging (NCC) via Apache Kafka
+            broker and writes them securely into the database. Individual records are stored in Data
+            Refinery internal record format as is and no modification to the data is done in the
+            stream. For more information, see <xref href="overview_kafka_input_streams.dita"/>.</p>
+            <p>Business logic stream reads the input records from the database in batches, does
+            custom mapping of the data if needed, and stores the created output records in the
+            database. By default, no mapping or aggregation of the data is performed. For more
+            information, see <xref href="overview_business_logic_stream.dita"/>. If records get
+            rejected in the Business logic stream, the Reprocessor stream can be used for
+            reprocessing the rejected records, see  <xref
+                href="reprocessr_stream.dita#reprocessr_stream"/></p>
+            <p>Output stream collects the ready output records from the database in batches, encodes
+            them in ASN.1 format and distributes the resulting binary output files to configured
+            locations. For more information, see  <xref href="overview_output_stream.dita"/>.</p>
+            <p>Configuration stream is used for taking into use and updating file distribution rules
+            configured in lookup tables. For more information, see <xref
+                href="overview_configuration_stream.dita"/>.</p>
+        </body>
+    </topic>

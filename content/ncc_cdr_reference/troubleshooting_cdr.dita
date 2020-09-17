@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id ="d1e8537"><title>Troubleshooting CDR</title><conbody>
+<section>
+
+<p>This section provides information about troubleshooting CDR.</p>
+   <note type="attention">The content of this section is only relevant for NCC-VNF.</note>
+<sectiondiv>
+<p><b>Coredump analysis</b></p>
+<p>The CDR Daemon allows the system to take over coredump management. The core file analysis requires the installation of gdb. If the CDR daemon has some exceptions, a coredump file is generated. The developer debugs the issue using the call back analysis.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example tactic</b></p>
+<p>To perform the troubleshooting:</p><ul>
+
+<li>
+<p>Check whether the CDR has a core dump file using the following command:</p>
+<p>
+<codeph># coredumpctl list|grep CDR</codeph>
+</p>
+<p>The following is an example:</p>
+<p>
+<codeph># coredumpctl list|grep CDR</codeph>
+</p>
+<p>
+<systemoutput>Tue 2017-03-28 04:57:53 EDT    9438  1001  1001  11 * /opt/cdr/CDR</systemoutput>
+</p>
+</li>
+<li>
+<p>Print the call back trace for analysis using the following command:</p>
+<p>
+<codeph># coredumpctl gdb &lt;PID&gt;</codeph>
+</p>
+<p>The following is an example:</p>
+<p>
+<codeph># coredumpctl gdb 9438</codeph>
+</p>
+<p>Output:</p>
+<table colsep="1" frame="none" rowsep="1">
+<tgroup cols="3">
+        <colspec align="right" colname="col1" colwidth="1.66*"/>
+        <colspec colname="col2" colwidth="1*"/>
+        <colspec colname="col3" colwidth="6.42*"/>
+        <tbody>
+         <row>
+          <entry colsep="0" rowsep="0"> PID </entry>
+          <entry colsep="0" rowsep="0"> : </entry>
+          <entry colsep="0" rowsep="0"> 9438 (CDR) </entry>
+         </row>
+         <row>
+          <entry colsep="0" rowsep="0"> UID </entry>
+          <entry colsep="0" rowsep="0"> : </entry>
+          <entry colsep="0" rowsep="0"> 1001 (cdr) </entry>
+         </row>
+         <row>
+          <entry colsep="0" rowsep="0"> GID </entry>
+          <entry colsep="0" rowsep="0"> : </entry>
+          <entry colsep="0" rowsep="0"> 1001 (cdr) </entry>
+         </row>
+         <row>
+          <entry colsep="0" rowsep="0"> Signal </entry>
+          <entry colsep="0" rowsep="0"> : </entry>
+          <entry colsep="0" rowsep="0"> 11 (SEGV) </entry>
+         </row>
+         <row>
+          <entry colsep="0" rowsep="0"> Timestamp </entry>
+          <entry colsep="0" rowsep="0"> : </entry>
+          <entry colsep="0" rowsep="0"> Tue 2018-03-28 04:57:52 EDT (1 day 17h ago) </entry>
+         </row>
+         <row>
+          <entry colsep="0" rowsep="0"> Command Line </entry>
+          <entry colsep="0" rowsep="0"> : </entry>
+          <entry colsep="0" rowsep="0"> /opt/cdr/CDR </entry>
+         </row>
+         <row>
+          <entry colsep="0" rowsep="0"> Executable </entry>
+          <entry colsep="0" rowsep="0"> : </entry>
+          <entry colsep="0" rowsep="0"> /opt/cdr/CDR </entry>
+         </row>
+         <row>
+          <entry colsep="0" rowsep="0"> Control Group </entry>
+          <entry colsep="0" rowsep="0"> : </entry>
+          <entry colsep="0" rowsep="0"> /system.slice/cdr.service </entry>
+         </row>
+         <row>
+          <entry colsep="0" rowsep="0"> Unit </entry>
+          <entry colsep="0" rowsep="0"> : </entry>
+          <entry colsep="0" rowsep="0"> cdr.service </entry>
+         </row>
+         <row>
+          <entry colsep="0" rowsep="0"> Slice </entry>
+          <entry colsep="0" rowsep="0"> : </entry>
+          <entry colsep="0" rowsep="0"> system.slice </entry>
+         </row>
+         <row>
+          <entry colsep="0" rowsep="0"> Boot ID </entry>
+          <entry colsep="0" rowsep="0"> : </entry>
+          <entry colsep="0" rowsep="0"> 4c993979adc64c42a5b945224197f28c </entry>
+         </row>
+         <row>
+          <entry colsep="0" rowsep="0"> Machine ID </entry>
+          <entry colsep="0" rowsep="0"> : </entry>
+          <entry colsep="0" rowsep="0"> 02f1ddb1415c4feba9880b2b8c4c5925 </entry>
+         </row>
+         <row>
+          <entry colsep="0" rowsep="0"> Hostname </entry>
+          <entry colsep="0" rowsep="0"> : </entry>
+          <entry colsep="0" rowsep="0"> yywcdr-6.localdomain </entry>
+         </row>
+         <row>
+          <entry colsep="0" rowsep="0"> Coredump </entry>
+          <entry colsep="0" rowsep="0"> : </entry>
+          <entry colsep="0" rowsep="0"> /var/lib/systemd/coredump/core.CDR.1001.
+           4c993979adc64c42a5b945224197f28c.9438.1490691472000000.xz </entry>
+         </row>
+         <row>
+          <entry colsep="0" rowsep="0"> Message </entry>
+          <entry colsep="0" rowsep="0"> : </entry>
+          <entry colsep="0" rowsep="0"> Process 9438 (CDR) of user 1001 dumped core. </entry>
+         </row>
+         <row>
+          <entry colsep="0" rowsep="0"/>
+          <entry colsep="0" rowsep="0"/>
+          <entry colsep="0" rowsep="0"> Stack trace of thread 9438: </entry>
+         </row>
+         <row>
+          <entry colsep="0" rowsep="0"/>
+          <entry colsep="0" rowsep="0"/>
+          <entry colsep="0" rowsep="0"> #0 0x00007f975ae6ae61 pthread_join (libpthread.so.0)
+          </entry>
+         </row>
+         <row>
+          <entry colsep="0" rowsep="0"/>
+          <entry colsep="0" rowsep="0"/>
+          <entry colsep="0" rowsep="0"> #1 0x000000000041d1ef _ZN12CDRmonThread7cleanupEv (CDR)
+          </entry>
+         </row>
+         <row>
+          <entry colsep="0" rowsep="0"/>
+          <entry colsep="0" rowsep="0"/>
+          <entry colsep="0" rowsep="0"> #2 0x00000000004060bf main (CDR) </entry>
+         </row>
+         <row>
+          <entry colsep="0" rowsep="0"/>
+          <entry colsep="0" rowsep="0"/>
+          <entry colsep="0" rowsep="0"> #3 0x00007f975a096b15 __libc_start_main (libc.so.6) </entry>
+         </row>
+         <row>
+          <entry colsep="0" rowsep="0"/>
+          <entry colsep="0" rowsep="0"/>
+          <entry colsep="0" rowsep="0"> #4 0x000000000040661d _start (CDR) </entry>
+         </row>
+        </tbody>
+       </tgroup>
+</table>
+</li>
+</ul>
+</sectiondiv>
+</section>
+</conbody></concept>

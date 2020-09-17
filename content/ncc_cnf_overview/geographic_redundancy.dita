@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="geographic_redundancy">
+    <title>Overview</title>
+    <conbody>
+        <p>A network deployment of NCC includes a pair of Service Managers (SMs) and one or more
+            pairs of Managed Elements (MEs). Much of the data on an SM is replicated across the
+            network with the other SM, allowing the two SMs to operate in an active/active mode.
+            Similarly, much of the data on an ME is replicated across the network with the other ME
+            in the pair, allowing the two MEs to operate in an active/active mode.</p>
+        <p>A subscriber / device is homed on a particular ME and all transactions for that
+            subscriber / device are handled by that home ME. This serialization of transactions
+            through a single home ME ensures proper data integrity and consistency and avoids race
+            conditions in the network that could result in a loss of that data integrity. If the
+            primary ME is unable to process traffic, then the other ME in the pair takes over as the
+            currently active home for those subscribers / devices normally homed on that failed ME.
+            Expectation is that half of the subscribers / devices served by a particular ME pair
+            would be homed on one ME in the pair as primary with the other ME serving as secondary
+            home, with the other half being vice-versa. Thus, the MEs in a pair are active / active
+            in the normal case, but each active on their own primary subscribers / devices.</p>
+        <p>The SMs maintain the mapping of which subscribers / devices are homed on which MEs. The
+            actual detailed subscriber / device records are stored only on the MEs.</p>
+        <p>The MEs maintain their own mapping data of which MEs are currently the active home for
+            particular subscribers / devices. In a network deployment model with Independent MEs,
+            this mapping data includes only those subscribers / devices in this ME pair. In a
+            network deployment model with Networked MEs, this mapping data includes all subscribers
+            / devices across all ME pairs. Thus, any call received by a particular ME can be
+            forwarded to the currently active home ME for that subscriber / devices, across any ME
+            in the entire network.</p>
+        <p>The SMs and MEs engage in network heartbeats to ascertain the most accurate network view
+            of which MEs are in-service or out-of-service. This ensures appropriate differentiation
+            between local network issues and actual failures of an ME in the network and helps avoid
+            split-brain scenarios where both MEs in a pair could mistakenly assume they need to be
+            the active home. It also ensures consistent network-wide site routing based on a shared
+            network view.</p>
+        <p>Data replication across SMs and MEs for the data stored in the Aerospike DB, which is the
+            data used by the SM and the Charging application on the ME, is achieved by leveraging
+            Aerospike's cross-datacenter replication.</p>
+        <p>For all of these topics, the same network approach is taken regardless of whether the SMs
+            and MEs are deployed independently, or whether the SMs and MEs are co-resident in an IG
+            configuration.</p>
+    </conbody>
+</concept>

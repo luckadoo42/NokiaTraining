@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="id9YZ-09126-MT00-REZZA-SP2-d1e84409"><title>Kafka broker service failure during parallel reboot of ZooKeeper and Kafka broker services</title><taskbody id="d1e84472"><context>
+<sectiondiv>
+<p>This procedure provides instructions on how to restore Kafka broker services in the NCC, when the
+                    broker service fails. </p>
+<p>Kafka broker service might fail as a result of a simultaneous, not sequential reboot of ZooKeeper and Kafka broker services. To avoid the failure of Kafka broker service, you must ensure that if a reboot occurs, which can be an automatic reboot or a human-initiated action, ZooKeeper service is initiated first and stays up and running before Kafka broker service is initiated.</p>
+<p>This procedure applies to SM and ME sites.</p>
+</sectiondiv>
+<sectiondiv>
+                <p><b>Related information</b></p>
+                <p>In the NCC, ZooKeeper resides on Auxiliary nodes and Kafka broker service resides
+                    on Application nodes on SM sites and COMSVC nodes on ME sites.</p>
+                <p>The command <userinput>systemctl status kafka</userinput> provides the status of
+                    Kafka broker service. If the broker service fails, the output is as follows:</p>
+                <systemoutput>kafka.service - CKAF kafka service</systemoutput>
+                <systemoutput>Loaded: loaded (/etc/systemd/system/kafka.service; enabled; vendor
+                    preset: disabled)</systemoutput>
+                <systemoutput>Active: activating (auto-restart) (Result: exit-code) since Tue
+                    2017-08-15 11:34:43 EDT; 2s ago</systemoutput>
+                <systemoutput>Process: 1770 ExecStop=/usr/bin/kafka-server-stop (code=exited,
+                    status=1/FAILURE)</systemoutput>
+                <systemoutput>Process: 543 ExecStart=/usr/bin/kafka-server-start $ARG1 (code=exited,
+                    status=1/FAILURE)</systemoutput>
+                <systemoutput>Main PID: 543 (code=exited, status=1/FAILURE)</systemoutput>
+                <systemoutput>CGroup: /system.slice/kafka.service</systemoutput>
+            </sectiondiv>
+			<p>To recover Kafka broker services in the NCC:</p>
+</context><steps>
+<step><cmd>Restart simultaneously ZooKeeper services on all the Auxiliary nodes by entering:</cmd><info><p>
+<codeph>systemctl restart kafka-zookeeper</codeph>
+</p></info></step>
+<step><cmd>Check the status of ZooKeeper by entering:</cmd><info><codeblock>started.systemctl status kafka-zookeeper</codeblock></info></step>
+<step><cmd>Ensure that ZooKeeper is Active on all the Auxiliary nodes.</cmd><info/></step>
+<step><cmd>On ME sites, restart simultaneously Kafka broker services on all the ComSvc nodes by entering:</cmd><info><p>
+<codeph>systemctl restart kafka</codeph>
+</p></info></step>
+<step><cmd>On SM sites, restart simultaneously Kafka broker services on all the Application nodes by entering:</cmd><info><p>
+<codeph>systemctl restart kafka</codeph>
+</p></info></step>
+<step><cmd>Check the status of Kafka broker service by entering:</cmd><info><codeblock>systemctl status kafka</codeblock></info></step>
+<step><cmd>Ensure that Kafka broker service is Active on all the nodes.</cmd><info/></step>
+</steps>
+</taskbody></task>

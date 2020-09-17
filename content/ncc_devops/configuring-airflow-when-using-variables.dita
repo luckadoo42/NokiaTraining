@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="id9YZ-09126-MT02-REZZA-Configuring-Airflow-when-using-variables"><title>Configuring Airflow GUI variables for running a test suite</title><taskbody id="d1e4189"><context>
+            <p>This section provides instructions on how to configure the Airflow GUI variables for
+                executing test suites.</p>
+            <note>
+                <p>For more information on Airflow, see Airflow documentation.</p>
+            </note>
+<note>
+<p>In the Airflow GUI, DAGs represent test suites.</p>
+</note></context><prereq>
+<p>Before beginning this procedure, ensure the following:</p><ul>
+<li>
+<p>The Maestro VM includes the Airflow server, which runs on port 80.</p>
+</li>
+<li>
+<p>If you need to configure the Airflow GUI for sending e-mail notifications, ensure that the DNS server is configured. Use <filepath>/etc/resolv.conf</filepath> to configure the DNS server.</p>
+</li>
+</ul>
+			<p>To configure the Airflow GUI for test suites execution:</p>
+</prereq><steps>
+<step><cmd>From the Maestro VM, log in to the Airflow GUI.</cmd><info><note>
+<p>Internet Explorer is not supported to access the Airflow GUI.</p>
+</note><note>
+<p>By default the Airflow GUI is accessible with the Maestro IP address. For example, if the Maestro VM is installed with IPv4 and its IP address is 10.10.10.10, the Airflow GUI is accessible with <userinput>http://10.10.10.10/admin</userinput> address. If the Maestro VM is installed with IPv6 and its IP address is [3010::29:119:0:0:10], the Airflow GUI is accessible with <userinput>http://[3010::29:119:0:0:10]/admin</userinput> address.</p>
+</note></info></step>
+<step><cmd>In the Airflow GUI, select the <b>Admin</b> tab and then select the <b>Variables</b> tab. The <b>Variables</b> window appears.</cmd><info/></step>
+<step><cmd>Configure the file paths to the SDC Config files, to the <filepath>clouds-config</filepath> file, and to the VNF Config files as follows:</cmd><info><p>In the <b>Variables</b> window do the following:</p><ul>
+<li>
+<p>If your deployment is SM and ME, set <varname>smsdc</varname> and <varname>mesdc</varname> to the absolute file path of the SM and ME SDC Config files.</p>
+<p>For example:</p>
+<p>
+<userinput>/opt/sps/configs/smsdc.json</userinput> and <userinput>/opt/sps/configs/mesdc.json</userinput>
+</p>
+</li>
+<li>
+<p>If your deployment is IG, set <varname>igsdc</varname> to the absolute file path of the IG SDC Config files.</p>
+<p>For example:</p>
+<p>
+<userinput>/opt/sps/configs/igsdc.json</userinput>
+</p>
+</li>
+<li>
+<p>Set <varname>clouds-config</varname> to the absolute path of <filepath>clouds-config</filepath> file.</p>
+<p>For example, </p>
+<p>
+<userinput>/opt/sps/configs/clouds-config.yaml</userinput>
+</p>
+</li>
+<li>
+<p>If your deployment is SM and ME, set <varname>smvnf</varname> and <varname>mevnf</varname> to the absolute path of the SM VNF and ME VNF files.</p>
+<p>For example, </p>
+<p>
+<userinput>/opt/sps/configs/smvnf.json</userinput> and <userinput>/opt/sps/configs/mevnf.json</userinput>
+</p>
+</li>
+<li>
+<p>If your deployment is IG, set <varname>igvnf</varname> to the absolute path of the IG VNF file.</p>
+<p>For example, </p>
+<p>
+<userinput>/opt/sps/configs/igvnf.json</userinput>
+</p>
+</li>
+</ul></info></step>
+<step><cmd>If you need to configure variables for a CNF deployment, you must provide a minimum of two variables for an IG SPS-CNF (“ig-helm-chart-dir” and “ig-cnf-namespace”), or four variables for a Distributed SPS-CNF (“sm-helm-chart-dir”, “sm-cnf-namespace”, “me-helm-chart-dir” and “me-cnf-namespace”). </cmd><info><p>The following defines the mandatory parameters to view Test Suite DAGs for an IG SPS-CNF deployment:</p><ul>
+<li>
+<p>
+<b>ig-cnf-namespace</b>: K8S namespace used for IG SPS setup</p>
+</li>
+<li>
+<p>
+<b>ig-helm-chart-dir</b>: Directory of IG SPS helm charts located in Maestro. It is expected that the user uploads this package manually in Maestro (or via Airflow package manager).</p>
+</li>
+</ul><p>The following defines the mandatory parameters to view Test Suite DAGs for a Distributed SPS-CNF deployment:</p><ul>
+<li>
+<p>
+<b>sm-cnf-namespace</b>: K8S namespace used for SM SPS setup</p>
+</li>
+<li>
+<p>
+<b>sm-helm-chart-dir</b>: Directory of SM SPS helm charts located in Maestro. It is expected that the user uploads this package manually in Maestro (or viaAirflow package manager).</p>
+</li>
+<li>
+<p>
+<b>me-cnf-namespace</b>: K8S namespace used for ME SPS setup</p>
+</li>
+<li>
+<p>
+<b>me-helm-chart-dir</b>: Directory of ME SPS helm charts located in Maestro. It is expected that the user uploads this package manually in Maestro (or via Airflow package manager).</p>
+</li>
+</ul><p>The following defines the optional parameters to view Test Suite DAGs in an SPS-CNF deployment:</p><ul>
+<li>
+<p>
+<b>ig-cnf-yaml</b>: Name of YAML file used to configure CNF setup,and it has to be present in helm dir e.g. overrides-sps.yaml. If no value is provided it will look for values.yaml in provided ig-helm-char-dir.</p>
+</li>
+<li>
+<p>
+<b>me-cnf-yaml</b>: Name of YAML file used to configure CNF setup,and it has to be present in helm dir e.g. overrides-me.yaml. If no value is provided it will look for values.yaml in provided me-helm-char-dir.</p>
+</li>
+<li>
+<p>
+<b>sm-cnf-yaml</b>: Name of YAML file used to configure CNF setup,and it has to be present in helm dir e.g. overrides-sm.yaml. If no value is provided it will look for values.yaml in provided sm-helm-char-dir</p>
+</li>
+<li>
+<p>
+<b>cnf-releasename</b>: RELEASENAME used at time of setting SPS-CNF. If no value is provided, it will use sps as default.</p>
+</li>
+</ul></info></step>
+<step><cmd>Configure e-mail notifications. In the <b>Variables</b> window, do the following:</cmd><info><ul>
+<li>
+<p>Set the <varname>email-relay-server</varname> to a valid public/accessible SMTP server.</p>
+</li>
+<li>
+<p>Set the <varname>email-to-address</varname> to a valid e-mail address or multiple addresses to which the notification is sent. Multiple e-mail addresses are separated by comma. </p>
+<p>For example, </p>
+<p>
+<userinput>john.doe@nokia.com, jane.doe@nokia.com</userinput>
+</p>
+</li>
+<li>
+<p>Set the <varname>email-from-address</varname> to <userinput>do_not_reply@spsops-notification.com</userinput> or to any other address if needed.</p>
+</li>
+<li>
+<p>Set the <varname>email-subject-prefix</varname> to allow Airflow to add a subject prefix to e-mail notifications.</p>
+</li>
+</ul></info></step>
+<step><cmd> If the Maestro VM has multiple IP addresses and a particular IP is needed to run certain test suites such as Diameter related tests, in the <b>Variables</b> window, configure <varname>local-ip</varname> variable.</cmd><info/></step>
+<step><cmd> In the <b>Variables</b> window, configure <varname>max-reports-count-per-suite</varname>.</cmd><info><note>
+<p>This variable defines the number of reports to keep for a test suite. This value represents the maximum number of records in the log history for a DAG test suite or a test executed using CLI. Once the number of reports exceeds this value, the oldest report (by date) is deleted. The default value is 60.</p>
+</note></info></step>
+<step><cmd> In the <b>Variables</b> window, configure <varname>maintenance_dag_schedule</varname>.</cmd><info><note>
+<p>This variable determines when to run the maintenance DAG.</p>
+</note></info></step>
+<step><cmd>Verify that the DAGs are generated, and that the generated DAGs correspond to your workflows, and that the tasks are created for each workflow. Verify as follows:</cmd><info><ul>
+<li>
+<p>In the Airflow GUI, click the <b>Dags</b> tab. The list of generated DAGs appears.</p>
+</li>
+<li>
+<p>Choose a DAG to verify and click this DAG. The tasks corresponding to this DAG appear.</p>
+</li>
+</ul><note>
+<p>The set of tasks can be viewed with <b>Graph View</b> or <b>Tree View</b>. To view the log, click a task.</p>
+</note><note>
+<p>For more information on Airflow related queries, see Airflow documentation.</p>
+</note></info></step>
+<step><cmd>Verify that e-mail notifications are generated using the procedure <!--xref URI: t-devops-airflow-running-test-suite.xml#Running-test-suite--><xref keyref="id9YZ-09126-MT02-REZZA-Running-test-suite"/>.</cmd><info/></step>
+</steps>
+</taskbody></task>

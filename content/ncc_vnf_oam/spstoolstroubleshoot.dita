@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-spstoolstroubleshoot"><title>Issues faced by NCC tools</title><conbody>
+<section><title>Overview</title>
+<p>This section describes the issues faced by NCC tools. For more information on NCC tools, see the
+                    <i>NCC tools</i> appendix of this guide.</p>
+</section>
+<section><title>Issues faced by db-list tool</title>
+<sectiondiv>
+<p><b>Purpose</b></p>
+<p>This procedure describes the options provided by the <i>db-list</i> tool that can be helpful in case the database dump taken from a system having a larger data size provisioned. For example, millions of devices with all associated charging data.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Related information</b></p>
+<p>The following snippet is a sample logging by the <i>db-list</i> tool in case the heap size (memory available to the tool) is less in comparison to the size of records.</p>
+<userinput>
+Exception in thread "Aerospike-3" java.lang.OutOfMemoryError: GC overhead limit exceeded
+at java.util.Hashtable.clone(Hashtable.java:548)
+at org.apache.log4j.helpers.ThreadLocalMap.childValue(ThreadLocalMap.java:37)
+at java.lang.ThreadLocal$ThreadLocalMap.&lt;init&gt;(ThreadLocal.java:391)
+at java.lang.ThreadLocal$ThreadLocalMap.&lt;init&gt;(ThreadLocal.java:298)
+
+Exception in thread "Aerospike-1" Exception in thread "tend"
+Exception in thread "pool-2-thread-4" java.lang.OutOfMemoryError: GC overhead limit exceeded
+Exception in thread "Aerospike-2" java.lang.OutOfMemoryError: GC overhead limit exceeded
+java.lang.OutOfMemoryError: GC overhead limit exceeded
+</userinput>
+</sectiondiv>
+<sectiondiv>
+<p><b>Steps</b></p>
+<p>Follow either of the given options:</p><ul>
+<li>
+<p>If free memory is available on the node running the <i>db-list</i> tool, then the option <userinput>r</userinput> can be used to set the heap size. For example, <codeph>-r 4096</codeph>
+</p>
+<p>This changes the heap size from its default value of 2 GB to a new value of 4 GB.</p>
+<p>
+<b>Note:</b> Nokia recommends not to increase the heap size beyond half of the total memory of the node running the <i>db-list</i> tool.</p>
+</li>
+<li>
+<p>Another option is to reduce the worker queue capacity from the existing value of 100k records. The option <userinput>q</userinput> can be used, for example <userinput>-q 70000</userinput>.</p>
+<p>This leads to the lesser memory requirement by the tool.</p>
+</li>
+<li>
+<p>If the CPU usage is going high, then the value of <i>t</i>, which refer to the number of threads should be reduced.</p>
+</li>
+</ul>
+</sectiondiv>
+</section>
+</conbody></concept>

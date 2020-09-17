@@ -1,0 +1,663 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-d1e29046"><title>NCC Monitoring</title><conbody>
+<section><title>System health</title>
+<p>The system health is a resultant value derived from the health of constituent components. Complex multi-service systems require an adequate number of working instances to carry out the assigned work load. The system must be monitored for degradation of health (systems not working at rated performance, or not working at all) and troubleshooting activities should be performed as needed. </p>
+</section>
+<section>
+            <title>Health checks</title>
+            <p>Health monitoring is composed of several checks that are run on several component
+                systems. The following lists some of those checks:</p>
+            <ul>
+                <li>
+                    <p>Disk access is monitored.</p>
+                </li>
+                <li>
+                    <p>Free available disk space is monitored. Every component monitors free disk
+                        space on it's local system, and alarms and logs if the level of availability
+                        falls below a pre-configured threshold.</p>
+                </li>
+                <li>
+                    <p>An element’s unavailability in an active-standby pair is monitored. Not
+                        having one pair is a degradation. Not having either pair is a system
+                        outage.</p>
+                </li>
+                <li>
+                    <p>Reduced availability for N+K local redundancy systems is monitored. Loss of
+                        N+K in any system is degradation. Loss of more than K is system outage</p>
+                </li>
+                <li>
+                    <p>Database node is monitored. Database node outage is a degradation. A second
+                        database node outage within a data migration window is a system outage.</p>
+                </li>
+            </ul>
+            <p>Basic health checking for all nodes can be accomplished by entering the following
+                command as either the “root” user or the “tpaadmin” user on the OAME:</p>
+            <p>
+                <userinput>/opt/healthcheck/bin/health time</userinput>
+            </p>
+            <p>The second line of the output states whether or not all VMs are reachable, for
+                example:</p>
+            <p>
+                <systemoutput>“Completed time check with status completed” </systemoutput>–
+                everything is reachable</p>
+            <p>
+                <systemoutput> “Completed time check with status nok”</systemoutput>- at least one
+                VM was not reachable. If this is the case then the unreachable nodes are listed in
+                the output.</p>
+            <note> If the output states that the tool is already running, then the chances are that
+                there is a cron job running this tool. Try again after a few seconds.<p/></note>
+        </section>
+<section><title>NCC service monitoring</title>
+<p>Every system component registers itself with Monitoring. Monitoring provides component statuses based on their ability to handle a request per service instance and per VM; all of which contribute to the overall status of a service. Component (Site) Status is derived by the aggregate of all the monitored services. All vital services in a site must be present with a status of UP before traffic can start in the system. This applies to system starts and restarts. </p>
+<p>Monitoring is used by heartbeat and it is service aware. That is, NCC monitoring is aware of
+                overall site health, which is derived by the individual component’s service statuses
+                and is used by heartbeat to determine if a site is In-Service (IS) or Out-of-Service
+                (OOS). For example, if the system components along with their services are not ready
+                on the initial start up, the system will not start and you will get a time out
+                message. Furthermore, monitoring will detect and warn of other issues such as
+                bad-acting VMs, which when they have an issue may be marked as being in a DOWN
+                state. This DOWN state contributes to a service’s overall status. Eventually, if
+                enough of these VMs fail, the service instance and the site can be marked as DOWN or
+                OOS as well. </p>
+<p>NCC uses composing states, taken from multiple monitoring jobs, to detect some soft failure
+                scenarios, at the VM level. These soft failure scenarios impact the ability to
+                provide adequate service. If there are any VM-based composing states in the
+                monitored items shown in <!--xref URI: #monitortable--><xref
+                    keyref="id9YZ-09126-MT00-REZZA-SP2-d1e29046/monitortable"/> that are DOWN, then
+                the instance status will also be DOWN. For example, for the policy service instance
+                to be UP, the LTM client, the Aerospike client and the policy monitoring job all
+                need to be UP. shows a summarizing example of composing states being used to monitor
+                application health.</p>
+<fig>
+<title>Summary of composing states monitoring application health</title>
+<!--MMO resource relative URI: ../Graphics/moncompstat_default.png-->
+    <image href="../images/moncompstat_default.png" placement="break" scale="50"/>
+</fig>
+<p>These composing states provide insight as to what actions are required to recover the VM from a
+                soft failure scenario and allow the NCC to provide adequate service. These composing
+                statuses can include:</p><ul>
+<li>
+<p>whether or not the service is UP or DOWN</p>
+<p>This applies to each individual service instance. </p>
+</li>
+<li>
+<p>whether the aerospike client is UP or DOWN</p>
+<p>An Aerospike client monitoring job "aerospike_client" is a composing state to any service that uses the database. The monitoring job runs in the application server that runs a service instance and uses the database. It checks the aerospike client connection, reads, and updates a record. If it fails to perform one of these operations the state of the job goes to DOWN and any service instance relying on this composing state goes to DOWN if it was previously UP.  </p>
+</li>
+<li>
+<p>whether the LTM client is UP or DOWN</p>
+<p>An LTM client monitoring job "ltm_client" is a composing state to any service that uses the LTM. The monitoring job runs in the application server that runs a service instance that uses the LTM. The monitoring job checks the LTM client, acquires a lock, and releases the lock. If it fails to perform one of these operations the state of the job goes to DOWN and any service instance relying on this composing state goes to DOWN if it was previously UP.  </p>
+</li>
+<li>
+<p>whether the Diameter peer isolation status is UP or DOWN</p>
+<p>Diameter peer monitoring runs on the IOHDs and monitors the state of the remote peers to identify when all peering is down. This changes the start up and running behavior as follows:</p><ul>
+<li>
+<p>On startup, there are no active peers and the system starts active. The peer status remains UP until the first peer is connected. If the component is connected to 1+ peer, the status will go DOWN as the stack shuts down and the peers are dropped.</p>
+</li>
+<li>
+<p>When the first peer connects, the state is already UP and the state remains UP. However, going forward if the number of connected peers goes to zero, the state will go to DOWN.</p>
+</li>
+<li>
+<p>If the state of the first peer is DOWN due to no connected peers, the first peer connected after being DOWN causes the state to go UP.</p>
+</li>
+<li>
+<p>If the state is UP and a peer is dropped but more peers connect and at least one other peer is connected, the state remains UP.</p>
+</li>
+<li>
+<p>If the state is UP and the last peer is dropped, the service state goes from UP to DOWN.</p>
+</li>
+<li>
+<p>On the Standby IOHD, the state is UP waiting for an activity switch. On an activity switch the sequence starts again as if the system was starting up again. </p>
+</li>
+</ul>
+<p>The “Monitor Diameter IO Connected Peers” application preference can be set to “true” to check if all peer connections have been lost. See “Monitor Diameter IO Connected Peers” in the <i>Global Configuration Guide</i> for more information.</p>
+</li>
+</ul>
+<p> These states can be seen in the output of the sps-status tool. You can use the sps-status tool to verify service status and take the necessary actions to ensure that services are all UP. The composing states are an amalgamation of many individual states from associated services that are used to determine the state of a service or component (SM or ME) as being UP/DOWN or IS/OOS respectively. If you have co-located SM and MEs in a site, the site would be OOS if both components are down. See the <!--xref URI: t-tools-SPS-status-tool.xml#spsstatus--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsstatus"/> for more information.</p>
+<p>When a system goes out of service certain capabilities are shut down, for example:</p><ul>
+<li>
+<p>the ability to provision from SM</p>
+</li>
+<li>
+<p>Diameter traffic (including peering)</p>
+</li>
+<li>
+<p>5G traffic</p>
+</li>
+</ul>
+<p>Currently, Diameter peers are monitored but http peers are not monitored. When a site is taken
+                out-of-service (OOS), the http/2 stack is always shutdown. Monitoring will
+                gracefully shut down the Diameter stack if anything other than the Diameter peering
+                (diameterio) is DOWN. If the only issue is the loss of remote peer connections, the
+                Diameter stack will not shutdown when peer connection monitoring is the only
+                monitoring job that is DOWN so that NCC can listen for incoming peer connections and
+                bring the site back into service. Monitoring of the OOS site continues while the
+                site is OOS and as soon as the site is ready to go to an In-service (IS) state, the
+                NCC automatically restarts the Diameter stack so that the site can receive traffic
+                again. <!--xref URI: #daiameterstackbehav--><xref
+                    keyref="id9YZ-09126-MT00-REZZA-SP2-d1e29046/daiameterstackbehav"/> shows the
+                relationship between when the Diameter stack and the ME component state are in
+                different scenarios.</p>
+<table id="daiameterstackbehav" colsep="1" rowsep="1">
+                <title>Behavior of the Diameter stack and the ME component state in different
+                    scenarios</title>
+                <tgroup cols="3">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <colspec colname="col3"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Scenario</p>
+                            </entry>
+                            <entry>
+                                <p>ME component state</p>
+                            </entry>
+                            <entry>
+                                <p>Diameter Stack</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> Site is in service </entry>
+                            <entry> UP </entry>
+                            <entry> UP </entry>
+                        </row>
+                        <row>
+                            <entry> Peer monitoring goes down, when ME Component is UP </entry>
+                            <entry> Goes DOWN </entry>
+                            <entry> Remains UP to monitor new peers, even though ME is OOS. </entry>
+                        </row>
+                        <row>
+                            <entry> Peer monitoring comes back, when it is the only monitored
+                                service DOWN. </entry>
+                            <entry> Goes UP </entry>
+                            <entry> Remains UP </entry>
+                        </row>
+                        <row>
+                            <entry> ME component is UP, but goes OOS due to another monitored
+                                service </entry>
+                            <entry> Goes DOWN </entry>
+                            <entry> Diameter stack goes down. Peer monitoring if in the start UP
+                                state, remains in the start UP state. No peer has connected yet.
+                                Peer monitoring if connected to 1+ peer, will go DOWN as the stack
+                                shuts down and the peers are dropped. </entry>
+                        </row>
+                        <row>
+                            <entry> ME component is down due to Peer monitoring. Other services are
+                                UP and then another service goes OOS. </entry>
+                            <entry> Remains DOWN </entry>
+                            <entry> Diameter stack goes down. It was UP before, as diameter peering
+                                had been the only issue. </entry>
+                        </row>
+                        <row>
+                            <entry> ME component is down due to peer monitoring and another
+                                monitored service is OOS. The other service comes back IS. </entry>
+                            <entry>
+                                <p>Remains DOWN</p>
+                                <p>Peer Monitoring remembers its DOWN state. </p>
+                            </entry>
+                            <entry> Diameter stack comes back to listen for peers. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p>ME component is down due to another monitored service being
+                                    down.</p>
+                                <p>Before this occurred the Peer Monitoring had been in start
+                                    state.</p>
+                            </entry>
+                            <entry> ME component state goes UP. </entry>
+                            <entry> Diameter stack goes UP </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p>ME component is down due to another monitored service being down. </p>
+                                <p>Before peer monitoring had dropped because the stack was shut
+                                    down.</p>
+                            </entry>
+                            <entry> ME component state remains DOWN. </entry>
+                            <entry> Stack comes up and NCC is waiting for a peer, which if
+                                everything is good should be available and the connection can
+                                happen. (Peer Monitoring should go to UP and ME to UP). However, if
+                                no peers are now available, the stack remains DOWN. </entry>
+                        </row>
+                        <row>
+                            <entry> Activity switch </entry>
+                            <entry> After activity switch finishes it will go back to whatever state
+                                it was in before, based on its monitored services, other than the
+                                Peer Monitor, which is reset to the start state. </entry>
+                            <entry>
+                                <p>Goes to UP if the ME component states compute to IS.</p>
+                                <p>Peer Monitoring is set to the start state. Nothing is remembered
+                                    for the peer state on the previous active IOHD.</p>
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<note>For Client or NCC initiated connections, a Disconnect Peer Request (DPR) message is initiated
+                by the NCC.<p/></note>
+<note>In the case of an NCC being recovered from a failure, the recovering NCC monitors the external
+                views of the recovering NCC data center and can only come back in-service when the
+                other active XDR peer NCC indicates an acceptably low dc_timelag and a CLUSTER_UP dc
+                state. An NCC that is recovering, must first ensure that its local data is
+                up-to-date with the other NCCs in the network prior to changing its state back to
+                In-Service and enabling its incoming Diameter traffic. Given that there is
+                continuous traffic in the network, the NCC monitors XDR to determine if it is ready
+                to go in-service with only a small amount of remaining XDR traffic queued in the
+                Aerospike XDR digest log. <p/></note>
+<note>In a simplex (non-geo-redundant) site, an N+K service must have at least one instance UP;
+                otherwise, that service will transition to DOWN. A simplex site does not have a mate
+                site to take over (as is the case in geo-redundancy) so the goal is to stay in
+                service as long as possible.<p/></note>
+<p>
+                <!--xref URI: #monitortable-->
+                <xref keyref="id9YZ-09126-MT00-REZZA-SP2-d1e29046/monitortable"/> describes the
+                items that are monitored by the NCC.</p>
+<table id="monitortable" colsep="1" rowsep="1">
+                <title>Services monitored by NCC</title>
+                <tgroup cols="4">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <colspec colname="col3"/>
+                    <colspec colname="col4"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Monitored Service</p>
+                            </entry>
+                            <entry>
+                                <p>Type</p>
+                            </entry>
+                            <entry>
+                                <p>Service State Calculation</p>
+                            </entry>
+                            <entry>
+                                <p>Composing states to determine if an instance is UP</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> Aerospike Cluster service </entry>
+                            <entry> STANDALONE </entry>
+                            <entry> Calculated by an external DB layer monitor to include
+                                consideration of N+K, rack awareness (2 groups of N+K), and whether
+                                data migration is already happening when a DB node fails. </entry>
+                            <entry> If the Aerospike Cluster Service is detected as DOWN on any VM
+                                in the service instance, the service instance status is also DOWN.
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> CDR service </entry>
+                            <entry> NPLUSK </entry>
+                            <entry> Service goes DOWN if more than K service instances are DOWN at a
+                                given time in the N+K set. </entry>
+                            <entry> If the CDR Service is detected as DOWN on any VM in the service
+                                instance, the service instance status is also DOWN. </entry>
+                        </row>
+                        <row>
+                            <entry> Charging application service </entry>
+                            <entry> NPLUSK </entry>
+                            <entry> Service goes DOWN if more than K service instances are DOWN at a
+                                given time in the N+K set. </entry>
+                            <entry>
+                                <p>If any one of the following are detected as DOWN on any VM in the
+                                    service instance, the service instance status is also DOWN:</p>
+                                <ul>
+                                    <li>
+                                        <p>charging </p>
+                                    </li>
+                                    <li>
+                                        <p>aerospike client </p>
+                                    </li>
+                                    <li>
+                                        <p>ltm client </p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> CKEY service </entry>
+                            <entry> NPLUSK </entry>
+                            <entry> If the CKEY Service is detected as DOWN on any VM in the service
+                                instance, the service instance status is also DOWN. </entry>
+                            <entry>
+                                <p>CKEY service running on IOHO nodes is a service monitored from
+                                    the OAME node at specified intervals with the default interval
+                                    being every 5 seconds.</p>
+                                <p>If the CKEY Service is detected as DOWN on any VM in the service
+                                    instance, the service instance status is also DOWN.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> CMDB Service </entry>
+                            <entry> NPLUSK </entry>
+                            <entry> If the CMDB Service is detected as DOWN on any VM in the service
+                                instance, the service instance status is also DOWN. </entry>
+                            <entry>
+                                <p>CMDB service running on IOHO nodes is a service monitored from
+                                    the OAME node at specified intervals with the default interval
+                                    being every 5 seconds.</p>
+                                <p>If the CMDB Service is detected as DOWN on any VM in the service
+                                    instance, the service instance status is also DOWN.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> DiameterIO service </entry>
+                            <entry> ONEPLUSONE </entry>
+                            <entry> A 1+1 service is considered UP if there is an active instance
+                                that is UP. </entry>
+                            <entry>
+                                <p>If any one of the following are detected as DOWN on any VM in the
+                                    service instance, the service instance status is also DOWN:</p>
+                                <ul>
+                                    <li>
+                                        <p>diameterio</p>
+                                    </li>
+                                    <li>
+                                        <p>aerospike client </p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> ETCD Cluster service </entry>
+                            <entry> STANDALONE </entry>
+                            <entry> If the ETCD Cluster Service is detected as DOWN on any VM in the
+                                service instance, the service instance status is also DOWN. </entry>
+                            <entry> Members of the ETCD cluster periodically report their state to a
+                                monitor that runs on the active OAME. Based on the data received
+                                from the ETCD cluster members, the overall ETCD cluster health is
+                                computed. This value is reported to the monitoring system. </entry>
+                        </row>
+                        <row>
+                            <entry> HttpIO service </entry>
+                            <entry> ONEPLUSONE </entry>
+                            <entry> A 1+1 service is considered UP if there is an active instance
+                                that is UP. </entry>
+                            <entry> The "httpio" service monitors the state of the http endpoints on
+                                the IOHDs. If the httpio service is detected as DOWN on any VM in
+                                the service instance, the service instance status is also DOWN.
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> KAFKA service </entry>
+                            <entry> STANDALONE </entry>
+                            <entry> If the KAFKA Service is detected as DOWN on any VM in the
+                                service instance, the service instance status is also DOWN. </entry>
+                            <entry> A distributed messaging platform, for handling various real-time
+                                events. The Kafka health monitor runs on the active OAME. It
+                                periodically produces and receives messages from Kafka. If multiple
+                                attempts are unsuccessful, the monitoring system will mark the
+                                service as DOWN. </entry>
+                        </row>
+                        <row>
+                            <entry> Loadbalancer service (IOHO) </entry>
+                            <entry> ONEPLUSONE </entry>
+                            <entry> A 1+1 service is considered UP if there is an active instance
+                                that is UP. </entry>
+                            <entry>
+                                <p>If any one of the following are detected as DOWN on any VM in the
+                                    service instance, the service instance status is also DOWN:</p>
+                                <ul>
+                                    <li>
+                                        <p>loadbalancer </p>
+                                    </li>
+                                    <li>
+                                        <p>aerospike client </p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Lock and Transaction Manager (LTM) service </entry>
+                            <entry> ONEPLUSONE </entry>
+                            <entry> A 1+1 service is considered UP if there is an active instance
+                                that is UP. </entry>
+                            <entry>
+                                <p>If any one of the following are detected as DOWN on any VM in the
+                                    service instance, the service instance status is also DOWN:</p>
+                                <ul>
+                                    <li>
+                                        <p>ltm </p>
+                                    </li>
+                                    <li>
+                                        <p>aerospike client </p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Notification Service </entry>
+                            <entry> NPLUSK </entry>
+                            <entry> Service goes DOWN if more than K service instances are DOWN at a
+                                given time in the N+K set. </entry>
+                            <entry>
+                                <p>If any one of the following are detected as DOWN on any VM in the
+                                    service instance, the service instance status is also DOWN:</p>
+                                <ul>
+                                    <li>
+                                        <p>notification </p>
+                                    </li>
+                                    <li>
+                                        <p>aerospike client </p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Policy application service </entry>
+                            <entry> NPLUSK </entry>
+                            <entry> Service goes DOWN if more than K service instances are DOWN at a
+                                given time in the N+K set. </entry>
+                            <entry>
+                                <p>If any one of the following are detected as DOWN on any VM in the
+                                    service instance, the service instance status is also DOWN:</p>
+                                <ul>
+                                    <li>
+                                        <p>policy </p>
+                                    </li>
+                                    <li>
+                                        <p>aerospike client </p>
+                                    </li>
+                                    <li>
+                                        <p>ltm client </p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Provisioning service </entry>
+                            <entry> NPLUSK </entry>
+                            <entry> Service goes DOWN if more than K service instances are DOWN at a
+                                given time in the N+K set. </entry>
+                            <entry>
+                                <p>If any one of the following are detected as DOWN on any VM in the
+                                    service instance, the service instance status is also DOWN:</p>
+                                <ul>
+                                    <li>
+                                        <p>provisioning </p>
+                                    </li>
+                                    <li>
+                                        <p>aerospike client </p>
+                                    </li>
+                                    <li>
+                                        <p>ltm client </p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> RollBack service </entry>
+                            <entry> ONEPLUSONE </entry>
+                            <entry> A 1+1 service is considered UP if there is an active instance
+                                that is UP. </entry>
+                            <entry>
+                                <p>If any one of the following are detected as DOWN on any VM in the
+                                    service instance, the service instance status is also DOWN:</p>
+                                <ul>
+                                    <li>
+                                        <p>rollback </p>
+                                    </li>
+                                    <li>
+                                        <p>aerospike client </p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> SM App </entry>
+                            <entry> NPLUSK </entry>
+                            <entry> Service goes DOWN if more than K service instances are DOWN at a
+                                given time in the N+K set. </entry>
+                            <entry>
+                                <p>If any one of the following are detected as DOWN on any VM in the
+                                    service instance, the service instance status is also DOWN:</p>
+                                <ul>
+                                    <li>
+                                        <p>SM App Service </p>
+                                    </li>
+                                    <li>
+                                        <p>aerospike client </p>
+                                    </li>
+                                    <li>
+                                        <p>ltm client </p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Timed Event Manager (TEM) service </entry>
+                            <entry> ONEPLUSONE </entry>
+                            <entry> A 1+1 service is considered UP if there is an active instance
+                                that is UP. </entry>
+                            <entry>
+                                <p>If any one of the following are detected as DOWN on any VM in the
+                                    service instance, the service instance status is also DOWN:</p>
+                                <ul>
+                                    <li>
+                                        <p>tem </p>
+                                    </li>
+                                    <li>
+                                        <p>aerospike client </p>
+                                    </li>
+                                    <li>
+                                        <p>ltm client </p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> TRSCHEDULER service </entry>
+                            <entry> ONEPLUSONE </entry>
+                            <entry> A 1+1 service is considered UP if there is an active instance
+                                that is UP. </entry>
+                            <entry>
+                                <p>If any one of the following are detected as DOWN on any VM in the
+                                    service instance, the service instance status is also DOWN:</p>
+                                <ul>
+                                    <li>
+                                        <p>trscheduler </p>
+                                    </li>
+                                    <li>
+                                        <p>aerospike client </p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> XDR </entry>
+                            <entry> STANDALONE </entry>
+                            <entry> If the XDR Service is detected as DOWN on any VM in the service
+                                instance, the service instance status is also DOWN. </entry>
+                            <entry> XDR reports its state as UP or DOWN to a client that monitors
+                                replication. Based on the data received from the XDR, the health is
+                                determined in the context of whether or not the replication is
+                                falling behind. If replication is detected as falling behind on any
+                                VM in the service instance, the service instance status is also
+                                DOWN. </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+</section>
+<section><title>Traffic control from the IOHD for applications</title>
+<p>Applications track and report their latency to the monitoring job that is running on the OAME. When the OAME discovers that a given application is not performing (based on multiple composite states), it will inform the IOHD to avoid sending traffic to that backend Diameter application. There are monitoring listeners in the IOHD that automatically disable traffic when monitoring detects that a service is down in the application. </p>
+<p>The application preference “IOHD Traffic to Node Requires Manual Enable” can be used to control whether or not traffic to a node needs to be manually enabled after being disabled by monitoring. If the application preference is set to false, traffic is re-enabled automatically once the problem detected by monitoring is resolved. If the application preference is set to true, you must use the iohd-traffic-control tool to manually re-enable traffic. The “iohd-Traffic-Control tool” is provided so that the operator can put the service back into service manually when ready. The tool can be used to manually disable or enable all traffic or specified traffic to an application. If an application is taken out of service manually and the application preference is set to “true”, traffic will need to be put back into service manually. </p>
+<p>Traffic is automatically disabled after the application is rendered OOS due to a failure of the composing states and may need manual intervention to put it back into service. The “iohd-Traffic-Control tool” gives the operator time to diagnose the problem. See the “iohd-Traffic-Control tool” in this guide for more information.</p>
+</section>
+<section><title>Monitoring of N+K nodes</title>
+<p>In NCC there are a variety of services, some of them are of type "N+K". NCC includes several
+                services that are engineered to be N+K, where “N” represents the total number of
+                nodes required to support the peak engineered load and “K” are additional nodes
+                added for high availability. In a geographically redundant deployment (where this
+                NCC ME is paired with another NCC ME), the ME is engineered to handle full traffic
+                even when the other ME is down. During normal network operation, each ME serves only
+                one-half of its peak engineered load, reserving the other half of its capacity in
+                case the other ME fails.</p>
+<p>When an ME in a geo-redundant deployment experiences failure of some of its N+K nodes for a given service, a decision is made as to whether it is better to stay in-service and continue processing traffic to the best of its ability, or to take itself out-of-service and let the other ME take over. The default behavior for an ME is to stay in-service as long as at least half of its engineered (N) nodes remain in-service. This percentage of minimum in-service nodes can be configured to fine-tune this behavior.</p>
+<p>When dimensioning an NCC, the following baseline assumptions are made:</p>
+<table colsep="1" rowsep="1">
+                <tgroup cols="3">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <colspec colname="col3"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>N</p>
+                            </entry>
+                            <entry>
+                                <p>K</p>
+                            </entry>
+                            <entry>
+                                <p>Total</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> 1 ~ 4 </entry>
+                            <entry> 1 </entry>
+                            <entry> 2 ~ 5 </entry>
+                        </row>
+                        <row>
+                            <entry> 5 ~ 11 </entry>
+                            <entry> 2 </entry>
+                            <entry> 6 ~ 14 </entry>
+                        </row>
+                        <row>
+                            <entry> 12+ </entry>
+                            <entry> 3 </entry>
+                            <entry> 15+ </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<p>When an NCC ME is paired with a geographically redundant separate NCC ME, then there is
+                flexibility on how aggressively this NCC ME should declare itself as OOS. A ‘scaling
+                factor’ percentage can be configured, with the default being 50%.</p>
+<p>For example, if there are 10 total nodes of a given type, then this implies N+K would be 8 + 2. This means that 2 nodes (the value of K) can fail with no impact on engineered capacity. When a 3rd node fails, this means that only 7 nodes remain in-service, which is now less than the engineered N of 8. An alarm is raised to alert that this system has now dropped below the engineered capacity.</p>
+<p>The monitoring logic will then apply the scaling factor percentage against the value of N. In this example, assume the default 50%. As long as there are at least 4 nodes of this type remaining in-service (50% * 8), the service will be considered in-service. However, if the remaining in-service nodes fall below the value of (scaling factor * N), the service will be declared OOS and the system will be taken OOS if that service is defined as a vital service.</p>
+<note>When an NCC ME is deployed as simplex with no GR mate NCC ME configured, then this scaling
+                factor logic does not apply. As long as there is at least one instance of a given
+                service remaining in-service, then the service is considered in-service. Without a
+                mate NCC ME to potentially take over, the goal is to remain in-service and
+                processing traffic if at all possible.<p/></note>
+<sectiondiv>
+<p><b>N+K scaling factor</b></p>
+<p>The N+K scaling factor is a property that applies to the N+K type services only and impacts all N+K services in the deployment. The property can be modified on a per ME basis using the application preference: “Monitoring N+K Service N-Factor Scaling Percentage”, which has a default value of 50. The value can be changed to anything in the range of 0 to 100; however, a value of zero (0) requires one instance to be UP for the service to be UP. Whenever you change the value of the “Monitoring N+K Service N-Factor Scaling Percentage” application preference the state of all N+K services are recalculated.</p>
+<p>The Database nodes are a bit different in this regard. They are configured in two zones for
+                    managing data replication within a given NCC system, with each zone configured
+                    as N+K. Thus, the database nodes are referred to as 2 * (N+K). If more than K
+                    nodes fail in either zone, then the Database component is declared OOS. The “K”
+                    for the database nodes is configurable via the
+                    "tpaproperties/tpapps/db/maxfailednodes" property at installation time. See the
+                    NCC Installation and Upgrade Guide for more information about configuring “K”
+                    for database nodes.</p>
+</sectiondiv>
+</section>
+</conbody></concept>

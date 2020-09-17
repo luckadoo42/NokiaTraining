@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-auto-scale-tool"><title>auto-scale-policy-charging-apps tool</title><conbody>
+<section><title>Description</title>
+<p>This tool is run to configure auto-scaling parameters and enable auto-scaling in the CBAM GUI so that it can periodically pull the required KPIs from the VNF’s OAME VM to make the decision as to whether scale-in or scale-out is needed for DiameterApp VMs. DiameterApp VMs are also called Policy-Charging-apps. In CBAM DiameterApp VMs are called DiameterAppAspect.</p>
+<p>The script uses the CPU utilization information from the DiameterApp VMs, and other system configuration and run-time information to determine the appropriate action and the number of VMs affected.</p>
+<note>
+<p>This tool applies to DiameterApp VMs only and is run only on the VNFs that have auto-scaling enabled.</p>
+</note>
+</section>
+<section><title>Syntax</title>
+<p>
+<codeph>auto-scale-policy-charging-apps [-h] [-c] [-d][-v] [-u]</codeph>
+</p>
+<p>The following table describes the options for the tool and the configurable parameters for auto-scaling.</p>
+<note>To see the default values and the range of values of the auto-scaling parameters, run this
+        tool with <codeph>-u</codeph> option and then choose <codeph>?</codeph> when the main menu
+        is presented.<p/></note>
+<table colsep="1" rowsep="1">
+        <tgroup cols="2">
+          <colspec colname="col1"/>
+          <colspec colname="col2"/>
+          <thead>
+            <row>
+              <entry>
+                <p>
+                  <b>Options</b>
+                </p>
+              </entry>
+              <entry>
+                <p>
+                  <b>Description</b>
+                </p>
+              </entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>
+                <codeblock>-h</codeblock>
+              </entry>
+              <entry> Displays help for this tool. </entry>
+            </row>
+            <row>
+              <entry>
+                <codeblock>-c</codeblock>
+              </entry>
+              <entry> Calculates CPU utilization and scaling triggers. </entry>
+            </row>
+            <row>
+              <entry>
+                <codeblock>-d</codeblock>
+              </entry>
+              <entry> Displays configuration parameters and CPU utilization history. </entry>
+            </row>
+            <row>
+              <entry>
+                <codeblock>-v</codeblock>
+              </entry>
+              <entry> Verbose mode that applies to <codeph>-c</codeph>, <codeph>-d</codeph> and
+                  <codeph>-u</codeph> options. Allows to see how the decisions are made for scaling
+                scenarios and the KRIs used by the tool to trigger auto-scaling. </entry>
+            </row>
+            <row>
+              <entry>
+                <codeblock>-u &lt;argument&gt;</codeblock>
+              </entry>
+              <entry> Updates a relevant configuration parameter interactively. </entry>
+            </row>
+            <row>
+              <entry nameend="col2" namest="col1"> Configurable parameters for <codeph>-u</codeph>
+                option </entry>
+            </row>
+            <row>
+              <entry>
+                <codeblock>??</codeblock>
+              </entry>
+              <entry> Displays the parameter to select. </entry>
+            </row>
+            <row>
+              <entry>
+                <codeblock>?</codeblock>
+              </entry>
+              <entry> Displays the parameters descriptions and their range of values. </entry>
+            </row>
+            <row>
+              <entry>
+                <codeblock>q</codeblock>
+              </entry>
+              <entry> Exits the session. </entry>
+            </row>
+            <row>
+              <entry>
+                <codeblock>scale-out-hard-limit</codeblock>
+              </entry>
+              <entry>
+                <p>This parameter defines the maximum number of DiameterApp VMs that can be
+                  scaled-out for a particular VNF. </p>
+                <p>This parameter must be set by running the tool. There is no default value for
+                  this parameter. </p>
+                <p>This value should be less than or equal to the upper limit of the
+                  &lt;vm_count_range&gt; for the DiameterApp VM group in the VNF_CONF.json file.</p>
+                <p>For example:</p>
+                <p>If the value is 25, then the maximum number of the VNF’s DiameterApp VMs is 25.
+                  If &lt;vm_count_range&gt; in the VNF_CONF.json file is 1:80, then this parameter
+                  should not exceed 80.</p>
+                <p>This parameter is also used to find out the minimum number of DiameterApp VMs.
+                  For more information, see <!--xref URI: #Minimum-number-of-DiameterApp--><xref
+                    keyref="id9YZ-09126-MT00-REZZA-SP2-Auto-scale-tool/Minimum-number-of-DiameterApp"
+                  />.</p>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <codeblock>cpu-low-water-mark</codeblock>
+              </entry>
+              <entry>
+                <p>This parameter defines the low-water CPU usage threshold as a percentage that
+                  would trigger a scale-in to be initiated. If the most recent
+                    <codeph>min-positive-intervals</codeph> of CPU utilization are all below this
+                  parameter, then a scale-in is performed.</p>
+                <p>For example:</p>
+                <p>If the value is 25 and the most recent <codeph>min-positive-intervals</codeph> of
+                  CPU utilization &lt; 25%, then a scale-in operation is initiated provided the
+                  elapsed time after the last scale-out operation has exceeded
+                    <codeph>grace-period</codeph>.</p>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <codeblock>cpu-high-water-mark</codeblock>
+              </entry>
+              <entry>
+                <p>This parameter defines the high-water CPU usage threshold as a percentage that
+                  triggers a scale-out to be initiated. If the most recent
+                    <codeph>min-positive-intervals</codeph> of CPU utilization are all above this
+                  parameter then a scale-out is performed.</p>
+                <p>For example:</p>
+                <p>If the value is 75 and the most recent <codeph>min-positive-intervals</codeph> of
+                  CPU utilization &gt; 75%, then a scaling-out operation is initiated.</p>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <codeblock>min-positive-intervals</codeblock>
+              </entry>
+              <entry>
+                <p>This parameter defines the minimum number of consecutive positive intervals that
+                  must elapse prior to triggering an auto-scale operation (scale-out or scale-in). A
+                  positive interval is an auto-scaling interval that meets scaling conditions and
+                  determines that a scale-out or scale-in operation is required.</p>
+                <p>For example:</p>
+                <p>If the value is 10, and 10 consecutive auto-scaling intervals exceed
+                    <codeph>cpu-high-water-mark</codeph>, and auto-scaling is enabled, then a
+                  scale-out operation is initiated. The CPU utilization history (displayed with
+                    <codeph>-d</codeph> option) will now show 10 entries after 10 intervals have
+                  occurred.</p>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <codeblock>scale-out-step-pct</codeblock>
+              </entry>
+              <entry>
+                <p>This parameter defines the number of DiameterApp VMs to scale-out during a
+                  positive interval requiring scaling-out and is computed as a percentage of
+                    <codeph>scale-out-hard-limit</codeph>.</p>
+                <p>For example:</p>
+                <p>A value of 25 with <codeph>scale-out-hard-limit</codeph>=20 attempts to scale-out
+                  25%*20 = 5 VMs during each scale-out step to a maximum of
+                    <codeph>scale-out-hard-limit</codeph>.</p>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <codeblock>scale-in-hard-limit-pct</codeblock>
+              </entry>
+              <entry>
+                <p>This parameter defines the minimum number of DiameterApp VMs allowed in the VNF.
+                  This parameter is computed as a percentage of
+                    <codeph>scale-out-hard-limit</codeph>.</p>
+                <p>For example:</p>
+                <p>A value of 10 with <codeph>scale-out-hard-limit</codeph>=20 permits scale-in
+                  operations until the number of VMs reaches 2 VMs.</p>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <codeblock>grace-period</codeblock>
+              </entry>
+              <entry>
+                <p>This parameter defines the minimum interval in hours following a scale-out event
+                  before an auto-scale-in is allowed to be triggered.</p>
+                <p>For example:</p>
+                <p>A value of 10 requires at least 10 hours after a scale-out operation before a
+                  scale-in is attempted even though the conditions may be sufficient for a scale-in
+                  before the 10 hours have elapsed.</p>
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+</section>
+  <section id="Minimum-number-of-DiameterApp"><title>Calculating the minimum number of DiameterApp VMs</title>
+<p>The formula to find out the minimum number of  DiameterApp VMs is as follows:</p>
+<p>minimum number of Diameter App nodes = <codeph>scale-out-hard-limit</codeph> * <codeph>scale-in-hard-limit-pct</codeph> / 100</p>
+<p>For example, if , <codeph>scale-out-hard-limit</codeph> is 4 and <codeph>scale-in-hard-limit-pct</codeph> is 75, then:</p>
+<p>minimum number of DiameterApp VMs = 4 * 75 / 100 = 3</p>
+</section>
+<section><title>Examples</title>
+<p>The following example shows the expected output when the tool is run for the first time with <codeph>-c</codeph> option and when &lt;scale-out-hard-limit&gt; parameter is not configured yet.</p>
+<fig>
+<codeblock>[root@sps-ig-oame-1 ~]# /opt/tpa/bin/auto-scale-policy-charging-apps -c
+WARNING: Mandatory configuration parameter 'scale-out-hard-limit' is not found.
+{
+  "trigger_operation": false,
+  "type": "",
+  "number_of_steps": 0,
+  "aspect": "DiameterAppAspect",
+  "error_message": "Failed to read the configuration parameters."
+}
+</codeblock>
+</fig>
+<codeblock/>
+<p>The following example shows how to configure <codeph>scale-out-hard-limit</codeph> parameter in interactive mode.</p>
+<fig>
+<codeblock>[root@sps-ig-oame-1 ~]# /opt/tpa/bin/auto-scale-policy-charging-apps -u
+
+Configuration parameters
+  1  scale-out-hard-limit=
+  2  cpu-low-water-mark=20
+  3  cpu-high-water-mark=80
+  4  min-positive-intervals=3
+  5  scale-out-step-pct=10
+  6  scale-in-hard-limit-pct=10
+  7  grace-period=24
+
+Select the parameter to be changed [?,??,q]: 1
+
+scale-out-hard-limit= [2-2147483647,?,q] 6
+
+Configuration parameters
+  1  scale-out-hard-limit=6
+  2  cpu-low-water-mark=20
+  3  cpu-high-water-mark=80
+  4  min-positive-intervals=3
+  5  scale-out-step-pct=10
+  6  scale-in-hard-limit-pct=10
+  7  grace-period=24
+</codeblock>
+</fig>
+<codeblock/>
+<p>The following example shows the output of <codeph>-c</codeph> option in verbose mode.</p>
+<fig>
+<codeblock>[root@sps-ig-oame-1 ~]# /opt/tpa/bin/auto-scale-policy-charging-apps -c -v
+INFO: Installed policy or charging application nodes: sps-ig-diameterapp-0
+sps-ig-diameterapp-1
+DEBUG: ME is UP
+INFO: Nodes have in-service (UP) Policy or Charging service: sps-ig-diameterapp-0
+sps-ig-diameterapp-1
+DEBUG: Launching a background ssh process to get the mpstat output from 'sps-ig-diameterapp-0'
+DEBUG: Launching a background ssh process to get the mpstat output from 'sps-ig-diameterapp-1'
+DEBUG: Waiting for process '15921' to finish.
+DEBUG: Waiting for process '15933' to finish.
+DEBUG: mpstat output from node 'sps-ig-diameterapp-0':Linux 3.10.0-957.21.3.el7.x86_64 (sps-ig-diameterapp-0) 11/19/19  _x86_64_ (4 CPU)
+
+11:28:26 
+CPU %usr %nice %sys %iowait %irq %soft %steal %guest %gnice %idle
+11:28:27
+all 1.26 0.00  0.50  0.00   0.00 0.00  0.00   0.00   0.00   98.24
+11:28:28
+all 1.50 0.00  0.25  0.00   0.00 0.00  0.00   0.00   0.00   98.25
+Average: 
+all 1.38 0.00  0.38  0.00   0.00 0.00  0.00   0.00   0.00   98.24
+DEBUG: mpstat output from node 'sps-ig-diameterapp-1':Linux 3.10.0-957.21.3.el7.x86_64 (sps-ig-diameterapp-1) 11/19/19  _x86_64_ (4 CPU)
+
+11:28:26 
+CPU %usr %nice %sys %iowait %irq %soft %steal %guest %gnice %idle
+11:28:27 
+all 1.26 0.00  0.50 0.00    0.00 0.00  0.00   0.00   0.00   98.24
+11:28:28 
+all 1.26 0.00  0.50 0.00    0.00 0.00  0.00   0.00   0.00   98.24
+Average: 
+all 1.26 0.00  0.50 0.00    0.00 0.00  0.00   0.00   0.00   98.24
+DEBUG: Sorted CPU utilization:1.76
+1.76
+INFO: Average CPU utilization: 2
+INFO: CPU utilization history: 2
+INFO: New CPU utilization history: 2 2
+{
+  "trigger_operation": false,
+  "type": "",
+  "number_of_steps": 0,
+  "aspect": "DiameterAppAspect",
+  "error_message": "Deferring scale-in operation as there're only 2 installed nodes in the system."
+}
+</codeblock>
+</fig>
+<codeblock/>
+<p>The following example shows how to check the value range of an auto-scale parameter.</p>
+<fig>
+<codeblock>[root@sps-ig-oame-1 ~]# /opt/tpa/bin/auto-scale-policy-charging-apps -u
+
+Configuration parameters
+  1  scale-out-hard-limit=
+  2  cpu-low-water-mark=20
+  3  cpu-high-water-mark=80
+  4  min-positive-intervals=3
+  5  scale-out-step-pct=10
+  6  scale-in-hard-limit-pct=10
+  7  grace-period=24
+
+Select the parameter to be changed [?,??,q]: 1
+
+scale-out-hard-limit= [2-2147483647,?,q] ?
+        Please enter an integer between 2 and 2147483647
+
+scale-out-hard-limit= [2-2147483647,?,q] q
+</codeblock>
+</fig>
+<codeblock/>
+<p>The following example shows the output of <codeph>-d</codeph> option in verbose mode.</p>
+<fig>
+<codeblock>[root@sps-ig-oame-1 ~]# /opt/tpa/bin/auto-scale-policy-charging-apps -d -v
+INFO: Installed policy or charging application nodes: sps-ig-diameterapp-0
+sps-ig-diameterapp-1
+scale-out-hard-limit=6
+cpu-low-water-mark=20
+cpu-high-water-mark=80
+min-positive-intervals=3
+scale-out-step-pct=10
+scale-in-hard-limit-pct=10
+grace-period=24
+cpu-utilization-history=2 2
+most-recent-scale-out-ts=
+[root@sps-ig-oame-1 ~]#
+</codeblock>
+</fig>
+</section>
+</conbody></concept>

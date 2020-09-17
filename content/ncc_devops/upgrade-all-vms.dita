@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="id9YZ-09126-MT02-REZZA-Upgrade-all-VMs"><title>Upgrading site VMs all together</title><taskbody id="d1e5246"><context>
+			<p>This procedure provides instructions on how to upgrade all the VMs of any site all
+				together.</p>
+			<p>To upgrade the site’s VMs all together:</p>
+		</context><steps>
+<step><cmd>Enter:</cmd><info><p>
+<codeph>maestro ace sps-instantiate -d https://&lt;Artifactory URL&gt;/sps-generic-candidates/sps_yy_mbuild/SPS_yy_m_Innn -i /opt/sps/configs/SM_SDC_CONFIG.json -j /opt/sps/configs/SM_VNF_CONF.json -s sm -u all -v &lt;FROM release version&gt; SPS_yy_m_R1_SPS_yy_m_Innn</codeph>
+</p><p>where:</p><ul>
+<li>
+<p>&lt;FROM release version&gt; is the version that you are upgrading from, for example, 19.9, 19.6 or 19.6_sp1.</p>
+</li>
+<li>
+<p>&lt;Artifactory URL&gt; is the URL from which the NCC artifacts such as images and CSAR packages
+                                are downloaded.</p>
+</li>
+</ul></info></step>
+<step><cmd>If the upgrade fails, do the following:</cmd><info><ul>
+<li>
+<p>Back out by entering:</p>
+<p>
+<codeph>maestro ace sps-upgrade -t backout</codeph>
+</p>
+</li>
+<li>
+<p>Repeat the upgrade.</p>
+</li>
+</ul></info></step>
+<step><cmd>Do soak testing.</cmd><info/></step>
+<step><cmd>If soak testing fails, do the following:</cmd><info><ul>
+<li>
+<p>Back out by entering:</p>
+<p>
+<codeph>maestro ace sps-upgrade -t backout</codeph>
+</p>
+</li>
+<li>
+<p>Repeat soak testing.</p>
+</li>
+</ul></info></step>
+<step><cmd>If the site upgrade succeeds, update the persisted version to the TO release version by entering:</cmd><info><p>
+<codeph>maestro ace sps-upgrade -v &lt;TO release version&gt;</codeph>
+</p></info></step>
+<step><cmd>If for any reason, you need to back out the site upgrade, do the following:</cmd><info><ul>
+<li>
+<p>Update the persisted version back to the FROM release version by entering:</p>
+<p>
+<codeph>maestro ace sps-upgrade -v &lt;FROM release version&gt;</codeph>
+</p>
+</li>
+<li>
+<p>Back out by entering:</p>
+<p>
+<codeph>maestro ace sps-upgrade -t backout</codeph>
+</p>
+</li>
+</ul></info></step>
+</steps>
+</taskbody></task>

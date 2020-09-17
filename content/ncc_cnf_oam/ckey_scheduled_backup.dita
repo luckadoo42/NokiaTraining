@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ckey_scheduled_backup">
+    <title>CKEY scheduled backup</title>
+    <body>
+        <p>The scheduled backups for ckey and ckey cmdb are not enabled by default. After installing
+            CKEY they can be enabled, if desired. Follow the instructions here: <xref
+                href="https://confluence-app.ext.net.nokia.com/display/SPS/Backup+and+restore+-+NCC+20.9#Backupandrestore-NCC20.9-Enable/disablescheduledbackupswithCBURmasterRestAPI"
+                format="html" scope="external">Enable/Disable scheduled backups</xref>
+        </p>
+        <p>The default schedules for the cron jobs that performs scheduled backups for ckey-ckey and
+            ckey-cmdb-mariadb are set to the same value: "0 0 * * *" which means daily at
+            midnight.</p>
+        <section id="section_wm4_xs4_wmb">
+            <title>Update schedules for scheduled backups</title>
+            <p>To update the cronJob schedules defined at install time for either one of the BR
+                policy created by CKEY, an helm upgrade has to be performed, providing the new value
+                for the cronJob schedules, and reusing old values for all other properties.</p>
+            <p>Then the scheduled backups have to be enabled by following the instructions at: <xref
+                    href="https://confluence-app.ext.net.nokia.com/display/SPS/Backup+and+restore+-+NCC+20.9#Backupandrestore-NCC20.9-Enable/disablescheduledbackupswithCBURmasterRestAPI"
+                    format="html" scope="external">Enable/Disable scheduled backups</xref> .</p>
+            <p><b>Update schedules for scheduled backups</b></p>
+            <p>
+                <codeblock># For example, the following helm upgrade will change the schedules to run the backup for ckey-ckey daily at 4am
+helm3 upgrade ckey ckey-chart-20.9.1-*.tgz -n $NAMESPACE --set cbur.brCronSpec="0 4 * * *" --reuse-values --wait --timeout=1200s
+ 
+# To make the change effective, the scheduled backups have to be enabled.
+# If the scheduled backups were already enabled before doing the upgrade, then they need to be disabled and re-enabled for the changes to the policy to have effect.</codeblock>
+            </p>
+        </section>
+    </body>
+</topic>

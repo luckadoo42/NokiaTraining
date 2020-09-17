@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="supportfordynamicpolicycounter_0">
+    <title>Support for dynamic policy counter</title>
+    <conbody>
+        <section id="section_tw1_tfy_tmb">
+            <title>Overview</title>
+            <p>This feature enables the use of Diameter Sy interface to transfer Quality of Service
+                (QoS) information by using the dynamic value of policy counter identifier (such as,
+                    <varname>PC_&lt;RG>_&lt;APN>_&lt;Framed-IP-Address></varname>).</p>
+            <p>The dynamic value of policy counter identifier can be determined by the dynamic
+                values of specific parameters received in the Gy CCR request. For example:</p>
+            <ul id="ul_ty5_qnx_tmb">
+                <li>
+                    <p><varname>&lt;RG></varname>- Rating Group</p>
+                </li>
+                <li>
+                    <p><varname>&lt;APN></varname>- Access Point Name retrieved from the
+                            <i>Called-Station-Id</i> AVP</p>
+                </li>
+                <li>
+                    <p><varname>&lt;Framed-IP-Address></varname>- which is retrieved from the
+                            <i>Framed-IP-Address</i> AVP and it can either be an IPv4 or IPv6
+                        address</p>
+                </li>
+            </ul>
+            <p>The policy counter status can be <varname>HIGH</varname> or <varname>LOW</varname>
+                depending on the bucket or counter from which reservation is done.</p>
+            <note>
+                <p>A dynamic policy counter should only be configured as a virtual counter on the
+                    resource-based counter of a device.</p>
+            </note>
+        </section>
+        <section id="section_rxk_sf2_ymb">
+            <title>Resource-based counter enhancement</title>
+            <p>For a resource-based counter, the SNR is sent based on the resource used for maximum
+                reservation. Threshold or cap is applied with configuration <varname>Absolute From
+                    Start</varname> and value <varname>0</varname> to process the <i>Counter
+                    Signalling State</i> in every reservation.</p>
+            <p>Following are the context variables added to resource-based counters to determine the
+                states based on the given configurations:</p>
+            <table frame="all" rowsep="1" colsep="1" id="table_vwn_yf2_ymb">
+                <tgroup cols="2">
+                    <colspec colname="c1" colnum="1" colwidth="1*"/>
+                    <colspec colname="c2" colnum="2" colwidth="1.67*"/>
+                    <thead>
+                        <row>
+                            <entry>Name of context variable</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry><i>Reserve-Entity-Name</i></entry>
+                            <entry>Name of the entity (which can be <varname>BucketDef Id</varname>,
+                                    <varname>CounterDef Id</varname>, or
+                                    <varname>AccountId</varname>) from which the maximum reservation
+                                has taken place.</entry>
+                        </row>
+                        <row>
+                            <entry><i>Reserve-Entity-Type</i></entry>
+                            <entry>Type of entity (<varname>ENTITY_BUCKET</varname>,
+                                    <varname>ENTITY_ACCOUNT</varname>, or
+                                    <varname>NOCHARGE</varname>) from which the maximum reservation
+                                has taken place.</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_pkn_w4x_tmb">
+            <title>Recommended configuration for this feature</title>
+            <p>Configure the following NCC application preferences to enable this feature:</p>
+            <ul id="ul_y3r_1px_tmb">
+                <li>
+                    <p>Set <i>Virtual Policy Counter Support</i> to
+                            <varname>BUCKET_COUNTER</varname>.</p>
+                </li>
+                <li>
+                    <p>Set <i>Default Signalling State Value</i> to <varname>HIGH</varname>.</p>
+                </li>
+                <li>
+                    <p>Set <i>Dynamic Policy Counter Identifier</i> to
+                        <varname>ENABLED</varname>.</p>
+                    <p>If the <i>Dynamic Policy Counter Identifier</i> is set as
+                            <varname>ENABLED</varname>, then an Sy session is created without any
+                        policy counter information as the <i>Dynamic Policy Counter Name</i> is not
+                        available at the time of Sy session creation.</p>
+                    <ul id="ul_lnf_4jy_tmb">
+                        <li>
+                            <p>NCC does not send policy counter information in SLA and instead sends
+                                the following error code 4241, which states <varname>Sy
+                                    Experimental-Result-Code =
+                                    DIAMETER_ERROR_NO_AVAILABLE_POLICY_COUNTERS</varname>.</p>
+                        </li>
+                        <li>
+                            <p>In case of SLR intermediate call, NCC sends an error code 4241, which
+                                states <varname>Sy Experimental-Result-Code =
+                                    DIAMETER_ERROR_NO_AVAILABLE_POLICY_COUNTERS</varname>.</p>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <note>
+                <p>If this feature is used for both charging and policy components, then also set
+                    the <i>Sy Accept SNR for Failed Session</i> policy application preference as
+                        <varname>true</varname> apart from the preceding policy application
+                    preferences.</p>
+                <p/>
+            </note>
+            <p>Once, the Gy session is established and first quota is granted, NCC sends an SNR only
+                for low QoS scenarios. In case of high QoS scenario, NCC does not send an SNR as
+                default QoS applied at the beginning of the session is also high QoS.</p>
+            <p>The default signalling state is derived from the <i>Default Signalling State
+                    Value</i> in the system property and it is set to <varname>HIGH</varname> for
+                dynamic policy counter.</p>
+            <ul id="ul_lsq_4ky_tmb">
+                <li>For first call, when policy counter state is <varname>HIGH</varname> but not
+                    already present in the database, NCC saves the dynamic policy counter with
+                    default signalling state set as <varname>HIGH</varname> and does not send out
+                    any SNR.</li>
+                <li>For first call, when policy counter state is <varname>LOW</varname> but not
+                    already present in the database, NCC saves the dynamic policy counter with
+                    signalling state as <varname>LOW</varname> and also sends out an SNR.</li>
+                <li>For subsequent calls, when policy counter state is different from the previous
+                    SNR state sent out, then NCC sends out a new SNR and saves the policy counter
+                    state in database.</li>
+                <li>For subsequent calls, when policy counter state is same as the previous SNR
+                    state, no changes are performed and no SNR is sent out.</li>
+                <li>In case of subscription renewal through lifecycle, the buckets and counter gets
+                    reset. SNR is not sent at the time of subscription renewal as there is no
+                    corresponding Gy request that defines the parameters of the dynamic policy
+                    counter name.</li>
+            </ul>
+            <p/>
+            <p>Follow this recommended configuration to understand the working of this feature:</p>
+            <ol id="ol_apd_sqx_tmb">
+                <li>
+                    <p>Create three bundles; <varname>UBD1</varname>, <varname>UBD2</varname>, and
+                            <varname>UBD3</varname>.</p>
+                </li>
+                <li>Each bundle has two charging services, one for bucket consumption and the other
+                    one for non-policy counter consumption, such as:</li>
+                <li>
+                    <ol id="ol_tmc_zqx_tmb">
+                        <li>
+                            <p>For bundle <varname>UBD1</varname>:</p>
+                            <ul id="ul_idl_brx_tmb">
+                                <li>
+                                    <p><varname>CSBucket1</varname> with tariff as
+                                            <varname>Rating.Bucket-Selection =
+                                        "Bucket1"</varname>.</p>
+                                </li>
+                                <li>
+                                    <p><varname>CSCounter1</varname> with tariff as</p>
+                                    <p><varname>RATING.Counter-Selection = “CSCounter1"</varname>
+                                        and</p>
+                                    <p><varname>RATING.No-Charge</varname></p>
+                                </li>
+                            </ul>
+                        </li>
+                        <li>
+                            <p>For bundle <varname>UBD2</varname>:</p>
+                            <ul id="ul_hjh_rrx_tmb">
+                                <li>
+                                    <p><varname>CSBucket2</varname> with tariff as
+                                            <varname>Rating.Bucket-Selection =
+                                        "Bucket2"</varname>.</p>
+                                </li>
+                                <li>
+                                    <p><varname>CSCounter2</varname> with tariff as</p>
+                                    <p><varname>RATING.Counter-Selection = “CSCounter2"</varname>
+                                        and</p>
+                                    <p><varname>RATING.No-Charge</varname></p>
+                                </li>
+                            </ul>
+                        </li>
+                        <li>
+                            <p>For bundle <varname>UBD3</varname>:</p>
+                            <ul id="ul_t34_vrx_tmb">
+                                <li>
+                                    <p><varname>CSBucket3</varname> with tariff as
+                                            <varname>Rating.Bucket-Selection = "Bucket3"</varname>,
+                                        and no charging service for counter consumption.</p>
+                                </li>
+                            </ul>
+                        </li>
+                    </ol>
+                </li>
+                <li>
+                    <p>Configure the following thresholds to send notification at a required time
+                        frame or data consumption:</p>
+                    <image placement="break" href="../images/configimage1.PNG"
+                        id="image_csx_jtx_tmb" scale="65"/>
+                    <p/>
+                    <image placement="break" href="../images/configimage2.PNG"
+                        id="image_lyt_ltx_tmb" scale="65"/>
+                </li>
+                <li>
+                    <p>Configure the threshold to send QoS notification through Sy interface by
+                        sending the dynamic policy counter ID and status at the time of
+                        reservation.</p>
+                    <p>The following figure states an example of configuring threshold on a
+                        resource-based device counter:</p>
+                    <image placement="break" href="../images/thresholdondevicecounter.PNG"
+                        id="image_i3b_k5x_tmb" scale="95"/>
+                    <p>Here, the <i>Reserve-Entity-Type</i> describes the type of entity from which
+                        maximum reservation has taken place, and this can have one of the 3 values;
+                            <varname>ENTITY_BUCKET</varname>, <varname>ENTITY_ACCOUNT</varname>, or
+                            <varname>NOCHARGE</varname>.</p>
+                    <p>As shown in the figure below, the following rule variables are created under
+                            <varname>THRESHOLD</varname> trigger from respective parameters of Gy
+                        CCR request:</p>
+                    <image placement="break" href="../images/dpcrulesandvariables.PNG"
+                        id="image_dlw_jvx_tmb" scale="75"/>
+                    <p>Create the <varname>DPC_Identifier</varname> by concatenating the
+                            <varname>DPC_APN</varname>, <varname>DPC_FramedIP</varname>, and
+                            <varname>DPC_RG</varname>:</p>
+                    <image placement="break" href="../images/dpcidentifier.PNG"
+                        id="image_wt1_4vx_tmb" scale="60"/>
+                </li>
+                <li>
+                    <p>Configure the complex map as <varname>LOW</varname> for policy counter
+                        status:</p>
+                    <image placement="break" href="../images/dpccounterstatus.PNG"
+                        id="image_m3f_1wx_tmb" scale="60"/>
+                    <p><b>QoS variable</b>:</p>
+                    <image placement="break" href="../images/qosvariable.PNG" id="image_rlf_mwx_tmb"
+                        scale="60"/>
+                    <p>The <varname>LOW</varname> PC status can be send using the QoS variable:</p>
+                    <image placement="break" href="../images/qosvariableconfig.PNG"
+                        id="image_uch_xwx_tmb" scale="60"/>
+                </li>
+                <li>
+                    <p><i>(Optional)</i> Configure the following slicing profile configuration:</p>
+                    <image placement="break" href="../images/slicingprofileconfig1.PNG"
+                        id="image_i5s_4xx_tmb" scale="60"/>
+                </li>
+            </ol>
+        </section>
+        <section id="section_ak1_jzx_tmb">
+            <title>Examples</title>
+            <p>Consider the following example for a better understanding of this feature:</p>
+            <sectiondiv>
+                <p><b>Example 1:</b> Subscriber, which is already at a <varname>LOW</varname> state
+                    at the beginning of the data session switches to high QoS during a data
+                    session</p>
+                <p><b>Call processing</b>:</p>
+                <ol id="ol_wpj_kly_tmb">
+                    <li>
+                        <p>After recieving SLR, NCC does not send any policy counter information in
+                            SLA and instead, it sends the error code 4241, which states <varname>Sy
+                                Experimental-Result-Code =
+                                DIAMETER_ERROR_NO_AVAILABLE_POLICY_COUNTERS</varname>.</p>
+                    </li>
+                    <li>
+                        <p>The <varname>LOW</varname> PC status is send out in the SNR at the
+                            initiation of session.</p>
+                    </li>
+                    <li>
+                        <p>Suppose a bundle renewal takes place and the bucket entity is again
+                            reinstated and data  consumption can again be initiated from bucket as
+                            bucket has sufficient balance.</p>
+                        <image placement="break" href="../images/uc3image.PNG"
+                            id="image_ylh_3my_tmb" scale="75"/>
+                    </li>
+                </ol>
+                <p><b>Result:</b></p>
+                <p>Verify that NCC sends out an SNR stating with status as <varname>HIGH</varname>
+                    after the bucket balance is refilled and the data session continues with
+                    reserving data from bucket balance.</p>
+            </sectiondiv>
+        </section>
+    </conbody>
+</concept>

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="deploying_cvea">
+    <title>Deploying CVEA Helm chart</title>
+    <taskbody>
+        <context>This procedure provides instructions on how to deploy the CVEA Helm chart for a CNF
+            of any type. CVEA is a VES stream agent that connects to BTEL components CALM, Fluentd
+            in BELK, and Gen3gppXML.</context>
+        <steps>
+            <step>
+                <cmd>Log in to the Kubernetes control node as root.</cmd>
+            </step>
+            <step>
+                <cmd>Copy and update the appropriate example files by entering:</cmd>
+                <info>
+                    <codeblock># Run this "if" block as 1 command (paste entire block):
+if [ "$PLATFORM" = "openshift" ]; then
+    FILE_MODIFIER='_openshift'
+else
+    FILE_MODIFIER=''
+fi
+ 
+cp ../configuration-examples/values_cvea_sps_${SITE_TYPE}${FILE_MODIFIER}.yaml .
+sed -E -i -- "s/sps-btel(-${SITE_TYPE})?/${NAMESPACE}/g" values_cvea_sps_${SITE_TYPE}${FILE_MODIFIER}.yaml</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>For each CNF where you install CVEA, set the External CVEA Collector host in
+                    the <filepath>values.yaml </filepath> file by entering:</cmd>
+                <info><codeblock>COLLECTORHOST=collector-bcmt2.dyn.nesc.nokia.net
+sed -i "s/\${COLLECTOR IP\/FQDN HOST}/$COLLECTORHOST/g" values_cvea_sps_${SITE_TYPE}${FILE_MODIFIER}.yaml</codeblock>where:
+                        <ul id="ul_yxg_4lw_ymb">
+                        <li><codeph>COLLECTORHOST</codeph> is an external service that needs to be
+                            configured in the CVEA values.yaml. This will most often be one outbound
+                            address for all CNFs in your deployment. It will be the IP address or
+                            FQDN of the server where you will set up the collector in this
+                            procedure.</li>
+                        <li><codeph>${COLLECTOR IP/FQDN HOST}</codeph> must be the appropriate DNS
+                            host that is used to configure the CNF's namespace.</li>
+                    </ul><note>Although in the example values.yaml file,only one Collector is
+                        provided, the CVEA Helm chart can accept multiple Collector
+                    URLs</note></info>
+            </step>
+            <step>
+                <cmd>For each CNF where you install CVEA, set the External CVEA Collector port in
+                    the <filepath>values.yaml</filepath> file by entering:</cmd>
+                <info>
+                    <codeblock>COLLECTORPORT=30000
+sed -i "s/\${COLLECTOR PORT}/$COLLECTORPORT/g" values_cvea_sps_${SITE_TYPE}${FILE_MODIFIER}.yaml</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Create ServiceEntry for the External Collector service by entering:</cmd>
+                <info>
+                    <codeblock>cat &lt;&lt; EOF | kubectl apply -f -
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: cvea-collector-sps-service-entry-${NAMESPACE}
+  namespace: $NAMESPACE
+spec:
+  exportTo:
+  - .
+  #Hosts value is required. Add configured DNS name.
+  hosts:
+  - "${COLLECTORHOST}"
+  ports:
+  - number: ${COLLECTORPORT}
+    name: http-port-for-collector
+    protocol: HTTP
+  location: MESH_EXTERNAL
+  resolution: DNS
+EOF</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Set up the External Collector Service by using the procedure <xref
+                        href="deploying_collertor_service.dita"/>.</cmd>
+            </step>
+            <step>
+                <cmd>For each CNF where you install CVEA, deploy the CVEA Helm chart as
+                    follows:</cmd>
+                <info>
+                    <ol id="ol_d4y_vmw_ymb">
+                        <li>Log in to the Kubernetes control nod as root.</li>
+                        <li>Enter:<codeblock>if [[ -e ../configuration-examples/sizing/sizing_cvea_lab.yaml ]]; then
+ cp ../configuration-examples/sizing/sizing_cvea_lab.yaml .
+ OVERRIDE_FILES="values_cvea_sps_${SITE_TYPE}${FILE_MODIFIER}.yaml sizing_sps_lab.yaml"
+ docker run --rm -v ${PWD}:/workdir:z registry1-docker-io.repo.lab.pl.alcatel-lucent.com/mikefarah/yq yq m -x $OVERRIDE_FILES >  ${SITE_TYPE}${SITE_ID}_cvea.yaml
+else
+ cp values_cvea_sps_${SITE_TYPE}${FILE_MODIFIER}.yaml ${SITE_TYPE}${SITE_ID}_cvea.yaml
+fi</codeblock></li>
+                        <li>If you are using Istio 1.4,
+                            enter:<codeblock>sed -i 's/version: 1.5/version: 1.4/g' ${SITE_TYPE}${SITE_ID}_cvea.yaml</codeblock></li>
+                        <li>Enter:<codeblock>wget https://repo.lab.pl.alcatel-lucent.com/sps-generic-candidates/spsmainbuild/${BUILD_VERSION}/cvea-chart-${CHART_VERSION}.tgz
+ 
+RELEASENAME=cvea-${SITE_TYPE}
+ 
+# Install CVEA:
+helm upgrade --install ${RELEASENAME} cvea-chart-*.tgz -n ${NAMESPACE} --wait --timeout=900s -f ${SITE_TYPE}${SITE_ID}_cvea.yaml</codeblock></li>
+                        <li>Confirm that CVEA is running by going to https://$FQDN/v1/ui</li>
+                    </ol>
+                </info>
+            </step>
+        </steps>
+    </taskbody>
+</task>

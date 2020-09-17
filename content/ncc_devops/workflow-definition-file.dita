@@ -1,0 +1,499 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//NSN//DTD DITA Concept//EN" "nsnconcept.dtd">
+<concept id="id9yz-09126-mt02-rezza-workflow-definition-file"><title>Workflow Definition file</title><conbody>
+<section id="section_mzn_djk_rmb">
+      <p>The Workflow Definition file is used with the Airflow GUI. This file defines environment,
+        tasks and workflows.</p>
+      <p><b>Environment</b></p>
+      <p>Environment defines the Maestro environment for performing instantiation and upgrade tasks
+        without logging to the VM. To perform the installation and upgrade tasks, the
+        clouds-config.yaml and keystone_info files must be stored on the Maestro VM. This can be
+        done by including the files into the package or adding the contents of the files to
+        Environment. If the goal is to run automation test tasks only, then Environment
+        configuration is not needed and can be completely removed. However, by configuring
+        Environment, as shown in the sample Workflow Definition file, you ensure that the
+        clouds-config.yaml and keystone_info files are created in the path provided for the
+        parameter &lt;file_path&gt; and with the content provided for the parameter &lt;content&gt;.
+        Although &lt;clouds-config&gt; and &lt;keystone&gt; parameters are not mandatory, these
+        parameters are the only two supported parameters for Environment.</p>
+      <note>
+        <p>&lt;$PACKAGE_ABS_PATH&gt; is an environment variable that can be used to fetch the
+          absolute path to the package. For example, when saving sample_package, the pathname of the
+          clouds-config.yaml file will be
+            <filepath>/opt/sps/packages/sample_package/configs/clouds-config.yaml</filepath>.</p>
+      </note>
+      <p>For information on how to configure the clouds-config.yaml file, see <xref
+          keyref="id9YZ-09126-MT02-REZZA-Preparing-VMware-environment"/>.</p>
+      <p>The following figure shows an example of Environment definition. The content in this figure
+        is representative and should be replaced by the keystone and clouds-config content that
+        works for a particular cloud.</p>
+      <fig id="fig_aqb_cjk_rmb">
+        <title>Environment definition</title>
+        <codeblock>Environment:
+  clouds-config:
+    file_path:  $PACKAGE_ABS_PATH/configs/clouds-config.yaml
+    content: |
+      # CBAM API info
+      CBAM_IP: 1.1.1.1
+      CLIENT: spsclient
+      SECRET: 624c4088-3a7a-42d2-bdd0-1d8eeb3ff179
+
+      # Full path of the OpenStack keystone file.
+      OS_KEYSTONE_FILE: $PACKAGE_ABS_PATH/configs/keystone_info
+
+			# SPS credentials for ISU
+			ROOT_PSWD: "password"
+			TPAADMIN_PSWD: "password"
+  keystone:
+    file_path: $PACKAGE_ABS_PATH/configs/keystone_info
+    content: |
+      export OS_USERNAME="v9999_1"
+      export OS_PASSWORD="password"
+      export OS_AUTH_URL="https://1.1.1.2:13000/v2.0"
+      export OS_PROJECT_NAME="v9999_SPS"
+      export OS_CACERT="$PACKAGE_ABS_PATH/configs/v9999.OS_CACERT.pem"
+</codeblock>
+      </fig>
+    </section>
+  <section id="CommandConstants">
+      <title>CommandConstants</title>
+        <p>CommandConstants are the argument values that can be shared between different commands.
+          These argument values apply to the parameter command only. CommandConstants allow users to
+          avoid repeated value declaration and can be used to define constants. CommandConstants can
+          be accessed in command using $ prefix along with the variable name. The following figure
+          shows the declaration of CommandConstants.</p>
+        <fig id="fig_ozn_djk_rmb">
+          <title>CommandConstants declaration</title>
+          <codeblock>CommandConstants:
+  local_ip: 1.1.1.1
+  me_sdc: $PACKAGE_ABS_PATH/configs/me_sdc.json
+  sm_sdc: $PACKAGE_ABS_PATH/configs/sm_sdc.json
+  me_vnf: $PACKAGE_ABS_PATH/configs/me_vnf_conf.json
+  sm_vnf: $PACKAGE_ABS_PATH/configs/sm_vnf_conf.json
+  cloud_conf: $PACKAGE_ABS_PATH/configs/clouds-config.yaml
+  build_path: https://&lt;Images directory URL&gt;/sps-generic-candidates-local/spsmainbuild/&lt;SPS load ID&gt;
+  build_version: &lt;SPS build version&gt;</codeblock>
+        </fig>
+      
+      <sectiondiv>
+        <p><b>Task</b></p>
+        <p>Each task which is performed with the Airflow GUI has to be defined before it is used in
+          the Deployment Workflow. The task name is in a free form, for example CleanSPSInstall.
+          There is no validation for this and this can be changed appropriately. The following table
+          describes the parameters of a task.</p>
+        <table colsep="1" rowsep="1" id="table_pzn_djk_rmb">
+          <title>Task parameters</title>
+          <tgroup cols="2">
+            <colspec colname="col1"/>
+            <colspec colname="col2"/>
+            <thead>
+              <row>
+                <entry>
+                  <p>Parameter</p>
+                </entry>
+                <entry>
+                  <p>Description</p>
+                </entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry nameend="col2" namest="col1">
+                  <b>Mandatory</b>
+                </entry>
+              </row>
+              <row>
+                <entry> command </entry>
+                <entry>
+                  <p>This parameter is a shell command which is executed on the Maestro VM.</p>
+                  <p>CommanConstants can be defined for this parameter. For more information, see
+                      <xref href="#id9yz-09126-mt02-rezza-workflow-definition-file/CommandConstants"
+                      format="dita"/>.</p>
+                </entry>
+              </row>
+              <row>
+                <entry> operation </entry>
+                <entry>
+                  <p>This parameter defines the type of the task.</p>
+                  <p>This parameter is defined as one of the following:</p>
+                  <ul id="ul_qzn_djk_rmb">
+                    <li>
+                      <p>
+                        <userinput>sps-cleanup</userinput>
+                      </p>
+                    </li>
+                    <li>
+                      <p>
+                        <userinput>sps-instantiate</userinput>
+                      </p>
+                    </li>
+                    <li>
+                      <p>
+                        <userinput>run-test</userinput>
+                      </p>
+                    </li>
+                    <li>
+                      <p>
+                        <userinput>trigger-remote-workflow</userinput>
+                      </p>
+                    </li>
+                    <li>
+                      <p>
+                        <userinput>monitor-remote-task</userinput>
+                      </p>
+                    </li>
+                  </ul>
+                  <p>where <userinput>trigger-remote-workflow</userinput> and
+                      <userinput>monitor-remote-task</userinput> are used for the multi-site NCC
+                    installation where synchronization between remote Maestro VMs is needed.</p>
+                </entry>
+              </row>
+              <row>
+                <entry> suite-pass-percentage </entry>
+                <entry> This parameter defines the threshold level in percentages, which determines
+                  whether a task succeeds or fails. This parameter applies to run-test operations.
+                </entry>
+              </row>
+              <row>
+                <entry nameend="col2" namest="col1">
+                  <p>Parameters for <userinput>trigger-remote-workflow</userinput> and
+                      <userinput>monitor-remote-task</userinput>
+                  </p>
+                  <p>These parameters trigger a workflow on a remote site.</p>
+                </entry>
+              </row>
+              <row>
+                <entry> remote-maestro-ip-address </entry>
+                <entry> This parameter defines the IP address which can be IPv4 or IPv6. </entry>
+              </row>
+              <row>
+                <entry> remote-workflow-name </entry>
+                <entry> This parameter defines the name of the workflow. </entry>
+              </row>
+              <row>
+                <entry> remote-package-name </entry>
+                <entry> This parameter defines the name of the package. </entry>
+              </row>
+              <row>
+                <entry nameend="col2" namest="col1">
+                  <b>Optional</b>
+                </entry>
+              </row>
+              <row>
+                <entry> email-subject-prefix </entry>
+                <entry> This parameter is used for sending the task status when the e-mail is
+                  configured for the workflow that includes this task. </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </sectiondiv>
+      <sectiondiv>
+        <p><b>Workflow</b></p>
+        <p>The workflow is a collection of tasks that are executed in a defined order. A valid
+          workflow must contain at least one task. There can be more than one workflow with a unique
+          name (free form text). Once saved in the Airflow GUI, the Package name will be prefixed to
+          all of the workflow names in the package. This allows to distinguish workflows when there
+          are more than one package in the Maestro VM.</p>
+        <note>
+          <p>Parallel workflow execution not supported yet.</p>
+        </note>
+        <p>The following table describes the parameters of a workflow.</p>
+        <table id="table_rzn_djk_rmb">
+          <title>Workflow parameters</title>
+          <tgroup cols="2">
+            <colspec colname="col1" colsep="1" rowsep="1"/>
+            <colspec colname="col2" colsep="1" rowsep="1"/>
+            <thead>
+              <row>
+                <entry>
+                  <p>Parameter</p>
+                </entry>
+                <entry>
+                  <p>Description</p>
+                </entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry nameend="col2" namest="col1">
+                  <b>Mandatory</b>
+                </entry>
+              </row>
+              <row>
+                <entry> name </entry>
+                <entry>
+                  <p>This parameter defines the name of the workflow.</p>
+                  <p>Must be unique.</p>
+                </entry>
+              </row>
+              <row>
+                <entry> task-list </entry>
+                <entry> This parameter defines a list of tasks to execute. </entry>
+              </row>
+              <row>
+                <entry nameend="col2" namest="col1">
+                  <b>Optional</b>
+                </entry>
+              </row>
+              <row>
+                <entry> schedule-interval </entry>
+                <entry>
+                  <p>This parameter defines define the time interval of a workflow.</p>
+                  <p>By default this parameter is set to on-demand.</p>
+                </entry>
+              </row>
+              <row>
+                <entry> email-notifications </entry>
+                <entry/>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </sectiondiv>
+    </section>
+<section><title> Reference tasks in Workflow Definition file</title>
+<p>The Workflow Definition file contains the tasks that can be used as a reference or an example. Users can create more tasks as needed. The Workflow Definition file contains the following tasks:</p><ul>
+<li>
+<p>TriggerRemoteSiteWorkflow</p>
+</li>
+<li>
+<p>MonitorRemoteSiteInstallMETask</p>
+</li>
+<li>
+<p>MonitorRemoteSiteInstallSMTask</p>
+</li>
+<li>
+<p>InstallSM</p>
+</li>
+<li>
+<p>InstallME</p>
+</li>
+<li>
+<p>RunPostInstallConfiguration</p>
+</li>
+<li>
+<p>RunOOBChargingSuite</p>
+</li>
+<li>
+<p>RunOOBPolicySuite</p>
+</li>
+<li>
+<p>RunOOBTearDown</p>
+</li>
+<li>
+<p>RunSMFunctionalSuite</p>
+</li>
+<li>
+<p>RunChargingRegressionSuite</p>
+</li>
+<li>
+<p>RunChargingNewFeaturesSuite</p>
+</li>
+<li>
+<p>RunPerformanceChargingSuite</p>
+</li>
+<li>
+<p>RunPolicyRegressionSuite</p>
+</li>
+<li>
+<p>RunPolicyNewFeatureSuite</p>
+</li>
+<li>
+<p>RunPerformancePolicySuite</p>
+</li>
+<li>
+<p>RunCustomTestSuite</p>
+</li>
+</ul>
+<note>
+<p>In the package, RunCustomTestSuite must be stored in <filepath>customtestsuites</filepath> directory.</p>
+</note>
+<sectiondiv>
+<p><b>Tasks defined in Workflow Definition file</b></p>
+<p>The following figure shows the tasks defined in the Workflow Definition file.</p>
+<fig>
+<title>Tasks in Workflow Definition file</title>
+<codeblock>TriggerRemoteSiteWorkflow:
+  operation: trigger-remote-workflow
+  email-subject-prefix: SPS
+  remote-maestro-ip-address: 1.1.1.3
+  remote-workflow-name: SPSInstallAndTestWorkflow
+  remote-package-name: site_package
+
+MonitorRemoteSiteInstallMETask:
+  operation: monitor-remote-task
+  email-subject-prefix: SPS
+  remote-maestro-ip-address: 1.1.1.3
+  remote-package-name: site_package
+  remote-workflow-name: SPSInstallAndTestWorkflow
+  remote-task-name: InstallME
+ 
+MonitorRemoteSiteInstallSMTask:
+  operation: monitor-remote-task
+  email-subject-prefix: SPS
+  remote-maestro-ip-address: 1.1.1.3
+  remote-package-name: site_package
+  remote-workflow-name: SPSInstallAndTestWorkflow
+  remote-task-name: InstallSM
+  monitor-timeout: 3600
+
+InstallSM:
+  operation: sps-instantiate
+  email-subject-prefix: SPS
+  command: &gt;
+    sudo -i maestro ace sps-instantiate -f
+    $cloud_conf -d $build_path
+    -i $sm_sdc
+    -j $sm_vnf
+    -s sm $build_version
+
+InstallME:
+  operation: sps-instantiate
+  email-subject-prefix: SPS
+  command: &gt;
+    sudo -i maestro ace sps-instantiate -f
+    $cloud_conf
+    -d $build_path
+    -i $me_sdc -j $me_vnf -s me $build_version
+
+# All post install configurations should be written/packaged as a robot suite.
+RunPostInstallConfiguration:
+  operation: run-test
+  command: &gt;
+    sudo -i maestro spstests run
+    $PACKAGE_ABS_PATH/post-install/PostInstallConfiguration
+    --mesdc $me_sdc
+    --smsdc $sm_sdc
+    --localip $local_ip
+
+# Standard Test suites packaged into Maestro. Use the task names in the
+# workflow task-list.
+RunOOBChargingSuite:
+  operation: run-test
+  suite-pass-percentage: 75
+  command: &gt;
+    sudo -i maestro spstests run OOBChargingSuite
+    --mesdc $me_sdc
+    --smsdc $sm_sdc
+    --localip $local_ip
+
+RunOOBPolicySuite:
+  operation: run-test
+  suite-pass-percentage: 75
+  command: &gt;
+    sudo -i maestro spstests run OOBPolicySuite
+    --mesdc $me_sdc
+    --smsdc $sm_sdc
+    --localip $local_ip
+
+RunSMFunctionalSuite:
+  operation: run-test
+  command: &gt;
+    sudo -i maestro spstests run SMFunctionalSuite
+    --mesdc $me_sdc
+    --smsdc $sm_sdc
+    --localip $local_ip
+
+RunChargingRegressionSuite:
+  operation: run-test
+  command: &gt;
+    sudo -i maestro spstests run ChargingRegressionSuite
+    --mesdc $me_sdc
+    --smsdc $sm_sdc
+    --localip $local_ip
+
+RunChargingNewFeaturesSuite:
+  operation: run-test
+  command: &gt;
+    sudo -i maestro spstests run ChargingNewFeaturesSuite
+    --mesdc $me_sdc
+    --smsdc $sm_sdc
+    --localip $local_ip
+
+RunPerformanceChargingSuite:
+  operation: run-test
+  command: &gt;
+    sudo -i maestro spstests run PerformanceChargingSuite
+    --mesdc $me_sdc
+    --smsdc $sm_sdc
+    --localip $local_ip
+
+RunPolicyRegressionSuite:
+  operation: run-test
+  command: &gt;
+    sudo -i maestro spstests run PolicyRegressionSuite
+    --mesdc $me_sdc
+    --smsdc $sm_sdc
+    --localip $local_ip
+
+RunPolicyNewFeatureSuite:
+  operation: run-test
+  command: &gt;
+    sudo -i maestro spstests run PolicyNewFeatureSuite
+    --mesdc $me_sdc
+    --smsdc $sm_sdc
+    --localip $local_ip
+
+RunPerformancePolicySuite:
+  operation: run-test
+  command: &gt;
+    sudo -i maestro spstests run PerformancePolicySuite
+    --mesdc $me_sdc
+    --smsdc $sm_sdc
+    --localip $local_ip
+
+RunCustomTestSuite:
+  operation: run-test
+  command: &gt;
+    sudo -i maestro spstests run $PACKAGE_ABS_PATH/customtestsuites/CustomTestSuite
+    --mesdc $me_sdc
+    --smsdc $sm_sdc
+    --localip $local_ip
+</codeblock>
+</fig>
+</sectiondiv>
+</section>
+<section><title>Workflows defined in Workflow Definition file</title>
+<p>The following figure shows the workflows defined in the Workflow Definition file.</p>
+<fig>
+<title>Workflows in Workflow Definition file</title>
+<codeblock>workflows:
+  - name: SPSCleanInstallAndTestWorkflow
+    email-notification:
+      email-from-address: spsops-notification@nokia.com
+      email-relay-server: mailrelay.int.nokia.com
+      email-to-addresses: example@nokia.com, example2@nokia.com
+    task-list:
+      - TriggerRemoteSiteWorkflow
+      - CleanSPSInstall
+      - InstallSM
+      - InstallME
+      - MonitorRemoteSiteInstallMETask
+      - RunOOBChargingSuite
+      - RunOOBPolicySuite
+      - RunSMFunctionalSuite
+
+  - name: SPSInstallAndTestWorkflow
+    email-notification:
+      email-from-address: spsops-notification@nokia.com
+      email-relay-server: mailrelay.int.nokia.com
+      email-to-addresses: example@nokia.com
+    task-list:
+      - InstallSM
+      - InstallME
+      - RunOOBChargingSuite
+
+  - name: SPSTestWorkflow
+    schedule-interval: 0 21 * * *
+    email-notification:
+      email-from-address: spsops-notification@nokia.com
+      email-relay-server: mailrelay.int.nokia.com
+      email-to-addresses: example@nokia.com
+    task-list:
+      - RunOOBConfigurationSuite
+      - RunOOBChargingSuite
+</codeblock>
+</fig>
+</section>
+</conbody></concept>

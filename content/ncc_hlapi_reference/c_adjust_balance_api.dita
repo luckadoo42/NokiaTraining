@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09018-cn06-pezza-d1e1507"><title>AdjustBalance API</title><conbody>
+<section><title>Description</title>
+<p>This method can be used to adjust the balance of a specific account. Adjustments can be positive or negative, or set the balance to a specific value. Positive adjustments can be classed as recharges (which can affect credit expiry of subscriber, etc.) or simply as an adjustment. This method is supported for both prepaid and postpaid subscribers.</p>
+</section>
+<section><title>AdjustBalance API request fields</title>
+<p>The following tables list the fields used in the request code of the AdjustBalance API.</p>
+<table colsep="1" rowsep="1">
+                <title>AdjustBalance: Request</title>
+                <tgroup cols="2">
+                    <colspec colname="COLSPEC2"/>
+                    <colspec colname="COLSPEC3"/>
+                    <tbody>
+                        <row>
+                            <entry> Method Name </entry>
+                            <entry colsep="0"> AdjustBalance </entry>
+                        </row>
+                        <row>
+                            <entry> Method Type </entry>
+                            <entry colsep="0"> Submit </entry>
+                        </row>
+                        <row>
+                            <entry> Request Info </entry>
+                            <entry colsep="0"> A unique ReqID can be specified. </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<table colsep="1" rowsep="1">
+                <title>AdjustBalance HLAPI request fields</title>
+                <tgroup cols="4">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <colspec colname="col3"/>
+                    <colspec colname="COLSPEC0"/>
+                    <thead>
+                        <row>
+                            <entry> Parameter </entry>
+                            <entry> Type </entry>
+                            <entry> Requirement </entry>
+                            <entry> Description </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> Account ID </entry>
+                            <entry> 1-16 character string </entry>
+                            <entry> Mandatory </entry>
+                            <entry> Indicates which account to provision. MSISDN/MDN for Subscriber
+                                Account Type or Account ID for Group Account. </entry>
+                        </row>
+                        <row>
+                            <entry> Account Type </entry>
+                            <entry>
+                                <p>enum</p>
+                                <ul>
+                                    <li>
+                                        <p>Subscriber</p>
+                                    </li>
+                                    <li>
+                                        <p>Group</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry> N/A </entry>
+                            <entry>
+                                <p>N/A for NCC. Present only for legacy compatibility.</p>
+                                <p>Type of account. </p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Amount </entry>
+                            <entry> 1-21 character string (0-9 and '.' only), may include up to 5
+                                decimal places. </entry>
+                            <entry> Mandatory </entry>
+                            <entry> The amount by which balance is to be adjusted. </entry>
+                        </row>
+                        <row>
+                            <entry> Balance </entry>
+                            <entry>
+                                <p>enum</p>
+                                <ul>
+                                    <li>
+                                        <p>Primary</p>
+                                    </li>
+                                    <li>
+                                        <p>Secondary</p>
+                                    </li>
+                                    <li>
+                                        <p>Group</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry> N/A </entry>
+                            <entry> N/A for NCC. Present only for legacy compatibility. </entry>
+                        </row>
+                        <row>
+                            <entry> Credit Expiry Adjust </entry>
+                            <entry> string (counter) </entry>
+                            <entry> Optional </entry>
+                            <entry>
+                                <p>When the Account Type or the Balance is "Group", this parameter
+                                    must not be specified.</p>
+                                <p>This parameter indicates the number of days that the Credit
+                                    Expiry Date should be extended from the current date. If this
+                                    parameter is not NULL, then the Credit Expiry Date should be set
+                                    to the Current Date plus the number of days indicated.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Credit Validity Delta </entry>
+                            <entry> string (counter) </entry>
+                            <entry> Optional </entry>
+                            <entry>
+                                <p>When the Account Type or Balance is "Group", this parameter must
+                                    not be specified.</p>
+                                <p>If populated the Credit Validity Delta parameter specifies the
+                                    number of days by which the SIM Credit Expiry Date is to be
+                                    changed. If the Adjustment parameter is set to INCR, the date is
+                                    increased. If the Adjustment parameter is set to DECR, the date
+                                    is reduced.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> EDR ID </entry>
+                            <entry> Counter (0..999) </entry>
+                            <entry> N/A </entry>
+                            <entry> N/A for NCC. Present only for legacy compatibility. </entry>
+                        </row>
+                        <row>
+                            <entry> ETUSTATECHG </entry>
+                            <entry> Flag </entry>
+                            <entry> N/A </entry>
+                            <entry> N/A for NCC. Present only for legacy compatibility. </entry>
+                        </row>
+                        <row>
+                            <entry> Event Charge ID </entry>
+                            <entry> 1-3 digit string </entry>
+                            <entry> N/A </entry>
+                            <entry> N/A for NCC. Present only for legacy compatibility. </entry>
+                        </row>
+                        <row>
+                            <entry> Group ID </entry>
+                            <entry> 1-16 character string </entry>
+                            <entry> Mandatory </entry>
+                            <entry> Indicates the group ID which the subscriber belongs to. </entry>
+                        </row>
+                        <row>
+                            <entry> Lifecycle Adjust </entry>
+                            <entry> Flag </entry>
+                            <entry> N/A </entry>
+                            <entry> N/A for NCC. Present only for legacy compatibility. </entry>
+                        </row>
+                        <row>
+                            <entry> Low Balance Option </entry>
+                            <entry>
+                                <p>enum</p>
+                                <ul>
+                                    <li>
+                                        <p>1-Check_Balance</p>
+                                    </li>
+                                    <li>
+                                        <p> 2-Take_Available_Balance</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry> N/A </entry>
+                            <entry> N/A for NCC. Present only for legacy compatibility. </entry>
+                        </row>
+                        <row>
+                            <entry> Method </entry>
+                            <entry>
+                                <p>enum</p>
+                                <ul>
+                                    <li>
+                                        <p>DECR</p>
+                                    </li>
+                                    <li>
+                                        <p>INCR</p>
+                                    </li>
+                                    <li>
+                                        <p>SET</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry> Mandatory </entry>
+                            <entry>
+                                <p>The method to SET/INCR/DECR the account balance.</p>
+                                <ul>
+                                    <li>
+                                        <p>DECR: Decrement the balance by the Amount specified.</p>
+                                    </li>
+                                    <li>
+                                        <p>INCR: Increment the balance by the Amount specified.</p>
+                                    </li>
+                                    <li>
+                                        <p>SET: Set the balance to the value specified in the
+                                            Amount.</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Negative Credit </entry>
+                            <entry> Flag </entry>
+                            <entry> N/A </entry>
+                            <entry> N/A for NCC. Present only for legacy compatibility. </entry>
+                        </row>
+                        <row>
+                            <entry> Payback </entry>
+                            <entry> Flag </entry>
+                            <entry> N/A </entry>
+                            <entry>
+                                <p>N/A for NCC. Present only for legacy compatibility.</p>
+                                <p>Indicate if service will payback subscriber's existing loan
+                                    before increasing subscriber balance</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Recharge </entry>
+                            <entry> Flag </entry>
+                            <entry> N/A </entry>
+                            <entry>
+                                <p>N/A for NCC. Present only for legacy compatibility.</p>
+                                <p>Whether the adjustment is to be handled as a full recharge ('Y')
+                                    or a simple balance adjustment ('N'). A full recharge will
+                                    require the service to check for recharge bonuses and any
+                                    installment payments due, etc.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Recharge Type </entry>
+                            <entry> 1-2 digit string </entry>
+                            <entry> N/A </entry>
+                            <entry>
+                                <p>N/A for NCC. Present only for legacy compatibility.</p>
+                                <p>It identifies the recharge type</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Reference 1 </entry>
+                            <entry> 1-12 digit string </entry>
+                            <entry> N/A </entry>
+                            <entry> N/A for NCC. Present only for legacy compatibility. </entry>
+                        </row>
+                        <row>
+                            <entry> Reference 2 </entry>
+                            <entry> 1-12 digit string </entry>
+                            <entry> N/A </entry>
+                            <entry> N/A for NCC. Present only for legacy compatibility. </entry>
+                        </row>
+                        <row>
+                            <entry> Reference 3 </entry>
+                            <entry> 1-12 digit string </entry>
+                            <entry> N/A </entry>
+                            <entry> N/A for NCC. Present only for legacy compatibility. </entry>
+                        </row>
+                        <row>
+                            <entry> Reference 4 </entry>
+                            <entry> 1-12 digit string </entry>
+                            <entry> N/A </entry>
+                            <entry> N/A for NCC. Present only for legacy compatibility. </entry>
+                        </row>
+                        <row>
+                            <entry> Service Fee </entry>
+                            <entry> Flag </entry>
+                            <entry> N/A </entry>
+                            <entry>
+                                <p>N/A for NCC. Present only for legacy compatibility.</p>
+                                <p>Indicate whether NCC will consider if the Emergency Top-up
+                                    Service fee will be paidback by the balance adjustment</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Tax Amount </entry>
+                            <entry> 1-15 character string (0-9 and '.' only), may includes up to 4
+                                decimal places. </entry>
+                            <entry> N/A </entry>
+                            <entry>
+                                <p>N/A for NCC. Present only for legacy compatibility.</p>
+                                <p>Indication the Tax Amount by external system. It is in
+                                    currency</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Tax Code </entry>
+                            <entry> 1-15 character string </entry>
+                            <entry> N/A </entry>
+                            <entry> N/A for NCC. Present only for legacy compatibility. </entry>
+                        </row>
+                        <row>
+                            <entry> Tax Handle Indicator </entry>
+                            <entry> "plus tax" "minus tax" </entry>
+                            <entry> N/A </entry>
+                            <entry>
+                                <p>N/A for NCC. Present only for legacy compatibility.</p>
+                                <p>Indicates how to handle tax application</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Tax Percentage </entry>
+                            <entry> Counter (0-10000) </entry>
+                            <entry> N/A </entry>
+                            <entry>
+                                <p>N/A for NCC. Present only for legacy compatibility.</p>
+                                <p>The Tax Percentage by external system. This value is the number
+                                    of 1/100ths of a percentage tax.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Transaction ID </entry>
+                            <entry> 1-20 character string, comma not allowed </entry>
+                            <entry> N/A </entry>
+                            <entry> NCC will record it in output EDR. </entry>
+                        </row>
+                        <row>
+                            <entry> UCL </entry>
+                            <entry> Flag </entry>
+                            <entry> N/A </entry>
+                            <entry> N/A for NCC. Present only for legacy compatibility. </entry>
+                        </row>
+                        <row>
+                            <entry> UCL_CED </entry>
+                            <entry> Flag </entry>
+                            <entry> N/A </entry>
+                            <entry>
+                                <p>N/A for NCC. Present only for legacy compatibility.</p>
+                                <p>Indicator for whether the new end time also refers to the end
+                                    time of the active subscription entity lifecycle.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> User ID </entry>
+                            <entry> 1-16 character string </entry>
+                            <entry> N/A </entry>
+                            <entry> N/A for NCC. Present only for legacy compatibility. </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+</section>
+<section><title>AdjustBalance: Response</title>
+<p>For a list of valid responses, see section 1.4. “Standard Parameters for Responses”.</p>
+</section>
+<section><title>AdjustBalance: Constraints</title>
+<p>Account ID Constraint</p>
+<p>If the specified Account ID does not exist, return error message “0001: Subscriber/Group [{Account ID}] not found”.</p>
+</section>
+</conbody></concept>

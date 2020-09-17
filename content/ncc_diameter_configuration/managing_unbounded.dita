@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-cn01-tczza-d1e8925"><title>Managing unbounded AVP collections</title><conbody>
+<section><title>Overview</title>
+<p>The number of attributes contained in a Diameter message may vary between messages, creating
+                variable-size or unbounded multi-value AVP collections. The NCC facilitates the
+                manipulation of unbounded collections by presenting you the full path to these AVPs
+                without the burden of a massive fanout of all possible paths. </p>
+<p>This section provides information about the mechanisms that are available to support unbounded collections.</p><ul>
+<li>
+<p>Attributes and actions</p>
+</li>
+<li>
+<p>Index management for unbounded AVP collections</p>
+</li>
+</ul>
+</section>
+<section><title>Attributes and actions</title>
+<p> The NCC provides a basic set of actions that allow you to manipulate Diameter AVPs in a message
+                context. The common action types are available across all AVP structures. They are
+                specified as part of the action attribute name in the filter.</p>
+<p>In addition to the set actions/attributes, the NCC provides the Number-Of-Values-At-Index
+                attribute to enable iterative manipulation of multi-value AVPs. The attribute
+                returns the number of values an AVP instance has at a particular location based on
+                the current read indices of the parent AVPs. The attribute is available as a source
+                context. </p>
+</section>
+<section><title>Index management for unbounded AVP collections</title>
+<p>Multiplicity in unbounded AVP collections present special challenges. In addition to the read and write indices requirements for single-value AVPs, the indices for each level of the unbounded AVP collection must be managed. </p>
+<p>For example, consider the case where you want to write a message filter that would modify all associated Flow-Descriptions in a Rx AAR message when the Media-Type is Video. This requires the message filter logic to iterate through each Media-Component-Description and modify all associated Flow-Descriptions that evaluate to true. The indices for each level (Media-Component-Description, Media-Type, and Flow-Description) must be managed. In addition, the logic of the implemented message filter must support a a walk through each level of the message.</p>
+<p>The following workflow describes how to couple message filters with index management to reuse filters that test for and react to your conditions within a multi-valued AVP.</p><ol>
+<li>
+<p>In the source context</p><ul>
+<li>
+<p>Establish your control statement. The condition of the source context should check if the Read-Index is less than the Number-Of-Values-At-Index. This enables you to regulate the number of iterations based on the size of the collection</p>
+</li>
+</ul>
+</li>
+<li>
+<p>In the result context</p><ul>
+<li>
+<p>Apply your action AND</p>
+</li>
+<li>
+<p>Increment the read and write indices of the AVP AND</p>
+</li>
+</ul>
+</li>
+</ol>
+</section>
+</conbody></concept>

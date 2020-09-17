@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="kafka_topic_monitoring">
+    <title>Kafka topic monitoring</title>
+    <conbody>
+        <p>Kafka input stream monitors the number of pending (uncollected) messages in the topic for
+            the configured consumer group.</p>
+        <p>Inside Kafka broker, the data is stored in a topic and a topic consists of one or more
+            partitions. When producing messages, the producer writes the data into a specific
+            partition. As it writes data it keeps track of the last “write position” in each
+            partition. This is called Latest Offset, also known as Log End Offset. Each partition
+            has its own independent Latest Offset. In a similar way, each consumer keeps track of
+            the the last “committed position” in each partition whose data it is consuming. This is
+            called the consumer offset. If the message producing rate is higher than the consuming
+            rate, a difference starts to appear between the producer and consumer offset values,
+            which is called consumer lag. Kafka input stream monitors the aggregated consumer lag
+            value, meaning the sum of the consumer lag values in each partition.</p>
+        <p>There are three threshold levels that can be defined for monitoring the consumer lag –
+            high, low and clear.  These threshold levels are defined in the node parameters of CG
+            Kafka Node.</p>
+        <ul id="ul_nmb_vhc_tmb">
+            <li>If the consumer lag exceeds the low threshold value, a warning is raised as an early
+                notification and to advise the administrator to scale out the solution by either
+                increasing the number of consumer threads or increasing the number of Kafka input
+                streams.</li>
+            <li>If the consumer lag falls below the clear threshold value (and low or high level
+                thresholds were previously reached), an information message is sent out to indicate
+                that the consumer lag is back to normal again, that is, within acceptable
+                boundaries.</li>
+            <li>If the consumer lag exceed the high threshold value, an error is raised. Kafka input
+                stream cannot keep up with the producer any more and scaling out is required.</li>
+        </ul>
+        <note>Unlike with the other overload properties described in <xref
+                href="overview_pausing_all_kafka_collection.dita#SPS_CDR_Streams_Stream_Overview_pausing_all_kafka_collection"
+            />, exceeding any of the thresholds does not pause the record collection.</note>
+        <table frame="all" rowsep="1" colsep="1" id="table_tnp_kkc_tmb">
+            <title>Threshold levels</title>
+            <tgroup cols="3">
+                <colspec colname="c1" colnum="1" colwidth="1*"/>
+                <colspec colname="c2" colnum="2" colwidth="1*"/>
+                <colspec colname="c3" colnum="3" colwidth="1*"/>
+                <thead>
+                    <row>
+                        <entry>Threshold level</entry>
+                        <entry>Action when defined properties reach threshold</entry>
+                        <entry>Action when defined properties are back to below threshold</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>Clear</entry>
+                        <entry>-</entry>
+                        <entry>
+                            <p>Clears the alert if an alert was raised earlier for reaching Low or
+                                High threshold.</p>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>Low</entry>
+                        <entry>
+                            <p>Raises a warning indicating that the consumer lag has exceeded the
+                                threshold. Current consumer lag value is displayed.</p>
+                            <p>Check node parameter <codeph>ConsumerMaxPollRecords</codeph> in Kafka
+                                input stream and consider increasing the value.</p>
+                            <p>Advise to scale out the solution. For more information on scaling see
+                                    <xref
+                                    href="overview_scaling.dita#SPS_CDR_Streams_Stream_Overview_scaling"
+                                />.</p>
+                        </entry>
+                        <entry>-</entry>
+                    </row>
+                    <row>
+                        <entry>High</entry>
+                        <entry>
+                            <p>Raises an error indicating that the consumer lag has exceed the
+                                threshold. Current consumer lag value is displayed.</p>
+                            <p>Check node parameter <codeph>ConsumerMaxPollRecords</codeph> in Kafka
+                                input stream and consider increasing the value.</p>
+                            <p>Advise to scale out the solution. For more information on scaling see
+                                    <xref
+                                    href="overview_scaling.dita#SPS_CDR_Streams_Stream_Overview_scaling"
+                                />.</p>
+                        </entry>
+                        <entry>
+                            <p>-</p>
+                        </entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </conbody>
+</concept>

@@ -1,0 +1,2147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-d1e32395"><title>Alarm administration</title><conbody>
+<section><title>Overview</title>
+<p>Alarms are generated to alert operators of abnormal behavior. Alarms are raised by the Policy, Charging, and Service Manager (SM) applications as well as by the system and Operation Administration Maintenance Endpoint (OAME). These alarms are meant to be sent to the  Environmental Management System (EMS) that displays them. </p>
+<p>The alarming service is provided across a cluster of machines in a cloud environment and supports the following:</p><ul>
+<li>
+<p>southbound interface that allows applications to generate alarms</p>
+</li>
+<li>
+<p>alarm management that includes alarm processing, storage and lifecycle management</p>
+</li>
+<li>
+<p>northbound interface (SNMP v2c/v3) that reports alarms to the EMS</p>
+</li>
+</ul>
+</section>
+<section><title>Active alarm table and alarm logs</title>
+<p>Active alarms are stored in the ETCD backend. To see active alarms, run the following command on the Active OAME VM:</p>
+<p>
+<codeph> curl http://localhost:8182/api/alma/alarms | python -m json.tool</codeph>
+</p>
+<p>The size of the active alarm table is stored in &lt;alma.activeAlarmTableSize&gt;. By default the size of the active alarm table is 2. This value represents the number of units where 1 unit = 1000 count of alarms. The range of the active alarm table is [1;1024].</p>
+<p>If the storage backend is down, then the system sends a trap to the SNMP manager with alarm id 2111111111 trying to reach ETCD. If the system is not able to communicate with ETCD, then the system stops processing alarms or sending traps of any alarm.</p>
+<p>The file <filepath>/var/log/calm/alarms.log</filepath> is used to log the dropped alarms that exceed the alarm table size set in the configuration file <filepath>alma.properties</filepath>.</p>
+<note>
+<p>The file <filepath>/var/log/calm/history.log</filepath> is used to log only the alarms that are cleared.</p><ul>
+<li>
+<p>In <filepath>history.log</filepath> file, &lt;acknowledgedAt&gt; is converted from the system instance &lt;zonetime&gt; to UTC zonetime.</p>
+</li>
+<li>
+<p>Alarms log is available in <filepath>/opt/tpa/logs/SPSServer.log</filepath> on local VM in Unified Format, but this log does not consolidate on the OAME VM.</p>
+</li>
+</ul>
+<p>The Buffer size for all alarms inside the td-agent (/etc/td-agent/td-agent.conf) has been set to 20MB. Events arriving on port 8514 of any node will be listened by Worker#0 of the td-agent, whereas events on other ports will be shared among multiple workers.</p>
+</note>
+<note>HA service-specific logs are only available in /var/log/messages and /var/log/ha/ha.log on the
+                local node. Traps and alarms related to the HA master will not be sent to either the
+                OAME node or the local node.<p/></note>
+<note>Additional text will be missing for fs_mon alarms and severity is the only indication you will
+                see.<p/></note>
+<sectiondiv>
+<p><b>Brevity control</b></p>
+<p>NCC supports brevity control to avoid alarm bursts. Brevity control is introduced to control the
+                    number of similar alarms that are sent. Sometimes, alarms of a similar nature on
+                    a site may be triggered at the same time. To the northbound management system
+                    there will be a burst of alarms arriving which can cause an overload. For
+                    example, there are multiple instances of a service running in a cluster when a
+                    network partition occurs. If half of your service instances can no longer reach
+                    the database, each service instance will send an alarm if it cannot communicate
+                    with the database. This results in hundreds of alarms being sent to the
+                    northbound management system. </p>
+<p>A limited number of those alarms are actually enough to identify the root cause of what is
+                    happening at that time. Brevity control allows you to configure the NCC to send
+                    a limited number of alarms that are of a similar nature and enough to help
+                    identify the root cause of what is happening at that time to avoid going into
+                    overload. Brevity control as applied to alarms, only allows a specific number of
+                    the same alarms to pass and drops the rest of the alarms created within the
+                    particular interval. You can configure the NCC alarm component to do brevity
+                    control for specified alarm targets.</p>
+<p>Brevity control is introduced at both the Application and OAME nodes inside the /etc/td-agent/td-agent.conf file. Logs related to Brevity control on alarms will be seen in the: </p>
+<p>
+<i>/var/log/system/nokia_harmonized.log </i>
+</p>
+<p>The alarms are filtered on the parameter keys: alarm.key, id, and severity. See the <i>NCC
+                        Installation and Upgrade Guide</i> for more information about the keys.</p>
+<p>Two variables are introduced at both the OAME and the APP node mappings in the sdc_conf file for brevity control that define how within the "brevity_timeframe" only a specified number (brevity_num) of the same alarms can be passed, while the rest of the alarms will be dropped, as follows:</p><ul>
+<li>
+<p>
+<b>brevity_timeframe</b>: This allows you to configure timeframe for brevity control. The value should be greater than zero. The default value is set to 10 seconds.</p>
+</li>
+<li>
+<p>
+<b>brevity_num</b>: This allows you to configure how many re-occurring alarms can be displayed or allowed within the interval of the “brevity_timeframe”. The value should be greater than zero. The default value is set to 2.</p>
+</li>
+</ul>
+<note>
+<p>Use of the above configuration at only the OAME node will configure its brevity control on the OAME node with its value(s), whereas the Application node will continue using the default value for its brevity control and vice-versa. That is in this example, Brevity control will block the alarms from the event generating nodes so that they do not reach the OAME node. Alarms will continue to flood on other nodes, but not the OAME node.</p>
+</note>
+<p>The Brevity control message for dropped alarms will be displayed when the second brevity control occurs on the same alarms. Logs related to Brevity control on alarms will be seen in /var/log/system/nokia_harmonized.log.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>CALM and brevity control</b></p>
+<p>The CSF Alarm Service (CALM) provides the alarming service in BareMetal, VM, and Container
+                    environments. The NCC uses the CALM component to write the alarm in the database
+                    and send it to an external entity like NetAct. CALM is a generic agent that
+                    supports network elements (NEs) integrated with different network management
+                    systems (NMS) for fault management (FM). CALM will send the same alarms multiple
+                    times for the same reasons, which should be avoided. That is, NCC should not
+                    send the same kind of alarms multiple times. Brevity control allows you to
+                    reduce the number of alarms that are overwritten so that there is less impact on
+                    resource usage. </p>
+<p> In a specific rule group, you can define target alarms. Target alarms are the alarms with specified parameter values; for example, alarms with the alarm.id 3001100 and Enterprise TenantA. There can be one or more rule groups in the file. CALM allows you to define the threshold parameters in each rule group that control the throttling of alarms (when to start throwing away alarms and when to resume normal processing). CALM will also</p><ul>
+<li>
+<p>define the output messages that print when throttling is invoked</p>
+</li>
+<li>
+<p>keep track of the number of alarms of the same kind that are discarded due to throttling</p>
+</li>
+<li>
+<p>print the output message when throttling starts</p>
+</li>
+<li>
+<p>print an output message on a periodic basis showing the number of alarms discarded</p>
+</li>
+<li>
+<p>send alarm related to brevity control report (how many alarms and which type of alarms are blocked). </p>
+<p>The brevity control report informs you of how many alarms are blocked and when brevity control starts and when brevity control stops. When alarms are blocked, CALM will periodically raise the alarms associated with the brevity control rule that is blocked, and report the number of alarms that have been discarded by CALM.</p>
+</li>
+</ul>
+<note>
+<p>The Alarms Blocked Count resets to zero during the capping interval when an OAME switchover occurs. This causes the alarms to be sent again.</p>
+</note>
+<p>CALM will not: </p><ul>
+<li>
+<p>store the discarded alarm in alarm table</p>
+</li>
+<li>
+<p>notify NB TRAPs</p>
+</li>
+<li>
+<p>manage their lifecycle internally</p>
+</li>
+</ul>
+<p>CALM will allow you to enable and disable brevity control as well as configure the target alarms and threshold parameters (upper threshold, lower threshold, threshold period) that apply to the system.  These parameters may include the time period the alarm rate that invokes throttling, and the alarm rate that must be obtained before throttling is turned off for the same kinds of alarms. When the same kind of alarms are throttled, the system tracks the number of alarms that it has discarded in the time period as well as the cumulative discarded messages since throttling began for the message kind.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Configuring brevity control</b></p>
+<p>Brevity control rules are configured in the sdc json file in a BVNF environment. Rules are
+                    configured or changed via the SDC key. As CALM allows you to provision brevity
+                    control rules in a yaml file, you can modify the yaml file after the system is
+                    instantiated using the tool: “configure-brevitycontrolrule.sh” to change the sdc
+                    values in the /usr/lib/alma/alma.enterprises.advance.yaml file in the ETCD. See
+                    the “configure-brevitycontrolrule.sh tool” in the <i>NCC Tools</i> section of
+                    this guide for more information.</p>
+<p>The brevity control rules contain one or more rule groups. Currently, you can configure one alarm in the same rule group.  Each group includes settings for:</p><ul>
+<li>
+<p>groupId</p>
+</li>
+<li>
+<p>target</p>
+</li>
+<li>
+<p>upper threshold</p>
+</li>
+<li>
+<p>lower threshold</p>
+</li>
+<li>
+<p>threshold period</p>
+</li>
+</ul>
+<p>The groupId is an integer which can uniquely identify one group of brevity rules in CALM cluster wide. The groupId should be a continuous increment. </p>
+<p>Alarms that meet the target alarm’s definition of "same kind of alarms" can be defined as target alarms a combination of parameters found in the CLOG harmonized API. The target can be defined via the combination of the following parameters in the CLOG harmonized API:</p><ul>
+<li>
+<p>enterprise (extension): which is the application or component that can use information carried in this field to route events. </p>
+</li>
+<li>
+<p>alarm.id: which is the numerical ID of the alarm.</p>
+</li>
+<li>
+<p>MOC _ID (extension): which is a unique ID among the applications and is maintained by NetAct. MOC is an abbreviation for “Managed Object Classes”. The MOC_ID is the unique ID that separates the NIDD file. CALM supports the import of the NIDD file.</p>
+</li>
+</ul>
+<note>
+<p>The group ID in the alma.log logging is defined as </p>
+<p>
+<i>&lt;enterprise id&gt;:&lt;alarmid&gt;:&lt;mocid&gt;</i>. </p>
+</note>
+<p>If two or more incoming alarms match the above mentioned field values, all the alarms are just multiples of the same alarm. </p>
+<p>The following is an example of a brevity control rule:</p>
+<p>enterprise:     </p>
+<p>brevityControlRules: </p>
+<p>groupId: 1        </p>
+<p>target:    alarm_id: 3001100        upperThreshold: 4       lowerThreshold: 2       thresholdPeriod: 5   Based on the above configuration, the Alarm '3001100' begins to be blocked (Brevity control start) when 4 messages have been sent during the threshold period of 5 seconds. </p>
+<p>This blocking continues until there are less than the lower threshold of alarms over a 5 second
+                    period. After the number of alarms sent are less than the lower threshold the
+                    NCC will send alarms without throttling. </p>
+<p>CALM maintains two types of counters:</p><ul>
+<li>
+<p>Total blocked count 2: which is the number of alarms in the last 5 (hard coded in CALM) threshold period.</p>
+<p> The "Total Blocked Count" is reset with 0 when 5 threshold periods complete and send a particular alarm for this on to the northbound management interface.</p>
+</li>
+<li>
+<p>blocked count: which is the number of alarms blocked during a single threshold period. </p>
+<p>The "blocked count" is reset with 0 after one threshold period has completed or de-registered the alarm.</p>
+</li>
+</ul>
+<p>When the multi-tenant feature is enabled and if “enterprise” is not provisioned in a rule group, the rule will apply to all tenants. Both “MOC_ID” and “enterprise” are optional parameters to define a target. Messages coming from the southbound management interface may not carry these two or any one of them. The following are guidelines and default values for thresholds and periods in brevity control rule authoring: </p><ul>
+<li>
+<p>upper threshold default value is 20, range is 2 - 255 alarms per threshold period</p>
+<p>The value of Upper Threshold must be greater than the value of Lower Threshold.</p>
+</li>
+<li>
+<p>lower threshold default value is 10, range is 1 - 254 alarms per threshold period</p>
+</li>
+<li>
+<p>threshold period default value is 5, range is 0, 1 - 3600, unit is second</p>
+<p>If the threshold period value of zero is specified, brevity control for that alarm kind is turned off and an unlimited number of the specified alarms are allowed to be issued.</p>
+</li>
+<li>
+<p>The maximum number of brevity control rule groups is 20.</p>
+</li>
+</ul>
+</sectiondiv>
+</section>
+<section><title>Supported MIB</title>
+<p>In previous versions, the MIB files were used to generate SNMP traps. This has changed and now the MIB files are converted to Java objects in source code, and platform sends SNMP traps according to this new MIB definition. For more information on the supported MIB, see section <i>VNF Extention</i> in the Installation and Upgrade Guide.</p>
+<p>If NetAct is not used as NMS, then the MIB files provide the content that can be used for SNMP traps. The MIB files are included in <!--xref URI: ../Chapters/c-sps-MIB-files.xml#MIB-files--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-MIB-files"/>.</p>
+</section>
+<section><title>Enabling alarms for EMS</title>
+<p>To enable alarms, you configure them. For more information, see the SNMP section in the NCC
+                Installation and Upgrade Guide.</p>
+</section>
+<section><title>SNMP alarms</title>
+<p>The NCC supports a framework for producing SNMP alarms. When an alarm is produced, the NCC
+                maintains Active state until the alarm condition is cleared.</p>
+<note>The NCC generates an alarm timestamp in SNMP traps that can be up to five seconds after the
+                actual event time.<p/></note>
+</section>
+<section><title>Alarm trap</title>
+<p>The alarm service provides the ability to send alarms as traps to the SNMP manager.</p>
+<note>
+<p>To specify the SNMP manager, you need to configure the SNMP users parameters after instantiation. To configure the SNMP users, contact Nokia Professional Services.</p>
+</note>
+</section>
+<section><title>Alarm history</title>
+<p>The alarm history is recorded in <filepath>/var/log/calm/history.log</filepath> on the Active OAME VM. </p>
+<p>To see the alarm history, enter:</p>
+<codeblock>less /var/log/calm/history.log</codeblock>
+</section>
+<section><title>Alarm identification, uniqueness,  field descriptions, and parameters</title>
+<p>Alarm uniqueness on NCC is a composite of the following parameters:</p><ul>
+<li>
+<p>sourceObject</p>
+</li>
+<li>
+<p>sourceProblem</p>
+</li>
+</ul>
+<p>The "sourceObject" field in Alarm Service is mapped with the following fields of the Unified Logging API: system, host, container, service and process. The "sourceProblem" field contains the alarm id. This is a numerical ID of the alarm and is mandatory for the Alarm Service.</p>
+<p>In the NE3S protocol, "noiSystemDistinguishedName" + "noiSpecificProblem" can only define one alarm. So in the Unified logging API, "system"/"host"/&lt;"container"&gt;/&lt;"service"&gt;/&lt;"process"&gt; + "alarm.id" defines one alarm only. The "system" and "host" are mandatory. The others are optional. </p>
+<p>See <!--xref URI: #applalarm--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-applalarm"/> and <!--xref URI: #platalarm--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-platalarm"/> for alarm details.</p>
+<p>
+<!--xref URI: #oldmib-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-d1e32395/oldmib"/> lists alarm parameters, their corresponding representation in the OID, and the description of each parameter for systems that use the older NokiaEmsMib, where the following is the OID for the alarm index key in the ETCD database: </p>
+<codeblock>1.3.6.1.4.1.28458.2.78.5.6.9.1.1</codeblock>
+<p>
+<!--xref URI: #NE3S-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-d1e32395/ne3s"/> lists alarm parameters, their corresponding representation in the OID, and the description of each parameter for NE3S on systems that use the newer NOKIA-ENHANCED-SNMP-SOLUTION-SUITE-ALARM-IRP MIB module, where the following is the OID for the noiAlarmId key in the ETCD database:</p>
+<codeblock>1.3.6.1.4.1.94.7.1.4.2.1.1</codeblock>
+<table id="oldmib" colsep="1" rowsep="1">
+                <title>Alarm parameters</title>
+                <tgroup cols="4">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <colspec colname="COLSPEC0"/>
+                    <colspec colname="col3"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Parameter</p>
+                            </entry>
+                            <entry>
+                                <p>OID Entry</p>
+                            </entry>
+                            <entry>
+                                <p>OID Example</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> AlarmIndex </entry>
+                            <entry> 1 </entry>
+                            <entry> 1.3.6.1.4.1.28458.2.78.5.6.9.1.<b>1</b>
+                            </entry>
+                            <entry> Index of the alarm. </entry>
+                        </row>
+                        <row>
+                            <entry> ObjectName </entry>
+                            <entry> 2 </entry>
+                            <entry> 1.3.6.1.4.1.28458.2.78.5.6.9.1.<b>2</b>
+                            </entry>
+                            <entry>
+                                <p>
+                                    <systemoutput>&lt;host&gt;+&lt;service&gt;#&lt;system&gt;</systemoutput>
+                                </p>
+                                <p>The name of the object causing an alarm. The object should
+                                    include the code module name (e.g. BalanceManager, RatingEngine,
+                                    ServiceManager, SubscriberModel, etc.).</p>
+                                <p>The Object is formatted as either:</p>
+                                <p>&lt;LocalHostName&gt;#&lt;system&gt; or </p>
+                                <p>&lt;LocalHostName&gt;+&lt;AlarmInstance&gt;#&lt;system&gt;</p>
+                                <p>&lt;AlarmInstance&gt; is only used when an &lt;AlarmInstance&gt;
+                                    is applicable.  For example, a network heartbeat alarm would set
+                                    the AlarmInstance to be the name of the remote network element.
+                                    All other alarms use the first format.</p>
+                                <p>
+                                    <b>Note:</b> If "AlarmInstance" is present, a "+" is used to
+                                    separate the "LocalHostName" and the "AlarmInstance”.</p>
+                                <p>"LocalHostName will reflect the specific host within the NCC that
+                                    reported the alarm, when applicable. A newly added system alarm
+                                    may use the VNF Name in the host field.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> AlarmType </entry>
+                            <entry> 3 </entry>
+                            <entry> 1.3.6.1.4.1.28458.2.78.5.6.9.1.<b>3</b>
+                            </entry>
+                            <entry>
+                                <p>The defined type of an alarm as defined in the X.733
+                                    standard.</p>
+                                <p>The list of key-value bindings for AlarmType is in
+                                        <!--xref URI: #AlarmTypesTable--><xref
+                                        keyref="id9YZ-09126-MT00-REZZA-SP2-d1e32395/alarmtypestable"
+                                    />.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> AlarmTime </entry>
+                            <entry> 4 </entry>
+                            <entry> 1.3.6.1.4.1.28458.2.78.5.6.9.1.<b>4</b>
+                            </entry>
+                            <entry> The value of time in seconds since 00:00:00 UTC, January 1, 1970
+                                . </entry>
+                        </row>
+                        <row>
+                            <entry> ProbableCause </entry>
+                            <entry> 5 </entry>
+                            <entry> 1.3.6.1.4.1.28458.2.78.5.6.9.1.<b>5</b>
+                            </entry>
+                            <entry>
+                                <p>The name of the problem causing an alarm as defined in the X.733
+                                    standard.</p>
+                                <p>The list of key-value bindings for ProbableCause is in
+                                        <!--xref URI: #AlarmProbableCauseTable--><xref
+                                        keyref="id9YZ-09126-MT00-REZZA-SP2-d1e32395/alarmprobablecausetable"
+                                    />.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> SpecificProblem </entry>
+                            <entry> 6 </entry>
+                            <entry> 1.3.6.1.4.1.28458.2.78.5.6.9.1.<b>6</b>
+                            </entry>
+                            <entry> The alarm name. The SpecificProblems field further elaborates
+                                the ProbableCause information supplied. </entry>
+                        </row>
+                        <row>
+                            <entry> Severity </entry>
+                            <entry> 7 </entry>
+                            <entry> 1.3.6.1.4.1.28458.2.78.5.6.9.1.<b>7</b>
+                            </entry>
+                            <entry>
+                                <p>The perceived severity of an alarm as defined in the X.733
+                                    standard..</p>
+                                <p>The list of key-value bindings for Severity is
+                                        <!--xref URI: #AlarmSeverityTable--><xref
+                                        keyref="id9YZ-09126-MT00-REZZA-SP2-d1e32395/alarmseveritytable"
+                                    />.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> AdditionalText </entry>
+                            <entry> 9 </entry>
+                            <entry> 1.3.6.1.4.1.28458.2.78.5.6.9.1.<b>9</b>
+                            </entry>
+                            <entry> Alarm Data and any additional text provided. </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<p>
+                <!--xref URI: #oldmib12-->
+                <xref keyref="id9YZ-09126-MT00-REZZA-SP2-d1e32395/oldmib12"/> describes additional
+                alarm parameters without OIDs because NCC does not send/set values for these
+                particular parameters.</p>
+<table id="oldmib12" colsep="1" rowsep="1">
+                <title>Other Alarm parameters that are not set or sent by NCC</title>
+                <tgroup cols="2">
+                    <colspec colname="col1"/>
+                    <colspec colname="col3"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Parameter</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> RepeatCount </entry>
+                            <entry> 0 </entry>
+                        </row>
+                        <row>
+                            <entry> AutoClearAlarm </entry>
+                            <entry> False when alarm is automatically cleared. </entry>
+                        </row>
+                        <row>
+                            <entry> OmdbKey </entry>
+                            <entry> False when alarm is automatically cleared. </entry>
+                        </row>
+                        <row>
+                            <entry> OmText </entry>
+                            <entry> False when alarm is automatically cleared. </entry>
+                        </row>
+                        <row>
+                            <entry> AlarmSource </entry>
+                            <entry> False when alarm is automatically cleared. </entry>
+                        </row>
+                        <row>
+                            <entry> AlarmUUID </entry>
+                            <entry> False when alarm is automatically cleared. </entry>
+                        </row>
+                        <row>
+                            <entry> VMFullName </entry>
+                            <entry> The full name of the VM in the format: extension.VM_Name
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> VNFCFullName </entry>
+                            <entry> The VNFC full name of the node that triggered the alsrm. Only
+                                applies to cloud environment. </entry>
+                        </row>
+                        <row>
+                            <entry> SystemName </entry>
+                            <entry>
+                                <p>Name of the system in which the event occurred.</p>
+                                <p>For “system” alarms, they are about the NCC as a whole (e.g.
+                                    Database failure due to too many DB nodes down). If this is a
+                                    system alarm, the alarm component will use the VNF system name
+                                    when reporting the alarm, as opposed to the node’s host name
+                                    that created the alarm.</p>
+                                <p>If the alarm is about a given node, the node’s host name that
+                                    created the alarm is given.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Acknowledgement </entry>
+                            <entry> Acknowledgement of the status of the alarm. </entry>
+                        </row>
+                        <row>
+                            <entry> AcknowledgementTime </entry>
+                            <entry> Acknowledgement of the time of the alarm. </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<p>
+<!--xref URI: #NE3S-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-d1e32395/ne3s"/> describes the parameters for NE3S alarms.</p>
+<table id="ne3s"><title>NE3S Alarm parameters</title>
+<tgroup cols="4">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<colspec colname="COLSPEC0"/>
+<colspec colname="col3"/>
+<thead>
+<row>
+<entry>
+<p>Parameter</p>
+</entry>
+<entry>
+<p>OID Entry</p>
+</entry>
+<entry>
+<p>OID Example</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+noiAlarmId
+</entry>
+<entry>
+1
+</entry>
+<entry>
+.1.3.6.1.4.1.94.7.1.4.2.1.1
+</entry>
+<entry>
+This object represents the alarm identifier of an alarm in the alarm table It uniquely identifies an entry in the alarm table. The alarmId object is read-only even though it is used as index in the alarm table.
+</entry>
+</row>
+<row>
+<entry>
+noiAlarmSystemDN
+</entry>
+<entry>
+2
+</entry>
+<entry>
+.1.3.6.1.4.1.94.7.1.4.2.1.2
+</entry>
+<entry>
+This object represents the System Distinguished Name (SDN) of the alarming object, which represents the faulty resource.
+</entry>
+</row>
+<row>
+<entry>
+noiAlarmEventTime
+</entry>
+<entry>
+3
+</entry>
+<entry>
+.1.3.6.1.4.1.94.7.1.4.2.1.3
+</entry>
+<entry>
+This object represents the event time, time of occurrence of the event in the Network Element.
+</entry>
+</row>
+<row>
+<entry>
+noiAlarmSpecificProblem
+</entry>
+<entry>
+4
+</entry>
+<entry>
+.1.3.6.1.4.1.94.7.1.4.2.1.4
+</entry>
+<entry>
+This object represents the specific problem assigned to the fault situation.
+</entry>
+</row>
+<row>
+<entry>
+noiAlarmText
+</entry>
+<entry>
+5
+</entry>
+<entry>
+.1.3.6.1.4.1.94.7.1.4.2.1.5
+</entry>
+<entry>
+This object represents the alarm text and contains basic information on the fault.
+</entry>
+</row>
+<row>
+<entry>
+noiAlarmPerceivedSeverity
+</entry>
+<entry>
+6
+</entry>
+<entry>
+.1.3.6.1.4.1.94.7.1.4.2.1.6
+</entry>
+<entry>
+<p>This object represents the perceived severity of the fault. Value can be set to cleared by the manager to cancel the alarm. </p>
+<p>See <!--xref URI: #AlarmSeverityTable--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-d1e32395/alarmseveritytable"/>
+</p>
+</entry>
+</row>
+<row>
+<entry>
+noiAdditionalText
+</entry>
+<entry>
+7
+</entry>
+<entry>
+.1.3.6.1.4.1.94.7.1.4.2.1.7
+</entry>
+<entry>
+This object represents the additional text and provides further qualification on the fault.
+</entry>
+</row>
+<row>
+<entry>
+noiAlarmProbableCause
+</entry>
+<entry>
+8
+</entry>
+<entry>
+.1.3.6.1.4.1.94.7.1.4.2.1.8
+</entry>
+<entry>
+This object represents the probable cause of the alarm.
+</entry>
+</row>
+<row>
+<entry>
+noiAlarmEventType
+</entry>
+<entry>
+9
+</entry>
+<entry>
+.1.3.6.1.4.1.94.7.1.4.2.1.9
+</entry>
+<entry>
+This object represents the event type.
+</entry>
+</row>
+<row>
+<entry>
+noiAlarmNotificationId
+</entry>
+<entry>
+10
+</entry>
+<entry>
+.1.3.6.1.4.1.94.7.1.4.2.1.10
+</entry>
+<entry>
+This object represent the notification identifier. It is a unique value for a notification.
+</entry>
+</row>
+<row>
+<entry>
+noiAckState
+</entry>
+<entry>
+11
+</entry>
+<entry>
+.1.3.6.1.4.1.94.7.1.4.2.1.11
+</entry>
+<entry>
+This object represents the acknowledgement status of the of the alarm If the agent does not support the concept of acknowledgement, than the value 'indeterminate' shall be used.
+</entry>
+</row>
+<row>
+<entry>
+noiAckTime
+</entry>
+<entry>
+12
+</entry>
+<entry>
+.1.3.6.1.4.1.94.7.1.4.2.1.12
+</entry>
+<entry>
+This object represent the time of the last modification of the acknowledgement state of an alarm in the alarm table.
+</entry>
+</row>
+<row>
+<entry>
+noiAlarmAckUserId
+</entry>
+<entry>
+13
+</entry>
+<entry>
+.1.3.6.1.4.1.94.7.1.4.2.1.13
+</entry>
+<entry>
+This object represent the user who made the last modification of the acknowledgement state of an alarm in the alarm table.
+</entry>
+</row>
+<row>
+<entry>
+noiAlarmUUID
+</entry>
+<entry>
+14
+</entry>
+<entry>
+.1.3.6.1.4.1.94.7.1.4.2.1.14
+</entry>
+<entry>
+This object represents the alarm string identifier of an alarm in the alarm table. It uniquely identifies an alarm.
+</entry>
+</row>
+<row>
+<entry>
+noiAlarmAdditionalText2
+</entry>
+<entry>
+15
+</entry>
+<entry>
+.1.3.6.1.4.1.94.7.1.4.2.1.15
+</entry>
+<entry>
+This object represents the alarm additional text 2.
+</entry>
+</row>
+<row>
+<entry>
+noiAlarmAdditionalText3
+</entry>
+<entry>
+16
+</entry>
+<entry>
+.1.3.6.1.4.1.94.7.1.4.2.1.16
+</entry>
+<entry>
+This object represents the alarm additional text 3.
+</entry>
+</row>
+<row>
+<entry>
+noiAlarmAdditionalText4
+</entry>
+<entry>
+17
+</entry>
+<entry>
+.1.3.6.1.4.1.94.7.1.4.2.1.17
+</entry>
+<entry>
+This object represents the alarm additional text 4.
+</entry>
+</row>
+<row>
+<entry>
+noiAlarmAdditionalText5
+</entry>
+<entry>
+18
+</entry>
+<entry>
+.1.3.6.1.4.1.94.7.1.4.2.1.18
+</entry>
+<entry>
+This object represents the alarm additional text 5.
+</entry>
+</row>
+<row>
+<entry>
+noiAlarmAdditionalText6
+</entry>
+<entry>
+19
+</entry>
+<entry>
+.1.3.6.1.4.1.94.7.1.4.2.1.19
+</entry>
+<entry>
+This object represents the alarm additional text 6.
+</entry>
+</row>
+<row>
+<entry>
+noiAlarmAdditionalText7
+</entry>
+<entry>
+20
+</entry>
+<entry>
+.1.3.6.1.4.1.94.7.1.4.2.1.20
+</entry>
+<entry>
+This object represents the alarm additional text 7.
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p> The following table maps Nokia alarm type values to NE3S event types for the AlarmType parameter as defined in the supported MIB.</p>
+<table id="alarmtypestable"><title>Alarm types</title>
+<tgroup cols="5">
+<colspec colname="COLSPEC4"/>
+<colspec colname="col1"/>
+<colspec colname="COLSPEC0"/>
+<colspec colname="COLSPEC1"/>
+<colspec colname="COLSPEC6"/>
+<thead>
+<row>
+<entry>
+<p>Nokia alarm type </p>
+</entry>
+<entry>
+<p>Value</p>
+</entry>
+<entry>
+<p>NE3S event type </p>
+</entry>
+<entry>
+<p>Value</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+1
+</entry>
+<entry>
+communicationAlarm
+</entry>
+<entry>
+2
+</entry>
+<entry>
+communicationAlarm
+</entry>
+<entry>
+This alarm type is used when an object detects a     communications error.
+</entry>
+</row>
+<row>
+<entry>
+2
+</entry>
+<entry>
+qualityOfServiceAlarm
+</entry>
+<entry>
+11
+</entry>
+<entry>
+qualityOfServiceAlarm
+</entry>
+<entry>
+This alarm type is used to report a failure in the quality of service of a managed object.
+</entry>
+</row>
+<row>
+<entry>
+3
+</entry>
+<entry>
+processingErrorAlarm
+</entry>
+<entry>
+10
+</entry>
+<entry>
+processingErrorAlarm
+</entry>
+<entry>
+This alarm type is used to report processing failure in a managed object.
+</entry>
+</row>
+<row>
+<entry>
+3
+</entry>
+<entry>
+processingErrorAlarm
+</entry>
+<entry>
+5
+</entry>
+<entry>
+integrityViolation
+</entry>
+<entry>
+This alarm type is used to report an integrity violation in a managed object.
+</entry>
+</row>
+<row>
+<entry>
+3
+</entry>
+<entry>
+processingErrorAlarm
+</entry>
+<entry>
+8
+</entry>
+<entry>
+operationalViolation
+</entry>
+<entry>
+This alarm type is used to report an operational violation in a managed object.
+</entry>
+</row>
+<row>
+<entry>
+3
+</entry>
+<entry>
+processingErrorAlarm
+</entry>
+<entry>
+9
+</entry>
+<entry>
+physicalViolation
+</entry>
+<entry>
+This alarm type is used to report a physical violation in a managed object.
+</entry>
+</row>
+<row>
+<entry>
+3
+</entry>
+<entry>
+processingErrorAlarm
+</entry>
+<entry>
+13
+</entry>
+<entry>
+securityViolation
+</entry>
+<entry>
+This alarm type is used to report a security violation in a managed object.
+</entry>
+</row>
+<row>
+<entry>
+3
+</entry>
+<entry>
+processingErrorAlarm
+</entry>
+<entry>
+15
+</entry>
+<entry>
+timeDomainViolation
+</entry>
+<entry>
+This alarm type is used to report a time domain violation in a managed object.
+</entry>
+</row>
+<row>
+<entry>
+4
+</entry>
+<entry>
+equipmentAlarm
+</entry>
+<entry>
+4
+</entry>
+<entry>
+equipmentAlarm
+</entry>
+<entry>
+This alarm type is used to report a failure in the equipment.
+</entry>
+</row>
+<row>
+<entry>
+5
+</entry>
+<entry>
+environmentalAlarm
+</entry>
+<entry>
+3
+</entry>
+<entry>
+environmentalAlarm
+</entry>
+<entry>
+This alarm type is used to report a problem in the environment.
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p> The following table lists key-value bindings for the Severity parameter as defined in the supported MIB.</p>
+<table id="alarmseveritytable"><title>Alarm severity</title>
+<tgroup cols="4">
+<colspec colname="COLSPEC3"/>
+<colspec colname="COLSPEC0"/>
+<colspec colname="COLSPEC1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+<p>Nokia Key</p>
+</entry>
+<entry>
+<p>NE3S key</p>
+</entry>
+<entry>
+<p>Value</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+1 (cleared)
+</entry>
+<entry>
+5 (cleared)
+</entry>
+<entry>
+cleared
+</entry>
+<entry>
+A service affecting condition has cleared.
+</entry>
+</row>
+<row>
+<entry>
+3 (critical)
+</entry>
+<entry>
+1 (critical)
+</entry>
+<entry>
+critical
+</entry>
+<entry>
+Requires immediate attention.
+</entry>
+</row>
+<row>
+<entry>
+4 (major)
+</entry>
+<entry>
+2 (major)
+</entry>
+<entry>
+major
+</entry>
+<entry>
+May require immediate attention.
+</entry>
+</row>
+<row>
+<entry>
+5 (minor)
+</entry>
+<entry>
+3 (minor)
+</entry>
+<entry>
+minor
+</entry>
+<entry>
+Repairs can be delayed.
+</entry>
+</row>
+<row>
+<entry>
+6 (warning)
+</entry>
+<entry>
+4 (warning)
+</entry>
+<entry>
+warning
+</entry>
+<entry>
+A general interest event occurred.
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>The following table maps Nokia probable cause values to NE3S probable cause values for the ProbableCause parameter as defined in the supported MIB.</p>
+<table id="alarmprobablecausetable"><title>Alarm probable cause</title>
+<tgroup cols="4">
+<colspec colname="COLSPEC1"/>
+<colspec colname="col1"/>
+<colspec colname="COLSPEC3"/>
+<colspec colname="COLSPEC2"/>
+<thead>
+<row>
+<entry>
+<p>Nokia probable cause</p>
+</entry>
+<entry>
+<p>Nokia Value</p>
+</entry>
+<entry>
+<p>NE3S probable cause</p>
+</entry>
+<entry>
+<p>NE3S Value</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+1
+</entry>
+<entry>
+adapterError
+</entry>
+<entry>
+301
+</entry>
+<entry>
+adapterError
+</entry>
+</row>
+<row>
+<entry>
+2
+</entry>
+<entry>
+applicationSubsystemFailure
+</entry>
+<entry>
+302
+</entry>
+<entry>
+applicationSubsystemFailure
+</entry>
+</row>
+<row>
+<entry>
+3
+</entry>
+<entry>
+bandwidthReduced
+</entry>
+<entry>
+303
+</entry>
+<entry>
+bandwidthReduction
+</entry>
+</row>
+<row>
+<entry>
+4
+</entry>
+<entry>
+callEstablishmentError
+</entry>
+<entry>
+566
+</entry>
+<entry>
+callEstablishmentError
+</entry>
+</row>
+<row>
+<entry>
+5
+</entry>
+<entry>
+communicationsProtocolError
+</entry>
+<entry>
+305
+</entry>
+<entry>
+communicationsProtocolError
+</entry>
+</row>
+<row>
+<entry>
+6
+</entry>
+<entry>
+communicationsSubsystemFailure
+</entry>
+<entry>
+306
+</entry>
+<entry>
+communicationsSubsystemFailure
+</entry>
+</row>
+<row>
+<entry>
+7
+</entry>
+<entry>
+configurationOrCustomizationError
+</entry>
+<entry>
+307
+</entry>
+<entry>
+configurationOrCustomizationError
+</entry>
+</row>
+<row>
+<entry>
+8
+</entry>
+<entry>
+congestion
+</entry>
+<entry>
+308
+</entry>
+<entry>
+congestion
+</entry>
+</row>
+<row>
+<entry>
+9
+</entry>
+<entry>
+corruptData
+</entry>
+<entry>
+153
+</entry>
+<entry>
+corruptDataM3100
+</entry>
+</row>
+<row>
+<entry>
+10
+</entry>
+<entry>
+cpuCyclesLimitExceeded
+</entry>
+<entry>
+310
+</entry>
+<entry>
+cpuCyclesLimitExceeded
+</entry>
+</row>
+<row>
+<entry>
+11
+</entry>
+<entry>
+dataSetOrModemError
+</entry>
+<entry>
+311
+</entry>
+<entry>
+dataSetOrModemError
+</entry>
+</row>
+<row>
+<entry>
+12
+</entry>
+<entry>
+degradedSignal
+</entry>
+<entry>
+3
+</entry>
+<entry>
+degradedSignalM3100
+</entry>
+</row>
+<row>
+<entry>
+13
+</entry>
+<entry>
+dTEdCEInterfaceError
+</entry>
+<entry>
+313
+</entry>
+<entry>
+dtedceInterfaceError
+</entry>
+</row>
+<row>
+<entry>
+14
+</entry>
+<entry>
+enclosureDoorOpen
+</entry>
+<entry>
+118
+</entry>
+<entry>
+enclosureDoorOpenM1300
+</entry>
+</row>
+<row>
+<entry>
+15
+</entry>
+<entry>
+equipmentMalfunction
+</entry>
+<entry>
+315
+</entry>
+<entry>
+equipmentMalfunction
+</entry>
+</row>
+<row>
+<entry>
+16
+</entry>
+<entry>
+excessiveVibration
+</entry>
+<entry>
+316
+</entry>
+<entry>
+excessiveVibration
+</entry>
+</row>
+<row>
+<entry>
+17
+</entry>
+<entry>
+fileError
+</entry>
+<entry>
+317
+</entry>
+<entry>
+fileError
+</entry>
+</row>
+<row>
+<entry>
+18
+</entry>
+<entry>
+fireDetected
+</entry>
+<entry>
+120
+</entry>
+<entry>
+fire
+</entry>
+</row>
+<row>
+<entry>
+19
+</entry>
+<entry>
+floodDetected
+</entry>
+<entry>
+121
+</entry>
+<entry>
+flood
+</entry>
+</row>
+<row>
+<entry>
+20
+</entry>
+<entry>
+framingError
+</entry>
+<entry>
+5
+</entry>
+<entry>
+framingErrorM3100
+</entry>
+</row>
+<row>
+<entry>
+21
+</entry>
+<entry>
+heatingOrVentilationOrCoolingSystemProblem
+</entry>
+<entry>
+321
+</entry>
+<entry>
+heatingOrVentilationOrCoolingSystemProblem
+</entry>
+</row>
+<row>
+<entry>
+22
+</entry>
+<entry>
+humidityUnacceptable
+</entry>
+<entry>
+322
+</entry>
+<entry>
+humidityUnacceptable
+</entry>
+</row>
+<row>
+<entry>
+23
+</entry>
+<entry>
+inputOutputDeviceError
+</entry>
+<entry>
+323
+</entry>
+<entry>
+inputOutputDeviceError
+</entry>
+</row>
+<row>
+<entry>
+24
+</entry>
+<entry>
+inputDeviceError
+</entry>
+<entry>
+324
+</entry>
+<entry>
+inputDeviceError
+</entry>
+</row>
+<row>
+<entry>
+25
+</entry>
+<entry>
+lANError
+</entry>
+<entry>
+325
+</entry>
+<entry>
+lANError
+</entry>
+</row>
+<row>
+<entry>
+26
+</entry>
+<entry>
+leakDetected
+</entry>
+<entry>
+326
+</entry>
+<entry>
+leakDetection
+</entry>
+</row>
+<row>
+<entry>
+27
+</entry>
+<entry>
+localNodeTransmissionError
+</entry>
+<entry>
+327
+</entry>
+<entry>
+localNodeTransmissionError
+</entry>
+</row>
+<row>
+<entry>
+28
+</entry>
+<entry>
+lossOfFrame
+</entry>
+<entry>
+6
+</entry>
+<entry>
+lossOfFrame
+</entry>
+</row>
+<row>
+<entry>
+29
+</entry>
+<entry>
+lossOfSignal
+</entry>
+<entry>
+7
+</entry>
+<entry>
+lossOfSignal
+</entry>
+</row>
+<row>
+<entry>
+30
+</entry>
+<entry>
+materialSupplyExhausted
+</entry>
+<entry>
+330
+</entry>
+<entry>
+materialSupplyExhausted
+</entry>
+</row>
+<row>
+<entry>
+31
+</entry>
+<entry>
+multiplexerProblem
+</entry>
+<entry>
+56
+</entry>
+<entry>
+multiplexerProblemM3100
+</entry>
+</row>
+<row>
+<entry>
+32
+</entry>
+<entry>
+outOfMemory
+</entry>
+<entry>
+332
+</entry>
+<entry>
+outOfMemory
+</entry>
+</row>
+<row>
+<entry>
+33
+</entry>
+<entry>
+ouputDeviceError
+</entry>
+<entry>
+333
+</entry>
+<entry>
+ouputDeviceError
+</entry>
+</row>
+<row>
+<entry>
+34
+</entry>
+<entry>
+performanceDegraded
+</entry>
+<entry>
+334
+</entry>
+<entry>
+performanceDegraded
+</entry>
+</row>
+<row>
+<entry>
+35
+</entry>
+<entry>
+powerProblem
+</entry>
+<entry>
+58
+</entry>
+<entry>
+powerProblemM3100
+</entry>
+</row>
+<row>
+<entry>
+36
+</entry>
+<entry>
+pressureUnacceptable
+</entry>
+<entry>
+336
+</entry>
+<entry>
+pressureUnacceptable
+</entry>
+</row>
+<row>
+<entry>
+37
+</entry>
+<entry>
+processorProblem
+</entry>
+<entry>
+59
+</entry>
+<entry>
+processorProblemM3100
+</entry>
+</row>
+<row>
+<entry>
+38
+</entry>
+<entry>
+pumpFailure
+</entry>
+<entry>
+113
+</entry>
+<entry>
+pumpFailureM3100
+</entry>
+</row>
+<row>
+<entry>
+39
+</entry>
+<entry>
+queueSizeExceeded
+</entry>
+<entry>
+339
+</entry>
+<entry>
+queueSizeExceeded
+</entry>
+</row>
+<row>
+<entry>
+40
+</entry>
+<entry>
+receiveFailure
+</entry>
+<entry>
+340
+</entry>
+<entry>
+receiveFailure
+</entry>
+</row>
+<row>
+<entry>
+41
+</entry>
+<entry>
+receiverFailure
+</entry>
+<entry>
+61
+</entry>
+<entry>
+receiverFailureM3100
+</entry>
+</row>
+<row>
+<entry>
+42
+</entry>
+<entry>
+remoteNodeTransmissionError
+</entry>
+<entry>
+342
+</entry>
+<entry>
+remoteNodeTransmissionError
+</entry>
+</row>
+<row>
+<entry>
+43
+</entry>
+<entry>
+resourceAtOrNearingCapacity
+</entry>
+<entry>
+343
+</entry>
+<entry>
+resourceAtOrNearingCapacity
+</entry>
+</row>
+<row>
+<entry>
+44
+</entry>
+<entry>
+responseTimeExcessive
+</entry>
+<entry>
+344
+</entry>
+<entry>
+responseTimeExcessive
+</entry>
+</row>
+<row>
+<entry>
+45
+</entry>
+<entry>
+retransmissionRateExcessive
+</entry>
+<entry>
+345
+</entry>
+<entry>
+retransmissionRateExcessive
+</entry>
+</row>
+<row>
+<entry>
+46
+</entry>
+<entry>
+softwareError
+</entry>
+<entry>
+346
+</entry>
+<entry>
+softwareError
+</entry>
+</row>
+<row>
+<entry>
+47
+</entry>
+<entry>
+softwareProgramAbnormallyTerminated
+</entry>
+<entry>
+347
+</entry>
+<entry>
+softwareProgramAbnormallyTerminated
+</entry>
+</row>
+<row>
+<entry>
+48
+</entry>
+<entry>
+softwareProgramError
+</entry>
+<entry>
+348
+</entry>
+<entry>
+softwareProgramError
+</entry>
+</row>
+<row>
+<entry>
+49
+</entry>
+<entry>
+storageCapacityProblem
+</entry>
+<entry>
+151
+</entry>
+<entry>
+storageCapacityProblemM3100
+</entry>
+</row>
+<row>
+<entry>
+50
+</entry>
+<entry>
+temperatureUnacceptable
+</entry>
+<entry>
+350
+</entry>
+<entry>
+temperatureUnacceptable
+</entry>
+</row>
+<row>
+<entry>
+51
+</entry>
+<entry>
+thresholdCrossed
+</entry>
+<entry>
+351
+</entry>
+<entry>
+thresholdCrossed
+</entry>
+</row>
+<row>
+<entry>
+52
+</entry>
+<entry>
+timingProblem
+</entry>
+<entry>
+56
+</entry>
+<entry>
+timingProblemM3100
+</entry>
+</row>
+<row>
+<entry>
+53
+</entry>
+<entry>
+toxicLeakDetected
+</entry>
+<entry>
+353
+</entry>
+<entry>
+toxicLeakDetected
+</entry>
+</row>
+<row>
+<entry>
+54
+</entry>
+<entry>
+transmitFailure
+</entry>
+<entry>
+354
+</entry>
+<entry>
+transmitFailure
+</entry>
+</row>
+<row>
+<entry>
+55
+</entry>
+<entry>
+transmitterFailure
+</entry>
+<entry>
+67
+</entry>
+<entry>
+transmitterFailureM3100
+</entry>
+</row>
+<row>
+<entry>
+56
+</entry>
+<entry>
+underlyingResourceUnavailable
+</entry>
+<entry>
+356
+</entry>
+<entry>
+underlyingResourceUnavailable
+</entry>
+</row>
+<row>
+<entry>
+57
+</entry>
+<entry>
+versionMismatch
+</entry>
+<entry>
+357
+</entry>
+<entry>
+versionMismatch
+</entry>
+</row>
+<row>
+<entry>
+58
+</entry>
+<entry>
+authenticationFailure
+</entry>
+<entry>
+701
+</entry>
+<entry>
+authenticationFailure
+</entry>
+</row>
+<row>
+<entry>
+59
+</entry>
+<entry>
+breachOfConfidentiality
+</entry>
+<entry>
+702
+</entry>
+<entry>
+breachOfConfidentiality
+</entry>
+</row>
+<row>
+<entry>
+60
+</entry>
+<entry>
+cableTamper
+</entry>
+<entry>
+703
+</entry>
+<entry>
+cableTamper
+</entry>
+</row>
+<row>
+<entry>
+61
+</entry>
+<entry>
+delayedInformation
+</entry>
+<entry>
+704
+</entry>
+<entry>
+delayedInformation
+</entry>
+</row>
+<row>
+<entry>
+62
+</entry>
+<entry>
+denialOfService
+</entry>
+<entry>
+705
+</entry>
+<entry>
+denialOfService
+</entry>
+</row>
+<row>
+<entry>
+63
+</entry>
+<entry>
+duplicateInformation
+</entry>
+<entry>
+706
+</entry>
+<entry>
+duplicateInformation
+</entry>
+</row>
+<row>
+<entry>
+64
+</entry>
+<entry>
+informationMissing
+</entry>
+<entry>
+707
+</entry>
+<entry>
+informationMissing
+</entry>
+</row>
+<row>
+<entry>
+65
+</entry>
+<entry>
+informationModificationDetected
+</entry>
+<entry>
+708
+</entry>
+<entry>
+informationModificationDetected
+</entry>
+</row>
+<row>
+<entry>
+66
+</entry>
+<entry>
+informationOutOfSequence
+</entry>
+<entry>
+709
+</entry>
+<entry>
+informationOutOfSequence
+</entry>
+</row>
+<row>
+<entry>
+67
+</entry>
+<entry>
+intrusionDetection
+</entry>
+<entry>
+126
+</entry>
+<entry>
+intrusionDetection
+</entry>
+</row>
+<row>
+<entry>
+68
+</entry>
+<entry>
+keyExpired
+</entry>
+<entry>
+711
+</entry>
+<entry>
+keyExpired
+</entry>
+</row>
+<row>
+<entry>
+69
+</entry>
+<entry>
+nonRepudiationFailure
+</entry>
+<entry>
+712
+</entry>
+<entry>
+nonRepudiationFailure
+</entry>
+</row>
+<row>
+<entry>
+70
+</entry>
+<entry>
+outOfHoursActivity
+</entry>
+<entry>
+713
+</entry>
+<entry>
+outOfHoursActivity
+</entry>
+</row>
+<row>
+<entry>
+71
+</entry>
+<entry>
+outOfService
+</entry>
+<entry>
+714
+</entry>
+<entry>
+outOfService
+</entry>
+</row>
+<row>
+<entry>
+72
+</entry>
+<entry>
+proceduralError
+</entry>
+<entry>
+715
+</entry>
+<entry>
+proceduralError
+</entry>
+</row>
+<row>
+<entry>
+73
+</entry>
+<entry>
+unauthorizedAccessAttempt
+</entry>
+<entry>
+716
+</entry>
+<entry>
+unauthorizedAccessAttempt
+</entry>
+</row>
+<row>
+<entry>
+74
+</entry>
+<entry>
+unexpectedInformation
+</entry>
+<entry>
+717
+</entry>
+<entry>
+unexpectedInformation
+</entry>
+</row>
+<row>
+<entry>
+75
+</entry>
+<entry>
+unspecifiedReason
+</entry>
+<entry>
+718
+</entry>
+<entry>
+unspecifiedReason
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section><title>WebSSO (CKEY) alarm restriction</title>
+<p>The CKEY alarm DATABASE_UNHEALTHY is not cleared automatically after instantiation. You must clear the alarm manually from the ETCD database using the CALM API.</p>
+</section>
+</conbody></concept>

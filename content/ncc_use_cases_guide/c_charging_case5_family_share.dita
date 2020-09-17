@@ -1,0 +1,418 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//NSN//DTD DITA Concept//EN" "nsnconcept.dtd">
+		<concept id="id9YZ-09018--PL00-FPZZA-d1e12107"><title>Case 5: Family share plan with capping</title><conbody>
+
+<section><title>Overview</title>
+
+<p>There is a family group with a single level of hierarchy associated with all family members (or
+    devices) as shown in the following figure:</p>
+<fig>
+<title>Family group and its hierarchy</title>
+<!--MMO resource relative URI: ../../18.0/graphics/Family_share_plan_with_capping_default.png-->
+<image href="../images/family_share_plan_with_capping_default.png"/>
+</fig>
+<p>The family group has a monthly shared plan of 50 GB data, and unlimited SMS and MMS services.
+    Each member of the family group (son and daughter) has access to the bundle. A usage limit of 10
+    GB is applied to each of the family member. A notification is sent when 9 GB of data is consumed
+    from the group bundle. Each member (son and daughter) can query the group consumption.</p>
+<p>As the family data bundle has unlimited access to SMS and MMS calls, no charges are applied to the bundle for SMS and MMS calls by any family member.</p>
+</section>
+<section><title>Flow of events</title><ul>
+
+<li>Create a family group with a single level of hierarchy and associate it with family
+     members.</li>
+<li>Create a bundle with 50 GB of data and unlimited access to SMS and MMS calls, and associate to
+     the family group.</li>
+<li>Apply a cap on 50 GB of data to limit the consumption of resources.</li>
+<li>Execute either a data, or an SMS or MMS call from any of the devices of the family members.</li>
+<li>Verify that the SMS or MMS usage should not be charged, and for data, family members should not
+     be allowed to consume more than the usage limit and notification is sent to them when they are
+     reaching maximum usage limit.</li>
+<li>Verify the reporting counters for each family member to track their group consumption are
+     incremented properly for data, SMS, or MMS. </li>
+</ul>
+</section>
+<section><title>Provisioning</title>
+
+<note type="attention">
+
+<p>Ensure that after creating a record, you distribute it to ME. Otherwise, the provisioning will not be successful.</p>
+</note>
+<p>Following entities are required for this use case.<table pgwide="1" colsep="1" rowsep="1">
+     <title>Entities for case 5</title>
+     <tgroup cols="2">
+      <colspec colname="col1" colwidth="1*"/>
+      <colspec colname="col2" colwidth="1.53*"/>
+      <thead>
+       <row>
+        <entry>Entity</entry>
+        <entry>Task</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry>Notification preference</entry>
+        <entry>Select the notification channel as email.</entry>
+       </row>
+       <row>
+        <entry>Notification templates</entry>
+        <entry>Create a notification template and add the text to be sent to the end user in an
+         email notification.</entry>
+       </row>
+       <row>
+        <entry>Notification servers</entry>
+        <entry>Configure a notification server to send an Email notification.</entry>
+       </row>
+       <row>
+        <entry>Thresholds</entry>
+        <entry>Create a threshold profile group to send notification when the consumption is nearing
+         the cap limit defined. For example, 9 GB for the current case.</entry>
+       </row>
+       <row>
+        <entry>Cap</entry>
+        <entry>Create a cap to limit the consumption of data bundle to 10 GB.</entry>
+       </row>
+       <row>
+        <entry>Charging services</entry>
+        <entry>Create the personal and family charging services.</entry>
+       </row>
+       <row>
+        <entry>Lifecycles</entry>
+        <entry>Create the lifecycles for family, personal, group accounts and bundles.</entry>
+       </row>
+       <row>
+        <entry>Bundles</entry>
+        <entry>Create the personal and family data bundles. Associate 50 GB data bucket to family
+         data bundle.</entry>
+       </row>
+       <row>
+        <entry>Users</entry>
+        <entry>Create a user (<varname>FamilyAdmin</varname>).</entry>
+       </row>
+       <row>
+        <entry>Accounts</entry>
+        <entry>Create the personal and family accounts.</entry>
+       </row>
+       <row>
+        <entry>Devices</entry>
+        <entry>Create the devices for family members. For example, father, mother, son, daughter and
+         associate personal bundle to these devices.</entry>
+       </row>
+       <row>
+        <entry>Groups</entry>
+        <entry>Create a group and associate devices and 50 GB data bundle.</entry>
+       </row>
+       <row>
+        <entry>Counters</entry>
+        <entry>
+         <p>Create the Family group counter to track the usage of the resources at group level.</p>
+         <p>
+          <uicontrol>Note:</uicontrol> The existing hierarchy counter to track the data usage,
+          self-bucket counter to track the SMS usage, and self-CS counter to track the MMS usage are
+          updated.</p>
+        </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table></p>
+<p>Provision the following data from SM GUI:</p><ol>
+
+<li>Create a notification preference following the given steps:<ol>
+      <li>Navigate to <uicontrol>Notification Management</uicontrol> and select the
+        <uicontrol>Notification Preferences</uicontrol> tab. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+       <image href="../images/sdd_button_default.png" id="image_apv_kpt_3lb"/> to create the
+       notification preference. <!--MMO resource relative URI: ../graphics/Notification_preference_default.png-->
+       <image href="../images/notification_preference_default.png" placement="break" scale="50"/>
+       <p>Set the notification type and frequency as follows:</p>
+       <!--MMO resource relative URI: ../graphics/Notification_preference2_default.png-->
+       <image href="../images/notification_preference2_default.png" placement="break" scale="60"/>
+      </li>
+     </ol></li>
+<li>Create a notification template. To do this, navigate to <uicontrol>Notification
+      Management</uicontrol> and select the <uicontrol>Notification Templates</uicontrol> tab. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png"/> to create a notification template and add the
+     basic details. </li>
+<li>Configure a notification server following the given steps:<ol>
+      <li>Navigate to <uicontrol>Notification Management</uicontrol> and select the
+        <uicontrol>Notification Servers</uicontrol> tab. Browse to select the
+        <uicontrol>Email</uicontrol> from drop-down list as shown in the following figure. <!--MMO resource relative URI: ../graphics/Email_server2_default.png-->
+       <image href="../images/email_server2_default.png" placement="break" scale="50"/>
+      </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+       <image href="../images/sdd_button_default.png"/> to create a notification server as shown in
+       the following figure: <!--MMO resource relative URI: ../graphics/Case1_NS_default.png-->
+       <image href="../images/case1_ns_default.png"/>
+      </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Distribute_button_default.png-->
+       <image href="../images/distribute_button_default.png"/> to distribute the notification
+       profile to the specific ME further selected for the iPhone. </li>
+     </ol></li>
+<li>Create a threshold profile following the given steps:<ol>
+      <li>Navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select
+        <uicontrol>Common</uicontrol> tab. Browse to select <uicontrol>Thresholds</uicontrol> from
+       the drop-down list. </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+       <image href="../images/sdd_button_default.png"/> to create the threshold profile group.
+       Associate absolute start threshold profile as shown in this following figure: <!--MMO resource relative URI: ../graphics/Threshold_use_case5_default.png-->
+       <image href="../images/threshold_use_case5_default.png" placement="break" scale="70"/>
+      </li>
+     </ol>
+    </li>
+<li>Create a cap entity following the given steps:<ol>
+      <li>Navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select
+        <uicontrol>Common</uicontrol> tab. Browse to select <uicontrol>Cap</uicontrol> from the
+       drop-down list. </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+       <image href="../images/sdd_button_default.png"/> to create a cap
+        <varname>Capping_Counter_10GB</varname> with <varname>GByte</varname> unit type and value
+        <varname>10</varname> (a quota limit of 10 GB applied to the data bundle). Associate the
+       following action to the cap entity as shown in the following figure: <!--MMO resource relative URI: ../graphics/Case5_cap_default.png-->
+       <image href="../images/case5_cap_default.png" placement="break" scale="70"/>
+      </li>
+     </ol>
+    </li>
+<li>
+Create a charging service following the given steps:<ol>
+
+<li>Navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select
+        <uicontrol>Charging</uicontrol> tab. Browse to select <uicontrol>Charging
+        Services</uicontrol> from the drop-down list. </li>
+<li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+       <image href="../images/sdd_button_default.png"/> to create a charging service and associate a
+       family group bucket as shown in the following figure: <!--MMO resource relative URI: ../graphics/Family_group_bucket_use_case5_default.png-->
+       <image href="../images/family_group_bucket_use_case5_default.png" placement="break" scale="70"/>
+      </li>
+<li>Associate with a 50 GB data bucket and configure the tariff formula as shown in the following
+       figure: <!--MMO resource relative URI: ../graphics/Tariff_formula_use_case5_default.png-->
+       <image href="../images/tariff_formula_use_case5_default.png" scale="50"/>
+      </li>
+</ol>
+</li>
+<li>Navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select the
+      <uicontrol>Common</uicontrol> tab. Browse to select Lifecycles from the drop-down list. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png" id="image_xyd_rpt_3lb"/> to create a
+      lifecycle.<p>Following table lists the lifecycles required for this use case.</p><table
+      pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1" colwidth="1.67*"/>
+       <colspec colname="col2" colwidth="1*"/>
+       <thead>
+        <row>
+         <entry> Lifecycle </entry>
+         <entry> Applicable To </entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>Create an account lifecycle (<varname>FamilyAccountLifeCycle</varname>) with
+           <uicontrol>Disconnected</uicontrol>, <uicontrol>Active</uicontrol>,
+           <uicontrol>Dormant</uicontrol>, <uicontrol>ActiveWarned</uicontrol>,
+           <uicontrol>Expired</uicontrol> states. Select <varname>Object Status Lifecycle</varname>
+          for <uicontrol>Type</uicontrol> and <varname>Account</varname> for <uicontrol>Applicable
+           to</uicontrol> parameters. </entry>
+         <entry>Family account</entry>
+        </row>
+        <row>
+         <entry>Create an account lifecycle (<varname>AccountLC</varname>) with
+           <uicontrol>Disconnected</uicontrol>, <uicontrol>Active</uicontrol>,
+           <uicontrol>Dormant</uicontrol>, <uicontrol>ActiveWarned</uicontrol>,
+           <uicontrol>Expired</uicontrol> states. Select <varname>Object Status Lifecycle</varname>
+          for <uicontrol>Type</uicontrol> and <varname>Account</varname> for <uicontrol>Applicable
+           to</uicontrol> parameters. </entry>
+         <entry>Personal account </entry>
+        </row>
+        <row>
+         <entry>Create a group lifecycle (<varname>GroupLifeCycle</varname>) with
+           <uicontrol>Active</uicontrol>, <uicontrol>Disconnected</uicontrol>,
+           <uicontrol>PreActive</uicontrol>, <uicontrol>Inactive</uicontrol> states. Select
+           <varname>Object Status Lifecycle</varname> for <uicontrol>Type</uicontrol> and
+           <varname>Group</varname> for <uicontrol>Applicable to</uicontrol> parameters. </entry>
+         <entry>Group account </entry>
+        </row>
+        <row>
+         <entry> Create a subscription lifecycle (<varname>MonthlySubscLC</varname>) with
+           <uicontrol>Active</uicontrol>, <uicontrol>Disconnected</uicontrol>,
+           <uicontrol>PreActive</uicontrol>, <uicontrol>Inactive</uicontrol> states. Select
+           <varname>Object Status Lifecycle</varname> for <uicontrol>Type</uicontrol> and
+           <varname>Subscription</varname> for <uicontrol>Applicable to</uicontrol> parameters. </entry>
+         <entry>Bundle </entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table></li>
+<li>Create a data bundle of 50 GB named <varname>Family_Group_50_GB_Data_Pack</varname> for the
+      <varname>FAMILY</varname> group. <!--MMO resource relative URI: ../graphics/Case5_bundlefamily_default.png-->
+     <image href="../images/case5_bundlefamily_default.png" placement="break" scale="50"/>
+    </li>
+<li>Create a personal bundle named <varname>Personal_Bundle</varname> as per the following data and
+     associate devices to this bundle. <!--MMO resource relative URI: ../graphics/Case5_bundlepersonal_default.png-->
+     <image href="../images/case5_bundlepersonal_default.png" placement="break" scale="50"/>
+    </li>
+<li>Create a user <varname>FamilyAdmin</varname> to use as family administrator. <!--MMO resource relative URI: ../graphics/Case5_user1_default.png-->
+     <image href="../images/case5_user1_default.png" placement="break" scale="50"/>
+     <!--MMO resource relative URI: ../graphics/Case5_user2_default.png-->
+     <image href="../images/case5_user2_default.png" placement="break" scale="50"/>
+    </li>
+<li>Create a personal account (<varname>PersonalAccount</varname>) following the given steps:<ol>
+      <li>Navigate to <uicontrol>Subscriber Manager</uicontrol> and select
+        <uicontrol>ACCOUNTS</uicontrol> tab. </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+       <image href="../images/sdd_button_default.png"/> to create a personal account and associate
+       it with AccountLC lifecycle. <!--MMO resource relative URI: ../graphics/Case5_account_default.png-->
+       <image href="../images/case5_account_default.png"/>
+      </li>
+     </ol></li>
+<li>Create a family account (<varname>NokiaFamilyAccount</varname>) following the given steps:<ol>
+      <li>Navigate to <uicontrol>Subscriber Manager</uicontrol> and select
+        <uicontrol>ACCOUNTS</uicontrol> tab. </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+       <image href="../images/sdd_button_default.png"/> to create a family account and associate it
+       with FamilyAccountLifeCycle. <!--MMO resource relative URI: ../graphics/Case5_accountfamily_default.png-->
+       <image href="../images/case5_accountfamily_default.png" scale="50"/>
+      </li>
+     </ol></li>
+<li>Create devices (father, mother, son, and daughter) and make the following associations: <p>Since
+      the subscription index has the value <varname>Group_First</varname>, the group resources are
+      consumed first before the device resource consumption.</p><table pgwide="1" rowsep="1"
+      colsep="1">
+      <tgroup cols="3">
+       <colspec colname="col1" colwidth="1*"/>
+       <colspec colname="COLSPEC0" colwidth="1.54*"/>
+       <colspec colname="col2" colwidth="1.52*"/>
+       <thead>
+        <row>
+         <entry>Entity </entry>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry morerows="10">Device </entry>
+         <entry>Name</entry>
+         <entry><varname>Father</varname></entry>
+        </row>
+        <row>
+         <entry>Identifier Type</entry>
+         <entry>IMSI </entry>
+        </row>
+        <row>
+         <entry>Identifier</entry>
+         <entry><varname>123458888888801</varname></entry>
+        </row>
+        <row>
+         <entry>Notification Profile</entry>
+         <entry>NotificationProfile</entry>
+        </row>
+        <row>
+         <entry>Entity Name</entry>
+         <entry><varname>DeviceLifeCycle</varname></entry>
+        </row>
+        <row>
+         <entry>Entity State</entry>
+         <entry>PreActive</entry>
+        </row>
+        <row>
+         <entry>Subscription Index</entry>
+         <entry>Group_First</entry>
+        </row>
+        <row>
+         <entry>Groups</entry>
+         <entry><varname>NokiaFamilyGroup</varname></entry>
+        </row>
+        <row>
+         <entry>Category List</entry>
+         <entry>DefaultCategory</entry>
+        </row>
+        <row>
+         <entry>Bundle Name</entry>
+         <entry><varname>Personal_Bundle</varname></entry>
+        </row>
+        <row>
+         <entry>Account Name</entry>
+         <entry><varname>PersonalAccount</varname></entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table><p>
+      <uicontrol>Note</uicontrol>: Create the device records for father, mother, son, and daughter
+      using the values in the preceding table. Note that only the <uicontrol>Identifier
+       value</uicontrol> is different for each device. For example, 123458888888801 for Father,
+      123458888888802 for Son, 123458888888803 for Daughter, 123458888888804 for Mother.</p></li>
+<li>Create a family group (<varname>NokiaFamilyGroup</varname>) following the given steps:<ol>
+      <li>Navigate to <uicontrol>Subscriber Manager</uicontrol> and select
+        <uicontrol>Groups</uicontrol> tab. </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+       <image href="../images/sdd_button_default.png"/> to create a family group. Associate the
+       family group members to the group as shown in the following figure: <!--MMO resource relative URI: ../graphics/Family_group_use_case5_default.png-->
+       <image href="../images/family_group_use_case5_default.png" scale="50"/>
+      </li>
+     </ol>
+    </li>
+<li>Create the family group counter by navigating to <uicontrol>Policy &amp; Charging
+      Configuration</uicontrol> and select <uicontrol>Common</uicontrol> tab. Browse to select
+      <uicontrol>Counters</uicontrol> from the drop-down list. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png"/> to create a counter and enter counter details. </li>
+<li>Note that a predefined set of reporting counters (Hierarchy counter, Self bucket counter, Self
+     CS counter) are available for operators in the system. The predefined set of reporting counters
+     do not have applicability conditions and all the reports are of byte type. Hence, to count the
+     data, SMS, MMS consumption done from group resources, you must update the existing reporting
+     counters following the given steps:<p>Edit a hierarchy counter following the given steps:</p><ol>
+      <li>Navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select
+        <uicontrol>Common</uicontrol>. Browse to <uicontrol>Counters</uicontrol> from the drop-down
+       list. </li>
+      <li>Click the edit button to modify the hierarchy counter as shown in the following figure: <!--MMO resource relative URI: ../graphics/Hierarchy_counter_use_case5_default.png-->
+       <image href="../images/hierarchy_counter_use_case5_default.png" scale="50"/>
+      </li>
+     </ol></li>
+<li>Edit a self-bucket counter following the given steps:<ol>
+      <li>Navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select
+        <uicontrol>Common</uicontrol>. Browse to <uicontrol>Counters</uicontrol> from the drop-down
+       list. </li>
+      <li>Click the edit button to modify the self bucket counter as shown in the following figure: <!--MMO resource relative URI: ../graphics/Self_bucket_counter_use_case5_default.png-->
+       <image href="../images/self_bucket_counter_use_case5_default.png" scale="50"/>
+      </li>
+     </ol>
+    </li>
+<li>Edit a self-CS counter following the given steps:<ol>
+      <li>Navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select
+        <uicontrol>Common</uicontrol>. Browse to <uicontrol>Counters</uicontrol> from the drop-down
+       list. </li>
+      <li>Click the edit button to modify the self CS counter as shown in the following figure: <!--MMO resource relative URI: ../graphics/Self_CS_counter_use_case5_default.png-->
+       <image href="../images/self_cs_counter_use_case5_default.png" scale="50"/>
+      </li>
+     </ol>
+    </li>
+<li>To add <uicontrol>Device Group Counter</uicontrol>, navigate to <uicontrol>Groups</uicontrol>
+     and search for <varname>NokiaFamilyGroup</varname>. Click the highlighted button on the right
+     hand side to add counters as shown in the following figure: <!--MMO resource relative URI: ../graphics/Case5_add_counter_default.png-->
+     <image href="../images/case5_add_counter_default.png" scale="50"/>
+     <p>The <uicontrol>Add/Remove Counter</uicontrol> window appears. Select <uicontrol>Device Group
+       Counter</uicontrol> and <uicontrol>Add Counter</uicontrol>, and select <uicontrol>Family
+       Group Counter</uicontrol> created in the preceding step. Click <uicontrol>Save</uicontrol> to
+      create device group counter for all devices - Father, Mother, Son, Daughter.</p>
+     <p>
+      <uicontrol>Note:</uicontrol> Each member of the group can consume resources from family group
+      till 10 GB capping limit. Notification is sent at 9 GB consumption. Hence, in this case,
+       <uicontrol>Device Group Counter</uicontrol> is added to all the devices.</p>
+     <!--MMO resource relative URI: ../graphics/Case5_counter_default.png-->
+     <image href="../images/case5_counter_default.png"/>
+    </li>
+<li>To activate the device group report counters, navigate to <uicontrol>Subscriber
+      Manager</uicontrol> and select <uicontrol>Groups</uicontrol>. Search the group using the group
+     name (<varname>NokiaFamilyGroup</varname>). Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.3/Report_icon_default.png-->
+     <image href="../images/report_icon_default.png" id="image_zby_xpt_3lb"/> against the family
+     group counter. Select the <varname>Device Group Counter</varname> in the <uicontrol>Report
+      Activation</uicontrol> window. <p>Use the right arrow icon to move the reporting counter under
+      the <uicontrol>Activated Report</uicontrol> section for all the reporting counters. Click
+       <uicontrol>ACTIVATE/DEACTIVATE REPORT</uicontrol> button as shown in the following
+      figure.</p>
+     <!--MMO resource relative URI: ../graphics/Case5_report_default.png-->
+     <image href="../images/case5_report_default.png"/>
+     <p>
+      <uicontrol>Note</uicontrol>: Use the same step to activate group reporting counters for the
+      group <varname>NokiaFamilyAccount</varname> by selecting the <uicontrol>Group
+       Counter</uicontrol> option.</p>
+    </li>
+</ol>
+</section>
+</conbody></concept>

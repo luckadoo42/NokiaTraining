@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+		<concept id="id9YZ-09018-UG00-PCZZA-d1e9419">
+    <title>Cross-datacenter replication (XDR)</title>
+    <conbody>
+        <p>The NCC data used by the CHF charging application is stored in the NCC Aerospike
+            database. Aerospike supports cross-datacenter replication (XDR) features that enable
+            N-way replication of data between DB clusters. NCC uses XDR to replicate data between
+            the two SMs in the pair, between the two MEs in each pair, and across all MEs in the
+            case of index mapping records in a Networked ME pairs deployment model.</p>
+        <p>Note that XDR is only used between DB clusters (sites). With a particular NCC CNF, there
+            is a single cluster of Aerospike database pods. NCC uses a replication factor of two
+            within this local cluster, meaning that every record is stored two times within the
+            cluster for redundancy. This internal cluster replication is not the same as the XDR
+            feature used for cross-cluster replication.</p>
+        <p>XDR is configured on a per-namespace basis. There are some NCC namespaces that are
+            local-only, with no XDR replication. Other namespaces are replicated only with the other
+            SM or ME in this pair. And the global namespace used for ME index mapping records which
+            one is N-way replicated to all MEs in the network in the case of Networked ME pairs, or
+            to the other ME in the pair in the case of Independent ME pairs.</p>
+        <p>Normally, synchronization occurs very quickly across the network. XDR employs a very
+            robust architecture, where transient network issues and replication slowdowns are
+            tolerated. Synchronization might be temporarily slowed, but is achieved again once the
+            impacting network or other issues are resolved. </p>
+        <p>NCC and Aerospike provide tools for observing the status of XDR between any two NCC
+            sites. For more information about XDR replication, metrics, NCC data namespaces, and
+            tools, see <i>CNF Operation, Administration, and Maintenance Guide </i>  in the NCC
+            documentation set.</p>
+        <p>When an SM or ME is recovering from a failure, part of its recovery logic is to evaluate
+            the current state of its database synchronization, leveraging the XDR statistics
+            available to the NCC software. Before coming back online for receiving incoming traffic,
+            an NCC system waits until its XDR synchronization is caught back up. It is typically
+            better for the other SM or ME to continue handling traffic, rather than coming back
+            online to process traffic based on a local database, which is out-of-date and not yet in
+            sync with peers in the network. Similarly, if an NCC detects that its XDR
+            synchronization has fallen behind beyond the point of recoverability, an alarm is
+            generated indicating that a disaster recovery procedure is required to restore this
+            particular NCC and prepare it to be ready to process traffic again. </p>
+        <p><b>Disaster Recovery</b></p>
+        <p>Disaster Recovery is the procedure for rebuilding the data and potentially the software
+            on an SM or ME, to get it back into good condition with its data synchronized with peers
+            in the network so that it is ready to process traffic.</p>
+        <p>There are two primary reasons why a system might require a disaster recovery:</p>
+        <ul id="ul_sq3_gw3_nlb">
+            <li>Data replication with an XDR peer has fallen hopelessly behind, with the local
+                system no longer having current data</li>
+            <li>Disaster situation such that the local software, configuration, and data need to be
+                rebuilt (for example, a building fire or a massive corruption event)</li>
+        </ul>
+        <p>The first scenario only needs to rebuild the local data copy, as the
+            software/configuration is fine. The basic procedure involves retrieving database copies
+            from XDR peers (with a DB backup) and importing into the local recovering system. Also
+            restoring various configuration data from the SM to the local system. This establishes a
+            "somewhat up-to-date" database version, from which XDR can then be leveraged to sync the
+            delta data since the time of the DB backup recently taken/imported.</p>
+        <p>The second scenario is more severe and requires first a rebuild of the software, from a
+            backup copy or a reinstall. When completed, then the above data recovery can take
+            place.</p>
+        <p>For information about Aerospike XDR, see the Aerospike documentation.</p>
+    </conbody>
+</concept>

@@ -1,0 +1,713 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-metconfig"><title>Metrics Configuration</title><conbody>
+<section><title>Overview</title>
+<p>The NCC measurements system can be configured to meet the needs of a given operator deployment,
+                including which labels are muted, the collection/gathering interval, and various
+                other parameters. The following sections describe configuration for measurement
+                collection:</p><ul>
+<li>
+<p>
+                        <!--xref URI: #modeconfig-->
+                        <xref href="#id9yz-09126-mt00-rezza-sp2-metconfig/modeconfig" format="dita"
+                        />
+                    </p>
+</li>
+<li>
+<p>
+                        <!--xref URI: #metconfigfile-->
+                        <xref href="#id9yz-09126-mt00-rezza-sp2-metconfig/metconfigfile"
+                            format="dita"/>
+                    </p>
+</li>
+<li>
+<p>
+                        <!--xref URI: #Gstartrafana-->
+                        <xref href="#id9yz-09126-mt00-rezza-sp2-metconfig/Gstartrafana"
+                            format="dita"/>
+                    </p>
+</li>
+<li>
+<p>
+                        <!--xref URI: #labelmuting-->
+                        <xref href="#id9yz-09126-mt00-rezza-sp2-metconfig/labelmuting" format="dita"
+                        />
+                    </p>
+</li>
+<li>
+<p>
+                        <!--xref URI: #alarmthreshold--><xref
+                            href="#id9yz-09126-mt00-rezza-sp2-metconfig/alarmthreshold"
+                            format="dita"/>
+                    </p>
+</li>
+</ul>
+</section>
+<section id="modeconfig"><title>Mode configuration</title>
+<p>By default, NCC is configured in standard Prometheus mode listening on port 9090 of both OAME
+                nodes in active-active mode. If you need to access the Prometheus GUI, enter the
+                following:</p>
+<p>
+<userinput>http://&lt;OAM IP&gt;:9090</userinput>
+</p>
+<p>Customers who started with NCC prior to the full support of Prometheus may still be getting
+                measurements in CSV files. When ready to transition from CSV to Prometheus, the
+                metrics mode can be updated. </p>
+<p>There are two modes that can be configured using the <i>configure-metrics-mode</i> tool from the
+                /opt/tpa/bin directory. You can change the mode parameter after installation using
+                the configure-metrics-mode tool to set the NCC collection mode as either “csv” or
+                “prometheus”. Here you are configuring localization parameters for the Prometheus
+                Client and an ASR restart is required. To confirm the change, you must restart the
+                application servers.</p>
+<p>For example, to change metrics collection mode from CSV to Prometheus:</p><ol>
+<li>
+<p>On any node, navigate to the /opt/tpa/bin directory and execute the configure-metrics-mode tool as follows:</p>
+<p>
+<userinput>configure-metrics-mode -m prometheus </userinput>
+</p>
+</li>
+<li>
+<p>For the change to take effect, perform a restart on the OAM, Diameter, Common Services, IOHO,
+                        IOHD, and SM using the &lt;option&gt; argument to specify the nodes in the
+                            <!--xref URI: #TPA_Control--><xref href="tpa_control.dita"/> tool:</p>
+</li>
+</ol>
+<note>Do not perform a restart on the database and Auxiliary nodes.</note>
+<p>The NCC system can be configured to support both CSV and Prometheus when the metrics mode is CSV.
+                When the metrics mode is “csv”, NCC will collect metrics that are already coming in
+                CSV and the metrics that are already enabled for Prometheus. </p>
+<p>See the <!--xref URI: #metricsmode--><xref href="metricsmode.dita"/> tool as described in the
+                    <i>Tools</i> chapter of this guide for more information. </p>
+</section>
+<section id="metconfigfile"><title>Metrics configuration files </title>
+<p>Prometheus stores it metrics into a database. Every 5 minutes, Gen3GPPXML retrieves some measurements and writes them into XML files in the /appdata/cpro/prometheus directory. </p>
+<p>For the Prometheus server, a configuration file exists as <i>cpro/server/config.file</i> which is
+                a key that stores all of the configuration data of Prometheus. The prometheus.yml
+                contains data which contains data based on the values stored in the Prometheus keys;
+                for example: the cpro/server/config.file contains the
+                /etc/prometheus/prometheus.yml. See the key parameters in the VNF Extension file in
+                the <i>NCC Installation and Upgrade Guide</i> for information about configuring the
+                values, for example: </p><ul>
+<li>
+<p>storage_retention—the length of time to retain samples in the database</p>
+<p>The default storage_retention time is 7 days. You must contact Nokia Support to change this parameter after installation.</p>
+</li>
+<li>
+<p>scrape_interval—the duration (in seconds) after which targets are scraped</p>
+<p>The default value is 60 seconds (1 minute) and stored on the OAME in /appdata/cpro/prometheus. You must contact Nokia Support to change this parameter after installation.</p>
+</li>
+</ul>
+<note>Do not change the permissions for any file or folder related to Prometheus. There is a risk
+                that metrics generation is stopped if you change the permissions for any file or
+                folder related to Prometheus. <p>If any nodes that are generating metrics undergoes
+                    an application server restart for any reason, the metrics counter is reset to 0.
+                    System metrics are not reset in the case of application server restart but do
+                    continue from previous values.</p></note>
+</section>
+<section id="Gstartrafana"><title>Getting started with Grafana© technology</title>
+<p>Before trying to use Grafana technology, ensure the parameter keys for the Grafana software have
+                been configured. See the VNF Extension file in the <i>NCC Installation and Upgrade
+                    Guide</i> for more information.</p>
+<note>Grafana software and its configuration does not support a switch-over. Each instance of
+                Grafana software works independently on each OAME and must be configured (including:
+                dashboard, users, and other settings) on both OAME nodes, active and standby.</note>
+<p>To work in the Grafana GUI from NCC, you must create the users. As the “admin” user of the
+                Grafana technology:</p>
+<p>Log in to the Grafana GUI at:</p>
+<p>
+<userinput>https://&lt;OAME IP&gt;:8003</userinput>
+</p>
+<p>Enter the following credentials when prompted: </p>
+<p>User name: admin</p>
+<p>Password: admin</p>
+<p>When you log in for the first time you will be asked to change your password. Nokia strongly encourages you to follow the Grafana technology best practices and change the default administrator password. The Grafana GUI is available after a successful deployment on http://&lt;OAME_IP&gt;:8003, where protocol (http) and port (8003) are coming from the parameter keys configured in the VNF_Extension.json file. </p>
+<p>Before you create your first dashboard you need to ensure that your data source has been configured correctly at:</p>
+<p>
+<xref format="html" href="https://OAME_IP:8003/datasources" scope="external">https://&lt;OAME_IP&gt;:8003/datasources</xref>
+</p>
+<p>The <uicontrol>Prometheus Datasource</uicontrol> in the Grafana© software is set to port 9090 by default.</p>
+<p>Create your dashboard. See the screencasts tutorial for instruction on creating dashboards at:</p>
+<p>
+<xref format="html" href="http://docs.grafana.org/tutorials/screencasts" scope="external">http://docs.grafana.org/tutorials/screencasts</xref>
+</p>
+<p>The following figure is an example of the Grafana dashboard:</p>
+<fig>
+<title>Grafana dashboard</title>
+<!--MMO resource relative URI: ../Graphics/grafandash_default.png-->
+    <image href="../images/grafandash_default.png"/>
+</fig>
+<p>For detailed documentation about Grafana software and technology and how to use them, please see the Grafana website at: <xref format="html" href="http://docs.grafana.org" scope="external">http://docs.grafana.org</xref>.</p>
+</section>
+<section id="labelmuting"><title>Muting of Selected Labels</title>
+<p>In some network environments, recording detailed information for all labels will result in a very
+                large volume of data and metrics combinations, which may be too much for the
+                engineering of the system or for the northbound OSS systems to consume as they
+                retrieve measurement files from NCC. To address this, NCC supports a capability for
+                “muting” selected measurements labels. When a label is muted, its value is recorded
+                as “NA” (not available). In this case, there is only a single value for that label,
+                and thus, reducing the combinatorics that may be contributing to a very large volume
+                of measurement data.</p>
+<p>Application metric labels can be muted or un-muted for the SM and ME using the following application preferences. The measurements tables in later sections specify which labels can be muted for a given measurement.</p>
+<table colsep="1" rowsep="1">
+                <title>Muting metric labels</title>
+                <tgroup cols="4">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <colspec colname="col3"/>
+                    <colspec colname="col4"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Application Preference Name</p>
+                            </entry>
+                            <entry>
+                                <p>Type</p>
+                            </entry>
+                            <entry>
+                                <p>Metric Name</p>
+                            </entry>
+                            <entry>
+                                <p>Default Value</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> Mute Diameter metric labels (true/false) </entry>
+                            <entry> Boolean </entry>
+                            <entry> Diameter </entry>
+                            <entry> true </entry>
+                        </row>
+                        <row>
+                            <entry> Mute HTTP_3GPP metric labels (true/false) </entry>
+                            <entry> Boolean </entry>
+                            <entry> http_3gpp </entry>
+                            <entry> true </entry>
+                        </row>
+                        <row>
+                            <entry> Mute HTTP metric labels (true/false) </entry>
+                            <entry> Boolean </entry>
+                            <entry> HTTP </entry>
+                            <entry> true </entry>
+                        </row>
+                        <row>
+                            <entry> Mute LDAP metric labels (true/false) </entry>
+                            <entry> Boolean </entry>
+                            <entry> LDAP </entry>
+                            <entry> false </entry>
+                        </row>
+                        <row>
+                            <entry> Mute Rating metric labels (true/false) </entry>
+                            <entry> Boolean </entry>
+                            <entry> Rating </entry>
+                            <entry> true </entry>
+                        </row>
+                        <row>
+                            <entry> Mute Site Routing metric labels </entry>
+                            <entry> Boolean </entry>
+                            <entry> Site Routing </entry>
+                            <entry> true </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+</section>
+<section id="alarmthreshold"><title>Alarms when measurements cross a threshold</title>
+<p>The NCC generates alarms when a pre-configured metric alerts that it has exceeded a configured
+                threshold. <!--xref URI: #defalerts-->
+                <xref href="#id9yz-09126-mt00-rezza-sp2-metconfig/defalerts" format="dita"/> lists
+                the pre-configured alarms that can be generated with their default severities and
+                default threshold values. </p>
+<p>Standard metrics alarms are created from Prometheus alerts. The configuration to generate these
+                alerts with default values is part of the initial installation and instantiation
+                from values configured in the VNF Extension file. See the NCC Installation and
+                Upgrade Guide for more information about configuring the alert rule key in the VNF
+                Extension files.</p>
+<table id="defalerts" colsep="1" rowsep="1">
+                <title>Default alerts</title>
+                <tgroup cols="4">
+                    <colspec colname="col1"/>
+                    <colspec colname="COLSPEC1"/>
+                    <colspec colname="col2"/>
+                    <colspec colname="col3"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Alert Name</p>
+                            </entry>
+                            <entry>
+                                <p>Alarm Name</p>
+                            </entry>
+                            <entry>
+                                <p>Default Severity</p>
+                            </entry>
+                            <entry>
+                                <p>Default Theshold</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> NodeFilesystemUsageMinor </entry>
+                            <entry morerows="2"> FileSystemExceedThreshold" </entry>
+                            <entry> Minor </entry>
+                            <entry> File system usage is above 70% </entry>
+                        </row>
+                        <row>
+                            <entry> NodeFilesystemUsageMajor </entry>
+                            <entry> Major </entry>
+                            <entry> File system usage is above 80% </entry>
+                        </row>
+                        <row>
+                            <entry> NodeFilesystemUsageCritical </entry>
+                            <entry> Critical </entry>
+                            <entry> File system usage is above 90% </entry>
+                        </row>
+                        <row>
+                            <entry> NodeCPUUsageMinor </entry>
+                            <entry morerows="2"> CPUExceedThreshold </entry>
+                            <entry> Minor </entry>
+                            <entry> Node CPU Usage is above 70% </entry>
+                        </row>
+                        <row>
+                            <entry> NodeCPUUsageMajor </entry>
+                            <entry> Major </entry>
+                            <entry> Node CPU Usage is above 80% </entry>
+                        </row>
+                        <row>
+                            <entry> NodeCPUUsageCritical </entry>
+                            <entry> Critical </entry>
+                            <entry> Node CPU Usage is above 90% </entry>
+                        </row>
+                        <row>
+                            <entry> NodeSwapUsageMinor </entry>
+                            <entry morerows="2"> SwapExceedThreshold </entry>
+                            <entry> Minor </entry>
+                            <entry> Swap space usage is above 70% </entry>
+                        </row>
+                        <row>
+                            <entry> NodeSwapUsageMajor </entry>
+                            <entry> Major </entry>
+                            <entry> Swap space usage is above 80% </entry>
+                        </row>
+                        <row>
+                            <entry> NodeSwapUsageCritical </entry>
+                            <entry> Critical </entry>
+                            <entry> Swap space usage is above 90% </entry>
+                        </row>
+                        <row>
+                            <entry> NodeMemoryUsageMinor </entry>
+                            <entry morerows="2"> MemoryExceedThreshold </entry>
+                            <entry> Minor </entry>
+                            <entry> Node Memory Usage is above 85% </entry>
+                        </row>
+                        <row>
+                            <entry> NodeMemoryUsageMajor </entry>
+                            <entry> Major </entry>
+                            <entry> Node Memory Usage is above 93% </entry>
+                        </row>
+                        <row>
+                            <entry> NodeMemoryUsageCritical </entry>
+                            <entry> Critical </entry>
+                            <entry> Node Memory Usage is above 95% </entry>
+                        </row>
+                        <row>
+                            <entry> NodeZombieCountMinor </entry>
+                            <entry morerows="2"> ZombieCountExceedThreshold </entry>
+                            <entry> Minor </entry>
+                            <entry> Zombie process count is above 70% </entry>
+                        </row>
+                        <row>
+                            <entry> NodeZombieCountMajor </entry>
+                            <entry> Major </entry>
+                            <entry> Zombie process count is above 80% </entry>
+                        </row>
+                        <row>
+                            <entry> NodeZombieCountCritical </entry>
+                            <entry> Critical </entry>
+                            <entry> Zombie process count is above 90% </entry>
+                        </row>
+                        <row>
+                            <entry> NodeSysUpTimeCritical </entry>
+                            <entry> NodeSysUpTimeLessThreshold </entry>
+                            <entry> Critical </entry>
+                            <entry> Node System Up Time is less than 5 days </entry>
+                        </row>
+                        <row>
+                            <entry> NetworkRetransMajor </entry>
+                            <entry> NetworkRetransExceedThreshold </entry>
+                            <entry> Major </entry>
+                            <entry> The number of re-trans segments is more than 1500000 </entry>
+                        </row>
+                        <row>
+                            <entry> FluentdServiceInactive </entry>
+                            <entry> FluentdServiceInactive </entry>
+                            <entry> Major </entry>
+                            <entry> Threshold: Fluentd is inactive on node </entry>
+                        </row>
+                        <row>
+                            <entry> RsyslogServiceInactive </entry>
+                            <entry> RsyslogServiceInactive </entry>
+                            <entry> Major </entry>
+                            <entry> Threshold: Rsyslog is inactive on node </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<sectiondiv>
+                <p><b>Viewing alert details in Prometheus </b></p>
+                <p>Prometheus provides a separate GUI for Alert Manager which is accessible at:</p>
+                <codeph>http://OAME_IP:9093</codeph>
+                <p>The Alertmanager handles alerts sent by client applications, in NCC it is the
+                    Prometheus server. It takes care of deduplicating, grouping, and routing them to
+                    the correct receiver such as: email, PagerDuty, or OpsGenie. It also takes care
+                    of the silencing and inhibiting of alerts. For more details, refer to Alert
+                    Manager official site at:</p>
+                <p>
+                    <xref format="html" href="https://prometheus.io/docs/alerting/alertmanager"
+                        scope="external">https://prometheus.io/docs/alerting/alertmanager</xref>
+                </p>
+            </sectiondiv>
+</section>
+<section id="Promemmonitor"><title>Prometheus memory monitoring</title>
+<p>The NCC has a tool on the OAME nodes (active and standby) that is used to monitor the “resident
+                set size” (rss) of the prometheus process. If the rss of the Prometheus process
+                exceeds the MemoryHigh for prometheus-server service, the tool raises a critical
+                alarm "CPRO memory exceeds threshold" and restarts the prometheus-server.service. </p>
+<p>The tool monitors the prometheus-server.service status after restarting the prometheus service. Another critical alarm "Prometheus service failed" is raised in the following two scenarios after restarting the prometheus service:</p><ul>
+<li>
+<p>If the prometheus-server.service does not become active after restart.</p>
+</li>
+<li>
+<p>If the prometheus-server.service becomes active after a restart with some errors in the logs.</p>
+</li>
+</ul>
+<p>If the alarm "Prometheus service failed" is raised after restarting the prometheus service, see <!--xref URI: #recovProserver-->
+    <xref href="#id9yz-09126-mt00-rezza-sp2-metconfig/recovProserver" format="dita"/>
+ to recover manually.</p>
+<p>Prometheus memory monitoring can be enabled/disabled by configuring the "prometheus_entry_in_cron_status" key in the <i>sdc_config.json</i> file. See the <i>Installation and Upgrade Guide</i> for more details.</p>
+<p>Prometheus memory monitoring can be disabled/enabled after installation using the "prometheusEntryInCron.sh" script. Using this approach, you must execute the "prometheusEntryInCron.sh" script on both OAME nodes.</p>
+<p>This script is in the /opt/tpa/bin directory. The crontab executes the tool every minute. However, internally the tool monitors the rss of the prometheus process every 10 sec. If there is any case where prometheus-server.service takes more than 5 minutes to restart, this tool forcefully stops the prometheus process and starts the prometheus service again. </p>
+<p>The tool adds and removes the cron job entry for “check-prometheus-memory.sh”. </p>
+<note>
+<p>This tool has the following limitations when enabled: </p><ul>
+<li>
+<p>The tool deployed to monitor Prometheus process memory will restart Prometheus. The action may result in metrics loss ranging from 0 sec to 10 min. </p>
+</li>
+<li>
+<p>If the prometheus-server.service failed due to some issue, the prometheus service will not be able to collect metrics until it is recovered manually. </p>
+</li>
+<li>
+<p>Raised critical alarms will not be cleared automatically after the situation has recovered. You must clear both alarms manually.</p>
+</li>
+</ul>
+</note></section>
+<section id="recovProserver">
+            <title>Recovering the prometheus-server</title>
+<p>If the critical alarm "Prometheus service failed" is raised after restarting the prometheus service, perform the following to correct the problem:</p><ol>
+<li>
+<p>Check the prometheus service status using <i>"systemctl status prometheus-server"</i>.</p>
+</li>
+<li>
+<p>Try to restart the Prometheus service using<i> "systemctl restart prometheus-server"</i> command if status is not "Active"</p>
+</li>
+<li>
+<p>Check the prometheus service log in /var/log/messages.</p>
+</li>
+<li>
+<p>If there is a WAL corruption or segment corruption error, perform the following steps:</p><ol>
+<li>
+<p>Delete the offending file reported in logs and restart the prometheus service using <i>"systemctl restart prometheus-server"</i>.</p>
+</li>
+<li>
+<p>If the prometheus-server does not restart error-free, delete all directories from /appdata/cpro/prometheus directory except for the /appdata/cpro/prometheus/meas directory. Do not remove content from the /appdata/cpro/prometheus/meas directory.</p>
+</li>
+<li>
+<p>Restart the prometheus service using <i>\"systemctl restart prometheus-server\"</i>.</p>
+</li>
+</ol>
+</li>
+</ol>
+</section>
+<section><title>Syntax</title>
+<codeblock>prometheusEntryInCron.sh -[h|a|r]</codeblock>
+<p>where:</p>
+<table colsep="1" rowsep="1">
+                <tgroup cols="2">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Option</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> -h </entry>
+                            <entry> Displays the help information. </entry>
+                        </row>
+                        <row>
+                            <entry> -a </entry>
+                            <entry> Use this option to enable or add the cron job. </entry>
+                        </row>
+                        <row>
+                            <entry> -r </entry>
+                            <entry> Use this option to disable or remove the cron job. </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+</section>
+    <section><title>Output example</title>
+<p>Output similar to the following can be expected when you enable the tool:</p>
+<fig>
+<codeblock>[root@sps-me-oame-1 bin]# ./prometheusEntryInCron -a
+INFO: Adding cron job for checking prometheus memory.
+INFO: Added cron job successfully.</codeblock>
+</fig>
+<p>Output similar to the following can be expected when you disable the tool:</p>
+<fig>
+<codeblock>[root@sps-me-oame-1 bin]# ./prometheusEntryInCron -r
+INFO: Removing cron job for checking prometheus memory.
+INFO: Removed cron job successfully.</codeblock>
+</fig>
+</section>
+<section><title>NetAct integration meas_info_id used to uniquely identify metrics</title>
+<p>For NetAct integration, meas_info_id is used to uniquely identify metrics. The following table is a list of meas_info_ids and their metrics.</p>
+<table colsep="1" rowsep="1">
+                <tgroup cols="2">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>measinfoId</p>
+                            </entry>
+                            <entry>
+                                <p>Measurement name</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> M101 </entry>
+                            <entry> NODE_BOOT_TIME  </entry>
+                        </row>
+                        <row>
+                            <entry> M102 </entry>
+                            <entry> NODE_IPVS </entry>
+                        </row>
+                        <row>
+                            <entry> M103 </entry>
+                            <entry> NODE_CPU </entry>
+                        </row>
+                        <row>
+                            <entry> M104 </entry>
+                            <entry> DISK </entry>
+                        </row>
+                        <row>
+                            <entry> M105 </entry>
+                            <entry> NODE ENTROPY AVAILABLE BITS </entry>
+                        </row>
+                        <row>
+                            <entry> M106 </entry>
+                            <entry> NODE LOAD </entry>
+                        </row>
+                        <row>
+                            <entry> M107 </entry>
+                            <entry> MEMORY </entry>
+                        </row>
+                        <row>
+                            <entry> M108 </entry>
+                            <entry> NODE IP PACKATS </entry>
+                        </row>
+                        <row>
+                            <entry> M109 </entry>
+                            <entry> NODE PROCS </entry>
+                        </row>
+                        <row>
+                            <entry> M110 </entry>
+                            <entry> TCP NETSTAT </entry>
+                        </row>
+                        <row>
+                            <entry> M111 </entry>
+                            <entry> UDP NETSTAT </entry>
+                        </row>
+                        <row>
+                            <entry> M112 </entry>
+                            <entry> VMSTAT </entry>
+                        </row>
+                        <row>
+                            <entry> M113 </entry>
+                            <entry> NETWORK RECEIVE </entry>
+                        </row>
+                        <row>
+                            <entry> M114 </entry>
+                            <entry> NETWORK TRANMIT </entry>
+                        </row>
+                        <row>
+                            <entry> M115 </entry>
+                            <entry> Diameter_Inbound </entry>
+                        </row>
+                        <row>
+                            <entry> M116 </entry>
+                            <entry> Diameter_Outbound </entry>
+                        </row>
+                        <row>
+                            <entry> M117 </entry>
+                            <entry> Http </entry>
+                        </row>
+                        <row>
+                            <entry> M118 </entry>
+                            <entry> Ldap </entry>
+                        </row>
+                        <row>
+                            <entry> M119 </entry>
+                            <entry> File System </entry>
+                        </row>
+                        <row>
+                            <entry> M120 </entry>
+                            <entry> Overload </entry>
+                        </row>
+                        <row>
+                            <entry> M121 </entry>
+                            <entry> Process </entry>
+                        </row>
+                        <row>
+                            <entry> M122 </entry>
+                            <entry> Rules </entry>
+                        </row>
+                        <row>
+                            <entry> M123 </entry>
+                            <entry> not used </entry>
+                        </row>
+                        <row>
+                            <entry> M124 </entry>
+                            <entry> not used </entry>
+                        </row>
+                        <row>
+                            <entry> M125 </entry>
+                            <entry> Site_routing </entry>
+                        </row>
+                        <row>
+                            <entry> M126 </entry>
+                            <entry> jvm_buffer_pool </entry>
+                        </row>
+                        <row>
+                            <entry> M127 </entry>
+                            <entry> jvm_classes </entry>
+                        </row>
+                        <row>
+                            <entry> M128 </entry>
+                            <entry> jvm_gc_collection </entry>
+                        </row>
+                        <row>
+                            <entry> M129 </entry>
+                            <entry> jvm_info </entry>
+                        </row>
+                        <row>
+                            <entry> M130 </entry>
+                            <entry> jvm_memory_bytes </entry>
+                        </row>
+                        <row>
+                            <entry> M131 </entry>
+                            <entry> jvm_memory_pool </entry>
+                        </row>
+                        <row>
+                            <entry> M132 </entry>
+                            <entry> jvm_threads </entry>
+                        </row>
+                        <row>
+                            <entry> M133 </entry>
+                            <entry> http_3gpp_inbound </entry>
+                        </row>
+                        <row>
+                            <entry> M134 </entry>
+                            <entry> http_3gpp_outbound </entry>
+                        </row>
+                        <row>
+                            <entry> M135 </entry>
+                            <entry> rating </entry>
+                        </row>
+                        <row>
+                            <entry> M136 </entry>
+                            <entry> diameter_pcc_rule </entry>
+                        </row>
+                        <row>
+                            <entry> M137 </entry>
+                            <entry> http_3gpp_pcc_rule </entry>
+                        </row>
+                        <row>
+                            <entry> M138 </entry>
+                            <entry> session_count_overall </entry>
+                        </row>
+                        <row>
+                            <entry> M139 </entry>
+                            <entry> subscriber_count_overall </entry>
+                        </row>
+                        <row>
+                            <entry> M140 </entry>
+                            <entry> smldap </entry>
+                        </row>
+                        <row>
+                            <entry> M141 </entry>
+                            <entry> meldap </entry>
+                        </row>
+                        <row>
+                            <entry> M142 </entry>
+                            <entry> notificationserver </entry>
+                        </row>
+                        <row>
+                            <entry> M143 </entry>
+                            <entry> nrf_outbound </entry>
+                        </row>
+                        <row>
+                            <entry> M144 </entry>
+                            <entry> nrf_inbound </entry>
+                        </row>
+                        <row>
+                            <entry> M145 </entry>
+                            <entry> subscriber_sync_out </entry>
+                        </row>
+                        <row>
+                            <entry> M146 </entry>
+                            <entry> subscriber_sync_in </entry>
+                        </row>
+                        <row>
+                            <entry> M147 </entry>
+                            <entry> subscriber_sync_outbound_ecosystem </entry>
+                        </row>
+                        <row>
+                            <entry> M148 </entry>
+                            <entry> sm_subscriber_sync_in </entry>
+                        </row>
+                        <row>
+                            <entry> M149 </entry>
+                            <entry> sm_subscriber_sync_out </entry>
+                        </row>
+                        <row>
+                            <entry> M150 </entry>
+                            <entry> sm_subscriber_sync_inbound_ecosystem </entry>
+                        </row>
+                        <row>
+                            <entry> M151 </entry>
+                            <entry> ecommerce_api </entry>
+                        </row>
+                        <row>
+                            <entry> M152 </entry>
+                            <entry> sm_ecommerce_api </entry>
+                        </row>
+                        <row>
+                            <entry> 3xx </entry>
+                            <entry> reserved for ss7 measurements </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+</section>
+</conbody></concept>

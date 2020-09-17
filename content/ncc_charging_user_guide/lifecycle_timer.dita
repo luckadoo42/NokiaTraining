@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e187839"><title>Lifecycle timer extension</title><conbody>
+<section><title>Overview</title>
+<p>This feature is used to reschedule the current scheduled transitions in the lifecycle entities. These scheduled transitions can be in both Entity and Period lifecycle of the entities. The <userinput>Validity Time</userinput> parameter is added to all the lifecycle related entities. It denotes the current transition’s validity time in the entity lifecycle of these entities. This is a read only parameter and is not set/updated in the create/update requests of lifecycle entities. It is only set internally by lifecycle state transitions.</p>
+<p>At top-up (or at provisioning request), the validity of a subscription may need extension by a certain number of days. When a user phone is unavailable (gone for repair), the validity of units is extended by the number of days the user phone is not available, instead of being reset.</p>
+<p>
+<uicontrol>Example</uicontrol>: Bob subscribes to a subscription on 1st July and its valid for 30 days (30th of July). After 10 days, a provisioning request is made to extend the validity for 15 days (valid till 14th August). This is done using the REST API.</p>
+<note>
+<p>Prorating is not considered for this feature.</p>
+</note>
+</section>
+<section><title>REST API details</title>
+<p>Operators can use the <i>UpdateTime</i> REST API to adjust the end time and validity time of lifecycle of a given entity. It is recommended to use this API for shared onetime non-periodic type of subscription. The <i>UpdateTime</i> API is enhanced to consider the timezone ID of an account while updating the end date of a subscription.</p>
+<p>The API has the following inputs:</p><ul>
+<li>
+<p>Entity Type (Account/Subscription/Device/Group/User)</p>
+</li>
+<li>
+<p>Entity Id (AccountID/BundleID/DeviceID/GroupID/UserID)</p>
+</li>
+<li>
+<p>LifeCycleEntityType (Entity/Periodic)</p>
+</li>
+<li>
+<p>Subscription Entity Type (Device/Group) → Mandatory when <i>Entity Type</i> is <varname>SUBSCRIPTION_TYPE</varname>.</p>
+</li>
+<li>
+<p>Subscription Entity ID (DeviceID/GroupID) → Mandatory when <i>Entity Type</i> is <varname>SUBSCRIPTION_TYPE</varname>.</p>
+</li>
+<li>
+<p>Entity Instance Id (Subscription Instance ID) → It is the subscription instance ID which is needed if multiple instance of same bundle exists within a given device/group. This parameter is optional.</p>
+</li>
+<li>
+<p>Adjust Mode (INCR/DECR/SET)</p>
+</li>
+<li>
+<p>Adjust Period Unit Type (Hour/Day/Week/Month/Year)  → All types supported by Lifecycle are supported. Note that it does not support Second and Minute Unit Type.</p>
+</li>
+<li>
+<p>Adjust Period Value (absolute value of a given type)</p>
+</li>
+<li>
+<p>New Date (Applicable only for SET option) -&gt; For this field, seconds, for example, Mar 26, 2019 05:28:50 cannot be given in this format. The value of this parameter can be in this format - <uicontrol>Mar 26, 2019 05:28 PM</uicontrol>.</p>
+</li>
+</ul>
+<p>If the Adjust Mode is equal to <userinput>SET</userinput>, then endtime/vality time = current Time + Adjust period Value. With <userinput>SET</userinput> option, if <userinput>Adjust Period Value</userinput> and <userinput>New Date</userinput> both the parameters are provided, then <userinput>New Date</userinput> parameter is considered.</p>
+<p>If this API is used with Periodic subscription, then Endtime for current bill cycle is adjusted, but next renewal cycle again synchronizes the subscription with bill cycle as defined in account. For example, the bill cycle is on 5th of each month. Current date of subscription is 30th July with Endtime as 04/08/2018 23:59:59. Using this API, Endtime of this is updated to 10/08/2018 23:59:59. On next renewal (which is on updated Endtime), the new Endtime is set as 04/09/2018 23:59:59.</p>
+<p>The given period is checked with respect to the current time. For the Entity lifecycle, Validity time is only modified if the current state of a lifecycle has any current validity time available. The modification to Endtime and Validity Time updates the corresponding update in the TEM module.</p>
+<note>
+<p>The DECR or SET operation can make the new scheduled time less than or very close to the current system time. Therefore, considering the TEM scanner interval time for scheduling tasks and other system processing time under load and other conditions, it is recommended to add a buffer/delta time to the current system time. The New time = Current time + Delta. The default value of delta is 60 seconds. You can configure the delta using the System parameter - <userinput>Scheduled transition time update buffer interval (in seconds)</userinput>.</p>
+</note>
+<p>For more details regarding the API, see the <i>Service Manager API Reference</i> document.</p>
+</section>
+</conbody></concept>

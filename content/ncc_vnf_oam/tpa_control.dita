@@ -1,0 +1,425 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-tpa_control"><title>TPA_control tool for stopping/starting nodes and clusters</title><conbody>
+<section id="tpacontrolstst"><title>Description</title>
+<p>TPA_control is the public user interface for starting and stopping the NCC system and services.
+                This tool allows you to start and stop the NCC services on an individual node, a
+                given node type(s), or an entire NCC cluster.</p>
+<p>There are two types of commands that can be issued with TPA_control:</p><ul>
+<li>
+<p>Commands that can be executed on any node as “tpaadmin” or “root” user, such as any one of the following:</p><ul>
+<li>
+<p>start</p>
+</li>
+<li>
+<p>start-asr</p>
+</li>
+<li>
+<p>start-db</p>
+</li>
+<li>
+<p>start-etcd</p>
+</li>
+<li>
+<p>stop</p>
+</li>
+<li>
+<p>stop-asr</p>
+</li>
+<li>
+<p>stop-db</p>
+</li>
+<li>
+<p>stop-etcd</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Commands that can be executed only on the OAME node, using the fixed IP address, while logged in as the root user:</p><ul>
+<li>
+<p>start-all</p>
+</li>
+<li>
+<p>stop-all</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>The stop-all and start-all commands handle the traffic gracefully and work with XDR replication status. If the node types are given in the stop-all or start-all commands, the tool does NOT handle traffic gracefully. For example, in an SM type deployment, "TPA_control stop-all auxiliary db ioho oame smapp" will NOT drain/undrain the traffic nor perform a "Manual Out of Service" for the site.</p>
+<note>
+<p>For any operation that would initiate a switchover of the node (IOHD/IOHO/OAME) including start-all and stop-all functionality on the OAME node, you must login to the system using the fixed IP address and not the floating/VIP.”</p>
+</note>
+<p>When the entire cluster is stopped using this tool, the traffic drains before setting the system to Manual Out-of-Service. This draining allows the calls that are inside the system to pass through successfully but does not allow outside calls to enter the system. The system is set to sleep for 3 seconds to allow these calls to pass through (3 seconds is the timeout value for Diameter calls) because there can be a huge volume of calls inside the system. Calls are not handled by the other Geo-site, even if it is available, because the system continues to be In-Service and in a draining state. Calls will fail in this duration. If the timer is set to a lower duration than 3 seconds, the calls inside the system may not be handled successfully so, priority is given to the existing calls in the system over the new calls trying to come into the system until such time that the system goes Manual Out-of-Service and the Geo site, if available, takes over.</p>
+<p>See <!--xref URI: #tpacontrolsyn--><xref
+                    href="#id9yz-09126-mt00-rezza-sp2-tpa_control/tpacontrolsyn" format="dita"/> for
+                more information about the script usage.</p>
+<p>The system will always stop and start the node types in the following sequence and does not depend on the order given in the [option] argument: </p><ol>
+<li>
+<p>Stop order: iohd, ioho, diameterapp, smapp, comsvc, cdr, oame, db, auxiliary</p>
+</li>
+<li>
+<p>Start order: auxiliary, db, oame, cdr, comsvc, smapp, diameterapp, ioho, iohd</p>
+</li>
+</ol>
+<note>
+<p>The ETCD cluster must be up and running to be able to stop the complete cluster. If you stop the ETCD cluster first and then do a stop-all, the tool WILL NOT work.</p>
+</note>
+<p>This tool is available on each node under the /opt/tpa/bin directory and can be run as the “tpaadmin” or “root” user. The logs for the tool are present in /opt/tpa/logs/TPA_system.log.</p>
+<p>When performing maintenance activities that require using TPA_control to stop a VM, Auto-Healing
+                should be disabled until this activity is complete to avoid an automatic
+                reboot. Also note that if NCC has been stopped this way, it will not automatically
+                restart if the VM is rebooted.</p>
+</section>
+<section id="tpacontrolsyn"><title>Syntax</title>
+<codeblock>/opt/tpa/bin/TPA_control [stop|stop-asr|stop-db|stop-etcd|stop-all|start|start-asr|start-db|start-etcd|start-all] [&lt;option&gt;] </codeblock>
+<table>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+<p>
+<b>Code</b>
+</p>
+</entry>
+<entry>
+<p>
+<b>Description</b>
+</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+<codeblock>No arguments</codeblock>
+</entry>
+<entry>
+Displays usage/help information
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-h or -?</codeblock>
+</entry>
+<entry>
+Displays usage/help information.
+</entry>
+</row>
+<row>
+<entry>
+start
+</entry>
+<entry>
+Start the database, ASR server and CDR service as applicable on the current node.
+</entry>
+</row>
+<row>
+<entry>
+start-asr
+</entry>
+<entry>
+Start the ASR server on current node.
+</entry>
+</row>
+<row>
+<entry>
+start-db
+</entry>
+<entry>
+Start the Database server on current node.
+</entry>
+</row>
+<row>
+<entry>
+start-etcd
+</entry>
+<entry>
+<p>Start the ETCD service on current node.</p>
+<p>
+<b>Note</b>: The ETCD cluster must be up and running to be able to stop the complete cluster. If you stop the ETCD cluster first and then do a stop-all, the tool WILL NOT work.</p>
+</entry>
+</row>
+<row>
+<entry>
+stop
+</entry>
+<entry>
+Stop the database, ASR server and CDR service as applicable on the current node.
+</entry>
+</row>
+<row>
+<entry>
+stop-asr
+</entry>
+<entry>
+Stop the ASR server on current node.
+</entry>
+</row>
+<row>
+<entry>
+stop-db
+</entry>
+<entry>
+Stop the Database server on current node.
+</entry>
+</row>
+<row>
+<entry>
+stop-etcd
+</entry>
+<entry>
+Stop the ETCD service on current node.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>start-all</codeblock>
+</entry>
+<entry>
+<p>Start the entire NCC cluster including ASR server, database server, CDR service, and ETCD
+                                    service.</p>
+<p>When used with [option], starts the applicable nodes.</p>
+<p>When used without [option], starts the cluster.</p>
+<p>When starting the cluster, the tool works on the XDR states, "Behind" and "Current". If the XDR replication status of this site from ALL other sites is CURRENT, the tool does the next procedure and the cumulative XDR status is CURRENT. If one or more of the sites has an XDR replication status of "BEHIND", then the cumulative status of this site is "BEHIND". If the cumulative XDR status replication status is  "BEHIND", the tool checks the XDR replication status every 5 seconds and waits for the XDR status for all sites to be "CURRENT". The tool waits for a maximum of 15 minutes and if by that time all the replication status is not "CURRENT", the tool exits. If the XDR replication status of one or more of the sites is "OVERFLOWED", the disaster-recovery procedure is required and the tool simply exits.</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>stop-all</codeblock>
+</entry>
+<entry>
+<p>Stop the entire NCC cluster including ASR server, database server, CDR service, and ETCD
+                                    service.</p>
+<p>When used with [option], stops the applicable nodes.</p>
+<p>When used without [option], stops the cluster.</p>
+<p>
+<b>Note</b>: The ETCD cluster must be up and running to be able to stop the complete cluster. If you stop the ETCD cluster first and then do a stop-all, the tool WILL NOT work.</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>&lt;option&gt;</codeblock>
+</entry>
+<entry>
+<p>The node type(s) to stop or start. The option can be one of: auxiliary, cdr, comsvc, db, diameterapp, iohd, ioho, oame and smapp as required. The [option] is only applicable for the “start-all” and “stop-all” command as follows: </p><ul>
+<li>
+<p>The valid nodes for the sps-me node type(s) are: auxiliary, cdr, comsvc, db, diameterapp, iohd and oame. </p>
+</li>
+<li>
+<p>The valid nodes for the sps-ig node type(s) are: auxiliary, cdr, comsvc, db, diameterapp, iohd, ioho, oame and smapp. </p>
+</li>
+<li>
+<p>The valid nodes for the sps-sm node type(s) are: auxiliary, db, ioho, oame and smapp.</p>
+</li>
+</ul>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section><title>Example outputs</title>
+<p>Whether you run this command with or without an option, you will receive a warning and be prompted to answer if you want to proceed, for example:</p>
+<p>
+<systemoutput>TPA Control Tue Apr 30 00:06:10 EDT 2019 **WARNING** This command will take down this site by stopping ALL services on ALL VMs</systemoutput>
+</p>
+<p>
+<systemoutput>Do you wish to proceed? n [y,n,?,q] y</systemoutput>
+</p>
+<sectiondiv>
+<p><b>Sample output for stopping all DB nodes in the system</b></p>
+<p>
+<systemoutput>/opt/tpa/bin/TPA_control stop-all db</systemoutput>
+</p>
+<p>
+<systemoutput>TPA Control Mon May 27 06:21:52 EDT 2019 **WARNING** This command will take down this site (only if vital services are stopped) by stopping ALL services on 'db' VMs.</systemoutput>
+</p>
+<p>
+<systemoutput>Do you wish to proceed? n [y,n,?,q] y</systemoutput>
+</p>
+<p>
+<systemoutput>Stopping 'db' node type.</systemoutput>
+</p>
+<p>
+<systemoutput>INFO: Stopping services successful on node type(s): db.</systemoutput>
+</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Sample output for stopping multiple node types in the system</b></p>
+<p>If multiple node types are given, then this tool will stop them in the correct order.</p>
+<p>
+<systemoutput>/opt/tpa/bin/TPA_control stop-all ioho iohd</systemoutput>
+</p>
+<p>
+<systemoutput>TPA Control Mon May 27 06:30:44 EDT 2019 **WARNING** This command will take down this site (only if vital services are stopped) by stopping ALL services on ioho, iohd</systemoutput>
+</p>
+<p>
+<systemoutput>Do you wish to proceed? n [y,n,?,q] y</systemoutput>
+</p>
+<p>
+<systemoutput>Stopping 'iohd' node type.</systemoutput>
+</p>
+<p>
+<systemoutput>Stopping 'ioho' node type.</systemoutput>
+</p>
+<p>
+<systemoutput>INFO: Stopping services successful on node type(s): iohd ioho.</systemoutput>
+</p>
+<p>
+<systemoutput>[root@sps-ig-oame-0 ~]# /opt/tpa/bin/TPA_control stop-all ioho iohd</systemoutput>
+</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Sample output for a SM start-all deployment.</b></p>
+<p>
+<systemoutput>/opt/tpa/bin/TPA_control start-all</systemoutput>
+</p>
+<p>
+<systemoutput>TPA Control Mon May 27 05:55:59 EDT 2019</systemoutput>
+</p>
+<p>
+<systemoutput>Starting 'auxiliary' node type.</systemoutput>
+</p>
+<p>
+<systemoutput>Starting 'db' node type.</systemoutput>
+</p>
+<p>
+<systemoutput>Starting 'oame' node type.</systemoutput>
+</p>
+<p>
+<systemoutput>Starting 'smapp' node type.</systemoutput>
+</p>
+<p>
+<systemoutput>Starting 'ioho' node type.</systemoutput>
+</p>
+<p>
+<systemoutput>INFO: Starting services successful on node type(s): auxiliary db oame smapp ioho.</systemoutput>
+</p>
+<p>
+<systemoutput>INFO: XDR status is current, proceeding for next step.</systemoutput>
+</p>
+<p>
+<systemoutput>INFO: Sleeping for 25 seconds for allowing VIPs to be plumbed.</systemoutput>
+</p>
+<p>
+<systemoutput>INFO: Starting undrain traffic on IOHO.</systemoutput>
+</p>
+<p>
+<systemoutput>WARN: Doing 'disable' Manual out-of-service on this site.</systemoutput>
+</p>
+<p>
+<systemoutput>INFO: 'disable' Manual OOS on this site done successfully.'</systemoutput>
+</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Sample output for stop-all for ME deployment</b></p>
+<p>
+<systemoutput>root@sps-me-1-oame-0 ~]# /opt/tpa/bin/TPA_control stop-all</systemoutput>
+</p>
+<p>
+<systemoutput>TPA Control Mon May 27 06:07:59 EDT 2019 **WARNING** This command will take down this site by stopping ALL services on ALL VMs.</systemoutput>
+</p>
+<p>
+<systemoutput>Do you wish to proceed? n [y,n,?,q] y</systemoutput>
+</p>
+<p>
+<systemoutput>INFO: Starting drain traffic on IOHO.</systemoutput>
+</p>
+<p>
+<systemoutput>INFO: Starting drain traffic on IOHD.</systemoutput>
+</p>
+<p>
+<systemoutput>WARN: Doing 'enable' Manual out-of-service on this site.</systemoutput>
+</p>
+<p>
+<systemoutput>INFO: 'enable' Manual OOS on this site done successfully.</systemoutput>
+</p>
+<p>
+<systemoutput>Stopping 'iohd' node type.</systemoutput>
+</p>
+<p>
+<systemoutput>Stopping 'ioho' node type.</systemoutput>
+</p>
+<p>
+<systemoutput>Stopping 'diameterapp' node type.</systemoutput>
+</p>
+<p>
+<systemoutput>Stopping 'comsvc' node type.</systemoutput>
+</p>
+<p>
+<systemoutput>Stopping 'cdr' node type.</systemoutput>
+</p>
+<p>
+<systemoutput>Stopping 'oame' node type.</systemoutput>
+</p>
+<p>
+<systemoutput>Stopping 'db' node type.</systemoutput>
+</p>
+<p>
+<systemoutput>Stopping 'auxiliary' node type.</systemoutput>
+</p>
+<p>
+<systemoutput>INFO: Stopping services successful on node type(s): iohd ioho diameterapp comsvc cdr oame db auxiliary.</systemoutput>
+</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Sample output for stop-all for IG deployment</b></p>
+<p>
+<systemoutput>root@sps-ig-oame-0 ~]# /opt/tpa/bin/TPA_control stop-all</systemoutput>
+</p>
+<p>
+<systemoutput>TPA Control Mon May 27 06:15:54 EDT 2019 **WARNING** This command will take down this site by stopping ALL services on ALL VMs.</systemoutput>
+</p>
+<p>
+<systemoutput>Do you wish to proceed? n [y,n,?,q] y</systemoutput>
+</p>
+<p>
+<systemoutput>INFO: Starting drain traffic on IOHO.</systemoutput>
+</p>
+<p>
+<systemoutput>INFO: Starting drain traffic on IOHD.</systemoutput>
+</p>
+<p>
+<systemoutput>WARN: Doing 'enable' Manual out-of-service on this site.</systemoutput>
+</p>
+<p>
+<systemoutput>INFO: 'enable' Manual OOS on ME component of IG setup done successfully.</systemoutput>
+</p>
+<p>
+<systemoutput>INFO: 'enable' Manual OOS on SM component of IG setup done successfully.</systemoutput>
+</p>
+<p>
+<systemoutput>Stopping 'iohd' node type.</systemoutput>
+</p>
+<p>
+<systemoutput>Stopping 'ioho' node type.</systemoutput>
+</p>
+<p>
+<systemoutput>Stopping 'diameterapp' node type.</systemoutput>
+</p>
+<p>
+<systemoutput>Stopping 'smapp' node type.</systemoutput>
+</p>
+<p>
+<systemoutput>Stopping 'comsvc' node type.</systemoutput>
+</p>
+<p>
+<systemoutput>Stopping 'cdr' node type.</systemoutput>
+</p>
+<p>
+<systemoutput>Stopping 'oame' node type.</systemoutput>
+</p>
+<p>
+<systemoutput>Stopping 'db' node type.</systemoutput>
+</p>
+<p>
+<systemoutput>Stopping 'auxiliary' node type.</systemoutput>
+</p>
+<p>
+<systemoutput>INFO: Stopping services successful on node type(s): iohd ioho diameterapp smapp comsvc cdr oame db auxiliary.</systemoutput>
+</p>
+</sectiondiv>
+</section>
+</conbody></concept>

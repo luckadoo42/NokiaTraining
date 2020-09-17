@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="metrics_configuration">
+    <title>Metrics configuration with NCC telemetry package</title>
+    <conbody>
+        <section id="section_zpj_phx_llb">
+            <title>Overview</title>
+            <p>The NCC measurements system can be configured to meet the needs of a given operator
+                deployment, including which labels are muted, the collection/gathering interval, and
+                various other parameters. The following sections describe configuration for
+                measurement collection:<ul id="ul_rxm_rhx_llb">
+                    <li>Metrics configuration files</li>
+                    <li>Getting started with Grafana technology</li>
+                    <li>Muting of Selected Labels</li>
+                    <li>Alarms when measurements cross a threshold</li>
+                </ul></p>
+        </section>
+        <section id="section_emd_wvy_llb">
+            <title>Metrics configuration files</title>
+            <p>Prometheus stores it metrics into a database. Every 5 minutes, Gen3GPPXML retrieves
+                some measurements and writes them into XML files in the /appdata/cpro/prometheus
+                directory.</p>
+            <p>For the Prometheus server, a configuration file exists as cpro/server/config.file
+                which is a key that stores all of the configuration data of Prometheus. The
+                prometheus.yml contains data which contains data based on the values stored in the
+                Prometheus keys; for example: the cpro/server/ config.file contains the
+                /etc/prometheus/prometheus.yml. See the key parameters in the VNF Extension file in
+                the <i>NCC Installation Guide</i> for information about configuring the values, for
+                    example:<ul id="ul_dff_nxy_llb">
+                    <li> storage_retention—the length of time to retain samples in the database The
+                        default storage_retention time is 15 days. Nokia Support must be contacted
+                        to change this parameter after installation.</li>
+                    <li>scrape_interval—the duration (in seconds) after which targets are scraped
+                        The default value is 60 seconds (1 minute) and stored on the AdminCLI in
+                        /appdata/cpro/ prometheus. Nokia Support must be contacted to change this
+                        parameter after installation. </li>
+                </ul><note>
+                    <p>Do not change the permissions for any file or folder related to Prometheus.
+                        There is a risk that metrics generation is stopped if the permissions for
+                        any file or folder related to Prometheus are changed.</p>
+                    <p>If any nodes that are generating metrics undergoes an application server
+                        restart for any reason, the metrics counter is reset to 0. System metrics
+                        are not reset in the case of application server restart but do continue from
+                        previous values.</p>
+                </note></p>
+        </section>
+        <section id="section_frw_sxy_llb">
+            <title>Getting started with Grafana technology</title>
+            <p>Before trying to use Grafana technology, ensure the parameter keys for the Grafana
+                software have been configured. See the VNF Extension file in the <i>NCC Installation
+                    Guide</i> for more information.<note>Grafana software and its configuration does
+                    not support a switch-over. Each instance of Grafana software works independently
+                    on each AdminCLI and must be configured (including: dashboard, users, and other
+                    settings) on both AdminCLI pods, active and standby. </note></p>
+            <p>To work in the Grafana GUI from NCC, users must be created. As the “admin” user of
+                the Grafana technology:</p>
+            <p>Log in to the Grafana GUI using the URL configured on helm installation of the
+                Grafana container. For more information regarding helm deployment of the Grafana
+                container, see the <i>NCC CNF Installation Guide</i>.</p>
+            <p>Enter the following credentials when prompted:</p>
+            <p>User name: admin </p>
+            <p>Password: admin </p>
+            <p>When a user logs in for the first time, they will be asked to change their password.
+                Nokia strongly encourages the adherence to the Grafana technology best practices and
+                to change the default administrator password. The Grafana GUI is available after a
+                successful deployment at the user configurable Grafana GUI URL.</p>
+            <p>The data source must have been configured correctly before creating one's first
+                dashboard. The data source may be configured at the following
+                URL:<codeblock>https://&lt;grafana_gui_url>/datasources</codeblock></p>
+            <p>The data source should be set to Prometheus and Port 9090. Perform the following
+                steps to configure the Grafana datasource with port 9090:<ol id="ol_jxq_lft_mlb">
+                    <li>Log in to the Grafana GUI at:
+                        <codeph>https://&lt;grafana_gui_url>/</codeph></li>
+                    <li>In the <b>Configuration tab</b>, select <b>Data Sources</b> and then select
+                            <b>Prometheus Datasource</b>.</li>
+                    <li>Update the <b>HTTP URL</b> field with port 9090.</li>
+                    <li> Save the configuration, using the <b>Save &amp; Test</b> button.</li>
+                </ol></p>
+            <p>Create a dashboard. See the screencasts tutorial for instruction on creating
+                dashboards at:</p>
+            <p><i>http://docs.grafana.org/tutorials/screencasts</i></p>
+        </section>
+        <section id="section_ihh_wft_mlb">
+            <title> Muting of Selected Labels</title>
+            <p>In some network environments, recording detailed information for all labels will
+                result in a very large volume of data and metrics combinations, which may be too
+                much for the engineering of the system or for the northbound OSS systems to consume
+                as they retrieve measurement files from NCC. To address this, NCC supports a
+                capability for “muting” selected measurements labels. When a label is muted, its
+                value is recorded as “NA” (not available). In this case, there is only a single
+                value for that label, and thus, reducing the combinatorics that may be contributing
+                to a very large volume of measurement data.</p>
+            <p>Application metric labels can be muted or un-muted for the SM and ME using the
+                following application preferences. The measurements tables in later sections specify
+                which labels can be muted for a given measurement.<table frame="all" rowsep="1"
+                    colsep="1" id="table_n5p_yft_mlb">
+                    <title>Muting metric labels</title>
+                    <tgroup cols="4">
+                        <colspec colname="c1" colnum="1" colwidth="1*"/>
+                        <colspec colname="c2" colnum="2" colwidth="1*"/>
+                        <colspec colname="c3" colnum="3" colwidth="1*"/>
+                        <colspec colname="c4" colnum="4" colwidth="1*"/>
+                        <thead>
+                            <row>
+                                <entry>Application Preference Name</entry>
+                                <entry>Type</entry>
+                                <entry>Metric Name</entry>
+                                <entry>Default Value</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry>Mute Diameter metric labels (true/false)</entry>
+                                <entry>Boolean</entry>
+                                <entry>Diameter</entry>
+                                <entry>true</entry>
+                            </row>
+                            <row>
+                                <entry>Mute HTTP_3GPP metric labels (true/false)</entry>
+                                <entry>Boolean</entry>
+                                <entry>http_3gpp</entry>
+                                <entry>true</entry>
+                            </row>
+                            <row>
+                                <entry>Mute HTTP metric labels (true/false)</entry>
+                                <entry>Boolean</entry>
+                                <entry>HTTP</entry>
+                                <entry>true</entry>
+                            </row>
+                            <row>
+                                <entry>Mute LDAP metric labels (true/false)</entry>
+                                <entry>Boolean</entry>
+                                <entry>LDAP</entry>
+                                <entry>false</entry>
+                            </row>
+                            <row>
+                                <entry>Mute Rating metric labels (true/false)</entry>
+                                <entry>Boolean</entry>
+                                <entry>Rating</entry>
+                                <entry>true</entry>
+                            </row>
+                            <row>
+                                <entry>Mute Site Routing metric labels</entry>
+                                <entry>Boolean</entry>
+                                <entry>Site Routing</entry>
+                                <entry>true</entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table></p>
+        </section>
+        <section id="section_jp2_dht_mlb">
+            <title>Alarms when measurements cross a threshold</title>
+            <p>The NCC generates alarms when a pre-configured metric exceeds a configured
+                threshold.</p>
+            <p>Standard metrics alarms are created from Prometheus alerts. See the NCC Installation
+                Guide for more information about configuring the alert rule key in the VNF Extension
+                files.</p>
+        </section>
+    </conbody>
+</concept>

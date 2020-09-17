@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-d1e66542"><title>Procedure: Performing disaster recovery for 1+1 deployments</title><conbody>
+<section>
+<p>This section describes disaster recovery for 1+1 deployments where any of the following scenarios may have occurred:</p><ul>
+<li>
+<p>A particular NCC site might have been destroyed because of a natural calamity like an earthquake
+                        or flood, etc.</p>
+</li>
+<li>
+<p>Data replication from peers in a particular NCC site has lagged behind, which may be due to a
+                        failure of WAN connectivity or some other reason.</p>
+</li>
+</ul>
+<p>To recover any ME, IG, and/or SM site from a disaster situation the following needs to be done:</p><ul>
+<li>
+<p>Ensure that the site stays OOS while the Disaster recovery procedure is in progress.</p>
+</li>
+<li>
+<p>Change the set_oos_drr parameter to true in either the VNF EXTENTION file or the CBAM extension while instantiating.</p>
+</li>
+<li>
+<p>Instantiate the disastrous site using the same CSAR package, images, and templates.</p>
+</li>
+<li>
+<p>VNF backup should have been scheduled using CBAM for the SM and the ME or the IG. That backup will be used to restore ME, IG and/or SM. See <!--xref URI: #backupscheduler--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-backupscheduler"/> for more information.</p>
+</li>
+<li>
+<p>If the healthy site raises a critical alarm for data overflow, restore the database using the backup from a healthy ME and/or SM site.</p>
+</li>
+<li>
+<p>For geo-redundant deployments, you must ensure that the MariaDB replicated data count is the same between the two geo-redundant SMs or IGs. If the count is different, MariaDB data has not replicated to this second SM or IG Geo site. To accomplish MariaDB data replication on the second SM or IG Geo site, perform the following procedures as required: </p>
+<p>-see the procedure “Checking replicated data count on geo-redundant SM or IG sites” in the <i>NCC
+                            Installation and Upgrade Guide</i>
+                    </p>
+<p>-see the procedure “Performing backup and restore for MariaDB” in the <i>NCC Installation and
+                            Upgrade Guide</i>
+                    </p>
+</li>
+</ul>
+</section>
+<section>
+<title>Recovery procedures</title>
+<p>If any site has suffered a catastrophic failure and has been destroyed, it needs to be re-instantiated using the same CSAR package, images, and templates that were used to instantiate it earlier (however,  in the case of a WAN failure, re-instantiation is not required). After this recovering site is instantiated again or there is resolution of the WAN link failure problem, the recovering site raises the OOS-DRR alarm if the mate site has raised a critical alarm for data overflow, as follows:</p>
+<p>
+<systemoutput>"The Disaster Recovery procedure is required on these site(s) to re-synchronize their data with this SPS."</systemoutput>
+</p>
+<p>If a site (whether ME, SM, or IG) has experienced catastrophic failure such that it must be completely rebuilt as a new site that needs to be re-instantiated, you must ensure that the site cannot come back into service in any way until after the Disaster Recovery steps are performed. To accomplish this you must configure the “set_oos_drr” parameter to “true” using the CBAM interface. This parameter is part of the VNF EXTENTION file and defines whether or not a VNF stays in the OOS state. When this parameter is set to true, the instantiated VNF remains in the OOS state until the Disaster Recovery procedure is executed. As well, when in this OOS_DRR state, incoming XDR messages are blocked and outgoing XDR messages are discarded.</p>
+<p>After the above OOS-DRR alarm is raised, an operator must perform all the following procedures in sequence (one after the other) without any gap in between the procedures or steps. If any of the steps fail, contact Nokia Support before executing the next step.</p>
+<p>Any time that you need to instantiate or re-instantiate an NCC site in the following procedures,
+                the default tpaadmin user password must be changed on the first login and that
+                password must be propagated to all the VMs in the site. </p>
+<p>The backup operation includes the backing up of all the users Linux system files necessary for accounts and groups management, such as /etc/default/passwd, /etc/group, /etc/passwd, /etc/motd, etc. All these files are backed up from each VM. The restore operation includes restoring all the backed up users Linux system files to each VM, meaning that the files backed up from the oame-0 VM will be restored to the oame-0 VM, the files backed up from the db-3 VM will be restored to the db-3 VM, and so on. </p>
+<p>If the OAME VMs are logged in ahead of the restore operation, then refer to the NCC Installation
+                and Upgrade Guide and execute the "Changing password on first login" procedure for
+                the tpaadmin user. The password used for this procedure can be anything that follows
+                the default password complexity rules listed under the "Security and user
+                management" section in the OAM Guide, or it can be the same password that has been
+                backed up. The restore procedure will restore the password of tpaadmin that was
+                backed up.</p>
+<p>In this group of procedures, you are always going to perform procedures 4 to 12, whether a catatastrophic or non-catastrophic failure; however, if you have experienced a catastrophic failure, you must also perform procedures 1 to 3 and 13 as follows: </p><ol>
+<li>
+<p>Configuring the “set_oos_drr” parameter to “true” using the CBAM interface or the VNF EXTENSION.json file, which should be done before instantiation of the VM. (for catastrophic failure only)</p>
+</li>
+<li>
+<p>Performing a VNF restore. (for catastrophic failure only)</p>
+</li>
+<li>
+<p>Manually putting the recovering site into an OOS state. (for catastrophic failure only)</p>
+</li>
+<li>
+<p>Enabling the incoming XDR traffic on all recovering ME and/or SM site.</p>
+</li>
+<li>
+<p>Resetting the window shipping pointer on all healthy ME and/or SM sites.</p>
+</li>
+<li>
+<p>Disabling the incoming XDR traffic on all the recovering ME and/or SM sites.</p>
+</li>
+<li>
+<p>Performing a database backup from the healthy ME and/or SM site.</p>
+</li>
+<li>
+<p>Performing a database restore using the backup directory on the recovering ME and/or SM site.</p>
+</li>
+<li>
+<p>Enabling the incoming XDR traffic on all the recovering ME and/or SM sites.</p>
+</li>
+<li>
+<p>Verifying the MariaDB replication count.</p>
+</li>
+<li>
+<p>Performing a backup and restore of MariaDB.</p>
+</li>
+<li>
+<p>Performing a Reload of ME using the SM GUI.</p>
+</li>
+<li>
+<p>Executing the Key generator Tool.</p>
+</li>
+<li>
+<p>Marking the site to get out of OOS-DRR state on the recovering ME (on SM this step is not required).</p>
+</li>
+<li>
+<p>Clearing the OOS flag for the recovering ME. (for catastrophic failure only)</p>
+</li>
+</ol>
+</section>
+</conbody></concept>

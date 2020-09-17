@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+		<concept id="id9YZ-09018-UG00-PCZZA-d1e8012">
+    <title>System redundancy and scalability</title>
+    <conbody>
+        <p>NCC CNF is designed to be a cloud-native solution with system redundancy and scalability
+            throughout, providing very high levels of system reliability. Some pod types are fully
+            horizontally scalable, while others currently support more limited scalability or a
+            fixed number of instances.</p>
+        <section>
+            <title>Horizontally scalable pods </title>
+            <p>The number of these pod instances varies and at the same time remains appropriate for
+                the current offered load level. All instances are active, providing high levels of
+                system reliability. Failure of individual instances does not impact the ability to
+                continue servicing traffic on the system. Kubernetes is configured to automatically
+                spin up new instances upon failure of others.</p>
+        </section>
+        <section id="section_nz2_vx1_nlb">
+            <title>Fixed number of pods</title>
+            <p>For a few pod types, system redundancy is achieved with a fixed number of pod
+                instances. For example, there are always three <i>etcd</i> pods. While the load on
+                ETCD is low, even during high levels of system traffic, there are three <i>etcd</i>
+                instances for redundancy purposes. Some pods such as <i>etcd</i> or <i>zookeeper</i>
+                use the RAFT algorithm for determining the controlling pod instance, and this
+                requires at least three deployed pod instances.</p>
+        </section>
+        <section id="section_mrj_vv1_nlb">
+            <title>1+1 redundant pods</title>
+            <p>NCC CNF has two pod types, <i>iohd</i> and <i>centralmanagement</i>, which are
+                deployed as 1+1 redundant. These run in active/standby mode. When the active pod
+                fails, the standby pod quickly takes over as the new active pod. As Kubernetes spins
+                up a new instance to replace the failed one, that new instance becomes the standby
+                pod.</p>
+        </section>
+    </conbody>
+</concept>

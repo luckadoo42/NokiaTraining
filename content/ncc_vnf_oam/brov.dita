@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-brov"><title>Backup and Restore for an OpenStack or VMware deployment</title><conbody>
+<section><title>Overview</title>
+<p>Backup and Restore is the act of backing up all the necessary configuration information from an installation, which can then be used to restore a system in the event of either a catastrophic recovery or a lab re-creation scenario. This section describes the backup and restore functionality for an OpenStack or VMware deployment.</p>
+<p>Backup files are needed to provide information for the restoration of the system. Restore uses
+                the backup files produced from the backups to restore the system configuration and
+                data. The NCC provides the ability to backup and restore an entire VNF or to backup
+                and restore one or several node groups using the platform’s Backup and Restore (B/R)
+                component. Backup and restore of the entire VNF or one or more node groups is
+                supported for application data using the CBAM GUI.</p>
+<p>The third-party backup service “Veritas NetBackUp” server can be used for VNF backups
+                stored/backed-up to a remote backup server, that is configured outside of the data
+                center where NCC is installed. The third-party backup servers use backup and restore
+                policies per node to define what needs to be backed up. The policy for backup is
+                generated automatically when you execute a backup. The policy is dynamically added
+                by the ansible scripts when the backup executes and the different components add the
+                data or configurations that need to be backed up into a configuration file. You can
+                also configure the backup retention period on the remote backup server. The
+                retention interval in a backup policy defines how long the backup is stored. Backups
+                will be removed automatically when the retention interval expires.</p>
+<p>Backup or restore of the entire VNF or node groups is triggered by an operator using the CBAM GUI with a one button click at any time. </p>
+<p>The data backed up is defined by component. Backup logs are maintained that outline success or failure outcomes of backups. </p>
+<p>Backups of an entire VNF can also be scheduled using CBAM, see the section about Adding and
+                removing one scheduled backup for the entire NCC VNF.</p>
+<p>Vdu-group level backup and restore operations can also be performed using CBAM. See the sections about VDU group level backup and restore.</p>
+</section>
+<section><title>Backup process</title>
+<p>The backup operation transfers files from remote or local VNFs to a backup repository and then depending on whether you have installed a third-party backup server, transfers those files onto an external server. </p>
+<p> The following types of backup/restore modes are supported:</p><ul>
+<li>
+<p>Local backup/restore (backup mode: NONE)</p>
+</li>
+<li>
+<p>Third party Veritas NetBackup backup/restore (backup mode: NETBKUP)</p>
+</li>
+</ul>
+<p>The backup_mode is configured in the SPS_*_VNF_EXTENSION.json file. The NONE mode does not install any clients. All of the backup data is saved on the dedicated cinder volumes or on the NFS server attached to the OAME. Only the latest backup data from one backup operation can be kept on either the cinder volume or the NFS server. </p>
+<p>You can use the third party backup server to retrieve and store the data on a regular basis off
+                of the NCC. A manual backup (using the CBAM GUI) is required before a third party
+                backup server can pull the data. Using a backup server, the backup files can be
+                manually backed up from the VNF to the backup repository (for example, cinder
+                volume) and then to the remote backup server. The NetBackup client is installed on
+                each OAM Endpoint node–on both the active and the standby.</p>
+<fig>
+<title>Basic backup process</title>
+<!--MMO resource relative URI: ../Graphics/Basicbackup_default.png-->
+    <image href="../images/basicbackup_default.png"/>
+</fig>
+<fig>
+<title>Backup process with NetBackup client installed on the OAM Endpoint node</title>
+<!--MMO resource relative URI: ../Graphics/backupwclientNBUNWAV_default.png-->
+    <image href="../images/backupwclientnbunwav_default.png"/>
+</fig>
+<p>Veritas NetBackup is the supported backup server connected to the clustered active OAME nodes. Currently, only the Veritas NetBackup backup server has been tested and future releases may support other external backup servers. Contact Nokia Support for licensing and configuration information about any of the external backup servers.</p>
+<fig>
+<title>Cluster Backup - Cinder volume backup repository</title>
+<!--MMO resource relative URI: ../Graphics/backuppic2_default.png-->
+    <image href="../images/backuppic2_default.png"/>
+</fig>
+<p>If Cinder volume is used as backup repository, each OAM Endpoint node will attach a Cinder volume for B/R, regardless of the selected backup repository.</p>
+<fig>
+<title>Cluster Backup - NFS export</title>
+<!--MMO resource relative URI: ../Graphics/backupNFS2b_default.png-->
+    <image href="../images/backupnfs2b_default.png"/>
+</fig>
+<p>If NFS is selected as a backup repository, then it is only mounted on the active OAM Endpoint node. When a switch-over occurs, the NFS will be re-mounted on the newly active OAME Endpoint node.</p>
+</section>
+<section><title>Data backed up</title>
+<p>Backup and restore of any cloud infrastructure related data for the VNF or node group is not
+                performed as only NCC application data can be backed up. For a cloud native
+                application the backup artifacts can be categorized into two types:</p><ul>
+<li>
+<p>
+<b>Application data</b>: </p>
+<p>configurations and database, required to be backed up for future restoration</p>
+</li>
+<li>
+<p>
+<b>Infrastructure</b>:   </p>
+<p>VM, Containers, Network resources, Host OS etc., which are not required to be backed up as these are setup by the cloud infrastructure based on the VM image and template defined</p>
+</li>
+</ul>
+<note>
+<p>The CDR data is stored on the cinder volume of the CDR nodes and the NCC logs are stored on the
+                    cinder volume of each of the nodes.</p>
+<p>Neither the CDR data nor the NCC logs are involved in the backup policy list.</p>
+<p>Metrics backup is not part of any VNF backup/restore procedure. If needed, do metrics backup manually.</p>
+</note>
+<note>Before copying any files to any NCC VMs, the user must execute the df and du Linux commands
+                from each VM to determine the storage available and whether or not the copying of
+                new files can proceed. Usage of the Linux commands df (abbreviation for disk free)
+                and du (abbreviated from disk usage) can be found on every VM via the Linux manual
+                page by using “man df” and “man du” as root user. There are two storage directories
+                that can be used on any VM as follows:<p/><ul>
+                    <li>
+                        <p> First choice, is under the /appdata directory which is created and
+                            mounted to the cinder volume (OpenStack)/independent disk (VMware) on
+                            every VM.</p>
+                    </li>
+                    <li>
+                        <p>Second choice, is under the /var/log directory which is created and
+                            mounted to the cinder volume (OpenStack)/independent disk (VMware) on
+                            every VM.</p>
+                    </li>
+                </ul><p>If there is enough storage available, proceed.</p><p>When you have completed
+                    the task, clean-up the files that are no longer needed.</p><p>If there is not
+                    enough space, either do some clean-up or contact Nokia Support.</p></note>
+</section>
+<section><title>Restore process</title>
+<p>The restore operation transfers files from the backup repository to the remote or local VNF. Using a backup server, the backup files can be transferred from the remote backup server to the backup repository to the VNFs and node groups. The NetBackup client is installed on each OAM Endpoint node–on both the active and the standby.</p>
+<note>
+<p>In the event that both OAMEs are down simultaneously, for more than a brief interval, all of the other VMs in the VNF must be restarted in order to immediately synchronize time with the OAMEs.</p>
+</note>
+<note>
+<p>For a successful Restore operation, IP addresses and hostnames must remain the same as those that were in use when the backup file was taken.</p>
+</note>
+<fig>
+<title>Basic restore process</title>
+<!--MMO resource relative URI: ../Graphics/BasicRestore1_default.png-->
+    <image href="../images/basicrestore1_default.png"/>
+</fig>
+<fig>
+<title>Restore process with NetBackup client installed on the OAM Endpoint node</title>
+<!--MMO resource relative URI: ../Graphics/RestorewNBNWAV_default.png-->
+    <image href="../images/restorewnbnwav_default.png"/>
+</fig>
+<p>Veritas NetBackup is the supported backup server connected to the clustered active OAME nodes. Currently, only the Veritas NetBackup backup server has been tested. </p>
+</section>
+<section><title>Backup and restore procedures</title>
+<p>The following procedures allow you to configure the NCC for the backup and restore operation for
+                a VNF in an installation. These procedures will not allow for the backup of any
+                cloud infrastructure related data of the VNF. It is purely related to NCC
+                application data such as configurations and database.</p>
+<p>For backups, you must decide if you are only backing up in the Local backup mode, which sends the backup files to a local backup repository, or if you are backing up in the NetBackup backup mode, which requires installation and configuration of a backup server. The backup/restore is always performed from the active OAME node.</p>
+<p>The following backup repository types are supported:</p><ul>
+<li>
+<p>Cinder Volume (partition type: CV)</p>
+<p>An attachable Cinder volume (CV).</p>
+</li>
+<li>
+<p>NFS (partition type: NFS)</p>
+<p>An attachable Network File System (NFS).</p>
+<p>The NFS partition type is only supported for the NONE backup mode.</p>
+</li>
+</ul>
+<note>
+<p>Veritas NetBackup backup servers must be installed and configured by Nokia personnel. Contact Nokia Support to assist you with the backup server.</p>
+</note>
+</section>
+<section><title>Prerequisites</title>
+<p>Ensure there is sufficient disk space where you intend to store the backup files. All VM sizing
+                is done prior to instantiation and there is no re-sizing. Prior to instantiation,
+                refer to the <i>NCC Installation and Upgrade Guide</i> and the <i>NCC-Dimensioning
+                    Engineering Guidelines</i> for dimensioning information and instruction about
+                how to set an appropriate size for the backup volume (Openstack) or independent disk
+                (VMware) on OAME node. For all the data backed up, the backed-up database data will
+                occupy a relatively larger disk space, while the database size depends on the amount
+                of user accounts and user sessions on a customer site. </p>
+<p>Before performing a backup, ensure that the backup is being taken from a properly functioning VNF and ensure that the backup is being restored to a properly functioning VNF.</p>
+<p>Before the backup, ensure that the:</p><ul>
+<li>
+<p>system VMs are alive and functioning properly</p>
+</li>
+<li>
+<p>connectivity for the internal network is correct</p>
+</li>
+<li>
+<p>connectivity for the external networks is correct (especially toward the backup server)</p>
+</li>
+</ul>
+<p>The CBAM software must be ready as a VNFM for the Backup and Restore.</p>
+<p>NCC instantiate must have been successful with the appropriate backup_mode as follows:</p><ul>
+<li>
+<p>Local backup/restore (backup mode=NONE)</p>
+</li>
+<li>
+<p>Third party Veritas NetBackup backup/restore (backup mode=NETBKUP)</p>
+</li>
+</ul>
+<p>Configuration for the Veritas NetBackup backup server must have been completed. The NetBackup client must have been installed on each OAM Endpoint node–on both the active and the standby.</p>
+<p>Modifications to the SPS_*_VNF_EXTENSION.json file in the NCC may be required to add the backup
+                and restore components. See the section “VNF Extension file” in the NCC Installation
+                and Upgrade Guide for information about modifying SDC parameters.</p>
+</section>
+</conbody></concept>

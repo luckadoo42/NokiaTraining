@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-configure-kafka-partition-keys-tool"><title>configure-kafka-partition-keys tool</title><conbody>
+<section><title>Description</title>
+<p>This tool is used to set and modify &lt;kafka/kafka_reassign_partitions_throttle_Bps&gt; and &lt;kafka/kafka_enable_scale_reassign_partition&gt; parameters defined in the VNF Extension file. This tool resides in <filepath>/opt/tpa/bin</filepath> on OAME VMs and can be executed by either <codeph>root</codeph> or <codeph>tpaadmin</codeph> users.</p>
+<note>
+<p>Increasing the value of &lt;kafka/kafka_reassign_partitions_throttle_Bps reduces&gt; the time of the reassignment operation.</p>
+</note>
+<p> If you need to modify &lt;kafka/kafka_reassign_partitions_throttle_Bps&gt; and &lt;kafka/kafka_enable_scale_reassign_partition&gt; parameters, Nokia recommends the following:</p><ul>
+<li>
+<p>Set &lt;kafka/kafka_reassign_partitions_throttle_Bps&gt;  parameter to 50% of the total bandwidth between the two VMs. </p>
+</li>
+<li>
+<p>Use this tool if you are scaling-out the VMs where Kafka broker resides, which are ComSvc VMs on ME or IG sites and SM App VMs on SM sites.</p>
+</li>
+</ul>
+<p>For more information on the parameters, see section <i>VNF Extenstion file</i> in the Installation and Upgrade Guide.</p>
+</section>
+<section><title>Syntax</title>
+<codeblock>configure-kafka-partition-keys -e &lt;true or false&gt; -t &lt;throttle value in Bps&gt;</codeblock>
+<note>
+<p>You can modify one or both keys at the same time.</p>
+</note>
+<table>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+<p>Code</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+No arguments
+</entry>
+<entry>
+Displays help information.
+</entry>
+</row>
+<row>
+<entry>
+<codeph>-h or ?</codeph>
+</entry>
+<entry>
+Displays help information.
+</entry>
+</row>
+<row>
+<entry>
+<codeph>-e</codeph>
+</entry>
+<entry>
+<p>Enables or disables Kafka reassignment partition script auto execution during a scale-in or scale-out operation of ComSvc and SM App VMs.</p>
+<p>Allowed value are true or false.</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeph>-t</codeph>
+</entry>
+<entry>
+Specifies Kafka reassignment partition throttle value in Bps.
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section><title>Output example</title>
+<p>The following example shows the output when both Kafka parameters are successfully modified.</p>
+<fig>
+<codeblock>[tpaadmin@sps-me-oame-1 ~]$ ./configure-kafka-partition-keys -e false
+SUCCESS: Successfully enabled/disabled auto execution of script.
+[tpaadmin@sps-me-oame-1 ~]$
+
+[tpaadmin@sps-me-oame-1 ~]$ ./configure-kafka-partition-keys -t 104857600
+SUCCESS: Successfully updated throttle value in SDC.
+[tpaadmin@sps-me-oame-1 ~]$</codeblock>
+</fig>
+</section>
+</conbody></concept>

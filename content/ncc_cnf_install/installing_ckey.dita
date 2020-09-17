@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="installing_ckey">
+  <title>Deploying CKEY Helm chart</title>
+  <taskbody>
+    <context>This procedure provides instructions on how to deploy the CKEY Helm chart for an SM or
+      IG CNF.</context>
+    <steps>
+      <step>
+        <cmd>Ensure that you are working in the CNF's directory.</cmd>
+      </step>
+      <step>
+        <cmd>Copy the sample input file by entering:</cmd>
+        <info>
+          <codeblock># Run this "if" block as 1 command (paste entire block):
+if [ "$PLATFORM" = "openshift" ]; then
+    FILE_MODIFIER='_openshift'
+else
+    FILE_MODIFIER=''
+fi
+ 
+cp ../configuration-examples/values_ckey_sps${FILE_MODIFIER}.yaml .
+if [[ -e ../configuration-examples/sizing/sizing_ckey_lab.yaml ]]; then
+ cp ../configuration-examples/sizing/sizing_ckey_lab.yaml .
+else
+ cp ../configuration-examples/sizing/lab/sizing_ckey_lab.yaml .
+fi
+sed -i "s/istioVersion: 1.5/istioVersion: $ISTIO_VERSION/g" values_ckey_sps${FILE_MODIFIER}.yaml
+OVERRIDE_FILES="values_ckey_sps${FILE_MODIFIER}.yaml sizing_ckey_lab.yaml"</codeblock>
+        </info>
+      </step>
+      <step>
+        <cmd>If you are enabling Backup and Restore with CBUR, copy the sample input file and add it
+          to the list of Override files by entering:</cmd>
+        <info>
+          <codeblock>cp ../configuration-examples/feature_ckey_cbur_enable.yaml .
+OVERRIDE_FILES="$OVERRIDE_FILES feature_ckey_cbur_enable.yaml"</codeblock>
+        </info>
+      </step>
+      <step>
+        <cmd>Merge all the Override files into a single file by entering:</cmd>
+        <info>
+          <codeblock>docker run --rm -v ${PWD}:/workdir:z registry1-docker-io.repo.lab.pl.alcatel-lucent.com/mikefarah/yq yq m -x $OVERRIDE_FILES > ${SITE_TYPE}${SITE_ID}_ckey.yaml</codeblock>
+        </info>
+      </step>
+      <step>
+        <cmd>Install the CKEY Helm chart by entering:</cmd>
+        <info>
+          <codeblock>wget https://repo.lab.pl.alcatel-lucent.com/sps-generic-candidates/spsmainbuild/$BUILD_VERSION/ckey-chart-$CHART_VERSION.tgz
+ 
+helm upgrade --install ckey ckey-chart*.tgz -n $NAMESPACE -f ${SITE_TYPE}${SITE_ID}_ckey.yaml --set istio.gateway.customized_selectors.istio=$NAMESPACE --wait</codeblock>
+        </info>
+      </step>
+      <step>
+        <cmd>Do the procedure <xref href="setting_up_a_web_sso_realm_with_users_for_sps.dita"
+          />.</cmd>
+      </step>
+      <step>
+        <cmd>Install the Keycloak Config Loader Helm chart for NCC by entering:</cmd>
+        <info>
+          <codeblock>helm upgrade --install sps-load keycloak-config-loader-chart*.tgz -n $NAMESPACE -f sps_keycloak_config_loader.yaml</codeblock>
+        </info>
+      </step>
+      <step>
+        <cmd>If  you are installing BTEL, install the Keycloak Config Loader Helm chart for BTEL by
+          entering:</cmd>
+        <info>
+          <codeblock>helm upgrade --install btel-load keycloak-config-loader-chart*.tgz -n $NAMESPACE -f btel_keycloak_config_loader.yaml</codeblock>
+        </info>
+      </step>
+      <step>
+        <cmd>Test the installation as follows: </cmd>
+        <info>
+          <ol id="ol_qt5_s5q_5mb">
+            <li>Access the application by entering:
+              <codeblock>echo "Open a browser to https://$FQDN/auth/"</codeblock></li>
+            <li>Run Helm tests by entering:<codeblock>helm test -n $NAMESPACE ckey</codeblock></li>
+          </ol>
+        </info>
+      </step>
+    </steps>
+  </taskbody>
+</task>

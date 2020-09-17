@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-cap"><title>Cap</title><conbody>
+<section><title>Overview</title>
+<p>Cap is the limit applied by the top-level group to the device on its hierarchy resources either directly (directly applied to the device) or indirectly (applied to the low-level group to the devices associated with that low-level group).</p>
+<note>
+<p>In a multi-level hierarchy group, cap is not applicable to the middle-level(s) because intermediate levels ideally do not have resources.</p>
+</note>
+<p>Following are few important points for cap entity:</p><ul>
+<li>
+<p>Cap can only be applied to shared resources, such as bucket or main balance. For example, cap is applied as a unit for data buckets or as money for main balance.</p>
+</li>
+<li>
+<p>Cap is not applicable to the subscription fees.</p>
+</li>
+<li>
+<p>Cap defined for a group is applicable only if the group counters are defined as rule engine output and inside the group definition.</p>
+</li>
+<li>
+<p>Cap is expressed in absolute value for unlimited shared resources and multi-level group hierarchy resources.</p>
+</li>
+<li>
+<p>Cap on overage determines the limit on the overage value allowed on the main balance of the account.</p>
+</li>
+</ul>
+<note>
+<p>The call is not allowed below the limit of cap value defined for the main balance.</p>
+</note></section>
+<section id="capthreshold">
+   <title>Comparison between cap and threshold</title>
+<p>The following list shows a comparison of cap and threshold:</p><ul>
+<li>
+<p>Cap and threshold are not same.</p>
+</li>
+<li>
+<p>Cap actions and threshold actions are not same. There are different actions supported at threshold and different at cap.</p>
+</li>
+<li>
+<p>For a cap associated with a counter, the Threshold Profile Group Instance, Threshold Profile Instance and Threshold Instance are created and embedded in the counter instance while creation of a subscription.</p>
+</li>
+<li>
+<p>Cap is similar to a Threshold Profile Group having a single Threshold Profile and Threshold.</p>
+</li>
+<li>
+<p>The cap name is referenced in the counter threshold list, similar to <i>Threshold Profile Group Name</i>.</p>
+</li>
+<li>
+<p>Cap is associated with counter only while a threshold is associated with both bucket and counter.</p>
+</li>
+</ul>
+</section>
+<section>
+<p><b>Cap actions</b></p>
+<p>When a cap is reached, NCC performs either one or a combination of the following actions:</p><ul>
+<li>
+<p>
+<varname>Notification-Stop</varname>: This action notifies to stop using the resource and switch to the next resource.</p>
+</li>
+<li>
+<p>
+<varname>Notification-Continue</varname>: This action notifies to continue using the same resource.</p>
+</li>
+<li>
+<p>
+<varname>Notification-Reject</varname>: This action notifies and rejects the call.</p>
+</li>
+<li>
+<p>
+<varname>Reject</varname>: This action rejects the call.</p>
+</li>
+<li>
+<p>
+<varname>Send-RAR</varname>: This action notifies to reauthorize the call.</p>
+</li>
+</ul>
+</section>
+<section><title>Configuration details</title>
+<p>Log into the SM GUI, navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> &gt;
+     <uicontrol>COMMON</uicontrol> tab and select <uicontrol>Cap</uicontrol> from the hamburger menu
+    ( <!--MMO resource relative URI: ../../Global_Configurations/Graphics/hamburgermenu_default.png-->
+    <image href="../images/img9yz-09126-ug01-pczza-sp1-hamburgermenu_default.png" scale="40"/> ). To
+    define a new Cap, click <!--MMO resource relative URI: ../Graphics/Release_18.0/Add_button_default.png-->
+    <image href="../images/img9yz-09126-ug01-pczza-sp1-add_button_default.png" scale="50"/> to add
+    the basic details and configuration as described in the given table:</p>
+<note><ul>
+<li>
+<p>For provisioning purpose, the cap entity is included in threshold. Cap reuses the threshold functionality for database parameters, such as <i>Rule Id</i>, <i>RuleScannerPlugin</i>, and <i>RuleSet</i>.</p>
+</li>
+<li>
+<p>No separate cap table is created in database. Instead, <i>Threshold Profile Group</i> table is used to store the cap limit in the database.</p>
+</li>
+</ul>
+</note>
+<sectiondiv>
+<p><b>Basic Details</b></p>
+<table pgwide="1" colsep="1" rowsep="1">
+     <title>Parameters for cap</title>
+     <tgroup cols="4">
+      <colspec colname="col1"/>
+      <colspec colname="COLSPEC5"/>
+      <colspec colname="COLSPEC1"/>
+      <colspec colname="col2"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Parameter</p>
+        </entry>
+        <entry>
+         <p>Description</p>
+        </entry>
+        <entry>
+         <p>Options</p>
+        </entry>
+        <entry>
+         <p>Mandatory/Optional</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> Cap Name </entry>
+        <entry> This parameter indicates a unique name of the cap. The cap name is appended with
+          <varname> .CAP</varname> at the end of the string and stored in the database. </entry>
+        <entry> String </entry>
+        <entry> Mandatory </entry>
+       </row>
+       <row>
+        <entry> Unit Type </entry>
+        <entry>
+         <p>This parameter indicates the unit type associated with the cap entity.</p>
+         <p>
+          <b>Note</b>: The cap unit type must match with the unit type of the counter defined or
+          referenced with in the Group Definition. </p>
+        </entry>
+        <entry> Select the required unit type from the given unit types in the drop-down list. </entry>
+        <entry> Mandatory </entry>
+       </row>
+       <row>
+        <entry> Value </entry>
+        <entry> This parameter indicates the value of the cap limit. Ensure that the cap value is a
+         positive value. </entry>
+        <entry> Long </entry>
+        <entry> Mandatory </entry>
+       </row>
+       <row>
+        <entry> Cap Policy </entry>
+        <entry>
+         <p>This parameter indicates the cap policy. The field value can be set to either of the
+          given values:</p>
+         <ul>
+          <li>
+           <p>If this check box is checked, then this flag value is set to true and the cap is a
+            PolicyCAP.</p>
+          </li>
+          <li>
+           <p>If the check box is not checked, then this flag value is false <i>Threshold Rule
+             Action</i> is <varname>Send-SNR</varname>, the flag forcibly needs to be set to true
+            and the threshold is then PolicyThreshold.</p>
+          </li>
+         </ul>
+        </entry>
+        <entry> Select this check box to indicate whether the cap is a PolicyCAP. </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry> Security Domain </entry>
+        <entry> This parameter indicates the security domain associated with the cap. </entry>
+        <entry> Select the required security domain from the predefined security domains in the
+         drop-down list. </entry>
+        <entry> Optional </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+</sectiondiv>
+<sectiondiv>
+<p><b>Configuration</b></p>
+<table pgwide="1" colsep="1" rowsep="1">
+     <title>Parameters for cap</title>
+     <tgroup cols="4">
+      <colspec colname="col1"/>
+      <colspec colname="COLSPEC5"/>
+      <colspec colname="COLSPEC1"/>
+      <colspec colname="col2"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Parameter</p>
+        </entry>
+        <entry>
+         <p>Description</p>
+        </entry>
+        <entry>
+         <p>Options</p>
+        </entry>
+        <entry>
+         <p>Mandatory/Optional</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> Configuration </entry>
+        <entry> This parameter indicates the cap entity configuration. </entry>
+        <entry> String </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry nameend="col2" namest="col1"> Click <uicontrol>ADD RULE</uicontrol> to add rule
+         configuration to the cap entity. </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+</sectiondiv>
+</section>
+<section><title>Actions associated with cap</title>
+<p>A wrapper entity over threshold is used as a cap, where the cap value defined over the counter is used either as a group counter or a device counter.</p>
+<table pgwide="1" colsep="1" rowsep="1">
+    <tgroup cols="2">
+     <colspec colname="col1" colwidth="1*"/>
+     <colspec colname="col2" colwidth="1.78*"/>
+     <thead>
+      <row>
+       <entry>
+        <p>Action</p>
+       </entry>
+       <entry>
+        <p>Description</p>
+       </entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry> Create </entry>
+       <entry> Used to provision a cap entity in database after defining the cap value and providing
+        the other mandatory parameters. </entry>
+      </row>
+      <row>
+       <entry> CreateCap </entry>
+       <entry> Used to provision a cap entity in database for the cap fields entered. </entry>
+      </row>
+      <row>
+       <entry> Delete </entry>
+       <entry> Used to remove a cap definition object from database. </entry>
+      </row>
+      <row>
+       <entry> DeleteCap </entry>
+       <entry> Used to delete a cap entity for the cap ID entered. </entry>
+      </row>
+      <row>
+       <entry> GetDeviceGroupCap </entry>
+       <entry> Used to fetch all the Device Group Counters from database and get the list of cap. It
+        also gives the difference between the counter current value and cap value. If the cap value
+        is greater than the counter current value then the difference value is positive else
+        difference value is negative. </entry>
+      </row>
+      <row>
+       <entry> Read </entry>
+       <entry> Used to read the ThresholdProfileGroup for the given Id. </entry>
+      </row>
+      <row>
+       <entry> ReadCap </entry>
+       <entry> Used to read the cap for the given Id. </entry>
+      </row>
+      <row>
+       <entry> ThresholdProfileGroupExists </entry>
+       <entry> Used to check if the ThresholdProfileGroup exist for the given Id. </entry>
+      </row>
+      <row>
+       <entry> Update </entry>
+       <entry> Used to modify the cap definition or the possible action required for this cap in
+        database. </entry>
+      </row>
+      <row>
+       <entry> UpdateCap </entry>
+       <entry> Used to update the cap object. </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+<note>
+<p>These actions are valid for internal purposes only. It is not accessible through the SM GUI for operators</p>
+</note>
+</section>
+</conbody></concept>

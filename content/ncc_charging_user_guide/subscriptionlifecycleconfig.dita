@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e188702"><title>Subscription lifecycle configuration</title><conbody>
+<section><title>Overview</title>
+<p>The system supports ENTITY and PERIOD lifecycles for subscriptions. The subscription lifecycles are defined under the bundle that a subscription refers to. Subscriptions cannot be directly associated with a lifecycle, but they can reference the lifecycles of their bundles. As a lifecycle entity, a subscription must be related to an ENTITY lifecycle. If you do not provide an ENTITY lifecycle for a subscription, the system associates this subscription with DefaultSubscriptionLifeCycle.</p>
+<p>The PERIOD lifecycle is optional for subscriptions. However, if the bundle, that a subscription refers to, defines the billing cycle information and no input is provided for PERIOD lifecycle, then the system assigns DefaultSubscriptionBillingCycle to that bundle. If you do not provide a PERIOD lifecycle for a subscription and the bundle does not define any billing information, this subscription is associated with its ENTITY lifecycle only.</p>
+<p>You can configure various ENTITY and various PERIOD lifecycles for subscriptions. You can provide a subscription with any ENTITY and PERIOD lifecycle of your choice. However, you can associate a subscription only with one lifecycle of each type: one ENTITY lifecycle and one PERIOD lifecycle.</p>
+<note>
+<p>Once a lifecycle is created, it cannot be deleted.</p>
+</note>
+<p>The time zone ID defined in an account considers the following points:</p><ul>
+<li>
+<p>For period lifecycle, when a subscription is purchased, renewed, or its status is changed, the related time (that is the creation time, start time, or end time) of the subscription considers the timezone of the account.</p>
+</li>
+<li>
+<p>For entity lifecycle of a subscription, the related time (that is the creation time and validity time) considers the timezone of the account.</p>
+</li>
+</ul>
+</section>
+<section><title>Subscription ENTITY lifecycle configuration</title>
+<p>The following table describes the configuration of ENTITY lifecycles for subscriptions.</p>
+<table pgwide="1" colsep="1" rowsep="1">
+                <title>Subscription ENTITY lifecycle configuration</title>
+                <tgroup cols="3">
+                    <colspec colname="col1"/>
+                    <colspec colname="col3"/>
+                    <colspec colname="COLSPEC0"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Parameter</p>
+                            </entry>
+                            <entry>
+                                <p>Configuration</p>
+                            </entry>
+                            <entry>
+                                <p>Mandatory / Optional</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> Name </entry>
+                            <entry> Defined by you, should not exceed 64 characters </entry>
+                            <entry> Mandatory </entry>
+                        </row>
+                        <row>
+                            <entry> Type </entry>
+                            <entry> Must be set to ENTITY, that is, Object Status Lifecycle. </entry>
+                            <entry> Mandatory </entry>
+                        </row>
+                        <row>
+                            <entry> Applicable to </entry>
+                            <entry> Must be set to Subscription. </entry>
+                            <entry> Mandatory </entry>
+                        </row>
+                        <row>
+                            <entry> States </entry>
+                            <entry>
+                                <p>Must contain at least one state.</p>
+                                <p>Must contain exactly one state marked as initial.</p>
+                                <p>Defined and configured by you.</p>
+                                <p>For information on state configuration, see the
+                                        <!--xref URI: #StateParameters--><xref
+                                        keyref="id9YZ-09126-UG01-PCZZA-SP1-Lifecycleparameters/StateParameters"
+                                    /> section.</p>
+                            </entry>
+                            <entry> Mandatory </entry>
+                        </row>
+                        <row>
+                            <entry> Transitions </entry>
+                            <entry>
+                                <p>Defined and configured by you.</p>
+                                <p>For information on transition configuration, see the
+                                        <!--xref URI: #TransitionParameters--><xref
+                                        keyref="id9YZ-09126-UG01-PCZZA-SP1-Lifecycleparameters/TransitionParameters"
+                                    /> section.</p>
+                                <p>For information on timer configuration, see the
+                                        <!--xref URI: #TimerParameters--><xref
+                                        keyref="id9YZ-09126-UG01-PCZZA-SP1-Lifecycleparameters/TimerParameters"
+                                    /> section.</p>
+                                <p>For information on actions, see the
+                                        <!--xref URI: #Actions--><xref
+                                        keyref="id9YZ-09126-UG01-PCZZA-SP1-Actions"/> section.</p>
+                                <p>For information on events, see the <!--xref URI: #Events--><xref
+                                        keyref="id9YZ-09126-UG01-PCZZA-SP1-Events"/> section.</p>
+                            </entry>
+                            <entry> Optional </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<note type="attention">
+<p>The <uicontrol>“Start Cycle”</uicontrol> event is not available in the
+                    DefaultSubscriptionLifeCycle when you upgrade NCC. But, this <uicontrol>“Start
+                        Cycle”</uicontrol> event is available in the DefaultSubscriptionLifeCycle
+                    for fresh installation of NCC. </p>
+<p>For example, the <uicontrol>“Start Cycle”</uicontrol> event is not available in the
+                    DefaultSubscriptionLifeCycle when you upgrade charging application from 18.9 to
+                    19.0 release. But, the <uicontrol>“Start Cycle”</uicontrol> is available in the
+                    DefaultSubscriptionLifeCycle for fresh installation of charging application from
+                    19.0 release.</p>
+</note>
+</section>
+<section><title>Subscription PERIOD lifecycle configuration</title>
+<p>The following table describes the configuration of PERIOD lifecycles for subscriptions.</p>
+<table pgwide="1" colsep="1" rowsep="1">
+                <title>Subscription PERIOD lifecycle configuration</title>
+                <tgroup cols="3">
+                    <colspec colname="col1"/>
+                    <colspec colname="col3"/>
+                    <colspec colname="COLSPEC0"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Parameter</p>
+                            </entry>
+                            <entry>
+                                <p>Configuration</p>
+                            </entry>
+                            <entry>
+                                <p>Mandatory / Optional</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> Name </entry>
+                            <entry> Defined by you, should not exceed 64 characters </entry>
+                            <entry> Mandatory </entry>
+                        </row>
+                        <row>
+                            <entry> Type </entry>
+                            <entry> Must be set to PERIOD, that is, Bill Cycle. </entry>
+                            <entry> Mandatory </entry>
+                        </row>
+                        <row>
+                            <entry> Applicable to </entry>
+                            <entry> Must be set to Subscription. </entry>
+                            <entry> Mandatory </entry>
+                        </row>
+                        <row>
+                            <entry> Timer Value </entry>
+                            <entry> Value of the timer </entry>
+                            <entry> Mandatory </entry>
+                        </row>
+                        <row>
+                            <entry> Timer Units </entry>
+                            <entry> Unit used for the timer. Supported values are - Seconds,
+                                Minutes, Hours, Days, Weeks, Months, Years. </entry>
+                            <entry> Mandatory </entry>
+                        </row>
+                        <row>
+                            <entry> States </entry>
+                            <entry>
+                                <p>Must contain at least one state.</p>
+                                <p>Must contain exactly one state marked as initial.</p>
+                                <p>Defined and configured by you.</p>
+                                <p>For information on state configuration, see the
+                                        <!--xref URI: #StateParameters--><xref
+                                        keyref="id9YZ-09126-UG01-PCZZA-SP1-Lifecycleparameters/StateParameters"
+                                    /> section.</p>
+                            </entry>
+                            <entry> Mandatory </entry>
+                        </row>
+                        <row>
+                            <entry> Transitions </entry>
+                            <entry>
+                                <p>Defined and configured by you.</p>
+                                <p>For information on transition configuration, see the
+                                        <!--xref URI: #TransitionParameters--><xref
+                                        keyref="id9YZ-09126-UG01-PCZZA-SP1-Lifecycleparameters/TransitionParameters"
+                                    /> section.</p>
+                                <p>For information on timer configuration, see the
+                                        <!--xref URI: #TimerParameters--><xref
+                                        keyref="id9YZ-09126-UG01-PCZZA-SP1-Lifecycleparameters/TimerParameters"
+                                    /> section.</p>
+                                <p>For information on actions, see the
+                                        <!--xref URI: #Actions--><xref
+                                        keyref="id9YZ-09126-UG01-PCZZA-SP1-Actions"/> section.</p>
+                                <p>For information on events, see the <!--xref URI: #Events--><xref
+                                        keyref="id9YZ-09126-UG01-PCZZA-SP1-Events"/> section.</p>
+                            </entry>
+                            <entry> Optional </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+</section>
+<section><title>Examples</title>
+<sectiondiv>
+<p><b>Example 1: Addition of promotional bundle using subscription lifecycle</b></p>
+<p>Bob purchases a special bundle. A promotional bundle is added automatically to his device. For this case, the account, device, subscription entities are configured and associated with their relative lifecycle entities. Trigger the account lifecycle to attach a special bundle to the device. A promotional bundle gets automatically attached to the device.</p>
+<p>For this case, configure the following entities. Ensure that Bundle1 is linked to the account
+                    before triggering the account lifecycle event.<table pgwide="1" colsep="1"
+                        rowsep="1">
+                        <tgroup cols="2">
+                            <colspec colname="col1" colwidth="1*"/>
+                            <colspec colname="col2" colwidth="2.04*"/>
+                            <thead>
+                                <row>
+                                    <entry>
+                                        <p>Entity</p>
+                                    </entry>
+                                    <entry>
+                                        <p>Task</p>
+                                    </entry>
+                                </row>
+                            </thead>
+                            <tbody>
+                                <row>
+                                    <entry morerows="2"> Charging Services </entry>
+                                    <entry><p>Create the charging services (CSPromo, CSSpecial,
+                                            CS1). </p><p>
+                                            <uicontrol>Name</uicontrol>: CSPromo,
+                                                <uicontrol>Priority</uicontrol>: 3,
+                                                <uicontrol>Category</uicontrol>: DefaultCategory,
+                                                <uicontrol>Bucket</uicontrol>: PromoBucket,
+                                                <uicontrol>Initial Value</uicontrol>: 100,
+                                                <uicontrol>Unit Type Name</uicontrol>: Byte and
+                                            tariff:</p>
+                                        <!--MMO resource relative URI: ../Graphics/Release_18.9/Promo_tariff_default.png-->
+                                        <image
+                                            href="../images/img9yz-09126-ug01-pczza-sp1-promo_tariff_default.png"
+                                        />
+                                    </entry>
+                                </row>
+                                <row>
+                                    <entry><p>
+                                            <uicontrol>Name</uicontrol>: CSSpecial,
+                                                <uicontrol>Priority</uicontrol>: 2,
+                                                <uicontrol>Category</uicontrol>: DefaultCategory,
+                                                <uicontrol>Bucket</uicontrol>: SpecialBucket,
+                                                <uicontrol>Initial Value</uicontrol>: 2000,
+                                                <uicontrol>Unit Type Name</uicontrol>: Byte and
+                                            tariff:</p>
+                                        <!--MMO resource relative URI: ../Graphics/Release_18.9/Special_tariff_default.png-->
+                                        <image
+                                            href="../images/img9yz-09126-ug01-pczza-sp1-special_tariff_default.png"
+                                        />
+                                    </entry>
+                                </row>
+                                <row>
+                                    <entry><p>
+                                            <uicontrol>Name</uicontrol>: CS1,
+                                                <uicontrol>Priority</uicontrol>: 1,
+                                                <uicontrol>Category</uicontrol>: DefaultCategory,
+                                                <uicontrol>Bucket</uicontrol>: Bucket1,
+                                                <uicontrol>Initial Value</uicontrol>: 3000,
+                                                <uicontrol>Unit Type Name</uicontrol>: Byte and
+                                            tariff:</p>
+                                        <!--MMO resource relative URI: ../Graphics/Release_18.9/CS1_tariff_default.png-->
+                                        <image
+                                            href="../images/img9yz-09126-ug01-pczza-sp1-cs1_tariff_default.png"
+                                        />
+                                    </entry>
+                                </row>
+                                <row>
+                                    <entry morerows="3"> Bundles </entry>
+                                    <entry>
+                                        <p>Create bundles (Bundle1, PromoBundle, SpecialBundle).
+                                            Associate the Bundle1 to the device.</p>
+                                    </entry>
+                                </row>
+                                <row>
+                                    <entry>
+                                        <p><uicontrol>Name</uicontrol>: Bundle1,
+                                                <uicontrol>Fee</uicontrol>: 100, <uicontrol>Charging
+                                                Service List</uicontrol>: CS1, <uicontrol>Object
+                                                Status Lifecycle</uicontrol>:
+                                            DefaultSubscriptionLifeCycle</p>
+                                    </entry>
+                                </row>
+                                <row>
+                                    <entry>
+                                        <uicontrol>Name</uicontrol>: PromoBundle,
+                                            <uicontrol>Fee</uicontrol>: 0, <uicontrol>Charging
+                                            Service List</uicontrol>: CSPromo, <uicontrol>Object
+                                            Status Lifecycle</uicontrol>:
+                                        DefaultSubscriptionLifeCycle </entry>
+                                </row>
+                                <row>
+                                    <entry>
+                                        <uicontrol>Name</uicontrol>: SpecialBundle,
+                                            <uicontrol>Fee</uicontrol>: 100, <uicontrol>Charging
+                                            Service List</uicontrol>: CSSpecial, <uicontrol>Object
+                                            Status Lifecycle</uicontrol>:
+                                        DefaultSubscriptionLifeCycle </entry>
+                                </row>
+                                <row>
+                                    <entry> Lifecycles </entry>
+                                    <entry> Create an account lifecycle with
+                                            <uicontrol>Name</uicontrol>:
+                                        AccountEntityLC_SpecialBundlePurchase,
+                                            <uicontrol>Type</uicontrol>: ObjectStatusLifecycle,
+                                            <uicontrol>Applicable to</uicontrol>: Account. See the
+                                        figures after the table for more details on states. </entry>
+                                </row>
+                                <row>
+                                    <entry> Account </entry>
+                                    <entry> Create an account and link the
+                                        AccountEntityLC_SpecialBundlePurchase lifecycle. </entry>
+                                </row>
+                                <row>
+                                    <entry> Device </entry>
+                                    <entry> Create a device and associate the DefaultDeviceLifeCycle
+                                        and Bundle1. </entry>
+                                </row>
+                            </tbody>
+                        </tgroup>
+                    </table></p>
+<p>
+<uicontrol>Lifecycles (AccountEntityLC_SpecialBundlePurchase):</uicontrol>
+</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_18.9/AccountLC1_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-accountlc1_default.png"
+                        scale="50"/>
+                </fig>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_18.9/Account_LC2_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-account_lc2_default.png"
+                        scale="60"/>
+                </fig>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_18.9/Account_LC3_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-account_lc3_default.png"
+                        scale="50"/>
+                </fig>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_18.9/Account_LC4_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-account_lc4_default.png"
+                        scale="50"/>
+                </fig>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_18.9/Account_LC5_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-account_lc5_default.png"
+                        scale="50"/>
+                </fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>Device before triggering account lifecycle </b></p>
+<p>The following figure shows the bundle attached to the device before triggering the account lifecycle (AccountEntityLC_SpecialBundlePurchase). </p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_18.9/Device_BLC_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-device_blc_default.png"
+                        scale="40"/>
+                </fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>Device after triggering account lifecycle</b></p>
+<p>The following figure shows the bundles attached to the device after triggering the account lifecycle (AccountEntityLC_SpecialBundlePurchase). You can see that when Bob purchases special bundle, promotional bundle get attached to the device along with the already attached bundle.</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_18.9/Device_ALC_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-device_alc_default.png"
+                        scale="40"/>
+                </fig>
+</sectiondiv>
+</section>
+</conbody></concept>

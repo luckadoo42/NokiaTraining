@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9YZ-08540-UG02-PCZZA-d1e27468_request_and_response">
+   <title>Request and response</title>
+   <conbody>
+
+      <p>The request and the response are in text format.</p>
+      <section>
+         <p>
+            <b>Request</b>
+         </p>
+         <p>The TCP client may send multiple messages separated by message-separator to IOHO. IOHO
+            splits the messages and sends each message to NCC NS. The default separator for multiple
+            messages in a request is <codeblock>@@@</codeblock>. To change this message separator
+            contact Nokia support.</p>
+         <fig>
+            <title>Sample request with a single message</title>
+            <codeblock>EVT=BALTOOLOW,Client-Type=SurePay,Entity-Id=Device100,Type=Device</codeblock>
+         </fig>
+         <fig>
+            <title>Sample request with multiple messages separated by <systemoutput>@@@</systemoutput>
+            </title>
+            <codeblock>EVT=BALTOOLOW,Client-Type=SurePay,Entity-Id=Device100,Type=Device@@@EVT=BALTOOLOW,Client-Type=SurePay,Entity-Id=Device104,Type=Device@@@EVT=BALTOOLOW,Client-Type=SurePay,Entity-Id=Device110,Type=Device</codeblock>
+         </fig>
+      </section>
+      <section>
+         <p>
+            <b>Request parameters</b>
+         </p>
+         <table rowsep="1" colsep="1" frame="all" pgwide="1">
+            <title>Request parameters - notification service TCP/IP interface</title>
+
+            <tgroup cols="4">
+               <colspec colname="col1"/>
+               <colspec colname="COLSPEC0"/>
+               <colspec colname="col2"/>
+               <colspec colname="col3"/>
+               <thead>
+                  <row>
+                     <entry>
+                        <p>Parameter</p>
+                     </entry>
+                     <entry>
+                        <p>Description</p>
+                     </entry>
+                     <entry>
+                        <p>Valid values</p>
+                     </entry>
+                     <entry>
+                        <p>Mandatory/Optional</p>
+                     </entry>
+                  </row>
+               </thead>
+               <tbody>
+                  <row>
+                     <entry>
+EVT
+</entry>
+                     <entry>
+                        <p>EVT is just an example. </p>
+                        <p>This tag is defined in the <b>Template tag</b> field in the <b>TCP Inbound</b> interface.</p>
+                        <p>This is used to determine the notification template to be used in NS.</p>
+                        <p>If this tag is not defined, the default template in the TCP inbound entity is used.</p>
+                     </entry>
+                     <entry>
+String
+</entry>
+                     <entry>
+Optional
+</entry>
+                  </row>
+                  <row>
+                     <entry>
+Client-Type
+</entry>
+                     <entry>
+Client type as defined in the inbound notification channel.
+</entry>
+                     <entry>
+String
+</entry>
+                     <entry>
+Optional
+</entry>
+                  </row>
+                  <row>
+                     <entry>
+Entity-Id
+</entry>
+                     <entry>
+The device identifier.
+</entry>
+                     <entry>
+String
+</entry>
+                     <entry>
+Optional
+</entry>
+                  </row>
+                  <row>
+                     <entry>
+Type
+</entry>
+                     <entry>
+                        <p>The device type.</p>
+                        <p>Only Type=Device is supported for TCP notifications.</p>
+                     </entry>
+                     <entry>
+String
+</entry>
+                     <entry>
+Optional
+</entry>
+                  </row>
+               </tbody>
+            </tgroup>
+
+         </table>
+         <ol>
+            <li>
+               <draft-comment>FIXME - DITA doesn't support table-notes</draft-comment>If both
+               Entity-Id and Type are available in the TCP message, then NS looks up for the
+               corresponding device in the NCC database. If the device is not available in NCC, then
+               it does not send the notification, and an error is logged. If the device is available
+               in NCC, the notification is sent via the channels defined in the notification
+               template. </li>
+            <li>
+               <draft-comment>FIXME - DITA doesn't support table-notes</draft-comment>If either of
+               Entity-Id or Type is not available in the TCP message, NS skips the NCC database
+               lookup, and sends the notification to the appropriate channel defined in notification
+               template.</li>
+            <li>
+               <draft-comment>FIXME - DITA doesn't support table-notes</draft-comment>Client-Type, Entity-Id, and Type are reserved keywords.</li>
+         </ol>
+      </section>
+      <section>
+         <p>
+            <b>Response</b>
+         </p>
+         <p/>
+         <ul>
+
+            <li>
+               <p>If the Client-Type does not match, then NS uses the default TCP inbound server to process the TCP request and sends the acknowledgment string defined in the configuration.</p>
+            </li>
+            <li>
+               <p>If there is an issue in processing the TCP message in NS, then NS sends the default acknowledge string (ACK) in the response.</p>
+            </li>
+            <li>
+               <p>If the Client-Type does not match and the default TCP inbound server configuration does not exist in NS, then NS sends the default acknowledgment string (ACK) in the TCP response without sending the notification.</p>
+            </li>
+            <li>
+               <p>If the template defined in the TCP message <b>Template tag</b> is not found or the default template is not available in NS, then NS logs the information, raise an alarm, and send the applicable acknowledgment string in TCP response without sending the notification.</p>
+            </li>
+         </ul>
+      </section>
+   </conbody>
+</concept>

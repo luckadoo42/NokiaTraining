@@ -1,0 +1,540 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-ttchandling"><title>Tariff Time Change (TTC) handling</title><conbody>
+<section><title>Overview</title>
+<p>This feature explains handling the <i>Tariff-Time-Change</i> (TTC), which is the switch time when a tariff is changed for a data session. After a tariff switch is reached, all active user sessions report their session usage by the end of validity period of the current request or receive new quota for resource usage for the new tariff period.</p>
+<p>In order to avoid the need for multiple simultaneous quota refresh trials, the traffic usage is split into resource usage before a tariff switch and resources used after a tariff switch, which means a bundle, bucket, or counter may be changed during this switch time.</p>
+<p>During a data call, if the TTC time calculated is nearing, then the quota allocation is handled
+                accordingly. The portion of the call before and after the TTC time may have
+                different tariff rates. When a CCR received includes two or three USU instances in
+                one MSCC, the NCC call controller handles the reported usage separately in the USU
+                instances due to the session that ranges crossing TTC times. NCC handles USU before
+                tariff changes and after tariff change in sequence.</p>
+</section>
+<section><title>TTC handling - before and after BCR time</title>
+<p>NCC considers the following points while handling the tariff change:</p><ul>
+<li><p>There is no limitation on the number of USUs. If multiple USUs are received with same
+                            <i>Tariff-Change-Usage</i> (TCU) value, then the service accumulates the
+                        value of same types of USU. The ME application parameter <uicontrol>Gy TCU
+                            Indeterminate</uicontrol> identifies whether the first USU value with
+                            <i>Tariff-Change-Usage</i> (<varname>2 -INDETERMINATE</varname>) is
+                        added before the tariff change usage, after the tariff change usage, or is
+                        completely ignored.</p>
+                    <!--MMO resource relative URI: ../Graphics/Release_18.9/TTC_ME_Parameter_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-ttc_me_parameter_default.png"
+                        scale="50"/>
+                </li>
+<li>
+<p>If the reported USU <i>Before Tariff Change</i> (BTC) is greater than zero but less than GSU, then the usage is committed before tariff change to pre-BCR version of subscription (from which reservation was done). In case of carry-over bucket, the initial or unused value in carry-over bucket instance gets updated when the usage is committed before tariff change. If the reported USU before tariff change is greater than GSU, then GSU is committed on pre-BCR version of subscription, and the over committed part (USU before tariff change – GSU) is added to the usage after tariff change. Notification is sent when configured in the rule engine.</p>
+</li>
+<li>
+<p>The subscriptions are sorted again at the start of CCR message since after the tariff switch time, and if BCR or subscription activation occurred, then some subscriptions may be switched from valid to invalid and vice-versa. After the subscriptions or charging services are sorted based on predefined priorities, the application condition is checked for each Charging Service (CS) with slice allocation time set to tariff switch time.</p>
+</li>
+<li>
+<p>If the reported USU After Tariff Change (ATC) is greater than zero, then the usage is committed based on the newly sorted subscriptions or CS list. The USU ATC is handled as overcommit since the charging services are re-selected.</p>
+</li>
+<li><p>A notification is sent after committing the ATC or BTC usage. To support multiple USU
+                        instances in the CCR message, the rule trigger <i>RATING_POST_PROCESSING</i>
+                        is changed as shown in the following figure and the notification variable
+                        USU is obtained from the <i>RATING_POST_PROCESSING</i> source context.</p>
+                    <!--MMO resource relative URI: ../Graphics/Release_18.9/TTC_rule3_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-ttc_rule3_default.png"
+                        scale="50"/>
+                </li>
+</ul>
+<sectiondiv>
+<p><b>Supported TTC times</b></p>
+<p>
+<b>Precondition:</b> For the following table, TTC time is enabled in the Gy pre-processing of rules.</p>
+<table pgwide="1" colsep="1" rowsep="1">
+                    <title>Different times used for TTC computation</title>
+                    <tgroup cols="2">
+                        <colspec colname="col1"/>
+                        <colspec colname="col2"/>
+                        <thead>
+                            <row>
+                                <entry>
+                                    <p>Supported TTC times</p>
+                                </entry>
+                                <entry>
+                                    <p>Comments</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry> End time of subscription </entry>
+                                <entry> This time refers only to those subscriptions, which are used
+                                    for reservation. </entry>
+                            </row>
+                            <row>
+                                <entry> Start time of subscription </entry>
+                                <entry> This time refers to all subscriptions. </entry>
+                            </row>
+                            <row>
+                                <entry> Future activation subscriptions </entry>
+                                <entry> This refers to the future activation time of all
+                                    subscriptions irrespective of their applicability conditions.
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> Entity lifecycle state validity time </entry>
+                                <entry> If current state in the entity lifecycle of the resource
+                                    (from where reservation is done) has a validity time less than
+                                    the BCR time of resource (from periodic lifecycle), then TTC is
+                                    not set and instead validity time of the state is set as
+                                        <uicontrol>Validity Time</uicontrol> in CCA. </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+<p>The final TTC time is the nearest time to the Diameter call found after sorting all the times mentioned in the above table.</p>
+</sectiondiv>
+</section>
+<section><title>Entity lifecycle - validity time of current state</title>
+<p>Every entity has an entity lifecycle associated to it with defined states and transitions. The state of the resource may have a validity time linked to it. If the state validity time is defined, then transition takes place at the same configured time. The TTC logic considers the minimum of BCR and the validity time of the current state to determine the TTC to be sent to the gateway.</p>
+<p>Assume there are two TTC users with the following behavior:</p><ul>
+<li>
+<p>If the BCR value of resource is greater than or equal to the value of entity lifecycle state validity time, then TTC is not configured and VT is set as the state validity time.</p>
+</li>
+<li>
+<p>If the BCR value of resource is less than the value of entity lifecycle state validity time, then BCR is configured as TTC.</p>
+</li>
+</ul>
+<note>
+<p>Only those subscriptions are considered for state validity time and BCR, from where the reservation is performed.</p>
+</note>
+<sectiondiv>
+<p><b>Example</b></p>
+<p>
+<i>Configuration or provisioning:</i>
+</p><ul>
+<li>
+<p>Consider two subscriptions <varname>Sub1</varname> and <varname>Sub2</varname>.</p>
+</li>
+<li>
+<p>
+<varname>Sub1</varname> has an entity lifecycle with current state <varname>Active</varname> at <userinput>2018/7/25 09:25:00</userinput> with validity time of 1 hour and <varname>Sub1</varname> has end time <userinput>2018/7/25 11:30:00</userinput>.</p>
+</li>
+<li>
+<p>
+<varname>Sub2</varname> has an end time or BCR at <userinput>2018/7/25 14:30:00</userinput>.</p>
+</li>
+<li>
+<p>Validity time of 86400 seconds in slicing profile.</p>
+<p>A user makes a data call at <userinput>2018/7/25 9:30:00</userinput>.</p>
+</li>
+<li>
+<p>
+<i>Few observations for TTC and VT:</i>
+</p>
+<p>During TTC calculation, the end time of <varname>Sub1</varname> is compared with its state entity lifecycle.</p>
+<p>
+<userinput>2018/7/25 10:25:00</userinput> (validity time of 1 hour) &lt; end time of <varname>Sub1</varname> (<userinput>2018/7/25 11:30:00</userinput>) &lt; end time of <varname>Sub2</varname> (<userinput>2018/7/25 14:30:00</userinput>) &lt; VT (slicing profile)</p>
+<p>Therefore, TTC is not configured and VT is set to 55 minutes (<userinput>2018/7/25 10:25:00</userinput> - current call).</p>
+</li>
+</ul>
+</sectiondiv>
+</section>
+<section id="ttcconfig"><title>Configuring TTC</title>
+<p>The service operators enable the TTC feature using the following methods:</p><ul>
+<li>
+                    <p>
+                        <uicontrol>Complex map</uicontrol>: Provision the relationship between
+                            <i>Origin-Host</i> and <i>Is-TTC-Enabled</i> flag in the mapping
+                        table.</p>
+                    <!--MMO resource relative URI: ../Graphics/Release_18.9/TTC_Complex_Map_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-ttc_complex_map_default.png"
+                        scale="50"/>
+                    <!--MMO resource relative URI: ../Graphics/Release_18.9/TTC_Complex_Map1_default.png--><p/>
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-ttc_complex_map1_default.png"
+                        scale="50"/>
+                </li>
+<li>
+                    <p>
+                        <uicontrol>Rules</uicontrol>: Configure the charging
+                            <i>GY_PRE_PROCESSING</i> trigger to fetch the <i>Is-TTC-Enabled</i>
+                        flag. </p>
+                    <!--MMO resource relative URI: ../Graphics/Release_18.9/TTC_Rule1_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-ttc_rule1_default.png"
+                        scale="50"/>
+                    <!--MMO resource relative URI: ../Graphics/Release_18.9/TTC_Rule2_default.png--><p/>
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-ttc_rule2_default.png"/>
+                </li>
+</ul>
+<note>
+<p>NCC can send <uicontrol>VT</uicontrol> = <varname>0</varname>. If the PGW does not support the
+                        <uicontrol>VT</uicontrol> = <varname>0</varname>, then service operators
+                    configure a rule to send <uicontrol>VT</uicontrol> = <varname>1</varname> from
+                    NCC as shown in the following figure:</p>
+</note>
+<fig>
+                <!--MMO resource relative URI: ../Graphics/Release_19.6/TTC_VT_default.png-->
+                <image href="../images/img9yz-09126-ug01-pczza-sp1-ttc_vt_default.png" scale="50"/>
+            </fig>
+</section>
+<section><title>TTC and TCU AVP support</title>
+<p>The <i>Tariff-Time-Change</i> AVP is supported in a CCA message and used within the <i>GSU</i> AVP to determine the tariff switch time. In this feature, global TTC time configured in the RSV, future activation time of subscriptions, or TTC configured in bundle rules or RSV is <uicontrol>Tariff-Time-Change</uicontrol>, which is an optional parameter.</p>
+<p>The <i>Tariff-Change-Usage</i> AVP is supported in CCR message and its value type is date. The <i>TCU</i> AVP is used within <i>USU</i> AVP to distinguish reported usage before and after the tariff time change.</p>
+<userinput>
+&lt;Used-Service-Unit&gt; ::= &lt;AVP Header: 446 &gt;
+[Tariff-Change-Usage]</userinput>
+<p>The value type of <i>Tariff-Change-Usage</i> AVP is enumerated.</p><ul>
+<li>
+<p>
+<varname>0 - UNIT_BEFORE_TARIFF_CHANGE</varname>
+</p>
+</li>
+<li>
+<p>
+<varname>1 - UNIT_AFTER_TARIFF_CHANGE</varname>
+</p>
+</li>
+<li>
+<p>
+<varname>2 - UNIT_INDETERMINATE</varname>
+</p>
+</li>
+</ul>
+<p>The ME application preference parameter <uicontrol>Gy TCU Indeterminate</uicontrol> indicates how to process the usage with the <i>Tariff-Charge-Usage</i> AVP. See <!--xref URI: t-Application_preferences.xml#system_pref--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-system_pref"/> for more details on this parameter.</p>
+</section>
+<section id="VTandTTC"><title>VT and TTC calculation</title>
+<p>When the TTC feature is enabled, the <i>GSU</i> AVP in the CCA message is configured under one of the following conditions:</p><ul>
+<li>
+<p>If BCR occurs within the VT of the granted quota and NCC application considers the <i>Timezone
+                            ID</i> of the account.</p>
+</li>
+<li>
+<p>If future activation time of subscription or <i>Subscription State Validity Time</i> (which is, the entity lifecycle current state time).</p>
+</li>
+</ul>
+<p>During quota allocation, the end time or <i>Subscription Current State Validity Time</i> of the subscriptions used in quota reservation, which are associated with subscription used for quota reservation is checked and the start time or the future activation time is retrieved from all subscriptions and corresponding groups. The start time, end time, and future activation time are sorted, which are later than the call start time and within the VT to get the nearest time and second nearest time. If the subscription does not attach to any period lifecycle, then the associated account period lifecycle start time or end time is used.</p>
+<p>After getting the TTC and VT values, if the values of both <i>TTCAF</i> and <i>VTAF</i> are greater than zero, then the TTC and VT values are adjusted as per the following criteria:</p><ul>
+<li>
+<p>If the (current time + VT) is between TTC time calculated and TTC time calculated + 2 seconds</p>
+<p>
+<systemoutput>TTC = TTC calculated date + 1 second</systemoutput>
+</p>
+<p>
+<systemoutput>VT = Time to TTC + 2 seconds</systemoutput>
+</p>
+</li>
+<li>
+<p>If there is a policy counter attached to a device whose status gets changed during TTC date processing, the TTC and VT is calculated as follows:</p>
+<p>
+<systemoutput>TTC = TTC calculated date + RAND [1 second, TTCAF]</systemoutput>
+</p>
+<p>
+<systemoutput>VT = time to TTC + 1 second</systemoutput>
+</p>
+</li>
+<li>
+<p>Otherwise, if the device does not currently have one or more policy counters whose status change during TTC calculated processing, then the TTC and VT are calculated as follows:</p>
+<p>
+<systemoutput>TTC = TTC calculated date + RAND [1 second, MIN(TTCAF, VT-time to TTC-1 second)]</systemoutput>
+</p>
+<p>
+<systemoutput>VT = TTC Time calculated date + RAND [2 seconds, MIN(VTs-time to TTC, VTAF)]</systemoutput>
+</p>
+</li>
+</ul>
+<sectiondiv>
+<p><b>Example: TTC and VT adjustment when device has a policy counter that changes during TTC time calculated</b></p>
+<p>
+<b>Scenario:</b>
+</p>
+<p>This example shows a case when there is a policy counter TTC Time calculated within VTs and policy counter status is changed during BCR. TTC and VT for the session are set as per the following formulae:</p>
+<userinput>TTC = TTC Time calculated + RAND[1 second, TTCAF]</userinput>
+<userinput>VT = time to TTC + 1 second</userinput>
+<p>
+<b>Provisioning:</b> Provision the following entities:</p><ol>
+<li>
+<p>Enable the TTC feature. See <!--xref URI: #ttcconfig--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-ttchandling/ttcconfig"/> for more information.</p>
+</li>
+<li>
+<p>Configure VTs (standard VT from slicing profile) = 18h = 64800 seconds in the slicing profile entity.</p>
+</li>
+<li><p>Set the VT adjustment factor = 3000 seconds.</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_19.6/TTC1_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-ttc1_default.png"
+                            scale="50"/>
+                    </li>
+<li><p>Set the TTC adjustment factor = 300 seconds.</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_19.6/TTC2_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-ttc2_default.png"
+                            scale="50"/>
+                    </li>
+<li>
+<p>Create a charging service.</p>
+</li>
+<li>
+<p>Create a subscription renewal lifecycle.</p>
+<table colsep="1" rowsep="1">
+                            <tgroup cols="2">
+                                <colspec colname="col1" colwidth="1*"/>
+                                <colspec colname="col2" colwidth="1*"/>
+                                <thead>
+                                    <row>
+                                        <entry>
+                                            <p>Parameter</p>
+                                        </entry>
+                                        <entry>
+                                            <p>Value</p>
+                                        </entry>
+                                    </row>
+                                </thead>
+                                <tbody>
+                                    <row>
+                                        <entry> Name </entry>
+                                        <entry> SubscriptionRenewCycle1 </entry>
+                                    </row>
+                                    <row>
+                                        <entry> Type </entry>
+                                        <entry> Bill Cycle </entry>
+                                    </row>
+                                    <row>
+                                        <entry> Applicable to </entry>
+                                        <entry> Subscription </entry>
+                                    </row>
+                                    <row>
+                                        <entry> Timer value </entry>
+                                        <entry> 90 </entry>
+                                    </row>
+                                    <row>
+                                        <entry> Time units </entry>
+                                        <entry> HOURS </entry>
+                                    </row>
+                                </tbody>
+                            </tgroup>
+                        </table>
+</li>
+<li>
+<p>Create a bundle and link the charging service created in the previous step.</p>
+<table colsep="1" rowsep="1">
+                            <tgroup cols="2">
+                                <colspec colname="col1"/>
+                                <colspec colname="col2"/>
+                                <thead>
+                                    <row>
+                                        <entry>
+                                            <p>Parameter</p>
+                                        </entry>
+                                        <entry>
+                                            <p>Value</p>
+                                        </entry>
+                                    </row>
+                                </thead>
+                                <tbody>
+                                    <row>
+                                        <entry> Name </entry>
+                                        <entry> Bun1_V_6789 </entry>
+                                    </row>
+                                    <row>
+                                        <entry> Charging Service List </entry>
+                                        <entry> CS_V_6789 </entry>
+                                    </row>
+                                    <row>
+                                        <entry> Bundle Activation Type </entry>
+                                        <entry> NORMAL </entry>
+                                    </row>
+                                    <row>
+                                        <entry> Period </entry>
+                                        <entry> SubscriptionRenewCycle1 </entry>
+                                    </row>
+                                    <row>
+                                        <entry> Max Renewals </entry>
+                                        <entry> 10000 </entry>
+                                    </row>
+                                    <row>
+                                        <entry> Period </entry>
+                                        <entry> SubscriptionRenewCycle1 </entry>
+                                    </row>
+                                    <row>
+                                        <entry> Entity </entry>
+                                        <entry> DefaultSubscriptionLifeCycle </entry>
+                                    </row>
+                                </tbody>
+                            </tgroup>
+                        </table>
+</li>
+<li><p>Create an account and attach the <varname>Bun1_V</varname> bundle. The current data volume is
+                            15 GB. </p>
+                        <!--MMO resource relative URI: ../Graphics/Release_19.6/TTC_account_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-ttc_account_default.png"/>
+                        <p>For account, the period lifecycle is 70 minutes.</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_19.6/TTC_time_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-ttc_time_default.png"/>
+                    </li>
+<li>
+<p>Create a device and attach the <varname>Bun1_V</varname> bundle with period lifecycle of 90 hours. The current data volume is 15 GB.</p>
+</li>
+<li><p>Configure the threshold profile on policy counter. 0 is High, 5 is Low, 10 is Down.</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_19.6/TTC_ex_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-ttc_ex_default.png"/>
+                    </li>
+</ol>
+<p>
+<b>Post-conditions:</b>
+</p><ul>
+<li>
+<p>A Gy call is triggered and CCR(I) status of Device Policy Counter (DPC) is <varname>HIGH</varname>, CCR(T) USU = 5 GB, and status of DPC is changed to <varname>LOW</varname>.</p>
+</li>
+<li>
+<p>For CCA(I), BCR time (90 hour) for bundle is out of VTs (18 hour) duration. Even though, policy counter BCR time (70 minutes) is within VT, but since policy counter status is not changed during BCR, it is not considered as time change point. The <i>TTC</i> AVP is not set. VTs (18 hour) is used to set <i>VT</i> AVP in the CCA message.</p>
+</li>
+<li>
+<p>A second Gy call is triggered and CCR(I) status of DPC is LOW. CCR(T) USU = 5 GB and the session ends.</p>
+<p>For CCA(I), BCR time (90 hour) for bundle is still out of VTs (18 hour) duration. The policy counter BCR time (70 minutes) is within VT. The current policy status is <varname>LOW</varname> and BCR logic throttles the status to <varname>HIGH</varname>. The policy counter BCR time is considered as time change point.</p>
+<p>BCR date = 1557736980000 ms</p>
+<p>RAND[1 second, TTCAF] = RAND[1 second, 300 seconds] = 269575 ms</p>
+<p>New TTC = 1557736980000 ms + 269575 ms = 1557737249575 ms</p>
+<p>New VT = TTC – current time +1 second </p>
+<p> =1557737249575 ms -1557733096648 ms + 1000 ms</p>
+<p> = 4153927 ms = 4154 s</p>
+</li>
+</ul>
+</sectiondiv>
+<sectiondiv>
+<p><b>MIN VT and MIN TTC configuration</b></p>
+<p>
+<i>MIN VT</i> and <i>MIN TTC</i> is defined in the slicing profile ruleset with unit type second. If TTC and VT calculated with tariff time change point is less than the minimum value, the TTC and VT are adjusted based on the minimum value.</p>
+<p>The <i>MIN VT</i> and <i>MIN TTC</i> in SLICING_PROFILE are optional attributes, and if not configured, then they are treated as zero. If the <i>MIN TTC</i> greater than <i>MIN VT</i>, then the <i>MIN VT</i> value is ignored and treated as zero.</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_18.9/TTC_MINVT_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-ttc_minvt_default.png"
+                        scale="50"/>
+                </fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>GSU additional check</b></p>
+<p>When the TTC feature is enabled, after the quota reservation, NCC performs additional check for
+                    all the subscriptions used for quota allocation. If the <varname>Max
+                        Renewal</varname> time has reached or if the account is
+                        <varname>PRE_PAID</varname> and has insufficient balance for subscription
+                    renewal, then the service ignores the TTC and sets the VT to the subscription
+                    end time. In this case, <varname>MIN-VT</varname> is not used.</p>
+</sectiondiv>
+</section>
+<section><title>Assumptions</title>
+<p>Following assumptions apply to the TTC feature:</p><ul>
+<li>
+<p>Only the subscription period lifecycle fee is checked. The account lifecycle is considered when the subscription does not have its own lifecycle or account balance is used for charging calls.</p>
+</li>
+<li><p>Irrespective of whether a subscription renewal is checked individually, there may be some
+                        instances for which the renewable check is passed. However, the subscription
+                        is not successfully renewed as shown in the following example:</p>
+                    <!--MMO resource relative URI: ../Graphics/Release_18.9/TTC_assumption_example_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-ttc_assumption_example_default.png"
+                    />
+                </li>
+<li>
+<p>There may be cases wherein the TTC logic finds that the subscriptions can be renewed, but they
+                        may actually be not renewed when the lifecycle logic checks get executed.
+                        For example, consider that there are three subscriptions with same end time
+                        associated with same account. When the TTC logic checks the subscriptions
+                        one-by-one, it finds that the subscription is renewable, that is, account
+                        balance (10) &gt; subscription renewal fee (5). But, all the three
+                        subscriptions have same end time as per calculation, the account balance
+                        (10) &lt; subscription renewal fees (5*3). In such cases, NCC logic does not
+                        take any action.</p>
+<p>
+<b>Note:</b> While considering activation time of subscription, the applicability condition or priority is not checked.</p>
+</li>
+</ul>
+</section>
+<section><title>Examples</title>
+<p>Consider the following examples for better understanding of this feature:</p>
+<sectiondiv>
+<p><b>Example 1</b></p>
+<p>
+<b>Preconditions:</b> Bob makes a data call. There are two subscriptions <varname>SubA</varname> and <varname>SubB</varname> at device level, and <varname>SubC</varname> at group level.</p><ul>
+<li>
+<p>There is a volume bucket <varname>BK1</varname> of 500M in <varname>SubA</varname>, where the <varname>SubA</varname> end time is <userinput>2018/7/31 10:30:00</userinput>.</p>
+</li>
+<li>
+<p>There is a volume bucket <varname>BK2</varname> of 1000M in <varname>SubB</varname>, where the <varname>SubB</varname> end time is <userinput>2018/8/1 00:00:00</userinput>.</p>
+</li>
+<li>
+<p>There is a volume bucket <varname>BK3</varname> in <varname>SubC</varname>, where the <varname>SubC</varname> start time is <userinput>2018/7/31 10:00:00</userinput> and <varname>SubC</varname> is in a barred state.</p>
+</li>
+</ul>
+<p>The priority is set as <varname>BK3</varname> &gt; <varname>BK1</varname> &gt; <varname>BK2</varname>
+</p>
+<p>
+<b>Post-conditions:</b>
+</p><ul>
+<li>
+<p>When a CCRi is received on <userinput>2018/7/31 9:55:00</userinput>, the TTC feature is enabled and VT is 10800 seconds. Quota size is 100 M, <varname>BK1</varname> is reserved for 100M, TTC is set to <userinput>2018/7/31 10:00:00</userinput>, ad VT is set to 2100 seconds.</p>
+</li>
+<li>
+<p>When a CCRu is received on <userinput>2018/7/31 10:20:00</userinput>, report reason is quota exhausted. In USU <i>UNIT_BEFORE_TARIFF_CHANGE</i> is 60M, <i>UNIT_AFTER_TARIFF_CHANGE</i> is set as 40M. <varname>BK1</varname> is deducted with 60M and returns 40M, after calculation <varname>BK1</varname> is 440M.</p>
+<p>When <varname>SubC</varname> BCR occurs, 40M is deducted from <varname>BK3</varname>. After calculation, <varname>BK3</varname> is 110M. 100M is reserved from <varname>BK3</varname> for new quota allocation, TTC is set to <userinput>10:30:00</userinput>, and VT is set to 10800 seconds.</p>
+</li>
+<li>
+<p>When a CCRt is received on <userinput>2018/07/31 10:50:00</userinput>, report reason is quota exhausted. In USU <i>UNIT_BEFORE_TARIFF_CHANGE</i> is 100M, <i>UNIT_AFTER_TARIFF_CHANGE</i> is set as 40M. <varname>BK3</varname> is deducted with 100M after calculation usage and before tariff change, <varname>BK3</varname> is 10M.</p>
+<p>When <varname>BK1</varname> BCR occurs, pre-BCR value is 440M, current BCR version value is 1000M (initial value). For <i>UNIT_AFTER_TARIFF_CHANGE</i>, <varname>BK3</varname> is deducted with 10M, remaining value is 0M. <varname>BK1</varname> current value is updated to 970M, and unused value is updated to 970M.</p>
+</li>
+</ul>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 2</b></p>
+<p>
+<b>Preconditions:</b> Bob makes a data call at <userinput>2018/7/25 9:30:00</userinput>. There is one subscription <varname>Sub1</varname> at device level, and two subscriptions <varname>Sub3</varname> and <varname>Sub4</varname> at group level. The validity time is 7200 seconds from the slicing profile.</p><ul>
+<li>
+<p>
+<varname>Sub1</varname> is a monthly renewed subscription with start time set as <userinput>2018/6/25 10:00:00</userinput> and end time set as <userinput>2018/7/25 10:00:00</userinput>.</p>
+</li>
+<li>
+<p>
+<varname>Sub3</varname> is a one-time (non-renewable) subscription with start time set as <userinput>2018/7/18 09:55:00</userinput> and end time set as <userinput>2018/ 7/25 09:55:00</userinput>.</p>
+</li>
+<li>
+<p>
+<varname>Sub4</varname> is in the barred state and its future activation time is <userinput>2018/7/25 11:00:00</userinput>.</p>
+</li>
+</ul>
+<p>
+<b>Post-conditions:</b>
+</p><ul>
+<li>
+<p>If <varname>Sub1</varname> and <varname>Sub3</varname> are used for the quota reservation, then the end time of <varname>Sub1</varname> and <varname>Sub3</varname>, and activation time of <varname>Sub4</varname> are used for TTC calculation.</p>
+</li>
+<li>
+<p>After sorting, <userinput>2018/7/25 09:55:00</userinput> (end time of <varname>Sub3</varname>) &lt; <userinput>2018/7/25 10:00:00</userinput> (end time of <varname>Sub1</varname>) &lt; <userinput>2018/7/25 11:00:00</userinput> (activation time of <varname>Sub4</varname>):</p>
+<p>
+<userinput>2018/7/25 09:55:00</userinput> set as VT because its non-renewable (1500 seconds).</p>
+</li>
+</ul>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 3</b></p>
+<p>
+<b>Preconditions:</b> Bob makes a data call at <userinput>2018/7/25 9:30:00</userinput>. There is one subscription <varname>Sub1</varname> at device level, and two subscriptions <varname>Sub3</varname> and <varname>Sub4</varname> at group level. The validity time is 7200 seconds from the slicing profile.</p><ul>
+<li>
+<p>
+<varname>Sub1</varname> is a monthly renewed subscription with start time set as <userinput>2018/6/25 10:00:00</userinput> and end time set as <userinput>2018/7/25 10:00:00</userinput>.</p>
+</li>
+<li>
+<p>
+<varname>Sub3</varname> is a one-time (non-renewable) subscription with start time set as <userinput>2018/7/18 09:55:00</userinput> and end time set as <userinput>2018/ 7/25 09:55:00</userinput>.</p>
+</li>
+<li>
+<p>
+<varname>Sub4</varname> is in the barred state and its future activation time is set as <userinput>2018/7/25 9:40:00</userinput>.</p>
+</li>
+</ul>
+<p>
+<b>Post-conditions:</b>
+</p><ul>
+<li>
+<p>If <varname>Sub1</varname> and <varname>Sub3</varname> are used for the quota reservation, then the end time of <varname>Sub1</varname> and <varname>Sub3</varname>, and activation time of <varname>Sub4</varname> are used for TTC calculation.</p>
+</li>
+<li>
+<p>After sorting, <userinput>2018/7/25 9:40:00</userinput> (activation time of <varname>Sub4</varname>) &lt; <userinput>2018/7/25 09:55:00</userinput> (end time of <varname>Sub3</varname>) &lt; <userinput>2018/7/25 10:00:00</userinput> (end time of <varname>Sub1</varname>):</p>
+<p>TTC is set to <userinput>2018/7/25 09:40:00</userinput> and VT is set to 1500 seconds.</p>
+</li>
+</ul>
+</sectiondiv>
+</section>
+</conbody></concept>

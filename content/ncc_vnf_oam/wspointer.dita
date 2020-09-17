@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-wspointer"><title>db-reset-wspointer tool</title><conbody>
+<section><title>Description</title>
+<p>This tool is used to reset the window shipping pointer within the XDR queue, so that only the new accumulation will be replicated through the XDR mechanism and any data in the XDR queue prior to resetting the pointer is not shipped through the XDR mechanism. Usage of this tool must be carefully governed because after the window shipping pointer has been reset, that old data will be lost, not replicated through the XDR mechanism, and there is no way that it can be traced back. The tool is supported in a geo-redundant deployment only, where data replicates among various sites for various namespaces. The resetting of the window shipping pointer is achieved by first disassociating namespaces which are currently associated and then associating them again on each database node of the deployment.</p>
+<p>The tool is used in disaster recovery situations where data from a healthy NCC site will be
+                restored to a recovering NCC using the db-backup/restore tools and there is a need
+                to reset the window shipping pointer on the healthy NCC site. This is done so that
+                the data which has already been restored using the db-backup/restore tools are not
+                replicated again through the XDR mechanism of the database.</p>
+<note>The tool resides in /opt/tpa/bin on the OAME nodes and can be executed by either the root or
+                tpaadmin user.<p/></note>
+</section>
+<section><title>Syntax</title>
+<p>The db-reset-wspointer tool can be run in either interactive mode or in command line mode. This tool has been designed to be used in a disaster recovery situation for which either “-r” or “-i” option of interactive mode will be most often used. Other options are provided for greater flexibility and to deal with some error conditions. For example, if some namespaces cannot be associated because of some problem then the first underlying problem should be rectified and then the namespaces can be associated using the appropriate option.</p>
+<p>The tool first asks for the ID of recovering NCC site as input and performs various operations in
+                between the site from where this tool is executed and the site which is provided as
+                input. Usage is described as follows:</p>
+<codeblock>db-reset-wspointer -r &lt;recovering spssite ID&gt;</codeblock>
+<note>
+<p>You must provide the correct site ID for the operation; otherwise, the operation will be performed on the wrong site. If you have made an error with associating and disassociating the namespaces, you must refer to the Aerospike logs for more detail as the tool will continue to make five attempts at the associating and disassociating of the namespace, even if the error remains.</p>
+</note>
+<table colsep="1" rowsep="1">
+                <tgroup cols="2">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>
+                                    <b>Code</b>
+                                </p>
+                            </entry>
+                            <entry>
+                                <p>
+                                    <b>Description</b>
+                                </p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>
+                                <codeblock>No arguments</codeblock>
+                            </entry>
+                            <entry> Displays help information. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeblock>-h or -?</codeblock>
+                            </entry>
+                            <entry> Displays help information. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeblock>-u </codeblock>
+                            </entry>
+                            <entry> Displays help information </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeblock>-i &lt;set&gt;</codeblock>
+                            </entry>
+                            <entry> Runs in interactive mode and from there on one can select
+                                various options </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeblock>-l</codeblock>
+                            </entry>
+                            <entry> List all remote sites for current site </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeblock>-a</codeblock>
+                            </entry>
+                            <entry> Associate namespaces of remote site (recovering NCC site), if
+                                this option is selected than which namespaces to be associated shall
+                                be provided in a comma separated string. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeblock>-d &lt;machine&gt;</codeblock>
+                            </entry>
+                            <entry> Disassociates all namespaces of remote site (recovering NCC
+                                site) which are currently associated with current site. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeblock>-r</codeblock>
+                            </entry>
+                            <entry> First disassociate and then associate all namespaces of remote
+                                site (recovering sps site) which are currently associated with
+                                current site </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeblock>-n</codeblock>
+                            </entry>
+                            <entry> List all namespaces for remote site which are currently
+                                associated with this site </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+</section>
+<section><title>Example Usage for interactive mode (-i)</title>
+<p>In interactive mode (db-reset-wspointer -i) there are various options available as follows; you are expected to answer the prompts:</p>
+<fig>
+<codeblock>db-reset-wspointer -i
+Following remote sites are present :
+spssite3;spssite4;spssite6
+Enter Remote-Sitename for which namespaces shall be dis(associated):
+spssite3
+Select option to be performed: spssite3
+1. Get Details of Namespaces Associated
+2. Disassociate namespaces of this site and remote-site
+3. Associate namespaces of this site and remote-site
+4. Disassociate then Associate namespaces of this site and remote-site
+5. List all remote sites
+6. Exit</codeblock>
+</fig>
+<p>In this example, the tool is executed on spssite5 and it shows all other sites associated with it and asks for the remote sitename, which is the recovering spssite3. On choosing spssite3 any selected operation will be carried out in between spssite3 and spssite5. In the case of a disaster recovery, if all sites replicate some or all namespaces and spssite3 is the recovering site, then this tool is executed on spssite4, spssite5 and spssite6, for spssite3. </p>
+<p>Output similar to the following is expected. </p>
+<p>On selecting option 1 from the interactive mode or on running <b>db-reset-wspointer -n spssite3</b> from the command line, it will show all namespaces associated on each db node of spssite3 with spssite5</p>
+<fig>
+<codeblock>working on DB_Node: 192.168.7.99
+
+dc-name=spssite3:nodes=10.75.97.24+3000,10.75.97.25+3000,10.75.97.26+3000,10.75.97.27+3000:int-ext-ipmap=:dc-connections=64:dc-connections-idle-ms=55000:dc-use-alternate-services=true:tls-name=:namespaces=dscglobal
+
+working on DB_Node: 192.168.7.101
+dc-name=spssite3:nodes=10.75.97.24+3000,10.75.97.25+3000,10.75.97.26+3000,10.75.97.27+3000:int-ext-ipmap=:dc-connections=64:dc-connections-idle-ms=55000:dc-use-alternate-services=true:tls-name=:namespaces=dscglobal
+
+working on DB_Node: 192.168.7.98
+dc-name=spssite3:nodes=10.75.97.24+3000,10.75.97.25+3000,10.75.97.26+3000,10.75.97.27+3000:int-ext-ipmap=:dc-connections=64:dc-connections-idle-ms=55000:dc-use-alternate-services=true:tls-name=:namespaces=dscglobal
+
+working on DB_Node: 192.168.7.100
+dc-name=spssite3:nodes=10.75.97.24+3000,10.75.97.25+3000,10.75.97.26+3000,10.75.97.27+3000:int-ext-ipmap=:dc-connections=64:dc-connections-idle-ms=55000:dc-use-alternate-services=true:tls-name=:namespaces=dscglobal
+</codeblock>
+</fig>
+<p>On selecting option 2 from the interactive mode or on running <b>db-reset-wspointer -d spssite3</b> from the command line, it will first ask for a confirmation from the user to proceed with the operation for which you would confirm with y (yes) and then proceeds, but in the case of any other option it exits.</p>
+<p>Output similar to the following is expected. </p>
+<fig>
+<codeblock>Do you wish to proceed? n [y,n,?,q] y
+working on DB_Node: 192.168.7.99
+Disassociating Namespace: dscglobal
+ok
+
+working on DB_Node: 192.168.7.101
+Disassociating Namespace: dscglobal
+ok
+
+working on DB_Node: 192.168.7.98
+Disassociating Namespace: dscglobal
+ok
+
+working on DB_Node: 192.168.7.100
+Disassociating Namespace: dscglobal
+ok</codeblock>
+</fig>
+<p>On selecting option 3 from the interactive mode or on running <b>db-reset-wspointer -a spssite3</b> from the command line, it will first ask for a confirmation from the user to proceed with the operation for which you would confirm with y (yes) and then proceeds to ask for the namespaces to be associated (in comma separated string), but in the case of any other option it exits.</p>
+<p>Output similar to the following is expected. </p>
+<fig>
+<codeblock>Do you wish to proceed? n [y,n,?,q] y
+Enter Namespaces in comma seperated format:
+dscglobal
+
+working on DB_Node: 192.168.7.99
+Associating Namespace: dscglobal
+ok
+
+working on DB_Node: 192.168.7.101
+Associating Namespace: dscglobal
+ok
+
+working on DB_Node: 192.168.7.98
+Associating Namespace: dscglobal
+ok
+
+working on DB_Node: 192.168.7.100
+Associating Namespace: dscglobal
+ok</codeblock>
+</fig>
+<p>On selecting option 4 from the interactive mode or on running <b>db-reset-wspointer -r spssite3</b> from the command line, it will first ask for a confirmation from the user to proceed with the operation for which you would confirm with y (yes) and then proceeds, but in the case of any other option it exits.</p>
+<note>
+<p>In the case of a re-association (i.e. first disassociation and then association), it will first check the value of the dc_timelag in between two sites and associate only when the value of dc_timelag is below 100, until then it will continue to loop and wait for the value to be reduced.</p>
+</note>
+<p>Output similar to the following is expected. </p>
+<fig>
+<codeblock>Do you wish to proceed? n [y,n,?,q] y
+working on DB_Node: 192.168.7.99
+Disassociating Namespace: dscglobal
+ok
+
+working on DB_Node: 192.168.7.101
+Disassociating Namespace: dscglobal
+ok
+
+working on DB_Node: 192.168.7.98
+Disassociating Namespace: dscglobal
+ok
+
+working on DB_Node: 192.168.7.100
+Disassociating Namespace: dscglobal
+ok
+
+Timelag value for Remote-Sitename: spssite3 is: 0
+working on DB_Node: 192.168.7.99
+Associating Namespace: dscglobal
+ok
+
+Timelag value for Remote-Sitename: spssite3 is: 0
+working on DB_Node: 192.168.7.101
+Associating Namespace: dscglobal
+ok
+
+Timelag value for Remote-Sitename: spssite3 is: 0
+working on DB_Node: 192.168.7.98
+Associating Namespace: dscglobal
+ok
+
+Timelag value for Remote-Sitename: spssite3 is: 0
+working on DB_Node: 192.168.7.100
+Associating Namespace: dscglobal
+</codeblock>
+</fig>
+<p>On selecting option 5 from the interactive mode or on running <b>db-reset-wspointer -l</b> from the command line, it will list all the remote sites associated with current site.</p>
+<p>Output similar to the following is expected. </p>
+<fig>
+<codeblock>spssite3;spssite4;spssite6</codeblock>
+</fig>
+</section>
+</conbody></concept>

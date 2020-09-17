@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ckey_backup_and_restore">
+    <title>CKEY backup and restore</title>
+    <body>
+        <p>These instructions assume that you installed CKEY after doing the planning, set up the
+                <codeph>site.conf</codeph> file, and are working in the site directory with those
+            variables initialized. For more information regarding setting up the
+                <codeph>site.conf</codeph> file, see the Backup and Restore Installation section in
+            the NCC CNF Installation Guide.<xref keyref="cnf_sps_monitoring"
+            /><!--DRAY: FIXME; add a link here.--></p>
+        <p><b>To backup and restore CKEY</b><ol id="ol_gtx_njq_smb">
+                <li>In centralmanagement, move to the site directory and initialize the variables in the
+                        <codeph>site.conf</codeph>
+                    file.<codeblock>cd &lt;SITE_DIRECTORY>
+. site.conf</codeblock></li>
+                <li>If using Openshift, the app namspace must be the same as the CBUR-master
+                    namespace, or backup and restore will fail. Here, <codeph>ncms</codeph> is the
+                    CBUR-master
+                        namespace.<codeblock>CBUR_MASTER_NAMESPACE=ncms
+RELEASENAME=ckey</codeblock><note>The
+                        variable <codeph>NAMESPACE</codeph>, which denotes the app namespace, is
+                        defined in the <codeph>site.conf</codeph> file.</note></li>
+                <li>To backup CKEY, use the following curl
+                    command.<codeblock>curl -v --header 'Accept: application/json' -X POST http://cbur-master-cbur.$CBUR_MASTER_NAMESPACE.svc.cluster.local:80/v2/helm/release/backup/$NAMESPACE/$RELEASENAME?helm_version=3 2>&amp;1 | tee backup_ckey.log</codeblock></li>
+                <li>To restore CKEY, use the following curl
+                    command.<codeblock>curl -vkL --header 'Content-Type: multipart/form-data' --header 'Accept: application/json' -X POST --header 'Content-Type: application/x-www-form-urlencoded' -d 'backup_id=&amp;volume=&amp;object_type=&amp;object_name=' http://cbur-master-cbur.$CBUR_MASTER_NAMESPACE.svc.cluster.local:80/v2/helm/release/restore/$NAMESPACE/$RELEASENAME?helm_version=3 2>&amp;1 | tee restore_ckey.log
+</codeblock></li>
+            </ol></p>
+    </body>
+</topic>

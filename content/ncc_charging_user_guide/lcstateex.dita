@@ -1,0 +1,477 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-lcstateex"><title>Lifecycle state examination</title><conbody>
+<section><title>Overview</title>
+<p>The lifecycle check is done at the start of a data session to identify the state of the device, group, subscription, and account used for charging the session. </p>
+</section>
+<section><title>Barring handled by call control</title>
+<p>There are three types of barring handled by call control:</p><ul>
+<li>
+<p>Device barring</p>
+</li>
+<li>
+<p>Subscription barring</p>
+</li>
+<li>
+<p>Group barring</p>
+</li>
+</ul>
+<p>
+<uicontrol>Device barring</uicontrol>
+</p>
+<p>Device barring occurs when a device is in a state with the barring flag set to true. In processing a credit control request (CCR) message, device barring is handled in various scenarios.</p>
+<p>If a device is barred in a CCR-I call, call control does not allow the request to be handled and does not forward it to the rating engine. However, in the case of a barred device with an active session, call control forwards the request to the rating engine for further processing. If a device is barred mid-session, the rating engine allows the commit of Used Service Units (USU) but does not allow any new reservation requests (RSU) received as part of the CCR-U call. Instead, the result code <systemoutput>NEW_RES_NOT_ALLOWED_DEVICE_BARRED</systemoutput> is sent or in the case of an over commit, the result code <systemoutput>CALL_OK_LOST_CREDIT_DEVICE_BARRED</systemoutput> is sent, and the session is cleared by the rating engine. In the same manner, a CCR-T with an over commit has the session cleared by the rating engine after the result code <systemoutput>CALL_OK_LOST_CREDIT_DEVICE_BARRED</systemoutput> is sent.</p>
+<p>For a CCR-I / CCR-E, the barring flag check occurs when the device is identified. If the device is in the state with the barring flag set to true, call control rejects the request and returns <systemoutput>5003 - DIAMETER_AUTHORIZATION_REJECTED</systemoutput> with the error message ‘The device is in barring state.’</p>
+<p>For a CCR-U / CCR-T, the barring flag check occurs in the middle of a Multiple-Services-Credit-Control (MSCC) validation. When a CCR-U is processed and no MSCC or no USU is present and the device is barred, call control rejects the request and returns <systemoutput>5003 - DIAMETER_AUTHORIZATION_REJECTED</systemoutput> with the error message ‘The device is in barring state’. If there is a USU in the MSCC and the device is barred, the request is passed to Rating to commit the outstanding reservation. For a CCR-T, the processing is normal. The rating engine commits any USU and call control returns the result code <systemoutput>CALL_OK</systemoutput>.</p>
+<p>
+<uicontrol>Subscription barring</uicontrol>
+</p>
+<p>Subscription barring occurs when a subscription is in a state with the barring flag set to true. If a subscription linked to a device or a group is in a state with the barring flag set to true, it is not included in further execution. If all subscriptions linked to a device or a group are in the state with the barring flag set to true, the result code <systemoutput>ALL_SUBSCRIPTIONS_BARRED</systemoutput> is sent to call control in a rating engine answer. </p>
+<note>
+<p>The entity and period lifecycles for account and subscription are checked for barred state.</p>
+</note>
+<p>For a CCR-U, if all the subscriptions linked to a device are in the state with the barring flag set to true, the units to be reserved are rejected. However, for a normal commit (commit that is already reserved or a partial commit), the rating engine returns the result code <systemoutput>NEW_RES_ALLOWED_ALL_SUBSCRIPTIONS_BARRED</systemoutput> and the session is cleared at the rating engine. For an over commit quantity in the update request, the quantity is lost and the result code <systemoutput>NOT_ENOUGH_LOST_CREDIT_SUB_BARRED</systemoutput> is sent. The session is cleared at the rating engine.</p>
+<p>For a CCR-T, if all the subscriptions linked to a device are in a state with the barring flag set to true, the rating engine commits USU for outstanding reserved units and returns the result code <systemoutput>CALL_OK</systemoutput>. The session is then cleared at the rating engine. However, if all the subscriptions linked to a device are in a state with the barring flag set to true and there is an over commit quantity in the terminate request, the quantity is lost and the result code <systemoutput>CALL_OK_LOST_CREDIT_SUB_BARRED</systemoutput>  is sent. The session is cleared at the rating engine.</p>
+<p>The following table lists the Diameter error messages sent when device barring or subscription barring occurs. </p>
+<table pgwide="1" colsep="1" rowsep="1">
+                <title>Diameter error messages sent when barring occurs</title>
+                <tgroup cols="2">
+                    <colspec colname="col2"/>
+                    <colspec colname="col3"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Error message</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> NEW_RES_NOT_ALLOWED_DEVICE_BARRED </entry>
+                            <entry> Commit is complete for previous RSU but new reservation is not
+                                allowed as the device is barred. </entry>
+                        </row>
+                        <row>
+                            <entry> CALL_OK_LOST_CREDIT_DEVICE_BARRED </entry>
+                            <entry> Call is OK but over commit credit is lost because of a barred
+                                device. </entry>
+                        </row>
+                        <row>
+                            <entry> NEW_RES_NOT_ALLOWED_ALL_SUB_BARRED </entry>
+                            <entry> Commit is complete for previous RSU but new reservation is not
+                                allowed as all attached subscriptions are barred. </entry>
+                        </row>
+                        <row>
+                            <entry> CALL_OK_LOST_CREDIT_SUB_BARRED </entry>
+                            <entry> Call is OK but over commit credit is lost because the
+                                subscription is barred. </entry>
+                        </row>
+                        <row>
+                            <entry> CALL_OK_PARTIAL_RESERVE_SUB_BARRED </entry>
+                            <entry> Call is OK but reservation is reduced because the subscription
+                                is barred. </entry>
+                        </row>
+                        <row>
+                            <entry> NOT_ENOUGH_CREDIT_SUB_BARRED </entry>
+                            <entry> Call is rejected for not enough credit because the subscription
+                                is barred. </entry>
+                        </row>
+                        <row>
+                            <entry> NOT_ENOUGH_LOST_CREDIT_SUB_BARRED </entry>
+                            <entry> Call is rejected for not enough credit and over commit credit
+                                lost because the subscription is barred. </entry>
+                        </row>
+                        <row>
+                            <entry> All_SUBSCRIPTIONS_BARRED </entry>
+                            <entry> All subscriptions linked to the device are barred in case of
+                                InitialRequest or EventRequest with Direct Debit Action. </entry>
+                        </row>
+                        <row>
+                            <entry> NO_SUBSCRIPTION_ATTACHED_WITH_DEVICE </entry>
+                            <entry> No subscription is linked to the device in case of
+                                InitialRequest or EventRequest with Direct Debit Action. </entry>
+                        </row>
+                        <row>
+                            <entry> DB_SUBSCRIPTION_LIST_NOT_FOUND </entry>
+                            <entry> No subscriptions are found in database. </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<p>
+<uicontrol>Group barring</uicontrol>
+</p>
+<p>Group barring occurs when a group is in a state with the barring flag set to true. In such scenario, the barred Group is not included in further execution. </p>
+<note>
+<p>The entity lifecycle for group is checked for barred state.</p>
+</note>
+<p>For a CCR-I or Event Request with Direct Debit, the result code ALL_GROUPS_BARRED is sent to call control in rating engine answer for the following cases:</p><ul>
+<li>
+<p>If the device has no subscriptions</p>
+</li>
+<li>
+<p>At least one group has subscription(s) and all the groups having subscriptions are barred</p>
+</li>
+</ul>
+<p>The groups with no subscriptions attached are ignored in barring check, that is, this (ALL_GROUPS_BARRED) result code is sent irrespective of whether groups with no subscriptions are active / barred.</p>
+<p>In case of group hierarchy, the traversal order of top most group is respected. This (ALL_GROUPS_BARRED) result code is sent when device has no subscriptions, and at least one group has subscriptions, and all the groups occurring first in the traversal order are barred. Active groups with no subscriptions attached are ignored while traversing the groups in traversal order.</p>
+<p>For a CCR-U, if the device has no subscriptions, and at least one group has subscription(s), and all the groups having subscriptions are barred, the units to be reserved are rejected. However, for a normal commit (commit that is already reserved or a partial commit), the rating engine returns the result code NEW_RES_NOT_ALLOWED_GROUP_BARRED. For an over commit quantity in the update request, the quantity is lost and the result code NOT_ENOUGH_LOST_CREDIT_GROUP_BARRED is sent. In all such scenarios, the session is cleared at the rating engine. </p>
+<p>For a CCR-T, the rating engine commits USU for outstanding reserved units and returns the result code CALL_OK for the following cases:</p><ul>
+<li>
+<p>If the device has no subscriptions</p>
+</li>
+<li>
+<p>At least one group has subscription(s) and all the groups having subscriptions are barred</p>
+</li>
+</ul>
+<p>For an over commit quantity in the terminate request, the quantity is lost and the result code CALL_OK_LOST_CREDIT_GROUP_BARRED is sent. In all such scenarios, the session is cleared at the rating engine. </p>
+<p>
+<uicontrol>Example 1: Scenarios when ALL_GROUPS_BARRED is sent</uicontrol>
+</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_19.6/Group_barring_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-group_barring_default.png"/>
+</fig>
+<p>In the preceding diagram, ALL_GROUPS_BARRED is sent in CCR-I for the following configuration of Group hierarchy with barred Group:</p><ol>
+<li>
+<p>Group 2 is barred and it may or may not have subscriptions. Group 1 may or may not be barred and may or may not have subscriptions.</p>
+</li>
+<li>
+<p>Group 3 is barred and it may or may not have subscriptions. Group 1 may or may not be barred and may or may not have subscriptions.</p>
+</li>
+<li>
+<p>Group 5 is barred and it may or may not have subscriptions.</p>
+</li>
+<li>
+<p>At least one of the groups Group 1, Group 2, Group 3, Group 4 and Group 5 must have subscriptions attached.</p>
+</li>
+</ol>
+<p>Following is another set of configuration of Group hierarchy with barred Group for which ALL_GROUPS_BARRED is sent:</p><ol>
+<li>
+<p>Group 2 is not barred and it does not have any subscriptions. Group 1 is barred and it may or may not have subscriptions.</p>
+</li>
+<li>
+<p>Group 3 is not barred and it does not have any subscriptions. Group 4 is barred and it may or may not have subscriptions.</p>
+</li>
+<li>
+<p>Group 5 is barred and it may or may not have subscriptions.</p>
+</li>
+<li>
+<p>At least one of the groups Group 1, Group 4 and Group 5 must have subscriptions attached.</p>
+</li>
+</ol>
+<p>
+<uicontrol>Example 2: Group barring scenario</uicontrol>
+</p>
+<p>Consider that a Group (G1) has two devices D1 and D2. The devices do not have any subscriptions but Group has two subscriptions S1 and S2 and each subscribed to 100 GB bundle. Group subscription 1 (G1S1) is barred whereas Group subscription 2 (G1S2) is not barred. </p>
+<p>Execute an IEC call with RSU 150 GB.</p>
+<p>IEC call fails with result code 4012 (NOT_ENOUGH_CREDIT)</p>
+<p>The following table lists the Diameter error messages sent when group barring occurs. <table
+                    frame="all" pgwide="1" colsep="1" rowsep="1">
+                    <title>Diameter error messages sent when group barring occurs</title>
+                    <tgroup cols="2">
+                        <colspec colname="col1"/>
+                        <colspec colname="col2"/>
+                        <thead>
+                            <row>
+                                <entry>
+                                    <p>Error Message</p>
+                                </entry>
+                                <entry>
+                                    <p>Description</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry valign="middle"> ALL_GROUPS_BARRED </entry>
+                                <entry valign="middle"> Subscriptions are not attached to device and
+                                    at least one group has subscriptions. All the groups having
+                                    subscriptions are barred in case of Initial Request or Event
+                                    Request with Direct Debit Action. </entry>
+                            </row>
+                            <row>
+                                <entry valign="middle"> NEW_RES_NOT_ALLOWED_GROUP_BARRED </entry>
+                                <entry valign="middle"> Commit is complete for previous RSU, but new
+                                    reservation is not allowed as no subscriptions are attached to
+                                    device. At least one group has subscriptions and all the groups
+                                    having subscriptions are barred. </entry>
+                            </row>
+                            <row>
+                                <entry valign="middle"> NOT_ENOUGH_LOST_CREDIT_GROUP_BARRED </entry>
+                                <entry valign="middle"> Call is rejected for not enough credit and
+                                    over commit credit lost as no subscriptions are attached to
+                                    device. At least one group has subscriptions and all the groups
+                                    having subscriptions are barred. </entry>
+                            </row>
+                            <row>
+                                <entry valign="middle"> CALL_OK_LOST_CREDIT_GROUP_BARRED </entry>
+                                <entry valign="middle"> Call is OK but over commit credit is lost as
+                                    no subscriptions are attached to device. At least one group has
+                                    subscriptions and all the groups having subscriptions are
+                                    barred. </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table></p>
+</section>
+<section><title>Barring handled by rating engine</title>
+<p>Rating engine handles the account barring.</p>
+<p>If NCC identifies that an account is used for charging the data session, then the lifecycle state
+                is checked to identify whether the account is in barred state. If it is in barred
+                state, then that account is not used for charging. If there is no further resource
+                available for charging, the call is dropped.</p>
+<note>
+<p>The entity and period lifecycles for account and subscription are checked for barred state.</p>
+</note>
+<p>If a device has multiple subscriptions associated to multiple accounts, then the lifecycle state is checked for the account selected for charging the data session. </p>
+<p>
+<uicontrol>Example 1:</uicontrol> Consider a case where the iPhone device has two subscriptions and the account of one bundle is in barred state. In this case, partial reservation is done from the account that is in the active state. In this example, let us consider that the Acc2 is in barred state, then the charging is done from the <varname>Acc1</varname> account.</p>
+<p>The following figure shows the iPhone device entity with subscriptions included:</p>
+<fig>
+                <!--MMO resource relative URI: ../Graphics/Release_18.9/Lifecycle_state_check_default.png-->
+                <image
+                    href="../images/img9yz-09126-ug01-pczza-sp1-lifecycle_state_check_default.png"
+                    scale="65"/>
+            </fig>
+<p>
+<uicontrol>Example 2:</uicontrol> Consider a case where the iPhone device has two subscriptions and the configuration is done in such a way that the charging is done from account first followed by next subscription bucket. This can be done by setting priority in the charging services entity. In this case, during a data session, the lifecycle state of account changes to barred state, then the charging is done from the subscription bucket.</p>
+<p>Provision the following entities:</p>
+<table pgwide="1" colsep="1" rowsep="1">
+                <tgroup cols="2">
+                    <colspec colname="col1" colwidth="1*"/>
+                    <colspec colname="col2" colwidth="1.86*"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Entity</p>
+                            </entry>
+                            <entry>
+                                <p>Task</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry morerows="1"> Charging services </entry>
+                            <entry>
+                                <p>Create two charging services. CS1 has high priority with no
+                                    bucket and CS2 has low priority than CS1 but with a bucket.</p>
+                                <p>Name: CS1, priority = 1</p>
+                                <!--MMO resource relative URI: ../Graphics/Release_18.9/LC_CS1_default.png-->
+                                <image
+                                    href="../images/img9yz-09126-ug01-pczza-sp1-lc_cs1_default.png"
+                                    scale="50"/>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p>Name: CS2, priority = 10, Bucket69799, Initial value = 1000, Unit
+                                    Type name = MByte</p>
+                                <!--MMO resource relative URI: ../Graphics/Release_18.9/LC2_CS2_default.png-->
+                                <image
+                                    href="../images/img9yz-09126-ug01-pczza-sp1-lc2_cs2_default.png"
+                                    scale="50"/>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Bundles </entry>
+                            <entry> Create two bundles and associate the charging services. </entry>
+                        </row>
+                        <row>
+                            <entry> Account </entry>
+                            <entry> Create an account to associate with the bundles linked to the
+                                device. </entry>
+                        </row>
+                        <row>
+                            <entry> Device </entry>
+                            <entry>
+                                <p>Create a device and associate the bundles. See the figures after
+                                    the table for sample values.</p>
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<fig>
+                <!--MMO resource relative URI: ../Graphics/Release_18.9/LC_Accountsubscription_default.png-->
+                <image
+                    href="../images/img9yz-09126-ug01-pczza-sp1-lc_accountsubscription_default.png"
+                    scale="60"/>
+            </fig>
+<fig>
+                <!--MMO resource relative URI: ../Graphics/Release_18.9/LC_devicebundle_default.png-->
+                <image href="../images/img9yz-09126-ug01-pczza-sp1-lc_devicebundle_default.png"
+                    scale="50"/>
+            </fig>
+<p>
+<uicontrol>Result codes </uicontrol>
+</p>
+<p>Different result codes are generated in case where the account is barred. The account barring result code is considered when one or more account is barred during reservation. The following table has the list of result codes for the account barred scenario:</p>
+<table pgwide="1" colsep="1" rowsep="1">
+                <title>Result codes - Account barring</title>
+                <tgroup cols="6">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <colspec colname="COLSPEC1"/>
+                    <colspec colname="COLSPEC0"/>
+                    <colspec colname="COLSPEC2"/>
+                    <colspec colname="COLSPEC3"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Request Type</p>
+                            </entry>
+                            <entry nameend="COLSPEC1" namest="col2">
+                                <p>Scenario</p>
+                            </entry>
+                            <entry>
+                                <p>Rating result code</p>
+                            </entry>
+                            <entry>
+                                <p>Diameter result code</p>
+                            </entry>
+                            <entry>
+                                <p>RecordEventResultTag</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry morerows="1"> EVENT </entry>
+                            <entry> ACCOUNT BARRED </entry>
+                            <entry> FULL RESERVATION </entry>
+                            <entry> CALL_OK </entry>
+                            <entry> RESULT_DIAMETER_SUCCESS (2001) </entry>
+                            <entry> 00 </entry>
+                        </row>
+                        <row>
+                            <entry> ACCOUNT BARRED </entry>
+                            <entry> NO RESERVATION </entry>
+                            <entry> NOT_ENOUGH_CREDIT_ACCOUNT_BARRED </entry>
+                            <entry> RESULT_DIAMETER_END_USER_SERVICE_DENIED (4010) </entry>
+                            <entry> 25 </entry>
+                        </row>
+                        <row>
+                            <entry morerows="1"> INITIAL </entry>
+                            <entry> ACCOUNT BARRED </entry>
+                            <entry> PARTIAL RESERVATION </entry>
+                            <entry> CALL_OK_PARTIAL_RESERVE_ACCOUNT_BARRED </entry>
+                            <entry> RESULT_DIAMETER_LIMITED_SUCCESS (2002) </entry>
+                            <entry> 09 </entry>
+                        </row>
+                        <row>
+                            <entry> ACCOUNT BARRED </entry>
+                            <entry> NO RESERVATION </entry>
+                            <entry> NOT_ENOUGH_CREDIT_ACCOUNT_BARRED </entry>
+                            <entry> RESULT_DIAMETER_END_USER_SERVICE_DENIED (4010) </entry>
+                            <entry> 25 </entry>
+                        </row>
+                        <row>
+                            <entry morerows="9"> UPDATE </entry>
+                            <entry> ACCOUNT BARRED </entry>
+                            <entry> FULL COMMIT/NO RESERVATION </entry>
+                            <entry> NEW_RES_NOT_ALLOWED_ACCOUNT_BARRED </entry>
+                            <entry> RESULT_DIAMETER_END_USER_SERVICE_DENIED (4010) </entry>
+                            <entry> 108 </entry>
+                        </row>
+                        <row>
+                            <entry> ACCOUNT BARRED </entry>
+                            <entry> FULL COMMIT/PARTIAL RESERVATION </entry>
+                            <entry> CALL_OK_PARTIAL_RESERVE_ACCOUNT_BARRED </entry>
+                            <entry> RESULT_DIAMETER_LIMITED_SUCCESS (2002) </entry>
+                            <entry> 09 </entry>
+                        </row>
+                        <row>
+                            <entry> ACCOUNT BARRED </entry>
+                            <entry> FULL COMMIT/FULL RESERVATION </entry>
+                            <entry> CALL_OK </entry>
+                            <entry> RESULT_DIAMETER_SUCCESS (2001) </entry>
+                            <entry> 00 </entry>
+                        </row>
+                        <row>
+                            <entry> ACCOUNT BARRED </entry>
+                            <entry> UNDER COMMIT/NO RESERVATION </entry>
+                            <entry> NEW_RES_NOT_ALLOWED_ACCOUNT_BARRED </entry>
+                            <entry> RESULT_DIAMETER_END_USER_SERVICE_DENIED (4010) </entry>
+                            <entry> 108 </entry>
+                        </row>
+                        <row>
+                            <entry> ACCOUNT BARRED </entry>
+                            <entry> UNDER COMMIT/FULL RESERVATION </entry>
+                            <entry> CALL_OK </entry>
+                            <entry> RESULT_DIAMETER_SUCCESS (2001) </entry>
+                            <entry> 00 </entry>
+                        </row>
+                        <row>
+                            <entry> ACCOUNT BARRED </entry>
+                            <entry> UNDER COMMIT/PARTIAL RESERVATION </entry>
+                            <entry> CALL_OK_PARTIAL_RESERVE_ACCOUNT_BARRED </entry>
+                            <entry> RESULT_DIAMETER_LIMITED_SUCCESS (2002) </entry>
+                            <entry> 09 </entry>
+                        </row>
+                        <row>
+                            <entry> ACCOUNT BARRED </entry>
+                            <entry> OVER COMMIT/NO RESERVATION/CREDIT LOSS </entry>
+                            <entry> NEW_RES_NOT_ALLOWED_LOST_CREDIT_ACCOUNT_BARRED </entry>
+                            <entry> RESULT_DIAMETER_END_USER_SERVICE_DENIED (4010) </entry>
+                            <entry> 26 </entry>
+                        </row>
+                        <row>
+                            <entry> ACCOUNT BARRED </entry>
+                            <entry> OVER COMMIT/FULL RESERVATION/NO CREDIT LOSS </entry>
+                            <entry> CALL_OK </entry>
+                            <entry> RESULT_DIAMETER_SUCCESS (2001) </entry>
+                            <entry> 00 </entry>
+                        </row>
+                        <row>
+                            <entry> ACCOUNT BARRED </entry>
+                            <entry> OVER COMMIT/NO RESERVATION/NO CREDIT LOSS </entry>
+                            <entry> NEW_RES_NOT_ALLOWED_ACCOUNT_BARRED </entry>
+                            <entry> RESULT_DIAMETER_END_USER_SERVICE_DENIED (4010) </entry>
+                            <entry> 108 </entry>
+                        </row>
+                        <row>
+                            <entry> ACCOUNT BARRED </entry>
+                            <entry> OVER COMMIT/PARTIAL RESERVATION/NO CREDIT LOSS </entry>
+                            <entry> CALL_OK_PARTIAL_RESERVE_ACCOUNT_BARRED </entry>
+                            <entry> RESULT_DIAMETER_LIMITED_SUCCESS (2002) </entry>
+                            <entry> 09 </entry>
+                        </row>
+                        <row>
+                            <entry morerows="3"> TERMINATE </entry>
+                            <entry> ACCOUNT BARRED </entry>
+                            <entry> FULL COMMIT </entry>
+                            <entry> CALL_OK </entry>
+                            <entry> RESULT_DIAMETER_SUCCESS (2001) </entry>
+                            <entry> 00 </entry>
+                        </row>
+                        <row>
+                            <entry> ACCOUNT BARRED </entry>
+                            <entry> UNDER COMMIT </entry>
+                            <entry> CALL_OK </entry>
+                            <entry> RESULT_DIAMETER_SUCCESS (2001) </entry>
+                            <entry> 00 </entry>
+                        </row>
+                        <row>
+                            <entry> ACCOUNT BARRED </entry>
+                            <entry> OVER COMMIT/ CREDIT LOSS </entry>
+                            <entry> CALL_OK_LOST_CREDIT_ACCOUNT_BARRED </entry>
+                            <entry> RESULT_DIAMETER_LIMITED_SUCCESS (2002) </entry>
+                            <entry> 10 </entry>
+                        </row>
+                        <row>
+                            <entry> ACCOUNT BARRED </entry>
+                            <entry> OVER COMMIT/NO CREDIT LOSS </entry>
+                            <entry> CALL_OK </entry>
+                            <entry> RESULT_DIAMETER_SUCCESS (2001) </entry>
+                            <entry> 00 </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+</section>
+</conbody></concept>

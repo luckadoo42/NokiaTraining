@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e193639"><title>Subscription selection functionality</title><conbody>
+<section><title>Overview</title>
+<p>The subscription selection functionality allows operators to set the order in which the subscriptions must be used for the call. For example, a user has a personal subscription to spotify traffic (that allows to listen to music on a mobile or tablet), a personal data bundle, and a group bundle that allows 2 GB of data from the shared group resources. In this case, the user wants to consume spotify bundle for spotify traffic, followed by group bundle and personal bundle. Operators can define this sequence to consume the resources in the category order entity. Also, the group hierarchy can be parsed top to bottom or vice versa.</p>
+<p>The category order is defined per device or per group and is manageable using GUI or API. The individual devices or the devices belonging to several groups are categorized and a priority order is assigned to them. </p>
+<note>
+<p>For parameters related to the category order, see <!--xref URI: c-Service_Model.xml#category--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-category"/>.</p>
+</note>
+</section>
+<section><title>Additional information</title>
+<p>Following are the important points related to the subscription selection feature:</p><ul>
+<li>
+<p>Operators can define the categories and their order of consumption in the category order entity. The category order is not a dynamic and frequently changing entity. We do not recommend the addition of categories.</p>
+</li>
+<li>
+<p>In case, the category order changes:</p><ul>
+<li>
+<p>The new category order is applicable only to new devices.</p>
+</li>
+<li>
+<p>No changes are made to the category list of an existing device. The existing devices provide the order of all available categories in the category order entity during the device update.</p>
+</li>
+<li>
+<p>Once a device has defined its category order, all the device calls are charged based on that order. A device needs to update the category order to change the order of charging the calls.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>If a device has not specified its own category list, then it has a complete set of category order.</p>
+</li>
+<li>
+<p>If a device is subscribed to a category not listed in the device category list, then by default, that category is moved at the end of the category list.</p>
+</li>
+<li>
+<p>A device can be subscribed either directly or through a group.</p>
+</li>
+<li>
+<p>If a device wants to use an ad-hoc group subscription first or if the device becomes part of a new group and prefers to use that group subscription first, then the device category list and the group order at device level must be updated.</p>
+</li>
+</ul>
+</section>
+<section><title>Configuration</title>
+<p>Following steps provide the configuration details to implement the subscription selection feature:</p><ol>
+<li>
+<p>To provision multiple categories, update the category order entity to specify the sequence of category usage. For example, <varname>Cat2</varname>, <varname>Cat3</varname>, <varname>Cat1</varname>, <varname>Cat4</varname>, and <varname>DefaultCategoryOrder</varname>.</p>
+</li>
+<li>
+<p>Create a charging service based on the following conditions:</p><ul>
+<li>
+<p>If no other category is associated with the charging service, then the DefaultCategoryOrder,
+                                created at the time of NCC installation, is the only category
+                                associated with it.</p>
+</li>
+<li>
+<p>If a charging service is created with other categories as well, then it can select from one of the available categories configured in the category order entity.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Create devices based on the following criteria:</p><ul>
+<li>
+<p>If devices are created without category order, then the entire category list, for example, <varname>Cat2</varname>, <varname>Cat3</varname>, <varname>Cat1</varname>, <varname>Cat4</varname>, and <varname>DefaultCategoryOrder</varname> is copied to the device category list.</p>
+</li>
+<li>
+<p>If devices are created with category order, then you must define the order of all available categories, for example, <varname>Cat2</varname>, <varname>Cat3</varname>, <varname>Cat1</varname>, <varname>Cat4</varname>, and <varname>DefaultCategoryOrder</varname>.</p>
+</li>
+</ul>
+</li>
+</ol>
+</section>
+<section><title>Examples</title>
+<p>The following examples show subscription selection implementation with or without group hierarchy:</p>
+<sectiondiv>
+<p><b>Example 1: When a device belongs to several groups without group hierarchy</b></p>
+<p>
+<b>Provisioning:</b>
+</p><ol>
+<li>
+<p>Associate an iPhone to two groups <varname>Finance</varname> and <varname>HR</varname>, which are further associated to several categories.</p>
+</li>
+<li><p>Associate each charging service with a creation date and priority as shown in the following
+                            figure:</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_18.0/Subscriptionselectionwithoutpart1_default.png-->
+                        <image
+                            href="../images/img9yz-09126-ug01-pczza-sp1-subscriptionselectionwithoutpart1_default.png"/>
+                        <!--MMO resource relative URI: ../Graphics/Release_18.0/Subscriptionselectionwithoutpart2_default.png-->
+                        <image
+                            href="../images/img9yz-09126-ug01-pczza-sp1-subscriptionselectionwithoutpart2_default.png"
+                        />
+                    </li>
+<li>
+<p>Set the <i>Selection Order</i> for the charging service as <varname>ON_CREATION_TIME</varname>.</p>
+</li>
+<li>
+<p>When a device executes a data call, then the subscriptions are selected depending on the given factors:</p><ul>
+<li>
+<p>Category order priority</p>
+</li>
+<li>
+<p>Subscription selection order</p>
+</li>
+<li>
+<p>Charging service priority</p>
+</li>
+<li>
+<p>Charging service instance creation date</p>
+</li>
+</ul>
+</li>
+</ol>
+<note>
+<p>If all the subscription selection criteria are same, then whichever charging service instance comes first, is picked first.</p>
+</note>
+<p>
+<b>Result:</b>
+</p>
+<p>When the iPhone executes a data call, then the subscriptions are selected in the given sequence:</p><ol>
+<li>
+<p>As <varname>Category1</varname> has the highest priority, it is the first category to be fetched when a call is executed. <varname>CS1</varname> is the only charging service that belongs to <varname>Category1</varname>. Therefore, <varname>CS1</varname> comes first in ordered charging service list.</p>
+</li>
+<li>
+<p>
+<varname>Category2</varname> has the second highest priority associated with only one charging service <varname>CS2</varname>. Therefore, <varname>CS2</varname> comes next after <varname>CS1</varname> in the ordered charging service list.</p>
+</li>
+<li>
+<p>
+<varname>Category3</varname> has the third highest priority. As both <varname>Finance</varname> and <varname>HR</varname> groups, and iPhone have charging service corresponding to <varname>Category3</varname>, the subscription selected order is considered.</p>
+<p>Therefore, first <varname>Finance</varname> group is considered, followed by the iPhone, and then the <varname>HR</varname> group.</p><ol>
+<li>
+<p>For the <varname>Finance</varname> group, <varname>Category3</varname> is associated with two charging services; <varname>CS3</varname> and <varname>CS4</varname>. The order of charging service is decided by the charging service priority. Therefore, <varname>CS3</varname> with higher priority is considered first followed by <varname>CS4</varname>.</p>
+</li>
+<li>
+<p>For iPhone, <varname>Category3</varname> is associated with two charging services; <varname>CS7</varname> and <varname>CS8</varname>. As both <varname>CS7</varname> and <varname>CS8</varname> have same charging service priority, the order of charging service is decided by the charging service instance creation date. Since <varname>CS7</varname> charging service instance was created before <varname>CS8</varname>, <varname>CS7</varname> charging service is considered first.</p>
+</li>
+<li>
+<p>For <varname>HR</varname> group, <varname>Category3</varname> is associated with two charging services; <varname>CS5</varname> and <varname>CS6</varname>. Since both <varname>CS5</varname> and <varname>CS6</varname> have same charging service priority and same charging service instance creation date, whichever charging service comes first is picked first.</p>
+</li>
+</ol>
+</li>
+<li>
+<p>The same process, which has been defined for <varname>Category3</varname>, is followed for <varname>Category4</varname>.</p>
+</li>
+<li>
+<p>
+<b>Pass 0</b> of all the charging services are executed first followed by <b>Pass 1</b> of all charging services. For example:</p><ul>
+<li>
+<p>
+<b>Pass 0</b>: <varname>CS1</varname> -&gt; <varname>CS2</varname> -&gt; <varname>CS3</varname> -&gt; <varname>CS4</varname> -&gt; <varname>CS7</varname> -&gt; <varname>CS8</varname> -&gt; <varname>CS5</varname> -&gt; <varname>CS6</varname> -&gt; <varname>CS11</varname> -&gt; <varname>CS9</varname> -&gt; <varname>CS10</varname>
+</p>
+</li>
+<li>
+<p>
+<b>Pass 1</b>: <varname>CS1</varname> -&gt; <varname>CS2</varname> -&gt; <varname>CS3</varname> -&gt; <varname>CS4</varname> -&gt; <varname>CS7</varname> -&gt; <varname>CS8</varname> -&gt; <varname>CS5</varname> -&gt; <varname>CS6</varname> -&gt; <varname>CS11</varname> -&gt; <varname>CS9</varname> -&gt; <varname>CS10</varname>
+</p>
+</li>
+</ul>
+</li>
+</ol>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 2: When a device belongs to several groups with group hierarchy</b></p>
+<p>
+<b>Provisioning:</b>
+</p><ol>
+<li>
+<p>Associate an iPhone device to two groups <varname>Finance</varname>, which is a member of the <varname>Management</varname> group and <varname>Testing</varname> group, which is a member of the <varname>Development</varname> group.</p>
+</li>
+<li>
+<p>Associate all four groups with several categories.</p>
+</li>
+<li><p>Associate each charging service with a creation date and priority as shown in the following
+                            figure:</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_18.0/Subscriptionselectionwithpart1_default.png-->
+                        <image
+                            href="../images/img9yz-09126-ug01-pczza-sp1-subscriptionselectionwithpart1_default.png"/>
+                        <!--MMO resource relative URI: ../Graphics/Release_18.0/Subscriptionselectionwithpart2_default.png-->
+                        <image
+                            href="../images/img9yz-09126-ug01-pczza-sp1-subscriptionselectionwithpart2_default.png"
+                        />
+                    </li>
+<li>
+<p>Set the <i>Selection Order</i> for the charging service as <varname>ON_CREATION_TIME</varname>.</p>
+</li>
+</ol>
+<p>
+<b>Result:</b>
+</p>
+<p>When the iPhone executes a data call, then the subscriptions are selected in the given sequence:</p><ol>
+<li>
+<p>As <varname>Category1</varname> has the highest priority, it is the first category to be fetched when a call is executed. <varname>CS1</varname> is the only charging service that belongs to <varname>Category1</varname>. Therefore, <varname>CS1</varname> comes first in ordered charging service list.</p>
+</li>
+<li>
+<p>
+<varname>Category2</varname> has the second highest priority. As both <varname>Finance</varname> and <varname>Testing</varname> groups, and iPhone have charging service corresponding to <varname>Category2</varname>, the subscription selected order is considered.</p>
+<p>Therefore, first <varname>Finance</varname> group is considered, followed by the iPhone, and then the <varname>Testing</varname> group.</p><ol>
+<li>
+<p>
+<varname>Finance</varname> group is part of a hierarchy with <varname>Management</varname> group as the top node. Therefore, <varname>Management</varname> group defines the traversal order for this hierarchy which in this case is top-down. This implies that the subscriptions of <varname>Management</varname> group comes first followed by the subscriptions of <varname>Finance</varname> group.</p>
+</li>
+<li>
+<p>
+<varname>Management</varname> group is associated with two charging services; <varname>CS6</varname> and <varname>CS7</varname> from <varname>Category2</varname>. The order of charging service is decided by the charging service priority. Therefore, <varname>CS6</varname> with higher priority is considered first followed by <varname>CS7</varname>.</p>
+</li>
+<li>
+<p>
+<varname>Finance</varname> group is associated with only one charging service <varname>CS8</varname> from <varname>Category2</varname> comes next.</p>
+</li>
+<li>
+<p>iPhone has no charging service from <varname>Category2</varname>. Therefore, no charging service is considered.</p>
+</li>
+<li>
+<p>
+<varname>Testing</varname> group is part of a hierarchy with <varname>Development</varname> group as the top node. Therefore, <varname>Development</varname> group defines the traversal order for this hierarchy which in this case is bottom-up. This implies that the subscriptions of <varname>Testing</varname> group comes first followed by the subscriptions of <varname>Development</varname> group.</p>
+</li>
+<li>
+<p>
+<varname>Testing</varname> group is associated with two charging services; <varname>CS4</varname> and <varname>CS5</varname> from <varname>Category2</varname>. As both <varname>CS4</varname> and <varname>CS5</varname> have same charging service priority, the order of charging service is decided by the charging service instance creation date. Since <varname>CS4</varname> charging service instance was created before <varname>CS5</varname>, <varname>CS4</varname> charging service is considered first.</p>
+</li>
+<li>
+<p>
+<varname>Development</varname> group is associated with two charging services; <varname>CS2</varname> and <varname>CS3</varname> from <varname>Category2</varname>. Both <varname>CS2</varname> and <varname>CS3</varname> charging services have same charging service priority and creation date. So, whichever comes first is picked first.</p>
+</li>
+</ol>
+</li>
+<li>
+<p>
+<varname>Category4</varname> has the third highest priority and only <varname>Development</varname> group associated with one charging service <varname>CS9</varname> which gets selected next.</p>
+</li>
+<li>
+<p>
+<varname>Category3</varname> has the next priority and both iPhone and <varname>Management</varname> group have charging services from this category. The subscription selection order is considered. Here, <varname>Finance</varname> group comes first followed by iPhone.</p><ol>
+<li>
+<p>
+<varname>Management</varname> group belongs to the hierarchy from which <varname>Finance</varname> group comes. So, <varname>Management</varname> group charging service, that is, <varname>CS10</varname> is picked next.</p>
+</li>
+<li>
+<p>iPhone is associated with two charging services; <varname>CS11</varname> and <varname>CS12</varname> from <varname>Category3</varname>. The next criterion for order is considered, that is, charging service priority. Since <varname>CS12</varname> has higher priority than <varname>CS11</varname>, <varname>CS12</varname> is considered first followed by <varname>CS11</varname>.</p>
+</li>
+</ol>
+</li>
+<li>
+<p>
+<b>Pass 0</b> of all the charging services are executed first followed by <b>Pass 1</b> of all charging services. For example:</p>
+<p>
+<b>Pass 0</b>: <varname>CS1</varname> -&gt; <varname>CS6</varname> -&gt; <varname>CS7</varname> -&gt; <varname>CS8</varname> -&gt; <varname>CS4</varname> -&gt; <varname>CS5</varname> -&gt; <varname>CS2</varname> -&gt; <varname>CS3</varname> -&gt; <varname>CS9</varname> -&gt; <varname>CS10</varname> -&gt; <varname>CS12</varname> -&gt; <varname>CS11</varname>
+</p>
+<p>
+<b>Pass 1</b>: <varname>CS1</varname> -&gt; <varname>CS6</varname> -&gt; <varname>CS7</varname> -&gt; <varname>CS8</varname> -&gt; <varname>CS4</varname> -&gt; <varname>CS5</varname> -&gt; <varname>CS2</varname> -&gt; <varname>CS3</varname> -&gt; <varname>CS9</varname> -&gt; <varname>CS10</varname> -&gt; <varname>CS12</varname> -&gt; <varname>CS11</varname>
+</p>
+</li>
+</ol>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 3: When a device belongs to several groups and expiry date is used for sorting</b></p>
+<p>
+<b>Provisioning:</b>
+</p><ol>
+<li>
+<p>Associate an iPhone to two groups <varname>Group1</varname> and <varname>Group2</varname>.</p>
+<p>Given that <varname>Group1</varname> is attached to device before <varname>Group2</varname>. Therefore, sorting of <varname>Group 1</varname> is done first followed by <varname>Group2</varname>.</p>
+</li>
+<li>
+<p>Set the <i>Selection Order</i> for the charging service as <varname>ON_END_TIME</varname> shown in the following figure:</p>
+<!--MMO resource relative URI: ../Graphics/Release_19.9/Subscription_sel_expiry1_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-subscription_sel_expiry1_default.png"/>
+<!--MMO resource relative URI: ../Graphics/Release_19.9/Subscription_sel_expiry2_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-subscription_sel_expiry2_default.png"/>
+</li>
+<li>
+<p>When the iPhone executes a data call, then the subscriptions are selected depending on the given factors:</p><ul>
+<li>
+<p>Category order priority</p>
+</li>
+<li>
+<p>Subscription selection order</p>
+</li>
+<li>
+<p>Charging service priority</p>
+</li>
+<li>
+<p>Charging service instance expiry date</p>
+</li>
+</ul>
+</li>
+</ol>
+<note>
+<p>If all the subscription selection criteria are same, then whichever charging service instance comes first, is picked first.</p>
+</note>
+<p>
+<b>Result:</b>
+</p>
+<p>When the iPhone executes a data call, then the subscriptions are selected in the given sequence:</p><ol>
+<li>
+<p>As <varname>Category1</varname> has the highest priority, it is the first category to be fetched when a call is executed. <varname>CS1</varname> is the only charging service that belongs to <varname>Category1</varname>. Therefore, <varname>CS1</varname> comes first in the charging service list.</p>
+</li>
+<li>
+<p>
+<varname>Category2</varname> has the second highest priority associated with only one charging service <varname>CS2</varname>. Therefore, <varname>CS2</varname> comes next after <varname>CS1</varname> in the charging service list.</p>
+</li>
+<li>
+<p>
+<varname>Category3</varname> has the third highest priority. <varname>CS3</varname> and <varname>CS4</varname> are sorted first as per priority because <varname>Group1</varname> was attached to device before <varname>Group2</varname>. <varname>CS5</varname> and <varname>CS6</varname> are sorted as per priority in <varname>Group2</varname>. <varname>CS7</varname> and <varname>CS8</varname> are from device, therefore, sorted at the end of <varname>Category3</varname>. As priority is same, they are sorted based on the expiry date.</p>
+</li>
+<li>
+<p>
+<varname>Category4</varname> has the fourth highest priority. <varname>CS11</varname> is sorted first. <varname>CS10</varname> is sorted next as per priority in <varname>Group2</varname> followed by device <varname>CS9</varname>. This is because, <varname>Group_First</varname> is selected in device and <varname>Group1</varname> was attached to device before <varname>Group2</varname>.</p>
+</li>
+</ol>
+</sectiondiv>
+</section>
+</conbody></concept>

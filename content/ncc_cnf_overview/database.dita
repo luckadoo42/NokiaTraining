@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="database">
+    <title>Database</title>
+    <conbody>
+        <section id="section_ycz_5rc_llb">
+            <title>Database</title>
+            <p>SPS uses a high-performance clustered in-memory NoSQL database from Aerospike. It
+                supports advanced data types with nesting (SPS uses lists, maps, lists of maps,
+                etc.), N-way geographic replication between sites (clusters), flexible data
+                migration within the cluster to maintain the requested replication factor,
+                tombstoning to prevent resurrection of deleted records, and many other advanced
+                features.</p>
+            <p>SPS uses a replication factor of 2 for all namespaces, meaning that Aerospike will
+                ensure 2 copies of every record always exist within the cluster. When a DB node
+                fails, data migration happens within the cluster to add a copy of those records onto
+                the other DB nodes. When that failed DB node recovers, the records are migrated back
+                onto that recovered node again.</p>
+            <p>DB containers are horizontally scalable, where dimensioning in some deployments is
+                driven by the need for more TPS, and in other deployments by the need for more
+                memory. Note that DB containers cannot scale in and out as freely as most other
+                container types, since even in times of low traffic TPS, the database records still
+                require a similar amount of memory. This creates a "minimum number" of database
+                container instances, independent of traffic load.</p>
+            <p>Most SPS records are 2-way replicated in the operator's network, via Aerospike XDR,
+                with a mate SPS site. (Two copies of a record within a cluster / site, replicated
+                with another site where there are also 2 copies in that cluster.) The global mapping
+                records may be N-way replicated in the network, if the operator is using a Networked
+                SPS Pair deployment model.</p>
+            <p>The DB layer built into the pods of DB clients supports a pub/sub feature that allows
+                clients to subscribe to notifications of DB record changes. Kafka is used as the
+                pub/sub provider. The DB layer will insert into Kafka, for subscribed changes, the
+                before and after values for the changed record. Note that Aerospike also provides a
+                change notification feature, but it does not provide the original data values that
+                the SPS applications require.</p>
+            <p><b>DB Zones, rack awarness and DB software updates</b></p>
+            <p>Aerospike supports "rack awareness", a feature SPS uses to configure one-half of its
+                DB instances in rack 1 and the other half in rack 2. Aerospike will keep one copy of
+                a record in rack 1 and the other copy in rack 2. </p>
+            <p>Rack awareness also provides some improvement to our SPS availability, as it allows
+                us to lose multiple DB instances in the same rack in rapid fire, without losing any
+                data access. Without rack awareness, losing any two DB instances before migration
+                completes will always cause loss of some data access and result in SPS monitoring
+                declaring this site OOS (till the instances recover).</p>
+        </section>
+    </conbody>
+</concept>

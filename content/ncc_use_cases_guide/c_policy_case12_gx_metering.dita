@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//NSN//DTD DITA Concept//EN" "nsnconcept.dtd">
+		<concept id="id9YZ-09018--PL00-FPZZA-d1e27108"><title>Case 12: Gx metering support for absolute threshold</title><conbody>
+
+<section><title>Overview</title>
+
+<p>When operators configure the minimum chunk size attributes in the Threshold Profile, the PCRF correctly gives the minimum chuck size in the Gx metered session. </p>
+</section>
+<section><title>Flow of events</title><ul>
+
+<li>
+In the first session of CCR-I, PCRF grants the unit in the CCA message and this will cover in the Usage Monitoring Information which is Grouped. It includes Monitoring-Key, Granted-Service-Unit (which has CC-Total Octets), and Usage-Monitoring-Level AVPs. <draft-comment>includes the Monitoring-Key, Granted-Service-Unit, and Usage-Monitoring-Information AVPs in a CCA message and sends the CCA message to the PCEF. This AVP indicates the quota slice that the PCRF provides for a subscriber.</draft-comment>
+<draft-comment>It includes the Monitoring-Key, Granted-Service-Unit, and Usage-Monitoring-Information AVPs.</draft-comment>
+
+</li>
+<li>
+In the second event, when the CCR-U is received from the PCEF, then PCEF sends the Usage Monitoring Information with two AVP’s - Used Service Unit (which has CC-Total Octets) and Monitoring Key. The same PCRF again grants the quota in CCA with all three AVPs sent in the first session (Monitoring key, Granted Service Unit (which has CC-Total Octets), Usage Monitoring Level) is part of Usage Monitoring Information. <draft-comment>PCEF includes CC-Total-Octets AVPs in a CCR message and sends the CCR message to the PCRF. This AVP indicates the total usage reported by the PCEF. </draft-comment>
+<draft-comment>The CC-Total-Octets AVPs are used to report the accumulated total usage. </draft-comment>
+<draft-comment>This AVP includes the Monitoring-Key, Used-Service-Unit, Usage-Monitoring-Information-AVPs.</draft-comment>
+
+</li>
+<li>
+In the last event, when the CCR-T is received from the PCEF, then PCEF sends the Usage Monitoring Information with two AVP’s - Used Service Unit (which has CC-Total Octets) and Monitoring Key. The same PCRF will update the final accumulated usage for the complete metered session with same set of AVP’s.
+</li>
+</ul>
+</section>
+<section><title>Provisioning</title>
+
+<note type="attention">
+
+<p>Ensure that after creating a record, you distribute it to ME. Otherwise, the provisioning will not be successful.</p>
+<p>
+                    <uicontrol>Pre-condition:</uicontrol> Verify that the basic provisioning for Gx
+                    is done at NCC.</p>
+</note>
+<p>Provision the following data:</p><ol>
+
+<li>Log in to the SM GUI, and navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol>
+                    and select the <uicontrol>Common</uicontrol> tab. Browse to select
+                        <uicontrol>Thresholds</uicontrol> from drop-down list and click <!--MMO resource relative URI: ../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+                    <image href="../images/sdd_button_default.png"/> to create the following
+                    threshold. <!--MMO resource relative URI: graphics/Threshold1_default.png-->
+                    <image href="../images/threshold1_default.png"/>
+                    <!--MMO resource relative URI: graphics/Threshold2_default.png-->
+                    <image href="../images/threshold2_default.png" placement="break" scale="70"/>
+                </li>
+<li>Navigate to the <uicontrol>Policy</uicontrol> tab. Browse to select <uicontrol>Usage Control
+      Services</uicontrol> from drop-down list and click <!--MMO resource relative URI: ../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png"/> to create the following usage control service. <!--MMO resource relative URI: graphics/UC1_default.png-->
+     <image href="../images/uc1_default.png" placement="break" scale="70"/>
+     <!--MMO resource relative URI: graphics/UC2_default.png-->
+     <image href="../images/us2_default.png" placement="break"/>
+    </li>
+<li>Navigate to the <uicontrol>Charging</uicontrol> tab. Browse to select
+      <uicontrol>Bundles</uicontrol> from drop-down list and click <!--MMO resource relative URI: ../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png"/> to create the following bundle. <!--MMO resource relative URI: graphics/Bundle1_default.png-->
+     <image href="../images/bundle1_default.png" placement="break" scale="60"/>
+     <!--MMO resource relative URI: graphics/f-Bundle2_new_default.png-->
+     <image href="../images/bundle2_new_default.png" scale="60" placement="break"/>
+    </li>
+<li>Navigate to <uicontrol>Subscriber Manager</uicontrol> and select <uicontrol>Accounts</uicontrol>
+     tab. Click <!--MMO resource relative URI: ../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png"/> to create an account. </li>
+<li>Navigate to <uicontrol>Subscriber Manager</uicontrol> and select <uicontrol>Devices</uicontrol>
+     tab. Click <!--MMO resource relative URI: ../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png"/> to create a device. Create two devices with
+     identifier E164 and IMSI. </li>
+<li>Navigate to <uicontrol>Subscriber Manager</uicontrol> and select <uicontrol>Groups</uicontrol>
+     tab. Click <!--MMO resource relative URI: ../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png"/> to create a group. Associate the device and
+     subscription inside the group. </li>
+</ol>
+<note>
+
+<p>The application preference <userinput>Quota Allocation Factor (%)</userinput> is set to 50% and this is used from the UCS total quota when no threshold is applied to UCS.</p>
+<p>To access application preference, navigate to <uicontrol>Global Configuration</uicontrol>, click the <uicontrol>Application Preferences</uicontrol> tab, browse to select <uicontrol>Managed Elements</uicontrol> from the drop-down list. Select the configured ME and then set the value for <userinput>Quota Allocation Factor (%)</userinput>.</p>
+</note>
+<p>When the PCEF sends the CCR-U with Used Service Units, it is updated in the accumulated usage as shown in the following figure:</p>
+<fig>
+<!--MMO resource relative URI: graphics/Group_default.png-->
+<image href="../images/group_default.png" placement="break" scale="60"/>
+</fig>
+</section>
+</conbody></concept>

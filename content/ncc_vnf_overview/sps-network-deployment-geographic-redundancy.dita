@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9YZ-09018-UG00-PCZZA-d1e8183"><title>NCC Network Deployment and Geographic Redundancy</title><conbody>
+<section><title>Overview</title>
+<p>A network deployment of NCC includes a pair of NCC Service Managers (SMs) and some number of NCC
+                Managed Elements (MEs). There is also an NCC Integrated (IG) site deployment that
+                groups both the SM and the ME components. A network deployment with a pair of NCC
+                Integrated (IG) components is equivalent to a pair of SMs, a pair of MEs. </p>
+<note>NCC geo-redundant sites must always be deployed in multiples of two sites. This is true for
+                any type of deployment.</note>
+<p>The following restrictions apply for IG deployments in geo-redundant configurations:</p><ul>
+<li>
+<p>For a geo-redundant deployment, an IG site can only pair with another IG site. An SM site can only pair with another SM site. </p>
+</li>
+<li>
+<p>A NCC network deployment either contains one or two IG sites, or one or two SM sites. Mixing of
+                        an IG site and an SM site within the same NCC network deployment is not
+                        supported.</p>
+</li>
+<li>
+<p>The ME and SM components of an IG site always belong to the same geo-site location (the geo-site location is associated with the IG site).</p>
+</li>
+<li>
+<p>IG sites only support the standard "1+1 NCC Pairs" deployment model; however, the "isolated 1+1
+                        pairs" deployment model is not supported for IG sites.</p>
+</li>
+</ul>
+<note>
+<p>For the remainder of this section, an NCC Integrated (IG) site is equivalent to an ME site and an
+                    SM site. Unless specified to be different, any description of SM and ME
+                    functionality also applies to the SM and ME components of an IG site and no
+                    specific mention of IG site will be made.</p>
+</note>
+<p>To ensure consistent transactions and avoid race conditions in the network that could result in
+                incorrect results from two different MEs operating on transactions for the same
+                device simultaneously, the NC network strategy is to serialize all transactions
+                through a Home ME assigned for each given device, group, or account. </p>
+<p>Each entity has a primary and secondary home ME. If the primary ME is healthy, it will be the one
+                to process all transactions for that given entity. If that ME is not healthy, then
+                all transactions will instead be processed by the secondary ME. Sophisticated
+                network heartbeating provides a robust view of the health and connectivity of the
+                various MEs in order to prevent split-brain operation. For the most robust network
+                heartbeat and determination of network health/connectivity, and to avoid manual
+                intervention for arbitrating split-brain scenarios, NCC systems should be deployed
+                in at least three different physical sites. For example, site 1 may have one SM and
+                one ME. Site 2 may also have one SM and one ME. Site 3 may have two additional
+                MEs.</p>
+<sectiondiv>
+<p><b>Data integrity and split-brain avoidance</b></p>
+<p>To ensure data integrity, one ME acts as the active home ME for a device at any given time. SM-ME and ME-ME heartbeats over the core (Diameter/5G) WAN and the OAM WAN, preferably between at least three geo-diverse locations, are used to determine when an ME is actually Out Of Service (OOS). The mate ME will take over traffic for the OOS ME only when heartbeats determine that an ME is OOS. For example, when either the ME itself communicates that it is OOS or when geo-diverse systems agree that no heartbeat has been received from that ME. </p>
+<p>If the primary ME for a device is OOS and the mate takes over the updates to the database queue for replication on the mate ME, it automatically resynchronizes when the primary ME recovers. The primary ME will only return to the In Service state when the database resynchronization is complete. A recovering OOS ME keeps its interfaces down so that the traffic from the GGSN/PGW/SMF/AFs continue to be processed by the mate ME.</p>
+<p>If core WAN communication between mated MEs is down while the primary ME is In Service, the
+                    updates to the database for a device will queue for replication on the primary
+                    ME and will automatically replicate to the mate ME when WAN communication
+                    recovers. While core WAN communication between some MEs is down and the primary
+                    ME is In Service, any requests that arrive at the primary ME or arrive at
+                    another ME that can reach the primary ME are processed normally. Requests that
+                    arrive at the mate ME or any ME that can not reach the primary ME will be given
+                    an error response. </p>
+<p>If the GGSM/PGW/SMF/AF retries to the primary ME or to another ME that can reach the primary ME, the retry will succeed. An ME that is not the primary or secondary ME will forward requests to the secondary ME if it can not reach the primary ME. That gives the secondary ME the chance to forward requests to the primary ME or if the heartbeats indicate the primary ME has transitioned to OOS then the secondary ME will process the transaction.</p>
+<p>It would be extremely rare for the dual WAN heartbeat mechanism to determine that an ME is OOS if it is actually In Service and handling traffic. In nearly all cases, this mechanism avoids split-brain operation where multiple MEs update the data for the same device. If two MEs did update the same record, when the sites resync then one version of the record will overwrite the other version.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Geo-redundant SM operation</b></p>
+<p>SM operates in active/active mode and uses database cross-site replication to keep data
+                    synchronized between the two SMs. SM serves as the entry point into the NCC
+                    deployment for all GUI and API gateway APIs such as provisioning, mobile-app
+                    interactions, etc. When new devices/groups/accounts are provisioned, and if the
+                    provisioning request does not select the Home NCC ME, the SM then uses a
+                    least-loaded algorithm to assign that entity to a primary ME as well as a
+                    secondary ME. SM maintains a view of the location of all entities and which MEs
+                    are serving as the primary/secondary ME for each. Although SM operates in
+                    active/active mode, back-to-back related provisioning transactions (for example,
+                    provisioning multiple devices in the same account) should always be sent to the
+                    same SM to avoid any race conditions between those transactions and the
+                    cross-site data replication.</p>
+<p>To support the various Ud distribution methods one SM is specified as primary, which is statically configured, and will have the primary role unless it is down, in which case the secondary will assume the primary role. When the designated primary comes back up, it immediately assumes the primary role again. The SM core does not behave differently based on current primary or secondary role. It makes this status available to plugins so that they can use the information to effect deployment-specific behavior. The Ud plugin communicates with the SM to discover which SM is primary. The Ud plug-in has three options:</p><ul>
+<li>
+<p>For Ud distribution to one SM at a time, the Ud plugin processes any update that arrives</p>
+</li>
+<li>
+<p>For round robin Ud distribution, the UP (secondary, standby to the primary) SM Ud plugin returns a 307 redirect to the sender, specifying the sender use the other site for updates to the UP (primary) SM.</p>
+<p>With round robin distribution, the external database continues to be responsible for detecting that an SM is not responding to notifications and to switch all notifications to the responsive SM.</p>
+</li>
+<li>
+<p>For duplicate Ud distribution, the secondary, or standby, SM Ud plugin drops updates</p>
+<p>With duplicate Ud distribution, the external database does not have to take action if one SM is not responding to notifications, so it is possible that the primary SM is available but some or all Ud notifications are not able to reach it due to a WAN issue. In that case, the Ud notifications to the secondary SM would still be dropped since the primary SM is available and active. </p>
+</li>
+</ul>
+<p> The SM makes the SM states and whether they are UP or DOWN available to the plug-in components,
+                    including but not limited to Ud and HLAPI. See the section “Ud distribution and
+                    primary SM determination” in the <i>NCC Administration Guide</i> for more
+                    information.</p>
+<p>The primary can be explicitly set in the topology parameter of the VNFD Extensions file
+                    (topology/spssite/ &lt;spssiteid&gt; primarysmsite). See the <i>NCC Installation
+                        and Upgrade Guide</i> for more information. If a primary SM/IG is not
+                    specified in the topology parameter of the VNFD Extensions file, the SMs, IGs,
+                    and MEs will use the SM/IG VIPs (Lower OAM IP is assigned as primary) to
+                    determine the primary SM.</p>
+<note>If the topology/spssite/ &lt;spssiteid&gt; primarysmsite parameter key is not defined in the
+                    VNFD Extension file, the mechanism will use the Lower VIP to decide which is the
+                    Active SM; however, you can override the behavior of the parameter key using the
+                    “Setting/changing the primary SM site status tool” in the “Tools” chapter of the
+                        <i>NCC Administration Guide</i>.</note>
+<p>The local view of the In Service/Out of Service state of the other SM is determined by the heartbeat component. The SMs in each site maintain (in one SM site) a primary active UP or DOWN state and (in the other SM site) a secondary standby UP or DOWN (as a standby to the primary) state as follows.</p><ul>
+<li>
+<p>The primary SM will be in the UP (Active) state if it is In Service.</p>
+</li>
+<li>
+<p>The secondary SM will be in the UP (Standby) state if the primary SM is In Service. That is, standby to the primary. </p>
+</li>
+<li>
+<p>If both SMs are In Service and the primarysmsite topology configuration is not specified, the SM or IG with the "Lower VIP" is assigned as the Primary SM.</p>
+</li>
+<li>
+<p> If the primary SM is Out Of Service and the secondary SM is In Service, then the secondary SM in the UP (Active) state will become the primary. That is, until the other SM comes back into service at which point the secondary SM that is currently the primary, will surrender the primary role back to the original primary SM.</p>
+</li>
+<li>
+<p>If both SMs are in service, the SM or IG with the primarysmsite topology configuration set as True is assigned as the Primary SM.</p>
+</li>
+</ul>
+<p>If an Unknown Device is created at the ME with a Gx attach call, the ME will send the NotifyDevice request to the Primary SM only.   </p>
+<note>If a number of devices are provisioned to one ME at a time sequentially, the number of devices
+                    may not be balanced among the partitions.</note>
+<p>All device/group/account entities have their data present on two NCC MEs in the network. NCC uses
+                    cross-site data replication to keep the data for those entities in sync across
+                    those two MEs. The portion of data that is maintained between any two given MEs
+                    is referred to as a “partition”. Within a data partition, about half of the
+                    entities are primary on one ME and secondary on the other, while the other half
+                    of the entities are secondary on that first ME and primary on the other. In a
+                    healthy network, both sides of the data partition are actively processing
+                    transactions for the entities for which that given ME is primary.</p>
+<p>NCC simplifies network integration by providing a network routing function such that external
+                    routing systems are not required. NCC MEs have a global mapping table that
+                    maintains knowledge of the primary and secondary ME for every device, group, or
+                    account. This data is N-way replicated across all MEs. When a call lands on a
+                    given ME, it first checks to determine whether it is the currently-active ME for
+                    that device. If not, that ME will forward the call to the currently active ME
+                    where processing will be performed. (See note below about “Isolated 1+1 Pairs”
+                    which has an exception to this global routing.)</p>
+<p>For unknown devices that attach to an NCC ME for the first time, and NCC is integrated with an
+                    external SPR, the receiving NCC ME will serve as the home NCC, retrieve data
+                    from the SPR, and process that call. In addition, the ME informs SM so that SM
+                    can add this knowledge to its network mapping data. A partition is selected
+                    based on a least-loaded algorithm. Over time, all the partitions will be
+                    balanced. Even if there is a little imbalance created because of some stale
+                    sessions, yet to be audited, the least-loaded algorithm on the MEs will
+                    eventually balance out all the partitions.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>1+1 NCC Pairs</b></p>
+<p>The NCC supports deploying MEs in the traditional 1+1 (mated pair) deployment model. There is
+                    only one data partition and each ME serves as primary for half of the
+                    device/group/account entities with the other ME as secondary, and vice-versa. If
+                    one ME fails, all of its traffic will get processed by the mate ME. Thus, each
+                    ME must be engineered to reserve 50% of its capacity for these failure
+                    scenarios.</p>
+<fig>
+<title>1+1 NCC Pair deployment</title>
+<image href="../images/1plus1deploy_default.png"/>
+</fig>
+<p>An NCC deployment can have multiple pairs of MEs. Each pair contains one data partition and
+                    device/group/account data is replicated only within that given pair. Traffic
+                    failover always occurs only within that given pair. The global mapping tables on
+                    the ME contain the data for all MEs in the entire network, not just for this
+                    pair. In this way, a call can land on any ME in any pair and it will get
+                    correctly routed to the active ME for that device. So while the
+                    device/group/account data is replicated only within the single pair of MEs, the
+                    global mapping tables are N-way replicated between all MEs. With this NCC
+                    architecture, there is no need for external network routers. This architecture
+                    also allows devices to roam between regions and have their transactions always
+                    routed back to the home NCC, regardless of which ME pair received the
+                    transaction from the roaming device.</p>
+<note>One pair of MEs could be provided by the ME components of a pair of IG sites.</note>
+<p>The deployment model above is referred to as “networked 1+1 pairs”, since all MEs have global
+                    mapping knowledge of all other MEs, beyond the ME’s own pair, and can correctly
+                    route calls to the correct ME anywhere in the network. This is the standard NCC
+                    model when 1+1 pairs are deployed.</p>
+<p>Network growth in a 1+1 deployment is always two at a time (grow a new pair).</p>
+<note>On an exception basis, there may be networks that have special routing provided by external
+                    systems and do not require NCC routing between pairs. This deployment model is
+                    referred to as “isolated 1+1 pairs” since each pair of MEs has global mapping
+                    data only for the devices/groups/accounts in its own pair, with no knowledge of
+                    the data in the other ME pairs. In this deployment, the network operator is
+                    responsible for correctly routing calls to the right ME pair in all normal and
+                    roaming use cases. An ME will continue to forward calls to the other ME in the
+                    pair if the other ME is the currently active ME for that given device. The
+                    "isolated 1+1 pairs" deployment is not supported when one pair of MEs is
+                    provided by a pair of IG sites.</note>
+</sectiondiv>
+</section>
+<section><title>Geo-community</title>
+<p>The following figure shows a geo-redundant NCC system of four sites, named as MEs, along with two
+                SMs, making up a geo-community. A geo-community is a group of NCC servers (SMs and
+                MEs) and each is considered a member. “Members” of the geo-community in the context
+                of the heartbeat include SMs and MEs and each is considered a “site”. </p>
+<fig>
+<title>Community example</title>
+<image href="../images/hbcommunityexamp_default.gif"/>
+</fig>
+<p>One SM, or SM pair, can manage a number of sites that contain an Policy and/or NCC ME. For
+                example, in a four site deployment, each site could be configured as an NCC ME that
+                is managed by an SM. The SM can manage more than one ME in a deployment and are
+                typically deployed as redundant pairs. </p>
+<p>The geo-community is configured as part of an NCC site installation. Within the community, the
+                MEs can share partitions that define replication partners and specify which sites
+                are going to take over for a specific site in the case of a failure. The heartbeat
+                is part of the decision making process that allows the NCC to know if a site that
+                may be protecting another site is in-service (IS) or out-of-service (OOS). The
+                partitions are added at installation time and can be configured such that equal
+                parts of the subscriber, device, and service data are replicated and shared with one
+                other site in the deployment. Routing and mapping data are replicated and shared
+                equally amongst all the sites in the geo-redundant deployment to provide redundancy
+                in the NCC system.</p>
+<p>Topology data must be configured on each NCC SM and ME in the network to identify the location of
+                all NCC systems with which the SM or ME will exchange heartbeats. The heartbeat
+                service gets its topology data from the serviceDiscovery file, which is configured
+                at installation time. Topology data is used in the determination of whether or not a
+                site is in service. A location is a building, complex, or buildings in close
+                proximity that house one or more NCC installations (SM and/or MEs).  </p>
+<p>The following figure shows a representation of name spaces where Geo-sites share a subset of data amongst themselves for replication purposes in a geo-redundant system. In this example system:</p><ul>
+<li>
+<p>NS1 will be replicated between Geo-site 1 and Geo-site 2,</p>
+</li>
+<li>
+<p>NS2 will be replicated between Geo-site 1 and Geo-site 3</p>
+</li>
+<li>
+<p>NS3 will be replicated between Geo-site 3 and Geo-site 2</p>
+</li>
+</ul>
+<fig>
+<title>Geo-redundant replication</title>
+<image href="../images/georeplication1_default.gif"/>
+</fig>
+<p>To restore the database on Geo-site 1 in the event of a failure, the operator must restore NS1 and NS2 and so on. </p>
+</section>
+<section><title>Heartbeat monitoring</title>
+<p>There is an NCC heartbeat that allows geo-redundant NCC sites to communicate status about their
+                own connectivity and state, as well as their view of the other known sites on a
+                component basis—given that a site can have one or both components. The heartbeat
+                allows a site to make decisions for a device based on the state of the sites that
+                share the partition to which the device belongs. </p>
+<p>The components in the site are the SM and ME and work such that if only the SM or ME portion of a site is impacted, the other site will only take over for the broken component and not both. If a site has more than one component, each SM or ME component is computed separately.</p>
+<p>The heartbeat works over the OAM network for all SMs and MEs, and also polls over the Diameter network for MEs supporting Diameter traffic. The OAM network includes the MEs along with the SMs. The Diameter network does not include the SMs. The two networks are expected to be diverse which makes the heartbeat service more robust in the case where one of the networks is having issues. If some messages get lost in the cloud, a site can use the information from others in the community to determine the component(s) state(s) for a member that did not report.</p>
+<note>If a partition does not span multiple sites, the site is not geo-redundant. In a simplex NCC
+                (non-geo-redundant) deployment, the system will never voluntarily take itself
+                offline due to degraded health; however, if the site does become unhealthy, you may
+                experience degraded performance.</note>
+<p>For more information about Heartbeat, see the NCC Administration guide.</p>
+</section>
+<section><title>SM and ME behavior in operation</title>
+<p>According to the heartbeat, if any system views another system as In Service, then all systems will treat the other system as In Service. For example, if SM1 and ME1 at site 1 are not receiving heartbeats from ME2 at site 2, and if SM1 and ME1 receive a heartbeat from SM2 indicating that ME2 is In Service, then they will continue to treat ME2 as In Service.</p>
+<p>If an ME is Out of Service according to the consensus of the network obtained from the heartbeat
+                mechanism, the secondary ME for a subscriber entity acts on behalf of the primary ME
+                for all network and API request handling, session management, subscriber data
+                management, and life cycle management events. Specifically, the secondary ME will
+                perform the following in the case of an NCC failover:</p><ul>
+<li>
+<p>handle requests for new sessions</p>
+</li>
+<li>
+<p>handle requests regarding sessions previously established by either the primary or secondary
+                        NCC</p>
+</li>
+<li>
+<p>time out sessions and reservations (audit sessions and reservations)</p>
+</li>
+<li>
+<p>audit device data when applicable</p>
+</li>
+<li>
+<p>execute life cycle events</p>
+</li>
+<li>
+<p>perform any and all resulting actions as if it were the primary NCC </p>
+<p>Resulting actions include updating subscriber data, sending network requests such as RAR, ASR, and SNR, and sending notifications from the NS.</p>
+</li>
+<li>
+<p>send timer triggers on behalf of the primary NCC</p>
+</li>
+</ul>
+<p>There are always some database replications in progress when an ME fails and the secondary ME takes over for the entities for which the failed ME was primary. Since it is not known how long the primary ME may be OOS, the secondary ME takes over all functions of all applications so that service continues with almost no interruption. If replication is 1 to 2 seconds behind, a small fraction of subscriber data on the secondary ME is missing the latest changes. The primary ME will recover and support those transactions with the latest data as replication will continue and catch up within a couple of seconds.</p>
+<p>If the primary ME for a provisioning operation is OOS, the SM will send the provisioning request to the secondary ME, which will eventually replicate the changes to the primary ME. Provisioning requests make the same data changes whether sent to the primary or secondary (for example, setting the primary ME and partition for a created entity to match the primary ME and partition for referenced entities).</p>
+<sectiondiv>
+<p><b>Mapping records and routing </b></p>
+<p>Session mapping records include all applicable information for the network and are automatically
+                    created or deleted by an NCC. They include sufficient data to identify the
+                    primary NCC and the secondary NCC. Any cause of missing mapping records result
+                    in an error response; for example, replication falling behind, failed
+                    replication, or inadvertently deleted records. </p>
+<p>The mapping records are replicated to all the MEs that share the global namespace. If you have multiple 1+1 pairs that do not know about each other, the replication will only occur in one pair. However, if all MEs know about each other and share the global namespace, the mapping records will be replicated everywhere. </p>
+<p>Session mappings are deleted when a session ends. If for some reason that fails, the mapping will eventually be audited out. </p>
+<p>Successful routing depends on the timely replication of mapping records, so it is imperative to troubleshoot and correct lagging replication to ensure proper message routing. See the section about Site Routing in the <i>Operation, Administration, and Maintenance Guide</i>.</p>
+<p>Network traffic sources may have direct connections to at least two NCCs or may route traffic
+                    through a DRA. That includes OCSs and PCRFs sending traffic to each other,
+                    whether only one is an NCC or both are deployed on the same NCC. A traffic
+                    source or DRA may find that its primary route for a domain or destination host
+                    is down and will route to a different NCC because that is configured as an
+                    alternate route to the same domain or host. The cause of the alternate routing
+                    could be a WAN failure or a failure of the actual NCC that is the primary route
+                    or destination host. </p>
+<p>Any NCC directly connected to a gateway in the region can receive any request and route it to the
+                    active NCC for the transaction, if it can reach that NCC. However, if the
+                    gateway is not directly connected to the targeted NCC, which can happen in a 1+1
+                    configuration, messages originating from that NCC (like a GxRAR) cannot be sent
+                    to the gateway unless a Diameter route is configured to route the message from
+                    the one NCC to the NCC that is connected directly to the gateway. This Diameter
+                    route must be configured using either Host Based or Realm Based Routes, which is
+                    found in the Diameter application of the SM GUI. The following figure is an
+                    example of the realm based routing from a site that does not have a direct
+                    connection to a gateway:</p>
+<fig>
+<title>Realm based routing from a site without a direct connection to a gateway</title>
+<image href="../images/realmbasedroutingex_default.png" placement="break" scale="70"/>
+</fig>
+<p>If an NCC can be reached or if an NCC is reachable means that communication with the system is
+                    working. That includes Diameter communication for routing of Diameter messages
+                    between MEs as well as SM to ME SOAP communications. All transactions must be
+                    routed to the active home NCC, including REST API transactions; otherwise, ME
+                    data could become corrupted, or wrong answers could be given to queries, or an
+                    ME could be In Service according to the heartbeat mechanism communicated over
+                    the OAM WAN but the SOAP requests to the ME fail over the other WAN used for
+                    non-OAM traffic.</p>
+</sectiondiv>
+</section>
+</conbody></concept>

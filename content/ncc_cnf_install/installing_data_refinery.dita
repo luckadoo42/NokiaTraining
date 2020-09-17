@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="installing_data_refinery">
+  <title>Deploying DR Helm charts</title>
+  <taskbody>
+    <context>
+      <p>This procedure provides instructions on how to deploy the DR Helm charts for ME and IG
+        CNFs. There are three DR Helm charts to deploy:<ul id="ul_pnz_qwq_xlb">
+          <li>DR-eventlink Helm chart that defines the core Data Refinery. This Helm chart has ME
+            version and IG version.</li>
+          <li>SPS-streams Helm chart that defines Redis database and SPS processing streams.</li>
+          <li>AP-streams Helm chart that defines Assume Positive (AP) streams. This Helm chart is
+            installed only for those MEs that act as a CHF router. </li>
+        </ul></p>
+      <p>All DR Helm charts have the <filepath>values</filepath> file, which is the template that is
+        used to produce the Overrides input file. The input for the DR Helm charts is described
+        within the charts itself in the <filepath>readme</filepath> and <filepath>values</filepath>
+        files. To view these files, enter:</p>
+      <codeblock>helm show readme ./dr-eventlink-chart-*.tgz </codeblock>
+      <codeblock>helm show readme ./sps-streams-chart-*.tgz </codeblock>
+      <codeblock>helm show values ./dr-eventlink-chart-*.tgz </codeblock>
+      <codeblock>helm show values ./sps-streams-chart-*.tgz </codeblock>
+    </context>
+    <steps>
+      <step>
+        <cmd>Log in to the Kubernetes control node as root.</cmd>
+      </step>
+      <step>
+        <cmd>Set the following based on the CNF's <filepath>site.conf</filepath> data:</cmd>
+        <info>
+          <ul id="ul_i11_tm2_1nb">
+            <li>
+              <p><codeph>SITE_TYPE</codeph> to the CNF's type in lowercase <codeph>ig</codeph>,
+                  <codeph>sm</codeph> or <codeph>me</codeph>, for
+                example:<codeblock>SITE_TYPE="${SITE_TYPE:-me}"</codeblock></p>
+            </li>
+            <li>
+              <p><codeph>NAMESPACE</codeph> to the DR charts' namespace, for
+                example:<codeblock>NAMESPACE="${NAMESPACE:-sps-btel-me}"</codeblock></p>
+            </li>
+            <li>
+              <p><codeph>INGRESS_IP</codeph> to the user-facing IP/FQDN of your edge node, for
+                example:<codeblock>INGRESS_IP="${INGRESS_IP:-192.168.116.147}"</codeblock></p>
+            </li>
+            <li>
+              <p><codeph>CKEY_FQDN</codeph> to the value of user-facing IP/FQDN of Web SSO, for
+                example:<codeblock>CKEY_FQDN=192.168.116.147</codeblock></p>
+            </li>
+            <li><codeph>ISTIO_VERSION</codeph> to 1.4 or 1.5, for example:<p>
+                <codeblock>ISTIO_VERSION="${ISTIO_VERSION:-1.4}"</codeblock>
+              </p></li>
+            <li> If you are using pod prefixes, specify <codeph>POD_NAME_PREFIX</codeph>.</li>
+            <li> If you are using container prefixes, specify
+              <codeph>CONTAINER_NAME_PREFIX</codeph>.</li>
+          </ul>
+        </info>
+      </step>
+      <step>
+        <cmd>Update the following:</cmd>
+        <info>
+          <ul id="ul_fpd_cyq_xlb">
+            <li><codeph>AP_ENABLED</codeph> as follows:<ul id="ul_msr_p2w_wmb">
+                <li>If Assume Positive (AP) is required,
+                  then<codeblock>AP_ENABLED="true"</codeblock></li>
+                <li>Otherwise:<codeblock>AP_ENABLED="false"</codeblock></li>
+              </ul></li>
+            <li><codeph>NLT_IMAGE_NAME_OVERRIDES</codeph> as
+              follows:<codeblock>NLT_IMAGE_NAME_OVERRIDES="false"</codeblock></li>
+            <li><codeph>CKEY_PORT</codeph> as
+              follows:<codeblock>CBUR_ENABLED="true"</codeblock></li>
+            <li><codeph>DEV_OVERRIDES</codeph> to the user-facing port of Web
+              SSO.<codeblock>DEV_OVERRIDES="false"</codeblock></li>
+            <li><codeph>CMDB_SIMPLEX</codeph> as
+              follows:<codeblock>CMDB_SIMPLEX="true"</codeblock></li>
+            <li><codeph><codeph>CBUR_ENABLED</codeph></codeph> as
+              follows:<codeblock>CBUR_ENABLED="true"</codeblock></li>
+          </ul>
+        </info>
+      </step>
+      <step>
+        <cmd>Find out the Istio certificate by entering:</cmd>
+        <info>
+          <codeblock>STIO_CERT_SECRET_NAME="istio.default"
+ISTIO_CERT_FIELD_NAME="root-cert.pem"
+ALTERNATIVE_CERTIFICATE_EXISTS=$(kubectl -n $NAMESPACE get secrets | grep sps-credential | wc -l)
+if [ $ALTERNATIVE_CERTIFICATE_EXISTS -gt 0 ]; then
+  ISTIO_CERT_SECRET_NAME="sps-credential"
+  ISTIO_CERT_FIELD_NAME="cert"
+fi</codeblock>
+        </info>
+      </step>
+      <step>
+        <cmd>Fetch DR Helm package by entering:</cmd>
+        <info>
+          <codeblock>helm repo add drdo-candidates https://repo.lab.pl.alcatel-lucent.com/drdo-helm-candidates
+helm repo update
+helm fetch drdo-candidates/dr-eventlink-chart
+helm fetch drdo-candidates/sps-streams-chart
+helm fetch drdo-candidates/ap-streams-chart
+ 
+DR_VERSION=$(helm show chart dr-eventlink-chart*.tgz | grep version | tail -1 | awk '{print $2}')
+SPS_STREAMS_VERSION=$(helm show chart sps-streams-chart*.tgz | grep version | tail -1 | awk '{print $2}')
+AP_STREAMS_VERSION=$(helm show chart ap-streams-chart*.tgz | grep version | tail -1 | awk '{print $2}')</codeblock>
+        </info>
+      </step>
+      <step>
+        <cmd>Do the procedure <xref href="deploying_dr_eventlink_helm_chart.dita"/>.</cmd>
+      </step>
+      <step>
+        <cmd>If <codeph>AP_ENABLED == "true"</codeph>, do the procedure <xref
+            href="deploying_ap_streams_helm_chart.dita"/>.</cmd>
+      </step>
+      <step>
+        <cmd>Do the procedure <xref href="deploying_sps_streams_helm_chart.dita"/>.</cmd>
+      </step>
+      <step>
+        <cmd>Verify the Eventlink UI by going to <i>https://&lt;server>/eventlink</i> as follows: </cmd>
+        <info>
+          <ul id="ul_uhn_52g_dmb">
+            <li>Enter <codeph>dr-admin</codeph> for username.</li>
+            <li>Enter your password. <note>To get the password, run:
+                <codeblock>run: echo -n 'ChangeIt123!' | base64</codeblock></note></li>
+          </ul>
+        </info>
+      </step>
+    </steps>
+  </taskbody>
+</task>

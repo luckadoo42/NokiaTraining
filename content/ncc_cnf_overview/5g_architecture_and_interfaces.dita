@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="e34_zts_qlb">
+    <title>5G architecture and interfaces</title>
+    <conbody>
+        <p>The 5G architecture is defined as service-based and the interaction between network
+            functions is represented using service-based interfaces for their interactions. The
+            service-based architecture uses network functions (for example, Session Management
+            Function (SMF)) within the control plane to enable other authorized network functions to
+            access their services. A subset of the 5G service-based architecture with the supported
+            protocol interfaces is shown in the following figure. </p>
+        <fig id="fig_hc3_sjg_dmb">
+            <title>5G architecture and interfaces in NCC CNF</title>
+            <image placement="break" href="../images/cnf_overview_5Garchitecture-and-interfaces.GIF"
+                align="center" id="image_ic3_sjg_dmb" scale="35"/>
+        </fig>
+        <p>The initial NCC CNF version supports the Charging Function (CHF). NCC CNF supports
+            interfaces such as N28 interface between CHF and PCF as defined in 3GPP standard 29.594.
+            NCC provides charging support for Nchf_SpendingLimitControl (N28). The
+            Nchf_SpendingLimitControl service enables transfer of policy counter status information
+            relating to subscriber spending limits from the CHF to the NF consumer.</p>
+        <p>NCC CNF also supports the N40 interface between SMF and CHF as defined in TS 32.240 to
+            enable online and offline charging.</p>
+        <p>Incoming 5G messages arrive on HTTP/2 and come through the HTTP ingress gateway. They are
+            then load balanced to the charging pods. Responses are delivered back through the HTTP
+            infrastructure to the originating source.</p>
+        <p>If the subscriber / device for a received 5G message is not homed on the receiving NCC
+            ME, the charging pod on that ME will leverage its site routing function to determine the
+            currently active home ME. The message is converted into a Diameter message as per a
+            configured conversion dictionary and routed to the destination home ME, where it gets
+            appropriately processed per 5G requirements. Responses back to the originating source
+            will be over HTTP/2, just as the initial message.</p>
+        <p>NCC CNF supports metrics for 5G message handling that enable separate analysis from the
+            4G Diameter message handling. For more information about 5G metrics and alarms, see the
+            respective chapters for measurements and alarms in <i>CNF Operation, Administration, and
+                Maintenance Guide</i> in the NCC documentation set.</p>
+    </conbody>
+</concept>

@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-cn01-tczza-d1e988"><title>Diameter configuration in NCC</title><conbody>
+<section><title>Diameter configuration framework overview</title>
+<p>The NCC Diameter Configuration application organizes its Diameter message manipulation
+    functionality into application plugins. Each application plugin addresses a specific message
+    manipulation scenario that enables in-house implementation of functions to quickly and easily
+    address generic message manipulation, as well as specific routing use cases. By providing the
+    capability to configure and sequence customized application plugins, the routing profile offers
+    the flexibility to tailor a wide range of Diameter routing cases for specific and precise
+    scenarios. The following figure illustrates how the plugins may appear in NCC at a high
+    level.</p>
+<fig>
+<title>Application plugins in NCC</title>
+<image href="../images/appplugins1_default.gif"/>
+</fig>
+<p>Application plugins are automatically enabled for fresh installations of the application
+    software. A newly installed NCC-application offers capabilities for the following tasks:</p><ul>
+<li>
+<p>act as a Diameter Routing Agent (DRA), providing high speed, low latency routing of Diameter messages to the correct elements in the network</p>
+</li>
+<li>
+<p>validate and filter messages based on AVPs</p>
+</li>
+<li>
+<p>perform shedding of Diameter messages in overload situations</p>
+</li>
+<li>
+<p>validate incoming messages</p>
+</li>
+<li>
+<p>create a whitelist of configured devices or subscribers</p>
+</li>
+<li>
+<p>route messages to specific destinations based on a pattern in the destination name</p>
+</li>
+<li>
+<p>de-prioritize degraded routes and re-route to better performing routes</p>
+</li>
+<li>
+<p>balance routing across a set of configured pools</p>
+</li>
+<li>
+<p>protect downstream peers and destinations against overload</p>
+</li>
+<li>
+<p>provide Diameter message tracing functionality</p>
+</li>
+<li>
+<p>provide internal NCC site routing for Diameter messages</p>
+</li>
+</ul>
+<p>The request sequence is set to the following:</p><ul>
+<li>
+<p>overload protection</p>
+</li>
+<li>
+<p>throttling (incoming requests before processing)</p>
+</li>
+<li>
+<p>Diameter rule engine </p>
+</li>
+<li>
+<p>message validation </p>
+</li>
+<li>
+<p>Diameter routing </p>
+</li>
+<li>
+<p>NCC site routing </p>
+</li>
+<li>
+<p>OCS</p>
+</li>
+<li>
+<p>PCRF</p>
+</li>
+</ul>
+<p>The response sequence is set to the following:</p><ul>
+<li>
+<p>Diameter rule engine </p>
+</li>
+<li>
+<p>Diameter routing </p>
+</li>
+<li>
+<p>Site routing (inside of NCC only)</p>
+</li>
+<li>
+<p>downstream overload protection</p>
+</li>
+<li>
+<p>OCS</p>
+</li>
+<li>
+<p>PCRF</p>
+</li>
+</ul>
+<note>The Message Tracing Plugin is not enabled by default.<p/></note>
+<p>To enable the NCC to route Diameter messages, configure Diameter peers, routes, and application
+    plugins using the Service Manager GUI.</p>
+</section>
+<section><title>Diameter Configuration provisioning overview </title>
+<p>The initial view for each tab in the SM GUI is a list of configured objects for that area. From the list page, you can create a new object, or perform an action (edit, distribute, clone, or delete) an existing one using the buttons on the right side.</p>
+<p>After you make an NCC configuration change using the SM, you must send the configuration to the
+    application using the Distribute button on the list form for the change to take effect on the
+    NCC. The Distribute button opens the distribution form where you can choose one or more
+    available configurations from one list to a remote item in another list.</p>
+<p>For profiles, the typical provisioning flow is:</p><ol>
+<li>
+<p>Create the profile</p>
+</li>
+<li>
+<p>Save the profile</p>
+</li>
+<li>
+<p>Create a configuration referencing the profile</p>
+</li>
+<li>
+<p>Send the configuration to the ME using the Distribute button on the list form</p>
+</li>
+</ol>
+<p>Actions appear as you hover the cursor over each line of configured items in the main windows of each menu item. Select one of the following actions as they appear and as applicable:</p><ul>
+<li>
+<p>
+<!--MMO resource relative URI: ../../DDE/DDE_UserGuide/Graphics/Edit_default.png-->
+<image href="edit_default.png"/>
+ - to modify the existing configuration.</p>
+</li>
+<li>
+<p>
+<!--MMO resource relative URI: ../../DDE/DDE_UserGuide/Graphics/Delete_default.png-->
+<image href="delete_default.png"/>
+ - to delete the existing configuration.</p>
+</li>
+<li>
+<p>
+<!--MMO resource relative URI: ../../DDE/DDE_UserGuide/Graphics/Clone_button_default.jpg-->
+<image href="clone_button_default.jpg"/>
+ - to create a replica of the existing configuration.</p>
+</li>
+<li>
+<p>
+<!--MMO resource relative URI: ../Graphics/distribute_default.png-->
+<image href="distribute_default.png"/>
+ - to distribute the existing configuration.</p>
+</li>
+</ul>
+<sectiondiv>
+<p><b>Editing objects</b></p>
+<p>Some entities cannot be configured after they are activated or distributed. Configuration that is created as a profile cannot be modified after they have been distributed. Objects such as routes are created individually and can be edited.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Cloning objects</b></p>
+<p>The SM supports creating a new configuration for an object by cloning an existing one. When you click the clone button for an object, a new configuration is created with identical settings pre-populated and opened for editing. Fields that are used as a primary identifier, such as origin-host for a peer or the profile name for any profile, are not copied to the new configuration. Cloning is supported for all profile and standalone objects.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Provisioning for emergency services</b></p>
+<p>Using the SM message filters, you can give emergency services related requests priority, even when the system is in a overload state or throttling requests. For example, any request matching the Emergency APN AVP could be excluded from throttling. More information about emergency services is available in the Global Configuration Guide.</p>
+</sectiondiv>
+</section>
+<section><title>Profile-based provisioning</title>
+<p>The Service Manager supports provisioning configuration profiles that group a set of configuration parameters that apply to a feature. The profile can then be distributed and applied to multiple managed entities at the same time. For example, the same configuration can be applied to a group of Diameter peers.</p>
+<p>The NCC supports profiles for configuring:</p><ul>
+<li>
+<p>Diameter peer connection</p>
+</li>
+<li>
+<p>routing</p>
+</li>
+<li>
+<p>throttling</p>
+</li>
+<li>
+<p>system overload protection</p>
+</li>
+<li>
+<p>downstream overload protection</p>
+</li>
+<li>
+<p>Diameter rule system versions</p>
+</li>
+<li>
+<p>Message Tracing Plugin</p>
+</li>
+</ul>
+<p>After being created, a profile must be distributed to an NCC site and activated before it can be
+    used by that NCC site. Profiles have an associated state of Draft, Release, or Active. While
+    being created, a profile is in Draft state. When it is distributed to an NCC, it moves to the
+    Release state. When the profile is activated on the NCC, it moves to the Active state.</p>
+<note>If a Profile is in Active state, while it cannot be edited, it can be re-distributed. A
+    profile that is in Release stte can be edited and re-distributed. <p>A profile is activated on
+     the NCC either via assignment of that profile to an NCC Diameter Peer or to the NCC itself at
+     the system level using a Configuration object, for example a Routing Configuration for the
+     Routing Profile.</p></note>
+</section>
+</conbody></concept>

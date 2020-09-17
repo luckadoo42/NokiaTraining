@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id ="id9YZ-08540-UG05-PCZZA-d1e155172"><title>Message tracing profile overview</title><conbody>
+<section>
+
+    <p>The NCC provides the ability to trace Diameter message flows through the system allowing the: </p><ul>
+
+<li>
+<p>Customer to track events related to a subscribing device so that the customer can diagnose problems related to the subscriber's service</p>
+</li>
+<li>
+<p>Nokia personnel to diagnose and debug problems in the NCC</p>
+</li>
+</ul>
+<p>The Message Tracing Plugin uses the Logging and Diameter Logging Contexts for the actual tracing functionality, but uses the Diameter Message and Computational contexts for determining the conditions under which the tracing occurs.</p>
+<p>Logging performed with Message Tracing Plugin often takes precedence over logging via the logs4j.xml file, but this is because the Message Tracing Plugin and Log4j interact and it is likely that a Diameter message will be flowing through more often than someone updating by command line via log-level. In reality, the last issued request has precedence.</p>
+<p>Tracing can log information about the current Diameter message that is being processed and/or the
+                state of the NCC product. Message flows may be identified by their presence or
+                absence in sets, or some other AVP condition matches. </p>
+<p>All tracing transactions are logged. The messages will be logged wherever the logger has been configured in the log4j file (for most loggers this is the SPSServer.log by default). </p>
+<sectiondiv>
+<p><b>Enabling tracing</b></p>
+<p>You enable the plugin once and use it for as long as it is needed. Then you must disable the plugin when it is no longer needed. </p>
+<p>You must configure the plugin first in the tpa.properties file as follows: </p>
+<fig>
+<codeblock>dcp.plugins.processor=systemtype=PROCESSOR%requestsequence=Throttling:Ingress,Overload Protection:,Tracing:exampleName,Heartbeat:,Message Validation:,Site Routing:,Rule Engine:,ReTransmit Plugin:,PCRF Plugin:,SPOCSPlugin:%responsesequence=Tracing:exampleName,ReTransmit Plugin:,Rule Engine:</codeblock>
+</fig>
+<p>Tracing can be used multiple times in both the request and response sequence by providing a profile name after the Tracing: argument. The profile name is optional and can be repeated. In the above example, the profile name would be &#8220;exampleName&#8221;. The following is an example of enabling tracing with multiple profiles:</p>
+<fig>
+<codeblock>dcp.plugins.processor=systemtype=PROCESSOR%requestsequence=Throttling:Ingress,Overload Protection:,Tracing:exampleName,Heartbeat:,Message Validation:,Site Routing:,Rule Engine:,ReTransmit Plugin:,PCRF Plugin:,SPOCSPlugin:%responsesequence=Tracing:exampleName,Tracing:exampleName1,Tracing:exampleName2,ReTransmit Plugin:,Rule Engine:</codeblock>
+</fig>
+<p>After you have configured the plugin, you must contact Nokia Support to enable the Message Tracing Plugin. Nokia Support will use a specific Twiddle command to reload the plugin sequence on the Diameter application. The twiddle command is as follows:</p>
+<p>
+<userinput>twiddle localhost invoke com.alcatel.tpapps.ddm:service=DDM reloadPluginsConfigFromProperties</userinput>
+</p>
+<p>Then you must provide a rule or one or more message filters. For example, in the following message filter, the following is valid for criteria:</p>
+<p>
+<userinput>IF (GxCCR.Session-Id) == ex1)</userinput>
+</p>
+<p>As part of the above example, the following are valid as actions but notice the order. The Logging and Diameter Logging Contexts are applied in a specific order where:</p><ol>
+
+<li>
+<p>The LoggingContext logger is set.</p>
+<p>
+<userinput>LoggingContext.Instance.Logger.Set = com.alcatel.tpapps.diameter</userinput>
+</p>
+</li>
+<li>
+<p>The LoggingContext <b>logger Level</b> is set.</p>
+<p>
+<userinput>LoggingContext.Instance.Logger-Level.Set = DEBUG</userinput>
+</p>
+</li>
+<li>
+<p>The LoggingContext <b>logging Level</b> is set. (should be the same as above)</p>
+<p>
+<userinput>LoggingContext.Instance.Logging-Level.Set = DEBUG</userinput>
+</p>
+</li>
+<li>
+<p>The DiameterLoggingContext request or response action is set.</p>
+<p>
+<userinput>DiameterLoggingContext.Instance.Log-Request(Format = DETAILED) (Fields = All)</userinput>
+</p>
+</li>
+</ol>
+<p>
+<b>Caution:</b> Risk of system flooding. Do not turn on DEBUG logs for Diameter at peak times.</p>
+<p>See the sections &#8220;Logging Context&#8221; and &#8220;Diameter Logging Context&#8221; for more information.</p>
+</sectiondiv>
+</section>
+</conbody></concept>

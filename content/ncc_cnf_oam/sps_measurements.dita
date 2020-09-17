@@ -1,0 +1,2996 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="sps_measurements">
+    <title>NCC measurements</title>
+    <conbody>
+        <section id="section_zjc_cjt_mlb">
+            <title>Overview</title>
+            <p>NCC collects measurements for the following areas:<ul id="ul_kg4_kjt_mlb">
+                    <li>Diameter (Base) metrics</li>
+                    <li>Diameter supplemental metrics</li>
+                    <li>Device notification metrics</li>
+                    <li>LDAP metrics</li>
+                    <li>Surepay LDAP metrics</li>
+                    <li>HTTP metrics</li>
+                    <li>HTTP_3GPP metrics for 5G</li>
+                    <li>Site Routing metrics</li>
+                    <li>Rules metrics</li>
+                    <li>Overload Metrics</li>
+                    <li>Rating metrics</li>
+                    <li>PCRF and PCF metrics</li>
+                    <li>Entity count metrics</li>
+                    <li>CDR metrics</li>
+                    <li>Notification server metrics</li>
+                    <li>NRF metrics</li>
+                    <li>Data Refinery metrics</li>
+                    <li>CDR streams metrics</li>
+                </ul></p>
+            <note>Some of the metrics in the following tables are noted as being calculated by
+                applying Prometheus rules on other collected metrics, demarcated by the phrase
+                    "<i>(NCC telemetry package)</i>". These are only available if the NCC Telemetry
+                package is deployed, or if the operator implements these rules in their own
+                Prometheus server. Nokia can provide these rules upon request.</note>
+            <note>
+                <p>For average_latency_last_interval, this is the change in latency over a
+                    configurable period of time, which can be increasing as well as decreasing. For
+                    example, using the diameter_inbound_sum and diameter_inbound_count metrics, the
+                    average_latency_last_ interval is calculated as
+                    follows:<codeblock>rate(diameter_outbound_sum[&lt;period>]) / rate(diameter_outbound_count[&lt;period>])</codeblock></p>
+                <p>Where for example, in the last <codeph>&lt;period></codeph> (let’s say period of
+                    5 minutes), the first value of <codeph>diameter_inbound_sum</codeph> is S1, and
+                    the last value of <i>diameter_inbound_sum</i> is S5. Then:
+                    "rate(diameter_inbound_sum[])" is equal to "(S5 - S1) / 300s" and in the last ,
+                    the first value of "diameter_inbound_count" is C1, and the last value of
+                    "diameter_inbound_count" is C5. Then: "rate(diameter_inbound_count[5 minutes])"
+                    is equal to "(C5 - C1) / 300s" Then the average latency in the last 5 minutes is
+                    as follows:</p>
+                <p>((S5 - S1) / 300s) / ((C5 - C1) / 300s) </p>
+            </note>
+            <note>
+                <p>The value of any of the <i>count since last interval</i> metrics is an
+                    extrapolated value and never an exact value. This behavior is from the way that
+                    Prometheus does the calculation. This is calculated using the increase( )
+                    function; for example, <i>increase(diameter_inbound_ count[10m])</i> or
+                        <i>increase(ldap_count[10m])</i>, etc. The "Increase()" function uses a
+                    minimum of two data points over a time period and based on these two data points
+                    a change in count since last interval value is calculated. Prometheus does an
+                    approximation because it calculates count since last interval in a fail safe way
+                    that is resistant to failures such as scrape miss, node restarts, etc.</p>
+                <p>The recommended value for last interval (default 10 minutes), should be at least
+                    twice that of the granularity period gen3gppxml/default_gran_period) defined in
+                    Gen3GPPXML tool. This is to ensure that the Gen3GPPXML tool, would be able to
+                    take the snapshot of count since last interval metrics at least once. For
+                    example, if the granularity period configured is 300s (5 minutes), you should
+                    configure the last interval window in count since last interval metrics as 10
+                    minutes. See the “Gen3gppxml section” in the NCC Installation Guide for more
+                    information about these parameters.</p>
+            </note>
+            <note>
+                <p>When an incoming 5G message arrives at an NCC ME over HTTP/2, it may be
+                    siterouted to another home NCC ME. For example, consider a case where an
+                    incoming N7 request that first lands on ME 1 is site-routed to ME 2, which is
+                    the home for the device (PGW > ME1 > ME2). The metrics for this example are
+                    established as follows:<ul id="ul_wv1_pkt_mlb">
+                        <li>On ME1, http_3gpp_inbound metrics are pegged along with the site_routing
+                            metric pegged with the “InProtocol” label indicating “http_3gpp” and the
+                            “Decision” label indicating “message sent to primary”.</li>
+                        <li>From ME1 to ME2, the message is forwarded using the Diameter
+                            protocol.</li>
+                        <li>On ME2, the diameter_inbound metrics are pegged to set the “DiameterApp”
+                            label to N7 (for this example) to distinguish this from standard 4G
+                            Diameter messages received. The site_routing metric is then pegged with
+                            the “InProtocol” label indicating ‘http_3gpp’ and the “Decision” label
+                            indicating “processed locally”.</li>
+                    </ul></p>
+            </note>
+        </section>
+        <section id="section_z4q_rkt_mlb">
+            <title>Diameter (Base) metrics</title>
+            <p>The base Diameter measurements record the number of Diameter messages in and out of
+                NCC, the specific type of messages, the result of the message processing, and who
+                was the peer. There are a number of labels within these measurements that provide a
+                rich set of detailed information for understanding the behavior of the NCC Diameter
+                interactions. These metrics are recorded on the ME Diameter Application pods.</p>
+            <p>See the following for Diameter base metrics:<ul id="ul_nfx_tkt_mlb">
+                    <li>“Diameter inbound metrics” describes the Diameter inbound metrics.</li>
+                    <li>“Diameter outbound metrics ” describes the Diameter outbound metrics.</li>
+                    <li>“Diameter supplemental metrics” describes the Diameter inbound and outbound
+                        supplemental metrics.</li>
+                </ul></p>
+        </section>
+        <section id="section_qyb_gx1_nlb">
+            <title>Diameter Inbound (base)</title>
+            <table id="table_pnh_xxd_tmb">
+                <title>Diameter Inbound (base)</title>
+                <tgroup cols="2">
+                    <colspec colnum="1" colname="col1"/>
+                    <colspec colnum="2" colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>diameter_inbound_count</entry>
+                            <entry>Number of inbound Diameter messages accumulated since the start
+                                of this node.</entry>
+                        </row>
+                        <row>
+                            <entry>diameter_inbound_rate</entry>
+                            <entry>Average rate of inbound Diameter messages (per second) during
+                                this recent interval. (calculated sum/interval duration).</entry>
+                        </row>
+                        <row>
+                            <entry>diameter_inbound_average_latency_last_interval</entry>
+                            <entry>Average latency during this recent interval (calculated
+                                sum/count).</entry>
+                        </row>
+                        <row>
+                            <entry>diameter_inbound_average_latency_overall</entry>
+                            <entry>Average latency for all accumulated intervals (calculated
+                                sum/count).</entry>
+                        </row>
+                        <row>
+                            <entry>diameter_inbound_sum</entry>
+                            <entry>Sum of all latencies accumulated since the start of this node (to
+                                calculate averages)</entry>
+                        </row>
+                        <row>
+                            <entry>diameter_inbound_count_last_interval</entry>
+                            <entry>Number of inbound Diameter messages accumulated since last count
+                                interval</entry>
+                        </row>
+                        <row>
+                            <entry>COUNT_I_ERROR</entry>
+                            <entry>Number of Failed IP-CAN Session Establishment Requests</entry>
+                        </row>
+                        <row>
+                            <entry>COUNT_U_ERROR</entry>
+                            <entry>Number of Failed PCEF-Initiated IP-CAN Session Modification
+                                Requests</entry>
+                        </row>
+                        <row>
+                            <entry>COUNT_STR_ERROR</entry>
+                            <entry>Number of Failed AF Session Termination Requests</entry>
+                        </row>
+                        <row>
+                            <entry>COUNT_SLR_SY_ERROR</entry>
+                            <entry>Number of Failed Sy Session Establishment Requests</entry>
+                        </row>
+                        <row>
+                            <entry>COUNT_SNR_SY_ERROR</entry>
+                            <entry>Number of Failed Sy Session Notifications</entry>
+                        </row>
+                        <row>
+                            <entry>COUNT_STR_SY_ERROR</entry>
+                            <entry>Number of Failed Sy Session Termination Requests</entry>
+                        </row>
+                        <row>
+                            <entry>COUNT_SD_CCRU_ERROR</entry>
+                            <entry>Number of Failed TDF-Initiated TDF Session Modification
+                                Requests</entry>
+                        </row>
+                        <row>
+                            <entry>COUNT_SD_CCRT_ERROR</entry>
+                            <entry>Number of Failed TDF-Initiated TDF Session Termination
+                                Requests</entry>
+                        </row>
+                        <row>
+                            <entry><b>Labels (in XML)</b></entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>APP</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                        </row>
+                        <row>
+                            <entry>DIA</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                        </row>
+                        <row>
+                            <entry>HOST</entry>
+                            <entry>SPS host name</entry>
+                        </row>
+                        <row>
+                            <entry>DIAAPP</entry>
+                            <entry>
+                                <p>Diameter App. Possible values:</p>
+                                <p>Gx, Gy, Sy, etc.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>CMD</entry>
+                            <entry>
+                                <p>Diameter Command. Possible values:</p>
+                                <p>RAR, CCR, AAR, etc.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>REQ</entry>
+                            <entry>
+                                <p>Diameter Request Type. Possible values:</p>
+                                <p>INITIAL_REQUEST (1), UPDATE_REQUEST (2), etc.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>RESULT</entry>
+                            <entry>
+                                <p>Possible values shown in Table 4.</p>
+                                <p>DIAMETER_SUCCESS, DIAMETER_LIMITED_SUCCESS, etc.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>IRMHST</entry>
+                            <entry>Diameter ingress realm and host. Will be muted by default (shown
+                                as NA) to reduce metrics verbosity.</entry>
+                        </row>
+                        <row>
+                            <entry>ORMHST</entry>
+                            <entry>Diameter origin realm and host. Will be muted by default (shown
+                                as NA) to reduce metrics verbosity.</entry>
+                        </row>
+                        <row>
+                            <entry>CUSTOM</entry>
+                            <entry>Custom labels are optional AVPs and may be different for each
+                                measurement instance, providing additional system insights as
+                                available. For example, this could indicate that the Event Trigger
+                                was an UE_IP_ADDRESS_ALLOCATE (18)</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_fxg_rx1_nlb">
+            <title>Diameter Outbound (base)</title>
+            <table id="table_sbj_byd_tmb">
+                <title>Diameter Outbound (base)</title>
+                <tgroup cols="2">
+                    <colspec colnum="1" colname="col1"/>
+                    <colspec colnum="2" colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>diameter_outbound_count</entry>
+                            <entry>Number of outbound Diameter messages accumulated since the start
+                                of this node.</entry>
+                        </row>
+                        <row>
+                            <entry>diameter_outbound_rate</entry>
+                            <entry>Average rate of outbound Diameter messages (per second) during
+                                this recent interval. (calculated sum/interval duration).</entry>
+                        </row>
+                        <row>
+                            <entry>diameter_outbound_average_latency_last_interval</entry>
+                            <entry>Average latency during this recent interval (calculated
+                                sum/count).</entry>
+                        </row>
+                        <row>
+                            <entry>diameter_outbound_average_latency_overall</entry>
+                            <entry>Average latency for all accumulated intervals (calculated
+                                sum/count).</entry>
+                        </row>
+                        <row>
+                            <entry>diameter_outbound_sum</entry>
+                            <entry>Sum of all latencies accumulated since the start of this node (to
+                                calculate averages)</entry>
+                        </row>
+                        <row>
+                            <entry>diameter_outbound_count_last_interval</entry>
+                            <entry>Number of outbound Diameter messages accumulated since last count
+                                interval</entry>
+                        </row>
+                        <row>
+                            <entry>COUNT_A_ERROR</entry>
+                            <entry>Number of Failed PCRF-Initiated IP-CAN Session Modification
+                                Requests</entry>
+                        </row>
+                        <row>
+                            <entry>COUNT_AAR_ERROR</entry>
+                            <entry>Number of Failed AF Session Establishment Requests+Number of
+                                Failed AF Session Modification Requests</entry>
+                        </row>
+                        <row>
+                            <entry>COUNT_RAR_ERROR</entry>
+                            <entry>Number of Failed AF Session Update Requests</entry>
+                        </row>
+                        <row>
+                            <entry>COUNT_ASR_ERROR</entry>
+                            <entry>Number of Failed AF Session Abort Requests</entry>
+                        </row>
+                        <row>
+                            <entry>COUNT_SD_RAR_ERROR</entry>
+                            <entry>Number of Failed PCRF-Initiated TDF Session Modification
+                                Requests+Number of Failed PCRF-Initiated TDF Session Termination
+                                Requests</entry>
+                        </row>
+                        <row>
+                            <entry>COUNT_SD_TSR_ERROR</entry>
+                            <entry>Number of Failed TDF Session Establishment Requests</entry>
+                        </row>
+                        <row>
+                            <entry><b>Labels (in XML)</b></entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>APP</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                        </row>
+                        <row>
+                            <entry>DIA</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                        </row>
+                        <row>
+                            <entry>HOST</entry>
+                            <entry>SPS host name</entry>
+                        </row>
+                        <row>
+                            <entry>DIAAPP</entry>
+                            <entry>
+                                <p>Diameter App. Possible values:</p>
+                                <p>Gx, Gy, Sy, etc.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>CMD</entry>
+                            <entry>
+                                <p>Diameter Command. Possible values:</p>
+                                <p>RAR, CCR, AAR, etc.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>REQ</entry>
+                            <entry>
+                                <p>Diameter Request Type. Possible values:</p>
+                                <p>INITIAL_REQUEST (1), UPDATE_REQUEST (2), etc.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>RESULT</entry>
+                            <entry>
+                                <p>Possible values:</p>
+                                <p>DIAMETER_SUCCESS, DIAMETER_LIMITED_SUCCESS, etc.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>DRMHST</entry>
+                            <entry>Diameter destination realm and host. Will be muted by default
+                                (shown as NA) to reduce metrics verbosity.</entry>
+                        </row>
+                        <row>
+                            <entry>ERMHST</entry>
+                            <entry>Diameter egress realm and host. Will be muted by default (shown
+                                as NA) to reduce metrics verbosity.</entry>
+                        </row>
+                        <row>
+                            <entry>CUSTOM</entry>
+                            <entry>Custom labels are optional AVPs and may be different for each
+                                measurement instance, providing additional system insights as
+                                available. For example, this could indicate that the Event Trigger
+                                was an UE_IP_ADDRESS_ALLOCATE (18)</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_frk_q2c_nlb">
+            <title>LDAP</title>
+            <table id="table_zgr_pyd_tmb">
+                <title>LDAP</title>
+                <tgroup cols="2">
+                    <colspec colnum="1" colname="col1"/>
+                    <colspec colnum="2" colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>ldap_count</entry>
+                            <entry>Number of LDAP query attempts accumulated since the start of this
+                                node</entry>
+                        </row>
+                        <row>
+                            <entry>ldap_rate</entry>
+                            <entry>Average rate of LDAP query attempts (per second) during this
+                                recent interval. (calculated sum/interval duration).</entry>
+                        </row>
+                        <row>
+                            <entry>ldap_average_latency_last_interval</entry>
+                            <entry>Average latency during this recent interval (calculated
+                                sum/count).</entry>
+                        </row>
+                        <row>
+                            <entry>ldap_average_latency_overall</entry>
+                            <entry>Average latency for all accumulated intervals (calculated
+                                sum/count).</entry>
+                        </row>
+                        <row>
+                            <entry>ldap_sum</entry>
+                            <entry>Sum of all latencies accumulated since the start of this node (to
+                                calculate averages)</entry>
+                        </row>
+                        <row>
+                            <entry>ldap_count_last_interval</entry>
+                            <entry>Number of LDAP query attempts accumulated since last count
+                                interval</entry>
+                        </row>
+                        <row>
+                            <entry><b>Labels (in XML)</b></entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>APP</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                        </row>
+                        <row>
+                            <entry>LDAP</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                        </row>
+                        <row>
+                            <entry>HOST</entry>
+                            <entry>SPS host name</entry>
+                        </row>
+                        <row>
+                            <entry>RESULT</entry>
+                            <entry>
+                                <p>Whether the search was successful. Will be unmuted by default,
+                                    but may be muted (shown as NA) to reduce metrics verbosity.
+                                    Possible values:</p>
+                                <p>Success, Failure</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>CUSTOM</entry>
+                            <entry>Custom labels are optional AVPs and may be different for each
+                                measurement instance, providing additional system insights as
+                                available. </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_o4f_hvc_nlb">
+            <title>HTTP</title>
+            <table id="table_tdx_5yd_tmb">
+                <title>HTTP</title>
+                <tgroup cols="2">
+                    <colspec colnum="1" colname="col1"/>
+                    <colspec colnum="2" colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>http_count</entry>
+                            <entry>Number of inbound HTTP requests accumulated since the start of
+                                this node</entry>
+                        </row>
+                        <row>
+                            <entry>http_rate</entry>
+                            <entry>Average rate of inbound HTTP requests (per second) during this
+                                recent interval. (calculated sum/interval duration).</entry>
+                        </row>
+                        <row>
+                            <entry>http_average_latency_last_interval</entry>
+                            <entry>Average latency during this recent interval (calculated
+                                sum/count).</entry>
+                        </row>
+                        <row>
+                            <entry>http_average_latency_overall</entry>
+                            <entry>Average latency for all accumulated intervals (calculated
+                                sum/count).</entry>
+                        </row>
+                        <row>
+                            <entry>http_sum</entry>
+                            <entry>Sum of all latencies accumulated since the start of this node (to
+                                calculate averages)</entry>
+                        </row>
+                        <row>
+                            <entry>http_count_last_interval</entry>
+                            <entry>Number of inbound HTTP requests accumulated since last count
+                                interval</entry>
+                        </row>
+                        <row>
+                            <entry>COUNT_1XX</entry>
+                            <entry>The total count of number of http calls where status is
+                                1XX</entry>
+                        </row>
+                        <row>
+                            <entry>COUNT_2XX</entry>
+                            <entry>The total count of number of http calls where status is
+                                2XX</entry>
+                        </row>
+                        <row>
+                            <entry>COUNT_3XX</entry>
+                            <entry>The total count of number of http calls where status is
+                                3XX</entry>
+                        </row>
+                        <row>
+                            <entry>COUNT_4XX</entry>
+                            <entry>The total count of number of http calls where status is
+                                4XX</entry>
+                        </row>
+                        <row>
+                            <entry>COUNT_5XX</entry>
+                            <entry>The total count of number of http calls where status is
+                                5XX</entry>
+                        </row>
+                        <row>
+                            <entry><b>Labels (in XML)</b></entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>APP</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                        </row>
+                        <row>
+                            <entry>HTTP</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                        </row>
+                        <row>
+                            <entry>HOST</entry>
+                            <entry>SPS host name</entry>
+                        </row>
+                        <row>
+                            <entry>METHOD</entry>
+                            <entry>
+                                <p>HTTP method. Possible values:</p>
+                                <p>GET, PUT, POST, DELETE</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>STATUS</entry>
+                            <entry>HTTP result status (per HTTP standards)</entry>
+                        </row>
+                        <row>
+                            <entry>CROOT</entry>
+                            <entry>The context root of the HTTP URI address. Will be muted by
+                                default (shown as NA) to reduce metrics verbosity.</entry>
+                        </row>
+                        <row>
+                            <entry>SOURCE</entry>
+                            <entry>IP address of the source initiating this HTTP request. Will be
+                                muted by default (shown as NA) to reduce metrics verbosity.</entry>
+                        </row>
+                        <row>
+                            <entry>CUSTOM</entry>
+                            <entry>Custom labels are optional AVPs and may be different for each
+                                measurement instance, providing additional system insights as
+                                available. </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_yhl_kvc_nlb">
+            <title>NotificationServer</title>
+            <table id="table_lf3_zyd_tmb">
+                <title>Notification Server</title>
+                <tgroup cols="2">
+                    <colspec colnum="1" colname="col1"/>
+                    <colspec colnum="2" colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>notificationserver_count</entry>
+                            <entry>Number of inbound notificationserver requests accumulated since
+                                the start of this node</entry>
+                        </row>
+                        <row>
+                            <entry>notificationserver_rate</entry>
+                            <entry>Average rate of inbound notificationserver requests (per second)
+                                during this recent interval. (calculated sum/interval
+                                duration).</entry>
+                        </row>
+                        <row>
+                            <entry>notificationserver_average_latency_last_interval</entry>
+                            <entry>Average latency during this recent interval (calculated
+                                sum/count).</entry>
+                        </row>
+                        <row>
+                            <entry>notificationserver_average_latency_overall</entry>
+                            <entry>Average latency for all accumulated intervals (calculated
+                                sum/count).</entry>
+                        </row>
+                        <row>
+                            <entry>notificationserver_sum</entry>
+                            <entry>Sum of all latencies accumulated since the start of this node (to
+                                calculate averages)</entry>
+                        </row>
+                        <row>
+                            <entry>notificationserver_count_last_interval</entry>
+                            <entry>Number of inbound/outbound notificationserver requests
+                                accumulated since last count interval</entry>
+                        </row>
+                        <row>
+                            <entry><b>Labels (in XML)</b></entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>NOTOPR</entry>
+                            <entry>OperationName : Always ‘pushNotification/process’ in this SPS
+                                version</entry>
+                        </row>
+                        <row>
+                            <entry>REQ</entry>
+                            <entry>RequestType : Always ‘INBOUND/OUTBOUND’ in this SPS
+                                version</entry>
+                        </row>
+                        <row>
+                            <entry>TEMPL</entry>
+                            <entry>TemplateName : SPS Notification Server's Template name (e.g.
+                                Template1)</entry>
+                        </row>
+                        <row>
+                            <entry>CHANL</entry>
+                            <entry>Channel : Notification Channels (e.g. KAFKA, REST, SOAP, EMAIL,
+                                SMS and TCP etc)</entry>
+                        </row>
+                        <row>
+                            <entry>STATUS </entry>
+                            <entry>Status : Notification INBOUND Status: (OK, SUCCESS, FAILURE, Bad
+                                Request), Notification OUTBOUND Status: (SUCCESS, FAILURE,
+                                RETRY)</entry>
+                        </row>
+                        <row>
+                            <entry>CUSTOM </entry>
+                            <entry>CustomLabel : Notification custom level (e.g. for success - OK,
+                                SUCCESS and for failure: "Unable to process your request")</entry>
+                        </row>
+                        <row>
+                            <entry>NOTSER</entry>
+                            <entry>for Notification service: Always ‘1’ in this SPS version</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_kcf_nvc_nlb">
+            <title>HTTP 3GPP (i.e. 5G) Inbound</title>
+            <table id="table_bhm_czd_tmb">
+                <title>HTTP 3GPP (i.e. 5G) Inbound</title>
+                <tgroup cols="2">
+                    <colspec colnum="1" colname="col1"/>
+                    <colspec colnum="2" colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>http_3gpp_inbound_count</entry>
+                            <entry>Number of inbound 5G HTTP/2 requests accumulated since this node
+                                start</entry>
+                        </row>
+                        <row>
+                            <entry>http_3gpp_inbound_rate</entry>
+                            <entry>Average rate of inbound 5G HTTP/2 requests (per second) during
+                                this recent interval. (calculated sum/interval duration).</entry>
+                        </row>
+                        <row>
+                            <entry>http_3gpp_inbound_average_latency_last_interval</entry>
+                            <entry>Average latency during this recent interval (calculated
+                                sum/count).</entry>
+                        </row>
+                        <row>
+                            <entry>http_3gpp_inbound_average_latency_overall</entry>
+                            <entry>Average latency for all accumulated intervals (calculated
+                                sum/count).</entry>
+                        </row>
+                        <row>
+                            <entry>http_3gpp_inbound_sum</entry>
+                            <entry>Sum of all latencies accumulated since the start of this node (to
+                                calculate averages)</entry>
+                        </row>
+                        <row>
+                            <entry>http_3gpp_inbound_count_last_interval</entry>
+                            <entry>Number of inbound 5G HTTP/2 requests accumulated since last
+                                interval count</entry>
+                        </row>
+                        <row>
+                            <entry><b>Labels (in XML)</b></entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>APP</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                        </row>
+                        <row>
+                            <entry>HT3GPP</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                        </row>
+                        <row>
+                            <entry>HOST</entry>
+                            <entry>SPS host name</entry>
+                        </row>
+                        <row>
+                            <entry>SOURCE</entry>
+                            <entry>Source IP address. Will be muted by default (shown as NA) to
+                                reduce metrics verbosity.</entry>
+                        </row>
+                        <row>
+                            <entry>INTF</entry>
+                            <entry>Interface (N7, N28, etc.)</entry>
+                        </row>
+                        <row>
+                            <entry>FCN</entry>
+                            <entry>Function (Npcf_SMPolicyControl_Create, etc.)</entry>
+                        </row>
+                        <row>
+                            <entry>RESULT</entry>
+                            <entry>
+                                <p>Possible values:</p>
+                                <p>SUCCESS etc.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>STATUS</entry>
+                            <entry>HTTP result status (per HTTP standards)</entry>
+                        </row>
+                        <row>
+                            <entry>CUSTOM</entry>
+                            <entry>Custom labels are optional AVPs and may be different for each
+                                measurement instance, providing additional system insights as
+                                available. </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_svf_pvc_nlb">
+            <title>HTTP 3GPP (i.e. 5G) Outbound</title>
+            <table id="table_qsx_gzd_tmb">
+                <title>HTTP 3GPP (i.e. 5G) Outbound</title>
+                <tgroup cols="5">
+                    <colspec colnum="1" colname="col1"/>
+                    <colspec colnum="2" colname="col2"/>
+                    <colspec colnum="3" colname="col3"/>
+                    <colspec colnum="4" colname="col4"/>
+                    <colspec colnum="5" colname="col5"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Description</entry>
+                            <entry>Present in Gen3GPPXML</entry>
+                            <entry>Release Introduced</entry>
+                            <entry>Release Updated</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>http_3gpp_outbound_count</entry>
+                            <entry>Number of outbound 5G HTTP/2 requests accumulated since this node
+                                start</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>http_3gpp_outbound_rate</entry>
+                            <entry>Average rate of outbound 5G HTTP/2 requests (per second) during
+                                this recent interval. (calculated sum/interval duration).</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>http_3gpp_outbound_average_latency_last_interval</entry>
+                            <entry>Average latency during this recent interval (calculated
+                                sum/count).</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>http_3gpp_outbound_average_latency_overall</entry>
+                            <entry>Average latency for all accumulated intervals (calculated
+                                sum/count).</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>http_3gpp_outbound_sum</entry>
+                            <entry>Sum of all latencies accumulated since the start of this node (to
+                                calculate averages)</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>http_3gpp_outbound_count_last_interval</entry>
+                            <entry>Number of outbound 5G HTTP/2 requests accumulated since last
+                                count interval</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><b>Labels (in XML)</b></entry>
+                            <entry/>
+                            <entry/>
+                            <entry/>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>APP</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>HT3GPP</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>HOST</entry>
+                            <entry>SPS host name</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>DEST</entry>
+                            <entry>Destination IP address. Will be muted by default (shown as NA) to
+                                reduce metrics verbosity.</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>INTF</entry>
+                            <entry>Interface (N7, N28, etc.)</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>FCN</entry>
+                            <entry>Function (Npcf_SMPolicyControl_Create, etc.)</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>RESULT</entry>
+                            <entry>
+                                <p>Possible values:</p>
+                                <p>SUCCESS etc.</p>
+                            </entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>STATUS</entry>
+                            <entry>HTTP result status (per HTTP standards)</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>CUSTOM</entry>
+                            <entry>Custom labels are optional AVPs and may be different for each
+                                measurement instance, providing additional system insights as
+                                available. </entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_e45_svc_nlb">
+            <title>Site Routing</title>
+            <table id="table_g5z_3zd_tmb">
+                <title>Site Routing</title>
+                <tgroup cols="2">
+                    <colspec colnum="1" colname="col1"/>
+                    <colspec colnum="2" colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>site_routing</entry>
+                            <entry>Number of incoming messages processed by the SPS ME site routing
+                                function</entry>
+                        </row>
+                        <row>
+                            <entry>site_routing_count_last_interval</entry>
+                            <entry>SITE ROUTING application metric counts generated as count per
+                                last interval</entry>
+                        </row>
+                        <row>
+                            <entry><b>Labels (in XML)</b></entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>APP</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                        </row>
+                        <row>
+                            <entry>SITROU</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                        </row>
+                        <row>
+                            <entry>HOST</entry>
+                            <entry>SPS host name</entry>
+                        </row>
+                        <row>
+                            <entry>STATUS</entry>
+                            <entry>
+                                <p>The status/result of the site routing, which contributes to the
+                                    Decision. </p>
+                                <p>Possible values:</p>
+                                <p>Site routing succeeds</p>
+                                <p>Primary site is OOS</p>
+                                <p>Primary site is not reachable</p>
+                                <p>Primary and secondary sites are OOS</p>
+                                <p>Primary and secondary sites are not reachable</p>
+                                <p>No site Id exists for the request</p>
+                                <p>Requests with no site routing resolver</p>
+                                <p>Site routing lookup failed</p>
+                                <p>Site routing will not process the request</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>DECSN</entry>
+                            <entry>
+                                <p>Site routing decision. Possible values:Requests processed
+                                    locally: Message sent to a local app for processing</p>
+                                <p>Requests routed to primary: Message sent to the primary SPS ME
+                                    for processing</p>
+                                <p>Requests routed to secondary: Message sent to the secondary SPS
+                                    ME for processing</p>
+                                <p>Reject message: message is rejected due to an error in site
+                                    routing, which could be the target site is OOS, not reachable, a
+                                    site ID look up failed, or some other failure case.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>MSGRF</entry>
+                            <entry>From whom this incoming message is received. The value of the
+                                origin host of the Diameter peer that sent this request message,
+                                which could be another SPS site or external GW.</entry>
+                        </row>
+                        <row>
+                            <entry>PSITE</entry>
+                            <entry>The resolved primary Site ID (SPS ME) for the
+                                device/subscriber/etc. contained in this message</entry>
+                        </row>
+                        <row>
+                            <entry>SSITE</entry>
+                            <entry>The resolved secondary Site ID (SPS ME) for the
+                                device/subscriber/etc. contained in this message</entry>
+                        </row>
+                        <row>
+                            <entry>SITROL</entry>
+                            <entry>
+                                <p>The site role of this local SPS ME for the device/subscriber/etc.
+                                    contained in this message. Possible values:</p>
+                                <p>Primary site</p>
+                                <p>Secondary site</p>
+                                <p>Third site (local site is neither the primary nor secondary)</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>IPROTO</entry>
+                            <entry>Refers to the protocol</entry>
+                        </row>
+                        <row>
+                            <entry>INST</entry>
+                            <entry>SPS instance generating metrics</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_cfv_5vc_nlb">
+            <title>Rules</title>
+            <table id="table_bbs_lzd_tmb">
+                <title>Rules</title>
+                <tgroup cols="2">
+                    <colspec colnum="1" colname="col1"/>
+                    <colspec colnum="2" colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>rules</entry>
+                            <entry>Count of the number of rule executions</entry>
+                        </row>
+                        <row>
+                            <entry>rules_count_last_interval</entry>
+                            <entry>RULES application metric counts should be generated as count per
+                                last interval</entry>
+                        </row>
+                        <row>
+                            <entry><b>Labels (in XML)</b></entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>APP</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                        </row>
+                        <row>
+                            <entry>RULES</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                        </row>
+                        <row>
+                            <entry>HOST</entry>
+                            <entry>SPS host name</entry>
+                        </row>
+                        <row>
+                            <entry>RSV</entry>
+                            <entry>Rule System Version</entry>
+                        </row>
+                        <row>
+                            <entry>RTABLE</entry>
+                            <entry>Rule Table applied</entry>
+                        </row>
+                        <row>
+                            <entry>RULE</entry>
+                            <entry>Rule applied</entry>
+                        </row>
+                        <row>
+                            <entry>INST</entry>
+                            <entry>SPS instance generating metrics</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_wy1_wvc_nlb">
+            <title>Overload</title>
+            <table id="table_n1d_4zd_tmb">
+                <title>Overload</title>
+                <tgroup cols="2">
+                    <colspec colnum="1" colname="col1"/>
+                    <colspec colnum="2" colname="col2"/>
+                    <tbody>
+                        <row>
+                            <entry><b>Metric</b></entry>
+                            <entry><b>Description</b></entry>
+                        </row>
+                        <row>
+                            <entry>overload</entry>
+                            <entry>Count of the number of overload events</entry>
+                        </row>
+                        <row>
+                            <entry>overload_count_last_interval</entry>
+                            <entry>OVERLOAD application metric counts generated as count per last
+                                interval</entry>
+                        </row>
+                        <row>
+                            <entry><b>Labels (in XML)</b></entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>APP</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                        </row>
+                        <row>
+                            <entry>OVERLD</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                        </row>
+                        <row>
+                            <entry>HOST</entry>
+                            <entry>SPS host name</entry>
+                        </row>
+                        <row>
+                            <entry>COMP</entry>
+                            <entry>
+                                <p>What component is triggering overload. </p>
+                                <p>Possible values:</p>
+                                <p>Java Heap Memory Usage (State: 85% minor, 90% major, 95% resource
+                                    critical)</p>
+                                <p>Diameter latency</p>
+                                <p>Diameter message count</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>STATE</entry>
+                            <entry>
+                                <p>Severity of the overload. </p>
+                                <p>Possible values:</p>
+                                <p>resource critical</p>
+                                <p>critical</p>
+                                <p>major</p>
+                                <p>minor</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>INST</entry>
+                            <entry>SPS instance generating metrics</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_tgy_bwc_nlb">
+            <title>Rating</title>
+            <table id="table_h3z_yzd_tmb">
+                <title>Rating</title>
+                <tgroup cols="2">
+                    <colspec colnum="1" colname="col1"/>
+                    <colspec colnum="2" colname="col2"/>
+                    <tbody>
+                        <row>
+                            <entry><b>Metric</b></entry>
+                            <entry><b>Description</b></entry>
+                        </row>
+                        <row>
+                            <entry>rating_count</entry>
+                            <entry>Number accumulated since this node start</entry>
+                        </row>
+                        <row>
+                            <entry>rating_sum</entry>
+                            <entry>Sum of all latencies accumulated since the start of this node (to
+                                calculate averages)</entry>
+                        </row>
+                        <row>
+                            <entry>rating_count_last_interval</entry>
+                            <entry>Rating application metric counts generated as count per last
+                                interval</entry>
+                        </row>
+                        <row>
+                            <entry><b>Labels (in XML)</b></entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>APP</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                        </row>
+                        <row>
+                            <entry>RATING</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                        </row>
+                        <row>
+                            <entry>HOST</entry>
+                            <entry>SPS host name</entry>
+                        </row>
+                        <row>
+                            <entry>REQ</entry>
+                            <entry>
+                                <p>Diameter Request Type. </p>
+                                <p>Possible values:</p>
+                                <p>INITIAL_REQUEST (1)</p>
+                                <p>UPDATE_REQUEST (2)</p>
+                                <p>TERMINATION_REQUEST (3)</p>
+                                <p>EVENT_REQUEST (4)</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>IRMHST</entry>
+                            <entry>
+                                <p>Diameter ingress realm and host. Will be muted by default (shown
+                                    as NA) to reduce metrics verbosity.</p>
+                                <p>Only available in prometheus not in gen3gpp xml files</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>ORMHST</entry>
+                            <entry>Diameter origin realm and host. Will be muted by default (shown
+                                as NA) to reduce metrics verbosity.</entry>
+                        </row>
+                        <row>
+                            <entry>RATGRP</entry>
+                            <entry>Rating group. The charging key for the Diameter Credit-Control
+                                service identifying a rating group (uniquely identified by the
+                                combination of Service-Context-Id and Rating-Group). All the
+                                services subject to the same rating type are part of the same rating
+                                group.</entry>
+                        </row>
+                        <row>
+                            <entry>SRVIDN</entry>
+                            <entry>Service Identifier. The charging key for the Diameter
+                                Credit-Control service identifying a service (uniquely identified by
+                                the combination of Service-Context-Id and
+                                Service-Identifier).</entry>
+                        </row>
+                        <row>
+                            <entry>RESULT</entry>
+                            <entry>
+                                <p>Possible values include:</p>
+                                <p>DIAMETER_SUCCESS, DIAMETER_LIMITED_SUCCESS, etc.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>SRVCON</entry>
+                            <entry>Service context</entry>
+                        </row>
+                        <row>
+                            <entry>CustomLabel</entry>
+                            <entry>
+                                <p>Custom labels are optional AVPs and may be different for each
+                                    measurement instance, providing additional system insights as
+                                    available. </p>
+                                <p>Current custom labels:</p>
+                                <p>CallSubType, possible values:</p>
+                                <p>PS (Packet Switching)</p>
+                                <p>MOC (IMS Mobile Originated Call)</p>
+                                <p>MTC (IMS Mobile Terminated Call)</p>
+                                <p>FWD (IMS Forwarded call)</p>
+                                <p>MMS (MMS general)</p>
+                                <p>MO (MMS Mobile Originated)</p>
+                                <p>SMS_MO (SMS Mobile Originated)</p>
+                                <p>SMS_MT (SMS Mobile Terminated)</p>
+                                <p>MediaType, possible values:</p>
+                                <p>audio</p>
+                                <p>video</p>
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_rvq_c12_tmb">
+            <title>PCRF and PCC Metrics</title>
+            <table id="table_xv5_c12_tmb">
+                <title>PCC Rule Metrics</title>
+                <tgroup cols="5">
+                    <colspec colnum="1" colname="col1"/>
+                    <colspec colnum="2" colname="col2"/>
+                    <colspec colnum="3" colname="col3"/>
+                    <colspec colnum="4" colname="col4"/>
+                    <colspec colnum="5" colname="col5"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Description</entry>
+                            <entry><b>Present in Gen3GPPXML</b></entry>
+                            <entry>Release Introduced</entry>
+                            <entry>Release Updated</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>diameter_pcc_rule</entry>
+                            <entry>Count of the number of PCC Rules provisioned by PCRF to PCEF in a
+                                4G environment.</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Labels (in XML)</entry>
+                            <entry/>
+                            <entry/>
+                            <entry/>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>APP</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>PCRF</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>HOST</entry>
+                            <entry>SPS host name</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>NAME</entry>
+                            <entry>The name of the PCC Rule.</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>TYPE</entry>
+                            <entry>
+                                <p>Possible values are:</p>
+                                <p>CRN</p>
+                                <p>CRBN</p>
+                                <p>Where, CRN indicates PCC rules dynamically provisioned by the
+                                    PCRF to PCEF, and CRBN indicates pre-defined group of PCC rules
+                                    (preconfigured in the PCEF).</p>
+                            </entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>ACTION</entry>
+                            <entry>
+                                <p>Possible values are:</p>
+                                <p>INSTALLED</p>
+                                <p>REMOVED</p>
+                            </entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>APN</entry>
+                            <entry>The layer 2 address (Access Point Name) to which a user is
+                                connected in a 4Genvironment.</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>RAT</entry>
+                            <entry>
+                                <p>Radio access technology, serving the UE in a 4G environment.</p>
+                                <p>Possible values:</p>
+                                <p>WLAN</p>
+                                <p>VIRTUAL</p>
+                                <p>UTRAN</p>
+                                <p>GERAN</p>
+                                <p>GAN</p>
+                                <p>HSPA_EVOLUTION</p>
+                                <p>EUTRAN</p>
+                                <p>CDMA2000_1X</p>
+                                <p>HRPD</p>
+                                <p>UMB</p>
+                                <p>EHRPD</p>
+                            </entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>CUSTOM</entry>
+                            <entry>Open label where you can provide values in form of "Key Value
+                                Pair" basically acting as custom data.</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <table id="table_yv5_c12_tmb">
+                <tgroup cols="5">
+                    <colspec colnum="1" colname="col1"/>
+                    <colspec colnum="2" colname="col2"/>
+                    <colspec colnum="3" colname="col3"/>
+                    <colspec colnum="4" colname="col4"/>
+                    <colspec colnum="5" colname="col5"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Description</entry>
+                            <entry><b>Present in Gen3GPPXML</b></entry>
+                            <entry>Release Introduced</entry>
+                            <entry>Release Updated</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>http_3gpp_pcc_rule</entry>
+                            <entry>Count of the number of PCC Rules provisioned by PCF to SMF in a
+                                5G environment.</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Labels (in XML)</entry>
+                            <entry/>
+                            <entry/>
+                            <entry/>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>APP</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>PCRF</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>HOST</entry>
+                            <entry>SPS host name</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>NAME</entry>
+                            <entry>The name of the PCC Rule.</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>TYPE</entry>
+                            <entry>
+                                <p>Possible values are:</p>
+                                <p>CRN</p>
+                                <p>CRBN</p>
+                                <p>Where, CRN indicates PCC rules dynamically provisioned by the
+                                    PCRF to PCEF, and CRBN indicates pre-defined group of PCC rules
+                                    (preconfigured in the PCEF).</p>
+                            </entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>ACTION</entry>
+                            <entry>
+                                <p>Possible values are:</p>
+                                <p>INSTALLED</p>
+                                <p>REMOVED</p>
+                            </entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>DNN</entry>
+                            <entry>The layer 2 address (Data Network Name) to which a user is
+                                connected in a 5G environment.</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>RAT</entry>
+                            <entry>
+                                <p>Radio access technology, serving the UE in a 4G environment.</p>
+                                <p>Possible values:</p>
+                                <p>WLAN</p>
+                                <p>VIRTUAL</p>
+                                <p>UTRAN</p>
+                                <p>GERAN</p>
+                                <p>GAN</p>
+                                <p>HSPA_EVOLUTION</p>
+                                <p>EUTRAN</p>
+                                <p>CDMA2000_1X</p>
+                                <p>HRPD</p>
+                                <p>UMB</p>
+                                <p>EHRPD</p>
+                            </entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>CUSTOM</entry>
+                            <entry>Open label where you can provide values in form of "Key Value
+                                Pair" basically acting as custom data.</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_rc2_f12_tmb">
+            <title>Entity Count Metrics</title>
+            <table id="table_myg_f12_tmb">
+                <title>Entity Count Metrics</title>
+                <tgroup cols="5">
+                    <colspec colnum="1" colname="col1"/>
+                    <colspec colnum="2" colname="col2"/>
+                    <colspec colnum="3" colname="col3"/>
+                    <colspec colnum="4" colname="col4"/>
+                    <colspec colnum="5" colname="col5"/>
+                    <thead>
+                        <row>
+                            <entry>Metrics</entry>
+                            <entry>Description</entry>
+                            <entry><b>Present in Gen3GPPXML</b></entry>
+                            <entry>Release Introduced</entry>
+                            <entry>Release Updated</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>entity_count***</entry>
+                            <entry>Total count of entities in db</entry>
+                            <entry>No</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>session_count_overall</entry>
+                            <entry>Currently only the count of Policy Sessions. Prometheus rule to
+                                get total count of sessions (equivalent to promql query):
+                                entity_count{Type="Session"})</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>subscriber_count_overall</entry>
+                            <entry>Currently only the count of Devices. Prometheus rule to get Total
+                                count of subscribers (equivalent to promql query:
+                                entity_count{Type="Subscriber"})</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Labels (in XML)</entry>
+                            <entry/>
+                            <entry/>
+                            <entry/>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>APP</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>PCRF</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>HOST</entry>
+                            <entry>SPS host name</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>TYPE</entry>
+                            <entry>
+                                <p>Possible values are:</p>
+                                <p>Session</p>
+                                <p>Subscriber</p>
+                            </entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>SUBTYP</entry>
+                            <entry>
+                                <p>Possible values:</p>
+                                <ul id="ul_nyg_f12_tmb">
+                                    <li>Session<ul id="ul_oyg_f12_tmb">
+                                            <li>IPCanSession</li>
+                                            <li>PDUSession</li>
+                                            <li>AfSession</li>
+                                            <li>SySession</li>
+                                            <li>NchfSession</li>
+                                            <li>SdSession</li>
+                                        </ul></li>
+                                    <li>Subscriber<ul id="ul_pyg_f12_tmb">
+                                            <li>Device</li>
+                                        </ul></li>
+                                </ul>
+                            </entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>CUSTOM</entry>
+                            <entry>Open label where you can provide values in form of "Key Value
+                                Pair" basically acting as custom data.</entry>
+                            <entry>Yes</entry>
+                            <entry>20.6</entry>
+                            <entry/>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <note>"session_count_overall" and "subscriber_count_overall" are derived from the base
+                metric "entity_count"</note>
+        </section>
+        <section id="section_skp_zwc_nlb">
+            <title>SMLDAP </title>
+            <table id="table_ezy_412_tmb">
+                <title>SMLDAP</title>
+                <tgroup cols="2">
+                    <colspec colnum="1" colname="col1"/>
+                    <colspec colnum="2" colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>spis_ldap_query_count</entry>
+                            <entry>Number of device query received from SurePay Index Server</entry>
+                        </row>
+                        <row>
+                            <entry>spis_ldap_query_count_last_interval</entry>
+                            <entry>Number of device query received from SurePay Index Server since
+                                last count interval</entry>
+                        </row>
+                        <row>
+                            <entry><b>Labels (in XML)</b></entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>APP</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                        </row>
+                        <row>
+                            <entry>SMLDAP</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                        </row>
+                        <row>
+                            <entry>HOST</entry>
+                            <entry>SPS host name</entry>
+                        </row>
+                        <row>
+                            <entry>FOUND</entry>
+                            <entry>Whether the queried device is found or not. Possible values:
+                                Found, NotFound.</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_r3k_bxc_nlb">
+            <title>MELDAP</title>
+            <table id="table_mwp_q12_tmb">
+                <title>MELDAP</title>
+                <tgroup cols="2">
+                    <colspec colnum="1" colname="col1"/>
+                    <colspec colnum="2" colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>ldap_index_count</entry>
+                            <entry>Number of Ldap broadcase to SurePay Index Server</entry>
+                        </row>
+                        <row>
+                            <entry>ldap_index_count_last_interval</entry>
+                            <entry>Number of Ldap broadcase to SurePay Index Server since last count
+                                interval</entry>
+                        </row>
+                        <row>
+                            <entry><b>Labels (in XML)</b></entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>APP</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                        </row>
+                        <row>
+                            <entry>MELDAP</entry>
+                            <entry>Always ‘1’ in this SPS version</entry>
+                        </row>
+                        <row>
+                            <entry>HOST</entry>
+                            <entry>SPS host name</entry>
+                        </row>
+                        <row>
+                            <entry>OPER</entry>
+                            <entry>The operation type. Possible values: Insert, Delete.</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_rtp_3xc_nlb">
+            <title>NRF Inbound</title>
+            <table id="table_pjn_s12_tmb">
+                <title>NRF Inbound</title>
+                <tgroup cols="2">
+                    <colspec colnum="1" colname="col1"/>
+                    <colspec colnum="2" colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>nrf_inbound_count</entry>
+                            <entry>Number of inbound NRF messages accumulated since the start of
+                                this node. This only specifies the number of NFStatusNotify messages
+                                received from NRF.</entry>
+                        </row>
+                        <row>
+                            <entry>nrf_inbound_rate</entry>
+                            <entry>Average rate of inbound NFStatusNotify messages (per second)
+                                during this recent interval. (calculated sum/interval
+                                duration).</entry>
+                        </row>
+                        <row>
+                            <entry>nrf_inbound_average_latency_last_interval</entry>
+                            <entry>Average latency of inbound NRF messages during this recent
+                                interval (calculated sum/count).</entry>
+                        </row>
+                        <row>
+                            <entry>nrf_inbound_average_latency_overall</entry>
+                            <entry>Average latency for all accumulated intervals (calculated
+                                sum/count) of inbound NRF messages.</entry>
+                        </row>
+                        <row>
+                            <entry>nrf_inbound_sum</entry>
+                            <entry>Sum of all latencies accumulated since the start of this node (to
+                                calculate averages) of inbound NRF messages.</entry>
+                        </row>
+                        <row>
+                            <entry>nrf_inbound_count_last_interval</entry>
+                            <entry>Number of inbound NFStatusNotify messages accumulated since last
+                                count interval.</entry>
+                        </row>
+                        <row>
+                            <entry><b>Labels (in XML)</b></entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>MSTYPE</entry>
+                            <entry>
+                                <p>The Message Type value.</p>
+                                <p>Possible values:</p>
+                                <p>NOTIFY_NF_REGISTERED</p>
+                                <p>NOTIFY_NF_DEREGISTERED</p>
+                                <p>NOTIFY_NF_PROFILE_CHANGED</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>CMPNT</entry>
+                            <entry>
+                                <p>The Component on which the metrics is captured.</p>
+                                <p>Possible values:</p>
+                                <p>Diam-App</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>ID</entry>
+                            <entry>The Id of the Subscription for which the NFStatusNotify is
+                                received from NRF.</entry>
+                        </row>
+                        <row>
+                            <entry>STATUS</entry>
+                            <entry>The HTTP Status Code for the NFSatusNotify operation.</entry>
+                        </row>
+                        <row>
+                            <entry>CUSTOM</entry>
+                            <entry>
+                                <p>The Custom Label for NRF inbound messages to specify the Status
+                                    of the request.</p>
+                                <p>Possible values:</p>
+                                <p>PASS</p>
+                                <p>FAIL</p>
+                                <p>TIMEOUT</p>
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_orb_dvg_nlb">
+            <title>NRF Outbound</title>
+            <table id="table_kzr_512_tmb">
+                <title>NRF Outbound</title>
+                <tgroup cols="2">
+                    <colspec colnum="1" colname="col1"/>
+                    <colspec colnum="2" colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>nrf_outbound_count</entry>
+                            <entry>Number of outbound NRF messages accumulated since the start of
+                                this node. This specifies the sum of NFRegister, NFDeregister,
+                                NFUpdate, NFHeartBeat, Probe, NFStatusSubscribe,
+                                NFStatusUnSubscribe, NFDiscover messages received from NRF.</entry>
+                        </row>
+                        <row>
+                            <entry>nrf_outbound_rate</entry>
+                            <entry>Average rate of outbound NRF messages (per second) during this
+                                recent interval. (calculated sum/interval duration).</entry>
+                        </row>
+                        <row>
+                            <entry>nrf_outbound_average_latency_last_interval</entry>
+                            <entry>Average latency of outbound NRF messages during this recent
+                                interval (calculated sum/count).</entry>
+                        </row>
+                        <row>
+                            <entry>nrf_outbound_average_latency_overall</entry>
+                            <entry>Average latency for all accumulated intervals (calculated
+                                sum/count) of outbound NRF messages.</entry>
+                        </row>
+                        <row>
+                            <entry>nrf_outbound_sum</entry>
+                            <entry>Sum of all latencies accumulated since the start of this node (to
+                                calculate averages) of outbound NRF messages.</entry>
+                        </row>
+                        <row>
+                            <entry>nrf_outbound_count_last_interval</entry>
+                            <entry>Number of outbound NRF messages accumulated since last count
+                                interval</entry>
+                        </row>
+                        <row>
+                            <entry><b>Labels (in XML)</b></entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>MSTYPE</entry>
+                            <entry>
+                                <p>The Message Type value.</p>
+                                <p>Possible values:</p>
+                                <p>REGISTER</p>
+                                <p>DEREGISTER</p>
+                                <p>UPDATE</p>
+                                <p>DISCOVERQUERY</p>
+                                <p>HEARTBEAT</p>
+                                <p>PROBE</p>
+                                <p>SUBSCRIBE</p>
+                                <p>UNSUBSCRIBE</p>
+                                <p>SUBSCRIPTION_UPDATE</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>CMPNT</entry>
+                            <entry>
+                                <p>The Component on which the metrics is captured.</p>
+                                <p>Possible values are:</p>
+                                <p>Diam-App</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>ID</entry>
+                            <entry>The Id of the DiscoveryQuery/NFProfile/Subscription depending on
+                                the type of NRF outbound message.</entry>
+                        </row>
+                        <row>
+                            <entry>NRFSVR</entry>
+                            <entry>The Id of the NRFServer on which the NRF message is sent.</entry>
+                        </row>
+                        <row>
+                            <entry>STATUS</entry>
+                            <entry>The HTTP Status Code for the
+                                Discovery/Register/Deregister/Subscribe/Heartbeat/Probe
+                                operation.</entry>
+                        </row>
+                        <row>
+                            <entry>CUSTOM</entry>
+                            <entry>
+                                <p>The Custom Label for NRF outbound messages to specify the Status
+                                    of the request. Possible values are:</p>
+                                <p>PASS</p>
+                                <p>FAIL</p>
+                                <p>TIMEOUT</p>
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_q1j_fvg_nlb">
+            <title>Subscriber Sync Metrics (ME)</title>
+            <table id="table_gzd_2b2_tmb">
+                <title>Subscriber Sync Outbound Metrics</title>
+                <tgroup cols="2">
+                    <colspec colnum="1" colname="col1"/>
+                    <colspec colnum="2" colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>subscriber_sync_outbound_count</entry>
+                            <entry>Number of Subscriber Sync Notify requests sent from ME to SM.
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>subscriber_sync_outbound_count_last_interval</entry>
+                            <entry>Number of Subscriber Sync Notify requests sent from ME to SM
+                                since last count interval.</entry>
+                        </row>
+                        <row>
+                            <entry>Labels (in XML)</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>ENTITY</entry>
+                            <entry><p>The Subscriber Entity Type.</p><p>Possible
+                                    values:</p><p>DEVICE</p><p>USER</p><p>ACCOUNT</p>GROUP</entry>
+                        </row>
+                        <row>
+                            <entry>OPRTN</entry>
+                            <entry><p>The Type of Operation performed on the Subscriber Entity for
+                                    which the Notify is sent to SM from ME.</p><p>Possible
+                                    values:</p><p>CREATE</p><p>MODIFY</p>DELETE</entry>
+                        </row>
+                        <row>
+                            <entry>TRGTSM</entry>
+                            <entry>The Target SM (SiteName) on which the Subscriber Sync Notify is
+                                sent.</entry>
+                        </row>
+                        <row>
+                            <entry>STATUS</entry>
+                            <entry><p>The Status of the Subscriber Sync Notify sent to
+                                    SM.</p><p>Possible values are:</p><p><b>NOTIFY_SUCCESS</b>
+                                    (Notification successfully queued at target
+                                        SM),</p><p><b>NOTIFY_FAILURE</b> (Notification failed at SM,
+                                    since it could not be
+                                    contacted),</p><b>SM_QUEUE_FULL_FAILURE</b> (Notification could
+                                not be queued at SM since SM queue was full)</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <table id="table_dbv_gb2_tmb">
+                <title>Subscriber Sync Inbound Metrics</title>
+                <tgroup cols="2">
+                    <colspec colnum="1" colname="col1"/>
+                    <colspec colnum="2" colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>subscriber_sync_inbound_count</entry>
+                            <entry>Number of Subscriber Sync Notify Acknowledgements received from
+                                SM at ME.</entry>
+                        </row>
+                        <row>
+                            <entry>subscriber_sync_inbound_count_last_interval</entry>
+                            <entry>Number of Subscriber Sync Notify Acknowledgements received from
+                                SM at ME since last count interval.</entry>
+                        </row>
+                        <row>
+                            <entry>Labels (in XML)</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>ENTITY</entry>
+                            <entry><p>The Subscriber Entity Type.</p><p>Possible
+                                    values:</p><p>DEVICE</p><p>USER</p><p>ACCOUNT</p>GROUP</entry>
+                        </row>
+                        <row>
+                            <entry>OPRTN</entry>
+                            <entry>
+                                <p>The Type of Operation performed on the Subscriber Entity for
+                                    which the Notify is sent to SM from ME.</p>
+                                <p>Possible values:</p>
+                                <p>CREATE</p>
+                                <p>MODIFY</p>
+                                <p>DELETE</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>SMACK</entry>
+                            <entry><p>The Acknowledgement Status received from SM.</p><p>Possible
+                                    value:</p>ACK_RECEIVED</entry>
+                        </row>
+                        <row>
+                            <entry>MESTAT</entry>
+                            <entry>
+                                <p>The Status of the processing performed at ME after
+                                    Acknowledgement from SM is received at ME.</p>
+                                <p>Possible values:</p>
+                                <p><b>SUCCESS</b> (when SyncOp is successfuly reset in the
+                                    database)</p>
+                                <p><b>FAILED</b> (when SyncOp reset fails )</p>
+                                <p><b>IGNORED</b> (when SyncOp reset is not tried due to
+                                    inconsistency of SyncOp values received from SM and present in
+                                    ME database)</p>
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <table id="table_ebv_gb2_tmb">
+                <title>Subscriber Sync Outbound Ecosystem Count Metrics</title>
+                <tgroup cols="2">
+                    <colspec colnum="1" colname="col1"/>
+                    <colspec colnum="2" colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>subscriber_sync_outbound_ecosystem_count</entry>
+                            <entry>Number of Subscriber Data Record Ecosystems sent from ME to SM in
+                                each batch.</entry>
+                        </row>
+                        <row>
+                            <entry>Labels (in XML)</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>TYPE</entry>
+                            <entry>
+                                <p>The Label for capturing count of SDR Ecosystems.</p>
+                                <p>Possible value:</p>
+                                <p>SDREcosystem</p>
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_g4v_hzg_nlb">
+            <title>Subscriber Sync Metrics (SM)</title>
+            <table id="table_dz2_4b2_tmb">
+                <title>Subscriber Sync Inbound Metrics</title>
+                <tgroup cols="2">
+                    <colspec colnum="1" colname="col1"/>
+                    <colspec colnum="2" colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>sm_subscriber_sync_inbound_count</entry>
+                            <entry>Number of Subscriber Sync Notify requests received at SM from ME.
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>sm_subscriber_sync_inbound_count_last_interval</entry>
+                            <entry>Number of Subscriber Sync Notify requests received at SM from ME
+                                since last count interval.</entry>
+                        </row>
+                        <row>
+                            <entry>Labels (in XML)</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>ENTITY</entry>
+                            <entry>
+                                <p>The Subscriber Entity Type.</p>
+                                <p>Possible values:</p>
+                                <p>DEVICE</p>
+                                <p>USER</p>
+                                <p>ACCOUNT</p>
+                                <p>GROUP</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>OPRTN</entry>
+                            <entry>
+                                <p>The Type of Operation performed on the Subscriber Entity for
+                                    which the Notify is received at SM from ME.</p>
+                                <p>Possible values:</p>
+                                <p>CREATE</p>
+                                <p>MODIFY</p>
+                                <p>DELETE</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>SRCME</entry>
+                            <entry>The Source ME from which the Subscriber Sync Notify
+                                Acknowledgement is received at SM.</entry>
+                        </row>
+                        <row>
+                            <entry>STATUS</entry>
+                            <entry>
+                                <p>The Status of the Subscriber Sync Notify received from ME.</p>
+                                <p>Possible value:</p>
+                                <p>NOTIFY_RECEIVED</p>
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <table id="table_ez2_4b2_tmb">
+                <title>Subscriber Sync Outbound Metrics</title>
+                <tgroup cols="2">
+                    <colspec colnum="1" colname="col1"/>
+                    <colspec colnum="2" colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>sm_subscriber_sync_outbound_count</entry>
+                            <entry>Number of Subscriber Sync Notify Acknowledgments requests sent to
+                                Target ME from SM after processing at SM is performed.</entry>
+                        </row>
+                        <row>
+                            <entry>sm_subscriber_sync_outbound_count_last_interval</entry>
+                            <entry>Number of Subscriber Sync Notify Acknowledgments requests sent to
+                                Target ME from SM after processing at SM is performed since last
+                                count interval.</entry>
+                        </row>
+                        <row>
+                            <entry>Labels (in XML)</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>ENTITY</entry>
+                            <entry>
+                                <p>The Subscriber Entity Type.</p>
+                                <p>Possible values:</p>
+                                <p>DEVICE</p>
+                                <p>USER</p>
+                                <p>ACCOUNT</p>
+                                <p>GROUP</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>OPRTN</entry>
+                            <entry>
+                                <p>The Type of Operation performed on the Subscriber Entity for
+                                    which the Notify is received at SM from ME.</p>
+                                <p>Possible values:</p>
+                                <p>CREATE</p>
+                                <p>MODIFY</p>
+                                <p>DELETE</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>TRGTME</entry>
+                            <entry>The Target ME on which the Subscriber Sync Notify Acknowledgement
+                                is sent from SM.</entry>
+                        </row>
+                        <row>
+                            <entry>STATUS</entry>
+                            <entry>
+                                <p>The Status of the Subscriber Sync Notify Acknowledgement sent to
+                                    ME.</p>
+                                <p>Possible values:</p>
+                                <p><b>ACK_SENT</b> (When Acknowledgement is sent successfully to
+                                    ME)</p>
+                                <p><b>ACK_FAILED</b> (When Acknowledgement could not be sent to ME)
+                                </p>
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <table id="table_fz2_4b2_tmb">
+                <title>Subscriber Sync Inbound Ecosystem Count Metrics</title>
+                <tgroup cols="2">
+                    <colspec colnum="1" colname="col1"/>
+                    <colspec colnum="2" colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>sm_subscriber_sync_inbound_ecosystem_count</entry>
+                            <entry>Number of Subscriber Data Record Ecosystems received at SM from
+                                ME in each batch.</entry>
+                        </row>
+                        <row>
+                            <entry>Labels (in XML)</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>TYPE</entry>
+                            <entry>
+                                <p>The Label for capturing count of SDR Ecosystems.</p>
+                                <p>Possible value:</p>
+                                <p>SDREcosystem</p>
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_ggw_sb2_tmb">
+            <title>E-Commerce API Metrics (ME)</title>
+            <table id="table_jq1_tb2_tmb">
+                <title>E-Commerce API Metrics (ME)</title>
+                <tgroup cols="2">
+                    <colspec colnum="1" colname="col1"/>
+                    <colspec colnum="2" colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>ecommerce_api_count</entry>
+                            <entry>Number of e-commerce API accumulated since the start of this
+                                node. This count denotes the total number of requests received at
+                                ME</entry>
+                        </row>
+                        <row>
+                            <entry>ecommerce_api_rate</entry>
+                            <entry>Average rate of e-commerce API messages (per second) during this
+                                recent interval at ME. (calculated sum/interval duration).</entry>
+                        </row>
+                        <row>
+                            <entry>ecommerce_api_average_latency_last_interval</entry>
+                            <entry>Average latency of e-commerce API messages during this recent
+                                interval (calculated sum/count).</entry>
+                        </row>
+                        <row>
+                            <entry>ecommerce_api_average_latency_overall</entry>
+                            <entry>Average latency for all accumulated intervals (calculated
+                                sum/count) of e-commerce API messages received at ME.</entry>
+                        </row>
+                        <row>
+                            <entry>ecommerce_api_sum</entry>
+                            <entry>Sum of all latencies accumulated since the start of this node (to
+                                calculate averages) of e-commerce API messages received at
+                                ME.</entry>
+                        </row>
+                        <row>
+                            <entry>ecommerce_api_count_last_interval</entry>
+                            <entry>Number of e-commerce API messages accumulated since last count
+                                interval.</entry>
+                        </row>
+                        <row>
+                            <entry>Labels (in XML)</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>RQNAME</entry>
+                            <entry>
+                                <p>The Request Name value.</p>
+                                <p>Possible values re:</p>
+                                <p>DIRECT_DEBIT_AMOUNT</p>
+                                <p>UC_QUERY_BALANCE</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>RSCODE</entry>
+                            <entry>
+                                <p>The Response Code for the E-Commerce API received at ME after
+                                    processing. This can be any value listed in
+                                    “RatingEngineResultCodes”. Total 103 values</p>
+                                <p>Most common values include:</p>
+                                <p>CALL_OK</p>
+                                <p>MULTIPLE_DEVICES_FOUND_FOR_GPSI</p>
+                                <p>CC_DEVICE_CONTEXT_MISSING</p>
+                                <p>GENERIC_RATING_ERROR</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>STATUS</entry>
+                            <entry>
+                                <p>The Status of the E-Commerce API request received at ME after
+                                    processing.</p>
+                                <p>Possible values:</p>
+                                <p>SUCCESS</p>
+                                <p>FAILURE</p>
+                                <p>EXCEPTION</p>
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_yhg_xb2_tmb">
+            <title>E-Commerce API Metrics (SM)</title>
+            <table id="table_hkj_xb2_tmb">
+                <title>E-Commerce API Metrics (SM)</title>
+                <tgroup cols="2">
+                    <colspec colnum="1" colname="col1"/>
+                    <colspec colnum="2" colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>sm_ecommerce_api_count</entry>
+                            <entry>Number of e-commerce API accumulated since the start of this
+                                node. This count denotes the total number of requests received at
+                                SM</entry>
+                        </row>
+                        <row>
+                            <entry>sm_ecommerce_api_rate</entry>
+                            <entry>Average rate of e-commerce API messages (per second) during this
+                                recent interval at SM. (calculated sum/interval duration).</entry>
+                        </row>
+                        <row>
+                            <entry>sm_ecommerce_api_average_latency_last_interval</entry>
+                            <entry>Average latency of e-commerce API messages during this recent
+                                interval (calculated sum/count).</entry>
+                        </row>
+                        <row>
+                            <entry>sm_ecommerce_api_average_latency_overall</entry>
+                            <entry>Average latency for all accumulated intervals (calculated
+                                sum/count) of e-commerce API messages received at SM.</entry>
+                        </row>
+                        <row>
+                            <entry>sm_ecommerce_api_sum</entry>
+                            <entry>Sum of all latencies accumulated since the start of this node (to
+                                calculate averages) of e-commerce API messages received at
+                                SM.</entry>
+                        </row>
+                        <row>
+                            <entry>sm_ecommerce_api_count_last_interval</entry>
+                            <entry>Number of e-commerce API messages accumulated since last count
+                                interval.</entry>
+                        </row>
+                        <row>
+                            <entry>Labels (in XML)</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>RQNAME</entry>
+                            <entry>
+                                <p>Request Name.</p>
+                                <p>Possible values:</p>
+                                <p>DIRECT_DEBIT_AMOUNT</p>
+                                <p>UC_QUERY_BALANCE</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>MENAME</entry>
+                            <entry>The name of the ME on which the E-Commerce API request was sent.
+                                If value is NA, then the request could not be sent to the ME due to
+                                an exception</entry>
+                        </row>
+                        <row>
+                            <entry>RSCODE</entry>
+                            <entry>
+                                <p>The Response Code for the E-Commerce API received at ME after
+                                    processing. This can be any value listed in
+                                    “RatingEngineResultCodes”.</p>
+                                <p>Most common values include:</p>
+                                <p>CALL_OK</p>
+                                <p>MULTIPLE_DEVICES_FOUND_FOR_GPSI</p>
+                                <p>CC_DEVICE_CONTEXT_MISSING</p>
+                                <p>GENERIC_RATING_ERROR</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>STATUS</entry>
+                            <entry>
+                                <p>The Status of the E-Commerce API request received at ME after
+                                    processing.</p>
+                                <p>Possible values:</p>
+                                <p>SUCCESS</p>
+                                <p>FAILURE</p>
+                                <p>EXCEPTION</p>
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_tv5_vvd_kmb">
+            <title>Data Refinery metrics</title>
+            <table frame="all" rowsep="1" colsep="1" id="table_cmr_yvd_kmb">
+                <title>Data Refinery metrics</title>
+                <tgroup cols="3">
+                    <colspec colname="c1" colnum="1" colwidth="1*"/>
+                    <colspec colname="c2" colnum="2" colwidth="1*"/>
+                    <colspec colname="c3" colnum="3" colwidth="1*"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Descritpion</entry>
+                            <entry>Label</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>dr_event</entry>
+                            <entry>Info, warning and error raised by Data Refinery nodes</entry>
+                            <entry>level, host, stream, node, key</entry>
+                        </row>
+                        <row>
+                            <entry>dr_node_status</entry>
+                            <entry>Number of nodes per status, host and configuration</entry>
+                            <entry>status, host, stream, node, configuration</entry>
+                        </row>
+                        <row>
+                            <entry>dr_node_record_statistics</entry>
+                            <entry>Number of records processed per processing result, host, stream
+                                and node</entry>
+                            <entry>result, host, stream, node</entry>
+                        </row>
+                        <row>
+                            <entry>dr_meta_stat_retrieval_time</entry>
+                            <entry>Time (ms) it took for one metric exporter loop to finish</entry>
+                            <entry/>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_qw2_2xd_kmb">
+            <title>CDR stream metrics</title>
+            <p>All CDR stream metrics have the default labels listed in the following table. </p>
+            <table frame="all" rowsep="1" colsep="1" id="table_hcb_wxd_kmb">
+                <title>Default labels for CDR stream metrics</title>
+                <tgroup cols="2">
+                    <colspec colname="c1" colnum="1" colwidth="1*"/>
+                    <colspec colname="c2" colnum="2" colwidth="1*"/>
+                    <thead>
+                        <row>
+                            <entry>Label</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>host</entry>
+                            <entry> Name of the host running the stream instance.</entry>
+                        </row>
+                        <row>
+                            <entry>stream</entry>
+                            <entry>Stream name.</entry>
+                        </row>
+                        <row>
+                            <entry>node</entry>
+                            <entry>Node name.</entry>
+                        </row>
+                        <row>
+                            <entry>stream_type</entry>
+                            <entry>Type of stream (Kafka input, Business logic, Output,
+                                Reprocessor).</entry>
+                        </row>
+                        <row>
+                            <entry>job</entry>
+                            <entry>Prometheus job name (automatically added by Prometheus).</entry>
+                        </row>
+                        <row>
+                            <entry>instance</entry>
+                            <entry>Prometheus target instance (automatically added by
+                                Prometheus).</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_mmg_hzd_kmb">
+            <title>Kafka input stream metrics</title>
+            <table frame="all" rowsep="1" colsep="1" id="table_bzr_lzd_kmb">
+                <title>Kafka input stream metrics</title>
+                <tgroup cols="4">
+                    <colspec colname="c1" colnum="1" colwidth="1*"/>
+                    <colspec colname="c2" colnum="2" colwidth="1*"/>
+                    <colspec colname="c3" colnum="3" colwidth="1*"/>
+                    <colspec colname="c4" colnum="4" colwidth="1*"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Type</entry>
+                            <entry>Description</entry>
+                            <entry>Extra label</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_kafka_audit_in_record_total</entry>
+                            <entry>counter</entry>
+                            <entry>Audit in records.</entry>
+                            <entry>audit=in</entry>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_kafka_audit_stored_record_total</entry>
+                            <entry>counter</entry>
+                            <entry>Audit stored records.</entry>
+                            <entry>audit=stored</entry>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_kafka_audit_filtered_record_total</entry>
+                            <entry>counter</entry>
+                            <entry>Audit filtered records.</entry>
+                            <entry>audit=filtered</entry>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_kafka_jobqueue_size</entry>
+                            <entry>gauge</entry>
+                            <entry>Aggregation queue size.</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_kafka_message_bytes</entry>
+                            <entry>gauge</entry>
+                            <entry>Last record size in bytes.</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                                <p>com_nokia_mc_node_cg_kafka_record_timer_seconds_count</p>
+                                <p>com_nokia_mc_node_cg_kafka_record_timer_seconds_sum</p>
+                            </entry>
+                            <entry>summary</entry>
+                            <entry>Processing time of the input record batch.</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_kafka_record_timer_seconds_max</entry>
+                            <entry>gauge</entry>
+                            <entry>Maximum processing time.</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_kafka_consumer_lag</entry>
+                            <entry>gauge</entry>
+                            <entry>Aggregated Kafka consumer lag for all topic-partitions, i.e. the
+                                number of uncollected messages in a topic.</entry>
+                            <entry>
+                                <p>topic=&lt;name></p>
+                                <p>groupId=&lt;consumer group id></p>
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_yjv_nb2_kmb">
+            <title>Business logic stream metrics</title>
+            <table frame="all" rowsep="1" colsep="1" id="table_ikb_tb2_kmb">
+                <title>Business logic stream metrics</title>
+                <tgroup cols="3">
+                    <colspec colname="c1" colnum="1" colwidth="1*"/>
+                    <colspec colname="c2" colnum="2" colwidth="1*"/>
+                    <colspec colname="c3" colnum="3" colwidth="1*"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Type</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_mapper_session_count_total</entry>
+                            <entry>counter</entry>
+                            <entry>Total of aggregated input sessions.</entry>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_mapper_expired_session_count_total</entry>
+                            <entry>counter</entry>
+                            <entry>Total of aggregated expired sessions.</entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p>com_nokia_mc_node_cg_mapper_aggregation_timer_seconds_count</p>
+                                <p>com_nokia_mc_node_cg_mapper_aggregation_timer_seconds_sum</p>
+                            </entry>
+                            <entry>summary</entry>
+                            <entry>Batch aggregation time.</entry>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_mapper_aggregation_timer_seconds_max</entry>
+                            <entry>gauge</entry>
+                            <entry>Max batch aggregation time.</entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p>com_nokia_mc_node_cg_mapper_expired_timer_seconds_count</p>
+                                <p>com_nokia_mc_node_cg_mapper_expired_timer_seconds_sum</p>
+                            </entry>
+                            <entry>summary</entry>
+                            <entry>Expired sessions batch aggregation time.</entry>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_mapper_expired_timer_seconds_max</entry>
+                            <entry>gauge</entry>
+                            <entry>Maximum expired sessions batch aggregation time.</entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p>om_nokia_mc_node_cg_mapper_batch_timer_seconds_count</p>
+                                <p>com_nokia_mc_node_cg_mapper_batch_timer_seconds_sum</p>
+                            </entry>
+                            <entry>summary</entry>
+                            <entry>Output batch creation time.</entry>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_mapper_batch_timer_seconds_max</entry>
+                            <entry>gauge</entry>
+                            <entry>Max output batch creation time.</entry>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_mapper_jobqueue_size</entry>
+                            <entry>gauge</entry>
+                            <entry>Output queue size.</entry>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_mapper_batchqueue_size</entry>
+                            <entry>gauge</entry>
+                            <entry>Max batch queue size.</entry>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_mapper_aggregated_sessions</entry>
+                            <entry>gauge</entry>
+                            <entry>Last aggregated sessions count.</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_mtd_kc2_kmb">
+            <title>Output stream metrics</title>
+            <table frame="all" rowsep="1" colsep="1" id="table_hrl_4c2_kmb">
+                <title>Output stream metrics</title>
+                <tgroup cols="3">
+                    <colspec colname="c1" colnum="1" colwidth="1*"/>
+                    <colspec colname="c2" colnum="2" colwidth="1*"/>
+                    <colspec colname="c3" colnum="3" colwidth="1*"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Type</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_collector_session_count_total</entry>
+                            <entry>counter</entry>
+                            <entry>Collected output record count.</entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p>com_nokia_mc_node_cg_collector_batch_timer_seconds_count</p>
+                                <p>com_nokia_mc_node_cg_collector_batch_timer_seconds_sum</p>
+                            </entry>
+                            <entry>summary</entry>
+                            <entry>Batch processing time.</entry>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_collector_batch_timer_seconds_max</entry>
+                            <entry>gauge</entry>
+                            <entry>Max batch processing time.</entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p>com_nokia_mc_node_cg_distributor_ruleset_timer_seconds_count</p>
+                                <p>com_nokia_mc_node_cg_distributor_ruleset_timer_seconds_sum</p>
+                            </entry>
+                            <entry>summary</entry>
+                            <entry>Ruleset execution time.</entry>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_distributor_ruleset_timer_seconds_max</entry>
+                            <entry>gauge</entry>
+                            <entry>Maximum ruleset execution time.</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_rn5_vc2_kmb">
+            <title>Reprocessor stream metrics</title>
+            <table frame="all" rowsep="1" colsep="1" id="table_g1t_zc2_kmb">
+                <title>Reprocessor stream metrics</title>
+                <tgroup cols="3">
+                    <colspec colname="c1" colnum="1" colwidth="1*"/>
+                    <colspec colname="c2" colnum="2" colwidth="1*"/>
+                    <colspec colname="c3" colnum="3" colwidth="1*"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Type</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_sftp_distributor_audit_retrieved</entry>
+                            <entry>counter</entry>
+                            <entry>Audit retrieved records.</entry>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_sftp_distributor_audit_stored</entry>
+                            <entry>counter</entry>
+                            <entry>Audit stored records.</entry>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_sftp_distributor_cleanup_count</entry>
+                            <entry>counter</entry>
+                            <entry>Number of failover cleanup calls.</entry>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_sftp_distributor_batch_timer</entry>
+                            <entry>summary</entry>
+                            <entry>Batch processing time.</entry>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_sftp_distributor_file_timer</entry>
+                            <entry>summary</entry>
+                            <entry>File processing time.</entry>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_sftp_distributor_file_size</entry>
+                            <entry>gauge</entry>
+                            <entry>Number of records in a file.</entry>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_sftp_collector_audit_retrieved</entry>
+                            <entry>counter</entry>
+                            <entry>Audit retrieved records.</entry>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_sftp_collector_audit_stored</entry>
+                            <entry>counter</entry>
+                            <entry>Audit stored records.</entry>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_sftp_collector_cleanup_count</entry>
+                            <entry>counter</entry>
+                            <entry>Number of failover cleanup calls.</entry>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_sftp_collector_file_timer</entry>
+                            <entry>summary</entry>
+                            <entry>File processing time.</entry>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_sftp_collector_file_size</entry>
+                            <entry>gauge</entry>
+                            <entry>Number of records in a file.</entry>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_sftp_collector_queue_size</entry>
+                            <entry>gauge</entry>
+                            <entry>Number of files in the queue.</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_dnv_hd2_kmb">
+            <title>Common Redis database metrics for all CDR streams</title>
+            <table frame="all" rowsep="1" colsep="1" id="table_mtj_ld2_kmb">
+                <title>Common Redis database metrics for all CDR streams</title>
+                <tgroup cols="3">
+                    <colspec colname="c1" colnum="1" colwidth="1*"/>
+                    <colspec colname="c2" colnum="2" colwidth="1*"/>
+                    <colspec colname="c3" colnum="3" colwidth="1*"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Type</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_db_operations_per_second</entry>
+                            <entry>gauge</entry>
+                            <entry>Redis operation/s.</entry>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_db_uptime_in_seconds</entry>
+                            <entry>gauge</entry>
+                            <entry>Redis uptime.</entry>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_db_used_memory</entry>
+                            <entry>gauge</entry>
+                            <entry>Memory used by Redis.</entry>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_db_used_cpu</entry>
+                            <entry>gauge</entry>
+                            <entry>CPU used by Redis.</entry>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_db_connected_clients</entry>
+                            <entry>gauge</entry>
+                            <entry>Redis connected clients.</entry>
+                        </row>
+                        <row>
+                            <entry>com_nokia_mc_node_cg_db_keys</entry>
+                            <entry>gauge</entry>
+                            <entry>Number of keys in Redis.</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_ghw_wd2_kmb">
+            <title>Common Jvm metrics for all CDR streams</title>
+            <table frame="all" rowsep="1" colsep="1" id="table_grp_122_kmb">
+                <title>Common Jvm metrics for all CDR streams</title>
+                <tgroup cols="4">
+                    <colspec colname="c1" colnum="1" colwidth="1*"/>
+                    <colspec colname="c2" colnum="2" colwidth="1*"/>
+                    <colspec colname="c4" colnum="3" colwidth="1*"/>
+                    <colspec colname="c3" colnum="4" colwidth="1*"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Type</entry>
+                            <entry>Description</entry>
+                            <entry>Extra label</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>system_cpu_count</entry>
+                            <entry>gauge</entry>
+                            <entry>The number of processors available to the Java Virtual
+                                Machine.</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>process_cpu_usage</entry>
+                            <entry>gauge</entry>
+                            <entry>The "recent cpu usage" for the Java Virtual Machine
+                                process.</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>system_cpu_usage</entry>
+                            <entry>gauge</entry>
+                            <entry>The "recent cpu usage" for the whole system.</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>system_load_average_1m</entry>
+                            <entry>gauge</entry>
+                            <entry>
+                                <p>The sum of the number of runnable entities queued to available
+                                    processors, and the number of runnable entities running on the
+                                    available processors averaged over a period of time.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>jvm_buffer_count_buffers</entry>
+                            <entry>gauge</entry>
+                            <entry>An estimate of the number of buffers in the pool.</entry>
+                            <entry>id=direct, id=mapped</entry>
+                        </row>
+                        <row>
+                            <entry>jvm_buffer_total_capacity_bytes</entry>
+                            <entry>gauge</entry>
+                            <entry>An estimate of the total capacity of the buffers in this
+                                pool.</entry>
+                            <entry>id=direct, id=mapped</entry>
+                        </row>
+                        <row>
+                            <entry>jvm_buffer_memory_used_bytes</entry>
+                            <entry>gauge</entry>
+                            <entry>An estimate of the memory that the Java virtual machine is using
+                                for this buffer pool.</entry>
+                            <entry>id=direct, id=mapped</entry>
+                        </row>
+                        <row>
+                            <entry>jvm_memory_max_bytes</entry>
+                            <entry>gauge</entry>
+                            <entry>The maximum amount of memory in bytes that can be used for memory
+                                management.</entry>
+                            <entry>
+                                <p>area=nonheap, area=heap, id=Metaspace,</p>
+                                <p>id=PS Survivor Space, id=PS Eden Space,</p>
+                                <p>id=Compressed Class Space, id=PS Old Gen</p>
+                                <p>id=Code Cache</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>jvm_memory_committed_bytes</entry>
+                            <entry>gauge</entry>
+                            <entry>The amount of memory in bytes that is committed for the Java
+                                Virtual Machine to use.</entry>
+                            <entry><p>area=nonheap, area=heap, id=Metaspace,</p><p>id=PS Survivor
+                                    Space, id=PS Eden Space,</p><p>id=Compressed Class Space, id=PS
+                                    Old Gen</p>id=Code Cache</entry>
+                        </row>
+                        <row>
+                            <entry>jvm_memory_used_bytes</entry>
+                            <entry>gauge</entry>
+                            <entry>The amount of  memory used.</entry>
+                            <entry><p>area=nonheap, area=heap, id=Metaspace,</p><p>id=PS Survivor
+                                    Space, id=PS Eden Space,</p><p>id=Compressed Class Space, id=PS
+                                    Old Gen</p>id=Code Cache</entry>
+                        </row>
+                        <row>
+                            <entry>jvm_gc_live_data_size_bytes</entry>
+                            <entry>gauge</entry>
+                            <entry>Size of old generation memory pool after a full GC.</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>jvm_gc_memory_promoted_bytes_total</entry>
+                            <entry>counter</entry>
+                            <entry>Count of positive increases in the size of the old generation
+                                memory pool before GC to after GC.</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>jvm_gc_max_data_size_bytes</entry>
+                            <entry>gauge</entry>
+                            <entry>Max size of old generation memory pool.</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                                <p>jvm_gc_pause_seconds_count</p>
+                                <p>jvm_gc_pause_seconds_sum</p>
+                            </entry>
+                            <entry>summary</entry>
+                            <entry>Time spent in GC pause.</entry>
+                            <entry>action=end of minor GC,cause=Allocation Failure</entry>
+                        </row>
+                        <row>
+                            <entry>jvm_gc_pause_seconds_max</entry>
+                            <entry>gauge</entry>
+                            <entry>Maximum time spent in GC pause.</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>jvm_gc_memory_allocated_bytes_total</entry>
+                            <entry>counter</entry>
+                            <entry>Incremented for an increase in the size of the young generation
+                                memory pool after one GC to before the next.</entry>
+                            <entry/>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+    </conbody>
+</concept>

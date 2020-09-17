@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//NSN//DTD DITA Concept//EN" "nsnconcept.dtd">
+		<concept id="id9YZ-09018--PL00-FPZZA-d1e15320"><title>Case 9: Roaming monthly pass with rated consumption</title><conbody>
+
+<section><title>Overview</title>
+
+<p>Bob has an iPhone subscribed to a roaming monthly pass that offers a fixed data daily in its data bucket for consumption of data services. A counter cumulates the data usage by the iPhone for a month.</p>
+</section>
+<section><title>Flow of events</title>
+
+<p/><ul>
+
+<li>
+Bob makes a data call using his iPhone. The data consumption is charged from the daily data bucket and main account balance.
+</li>
+<li>
+Verify that the data call is successful. The data bucket balance should be zero and charging is correctly done from the account balance according to the defined rate.
+</li>
+<li>
+Verify that the usage counter is correctly updated and it counts the usage only when data is charged from the daily bucket resource and not from the main account balance.
+</li>
+</ul>
+</section>
+<section><title>Provisioning</title>
+
+<p>Following entities are required for this use case.<table pgwide="1" colsep="1" rowsep="1">
+                    <title>Entities for case 9</title>
+                    <tgroup cols="2">
+                        <colspec colname="col1"/>
+                        <colspec colname="col2"/>
+                        <thead>
+                            <row>
+                                <entry> Entity </entry>
+                                <entry> Task </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry> Charging Service </entry>
+                                <entry>
+                                    <p>Create a charging service with the following details:</p>
+                                    <ol>
+                                        <li>
+                                            
+                                                <uicontrol>Bucket:</uicontrol> Create a daily
+                                                bucket.
+                                        </li>
+                                        <li>
+                                            
+                                                <uicontrol>Tariff:</uicontrol> Define two tariffs to
+                                                use bucket or main balance for charging.
+                                        </li>
+                                    </ol>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> Rate </entry>
+                                <entry> Create a rate. </entry>
+                            </row>
+                            <row>
+                                <entry> Lifecycles </entry>
+                                <entry> Create the subscription
+                                        (<varname>RoamingPassResetLC</varname>,
+                                        <varname>RoamingPassSubscLC</varname>), account, and device
+                                    lifecycles. </entry>
+                            </row>
+                            <row>
+                                <entry> Bundle </entry>
+                                <entry> Create a bundle and associate it with the subscription
+                                    lifecycles. </entry>
+                            </row>
+                            <row>
+                                <entry> Mapping Tables </entry>
+                                <entry> Create the mapping for zones, MCCMNC to Zone mapping.
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> Counters </entry>
+                                <entry> Create a usage counter to accumulate the usage for 30 days.
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> Rules and Variables </entry>
+                                <entry> Create a roaming status rule variable to identify the
+                                    location using <varname>APPLICABILITY</varname> trigger.
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> Account </entry>
+                                <entry> Create an account and associate with an account lifecycle.
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> Device </entry>
+                                <entry> Create a device and associate with a bundle and device
+                                    lifecycle. </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table></p>
+<p>Provision the following data:</p><ol>
+
+<li>Create the following subscription lifecycles: <p>
+                        <uicontrol>RoamingPassResetLC:</uicontrol>
+                    </p>
+                    <!--MMO resource relative URI: ../graphics/Case9_LC1_default.png-->
+                    <image href="../images/case9_lc1_default.png"/>
+                    <p>
+                        <uicontrol>RoamingPassSubscLC:</uicontrol>
+                    </p>
+                    <!--MMO resource relative URI: ../graphics/Case9_LC2_default.png-->
+                    <image href="../images/case9_lc2_default.png"/>
+                </li>
+<li>Provision a <varname>RoamingPass_Rate1_v2</varname> rate that charges 1 United States dollar for
+                    every 100 MB of data consumed. <!--MMO resource relative URI: ../graphics/Case9_rate_default.png-->
+                    <image href="../images/case9_rate_default.png"/>
+                </li>
+<li>Create a <emphasis>RoamingStatus</emphasis> rule variable in the Rule System Version (RSV) to
+                    identify the home or roaming location for <emphasis>Trigger</emphasis> set to
+                        <varname>APPLICABILITY</varname>. </li>
+<li>Configure a charging service: <table pgwide="1" rowsep="1" colsep="1">
+                        <tgroup cols="2">
+                            <colspec colname="col1"/>
+                            <colspec colname="col2"/>
+                            <thead>
+                                <row>
+                                    <entry> Parameter </entry>
+                                    <entry> Value </entry>
+                                </row>
+                            </thead>
+                            <tbody>
+                                <row>
+                                    <entry> Name </entry>
+                                    <entry> RoamingPassCS </entry>
+                                </row>
+                                <row>
+                                    <entry> Priority </entry>
+                                    <entry> 33 </entry>
+                                </row>
+                                <row>
+                                    <entry> Category </entry>
+                                    <entry> DefaultCategory </entry>
+                                </row>
+                                <row>
+                                    <entry> Applicability condition </entry>
+                                    <entry/>
+                                </row>
+                                <row>
+                                    <entry namest="col1" nameend="col2">
+                                        <!--MMO resource relative URI: ../graphics/Case6_CS1_default.png-->
+                                        <image href="../images/case6_cs1_default.png"/>
+                                    </entry>
+                                </row>
+                            </tbody>
+                        </tgroup>
+                    </table>
+                    <p>
+                        <uicontrol>Add bucket:</uicontrol>
+                    </p>
+                    <!--MMO resource relative URI: ../graphics/Case9_bucket_default.png-->
+                    <image href="../images/case9_bucket_default.png"/>
+                    <p>
+                        <uicontrol>Tariff formula</uicontrol> - Tariff pass0</p>
+                    <!--MMO resource relative URI: ../graphics/Case9_tp1_default.png-->
+                    <image href="../images/case9_tp1_default.png"/>
+                    <p>
+                        <uicontrol>Tariff formula</uicontrol> - Tariff pass1</p>
+                    <!--MMO resource relative URI: ../graphics/Case9_tp2_default.png-->
+                    <image href="../images/case9_tp2_default.png"/>
+                </li>
+<li>Create a bundle with a fee of 15 United States dollars and associate it with the charging
+                    service. <!--MMO resource relative URI: ../graphics/Case9_bundle_default.png-->
+                    <image href="../images/case9_bundle_default.png"/>
+                </li>
+<li>iPhone is subscribed to the data bundle. </li>
+<li>The account balance must be sufficient to complete the call. </li>
+<li>Create the usage counter as follows: <!--MMO resource relative URI: ../graphics/Case9_counter_default.png-->
+                    <image href="../images/case9_counter_default.png" placement="break" scale="70"/>
+                    <p>
+                        <uicontrol>Applicability condition:</uicontrol>
+                    </p>
+                    <!--MMO resource relative URI: ../graphics/Case6_CS1_default.png-->
+                    <image href="../images/case6_cs1_default.png"/>
+                </li>
+<li>iPhone is subscribed to the usage counter and it cumulates the usage for a month or 30 days. To
+                    do this, navigate to <uicontrol>Subscriber Manager</uicontrol> and select the
+                        <uicontrol>Devices</uicontrol> tab. Search the device and click
+                        <uicontrol>Add counter</uicontrol> option. <p>
+                        <uicontrol>Device:</uicontrol>
+                    </p>
+                    <!--MMO resource relative URI: ../../../SPS-Policy/18.0/graphics/Addcounter_default.png-->
+                    <image href="../images/addcounter_default.png"/>
+                    <p>
+                        <uicontrol>Add counter:</uicontrol>
+                    </p>
+                    <!--MMO resource relative URI: ../graphics/Case9_addcounter_default.png-->
+                    <image href="../images/case9_addcounter_default.png"/>
+                </li>
+</ol>
+</section>
+</conbody></concept>

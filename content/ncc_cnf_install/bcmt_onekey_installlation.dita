@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="bcmt_onekey_installlation">
+    <title> Installing BCMT OneKey package</title>
+    <taskbody>
+        <context>
+            <p><b><u>From your local linux machine</u></b>:</p>
+            <ol id="ol_xjt_tvp_5lb">
+                <li>Copy the following files to your working directory (Do not modify the files.)<ol
+                        id="ol_yjt_tvp_5lb">
+                        <li>Openstack RC file of your VLAB project <note>
+                                <ul id="ul_nz1_scq_5lb">
+                                    <li>Do not modify this file.</li>
+                                    <li>CBIS 19 only supports API v3.</li>
+                                </ul>
+                            </note>
+                        </li>
+                        <li>Openstack certificate file of your VLAB project (if using secured
+                            Openstack server)<note>Do not modify this file.</note><p>If the
+                                OpenStack dashboard uses a secure connection (i.e. the HTTPS
+                                protocol), then a CA certificate (in .pem or .crt format) is
+                                required.</p></li>
+                        <li>Private and Public key pair files (bcmt-cluster and bcmt-cluster.pub
+                            will be used for this procedure) to be used for all the BCMT nodes<p>You
+                                can generate a new set of private/public pair of key files by
+                                executing the following command from the current
+                                directory:</p><codeblock>ssh-keygen -b 2048 -t rsa -f bcmt-cluster -q -N ""</codeblock><p>The
+                                2 following files will be created:</p><ul id="ul_n3r_ycq_5lb">
+                                <li>bcmt-cluster</li>
+                                <li>bcmt-cluster.pub</li>
+                            </ul></li>
+                    </ol></li>
+                <li>Download Onekey tgz file from the SPS artifactory to the local machine under any
+                    sub-folder of the current directory (folder "onekey" for
+                    example):<codeblock># Create onekey sub-folder and download onekey tgz file</codeblock><codeblock>mkdir onekey</codeblock><codeblock>wget https://&lt;SPS artifactory>/csf-generic-delivered/BCMT/ncm-linux-cli-19.12.1-1.tgz</codeblock><codeblock># Untar ncm_linux tgz file and rename ncm_linux into ncm</codeblock><codeblock><codeph>tar -zxvf ncm-linux-cli-19.12.1-1.tgz</codeph></codeblock><codeblock><codeph>mv ncm_linux ncm</codeph></codeblock></li>
+                <li>Download the bcmt_clcm_local_config_openstack.json file template file
+                    pre-configured for use in VLAB with SPS as a replacement for the default
+                    template:
+                    <codeblock># Rename the default bcmt_clcm_local_config_openstack.json and download the modified template
+      customised for SPS: </codeblock><codeblock>mv bcmt_clcm_local_config_openstack.json bcmt_clcm_local_config_openstack.json.orig</codeblock><codeblock><codeph>wget http://sco-up.ca.alcatel-lucent.com/sps/bcmt/19.12.1/bcmt_clcm_local_config_openstack.json</codeph></codeblock></li>
+                <li>Review the bcmt_clcm_local_config_openstack.json file and Update it with the
+                    Openstack authentication info:<ol id="ol_gkt_tvp_5lb">
+                        <li>
+                            <p>For reference the following parameters have already been modified to
+                                work in vlab. Review and update the
+                                bcmt_clcm_local_config_openstack.json if needed, but no modification
+                                should be required:</p>
+                            <codeblock><codeph>> Under 'cluster_config', the following parameters are set:</codeph></codeblock>
+                            <codeblock><codeph> "external_dns": "10.171.0.2,10.171.8.4"</codeph></codeblock>
+                            <codeblock><codeph> "external_ntpservers": "10.171.8.4,10.171.8.5"</codeph></codeblock>
+                            <codeblock><codeph> "use_cloud_provider_storage": true,</codeph></codeblock>
+                            <codeblock>> 2 security-groups - sps_edge_group (open all) and sps_worker_group (open to SSH) - have been defined and assigned respectively to the edge node (group-03) and worker
+      node (group-02) for the net-01 (ie public) interface (to allow access to all SPS services via edge node, and SSH
+      access to worker node)</codeblock>
+                            <codeblock>> Openstack Flavor have been defaulted as follows (note that the DeployServer's flavor is specified using option “--deployflavor=m1.large” during the execution of “./ncm onekey config create“</codeblock>
+                            <codeblock><codeph>group_01 (control): m1.large</codeph></codeblock>
+                            <codeblock><codeph>group_02 (worker): c24_r32_d100</codeph></codeblock>
+                            <codeblock><codeph>group_03 (edge): m1.large</codeph></codeblock>
+                        </li>
+                        <li>
+                            <p>Edit the bcmt_clcm_local_config_openstack.json and under 'openstack',
+                                update all the fields based on the information contained in the
+                                openstack RC file retrieved at step 3-a-i</p>
+                            <p> Here is an example:</p>
+                            <codeblock>"openstack": {
+        "OS_CACERT_CONTENT": "../NokiaCA.crt",
+        "OS_USERNAME": "a303_lpotiez",
+        "OS_USER_DOMAIN_NAME": "Default",
+        "OS_INSECURE": true,
+        "OS_TENANT_NAME": "a303_SPS",
+        "OS_AUTH_URL": "https://10.4.166.230:13000/v3",
+        "OS_TENANT_ID": "7977d426c6ae44c1a012c3df2eb7d0d0",
+        "OS_PROJECT_DOMAIN_NAME": "Default",
+        "OS_REGION_NAME": "regionOne",
+        "OS_PROJECT_NAME": "a303_SPS",
+        "OS_PROJECT_ID":"7977d426c6ae44c1a012c3df2eb7d0d0",
+        "OS_PASSWORD":"password"
+}</codeblock>
+                            <p>This openstack info will be used by the Kubernetes Cinder volume
+                                plugin to create Persistent Storage (Cinder back-end). Failure to
+                                correctly fill these parameters will result in K8S failing to create
+                                PV.</p>
+                        </li>
+                    </ol></li>
+                <li>Create oneKey Config<p>Use the the following 'ncm onekey config create' command
+                        as an example to create the
+                        config:</p><codeblock>./ncm onekey config create \
+--cluster_name=bcmt-01 \
+--resourceprefix=bcmt-01 \
+--worker_count=3 \
+--control_count=1 \
+--edge_count=1 \
+--openstack_password='Ma!n5treet' \
+--openstack_rcfile=../a303_SPS-openrc_APIv3.sh \
+--openstack_certfile=../NokiaCA.crt \
+--net-01_uuid=7436be41-601d-4a9f-8867-1e73242cf29e \
+--net-01_subnetuuid=ec91f69e-fd26-4644-93b2-0c2bd966cd99 \
+--deployflavor=m1.large \
+--deploy_ssh_pri_key_file=../bcmt-cluster \
+--deploy_ssh_pub_key_file=../bcmt-cluster.pub \
+--cluster_ssh_pri_key_file=../bcmt-cluster \
+--cluster_ssh_pub_key_file=../bcmt-cluster.pub \
+--operation-system-type=centos \
+--deployserver_image_source_uuid=36e5691b-2e68-4bd1-ac2b-6dc49df42bd3 \
+--cluster_image_source_uuid=e22211e6-ba54-437b-99dd-774b3fb63e1d</codeblock><p>In
+                        the above example command:</p><p>Modify all the value of the parameters
+                        highlighted in red in the table below to match your specific
+                        setup</p><p>verify that the value of the parameters highlighted in orange in
+                        the table below are valid</p><p>The other parameters don't need to be
+                        updated for the install to work ; green parameters can be modified when
+                        installing multiple setups to keep the names unique.</p><p>Refer to BCMT
+                        OneKey installation guide 19.12 for the complete list of
+                        parameters</p><table id="table_u15_lfq_5lb">
+                        <tgroup cols="5">
+                            <colspec colnum="1" colname="col1" colwidth="165pt"/>
+                            <colspec colname="col6" colnum="2" colwidth="96.75pt"/>
+                            <colspec colname="col2" colnum="3" colwidth="54.75pt"/>
+                            <colspec colnum="4" colname="col4" colwidth="116.25pt"/>
+                            <colspec colnum="5" colname="col5" colwidth="49.5pt"/>
+                            <tbody>
+                                <row>
+                                    <entry><p/>PARAMETER NAME</entry>
+                                    <entry>DESCRIPTION</entry>
+                                    <entry>TYPE</entry>
+                                    <entry>RECOMMENDED VALUE</entry>
+                                    <entry/>
+                                </row>
+                                <row>
+                                    <entry>cluster_name</entry>
+                                    <entry>Name for the NCM/BCMT cluster<p>Only 'a-z'(in lower case)
+                                            '0-9' '-' are allowed</p></entry>
+                                    <entry>string</entry>
+                                    <entry>bcmt-01</entry>
+                                    <entry>optional</entry>
+                                </row>
+                                <row>
+                                    <entry>resourceprefix</entry>
+                                    <entry>Resource prefix for the servers</entry>
+                                    <entry>string</entry>
+                                    <entry>bcmt-01</entry>
+                                    <entry>optional</entry>
+                                </row>
+                                <row>
+                                    <entry>worker_count</entry>
+                                    <entry>Count of the worker count ; set to 3</entry>
+                                    <entry>integer</entry>
+                                    <entry>3</entry>
+                                    <entry>optional</entry>
+                                </row>
+                                <row>
+                                    <entry>control_count</entry>
+                                    <entry>Count of the control nodes ; set to 1</entry>
+                                    <entry>integer</entry>
+                                    <entry>1</entry>
+                                    <entry>optional</entry>
+                                </row>
+                                <row>
+                                    <entry>edge_count</entry>
+                                    <entry>the count of the edge count ; set to 1</entry>
+                                    <entry>integer</entry>
+                                    <entry>1</entry>
+                                    <entry>optional</entry>
+                                </row>
+                                <row>
+                                    <entry>openstack_password</entry>
+                                    <entry>
+                                        <p>Password for the Openstack project. Use the single quotes
+                                            to surround the string.</p>
+                                        <p><u>Notes</u>:</p>
+                                        <p>- Please refer to CSF documenttion for explanation for
+                                            the failure when the password uses "!" and a list of
+                                            supported special characters. For example, CBIS 19 MP2,
+                                            does not seem to accept dash (-) as a character in the
+                                            password. </p>
+                                    </entry>
+                                    <entry>string</entry>
+                                    <entry/>
+                                    <entry/>
+                                </row>
+                                <row>
+                                    <entry>openstack_rcfile</entry>
+                                    <entry>Path and filename for the openstack rc file ; see step
+                                        3-a-i</entry>
+                                    <entry>string</entry>
+                                    <entry>see step 3-a-i</entry>
+                                    <entry/>
+                                </row>
+                                <row>
+                                    <entry>openstack_certfile</entry>
+                                    <entry>Path and filename for the openstack cert file ; see step
+                                        3-a-ii</entry>
+                                    <entry>string</entry>
+                                    <entry>see step 3-a-ii </entry>
+                                    <entry>optional</entry>
+                                </row>
+                                <row>
+                                    <entry>net-01_uuid</entry>
+                                    <entry>Network ID of the public network. Use value retrieved
+                                        from step 2-e-ii</entry>
+                                    <entry>string</entry>
+                                    <entry>see step 2-e-ii </entry>
+                                    <entry>optional</entry>
+                                </row>
+                                <row>
+                                    <entry>net-01_subnetuuid</entry>
+                                    <entry>Subnet ID of the public network. Use value retrieved from
+                                        step 2-e-ii</entry>
+                                    <entry>string</entry>
+                                    <entry>see step 2-e-ii </entry>
+                                    <entry>optional</entry>
+                                </row>
+                                <row>
+                                    <entry>deploy_ssh_pri_key_file</entry>
+                                    <entry>file that contains the private key of the deploy server ;
+                                        see step 3-a-iii</entry>
+                                    <entry>string</entry>
+                                    <entry>../bcmt-cluster</entry>
+                                    <entry>optional</entry>
+                                </row>
+                                <row>
+                                    <entry>deploy_ssh_pub_key_file</entry>
+                                    <entry>file that contains the public key of the deploy server ;
+                                        see step 3-a-iii</entry>
+                                    <entry>string</entry>
+                                    <entry>../bcmt-cluster.pub</entry>
+                                    <entry>optional</entry>
+                                </row>
+                                <row>
+                                    <entry>cluster_ssh_pri_key_file</entry>
+                                    <entry>file that contains the private key of the target VM ; see
+                                        step 3-a-iii</entry>
+                                    <entry>string</entry>
+                                    <entry>../bcmt-cluster</entry>
+                                    <entry>optional</entry>
+                                </row>
+                                <row>
+                                    <entry>cluster_ssh_pub_key_file</entry>
+                                    <entry>file that contains the pub key of the target VM ; see
+                                        step 3-a-iii</entry>
+                                    <entry>string</entry>
+                                    <entry><p/>../bcmt-cluster.pub</entry>
+                                    <entry>optional</entry>
+                                </row>
+                                <row>
+                                    <entry>operation-system-type</entry>
+                                    <entry>specifies the type for the operation system type,only
+                                        supports redhat and centos ; select centos</entry>
+                                    <entry>string</entry>
+                                    <entry>centos</entry>
+                                    <entry>optional</entry>
+                                </row>
+                                <row>
+                                    <entry>deployserver_image_source_uuid</entry>
+                                    <entry>uuid of the bcmt-deployserver deploy server image ; see
+                                        step 2-d-ii</entry>
+                                    <entry>string</entry>
+                                    <entry>see step 2-d-ii </entry>
+                                    <entry>optional</entry>
+                                </row>
+                                <row>
+                                    <entry>cluster_image_source_uuid</entry>
+                                    <entry>uuid of the bcmt-baseos target server image ; see step
+                                        2-d-ii</entry>
+                                    <entry>string</entry>
+                                    <entry>see step 2-d-ii </entry>
+                                    <entry>optional</entry>
+                                </row>
+                            </tbody>
+                        </tgroup>
+                    </table></li>
+                <li>Initiate oneKey Install<ol id="ol_mkt_tvp_5lb">
+                        <li>Start CLCM/BCMT
+                                install<codeblock>./ncm onekey install</codeblock><p>First the
+                                deployServer VM will be created, then all the control/edge/worked
+                                K8S nodes VMs are created (CLCM install phase), and finally BCMT/K8S
+                                is deployed on the VM infrastructure (BCMT install phase).</p><p>The
+                                whole operation can take between 25 to 40 minutes,</p></li>
+                        <li>Monitor the ongoing install<ol id="ol_okt_tvp_5lb">
+                                <li>
+                                    <p>Monitor the creation of the VMs from Openstack</p>
+                                </li>
+                                <li>
+                                    <p>Monitor CLCM/BCMT install execution from the DeployServer</p>
+                                    <p>First, wait for the following message to be displayed:</p>
+                                    <codeblock>Deploy server is building........
+Deploy server ip is [192.168.199.6 10.76.152.179]
+Deploy server is preparing............
+Deploy server endpoint: https://10.76.152.179:8082/ncm/api/v1
+file is being uploaded
+file is being uploaded
+file is being uploaded
+You can login to deployserver and use below command to check detail progress:
+tail -f /opt/bcmt/log/bcmt.log</codeblock>
+                                    <p>Then SSH to the Deploy Server using the public IP (displayed
+                                        in the output above, or retrieved from Openstack), as
+                                        cloud-user with the bcmt-cluster private key:</p>
+                                    <codeblock># ssh -i ../bcmt-cluster cloud-user@10.76.152.179
+# sudo -i</codeblock>
+                                    <p>And tail the /opt/bcmt/log/bcmt.log log file from the
+                                        bcmt-admin container to monitor the BCMT install:</p>
+                                    <codeblock><codeph># docker exec -it bcmt-admin tail -500f /opt/bcmt/log/bcmt.log</codeph></codeblock>
+                                    <p>Or tail the latest /opt/clcm/log/clcm_*.log log file from the
+                                        clcm-admin container to monitor the CLCM install (any
+                                        failure due to openstack problem, quota exceeded, etc...
+                                        will be showing here)</p>
+                                    <codeblock># docker exec -it clcm-admin ls -latr /opt/clcm/log/clcm_*.log
+-rw-r--r--. 1 root root 300034 Sep 11 19:54 /opt/clcm/log/clcm_20190911_194904.log
+# docker exec -it clcm-admin tail -500f /opt/clcm/log/clcm_20190911_194904.log</codeblock>
+                                </li>
+                            </ol></li>
+                    </ol></li>
+            </ol>
+        </context>
+        <steps>
+            <step>
+                <cmd></cmd>
+            </step>
+        </steps>
+    </taskbody>
+</task>

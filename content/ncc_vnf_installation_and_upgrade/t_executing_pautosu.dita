@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+		<task id="id9YZ-09018-IN00-RJZZA-Executing-pAutoSU"><title>Executing pAutoSU</title><taskbody id="d1e10464"><context><sectiondiv>
+				<p><b>Overview</b></p>
+				<p>This procedure provides instructions on how to execute the pAutoSU script such
+					that it performs the upgrade automatically.</p>
+				<p>The NCC ISU will upgrade VMs within a VNF, one group at a time, for a total of three groups
+					using the pAutoSU script. When the script runs for each group, there are
+					multiple tasks that are completed by the script. The pAutoSU script triggers the
+					ISU using a command line that can be used with an option (-p or --pause) that
+					causes a pause after each task is complete within a single group. That is, the
+					script will pause and wait for the user’s input before continuing to the next
+					task. When the script pauses, you can answer “c” , for continue, at the prompt.
+					You can forego the pause and continue steps using the “r” option after the pause
+					at any task, which allows the ISU to continue to the last task without anymore
+					pauses. Other options also exist that allow you to specify the tasklist file
+					(&lt;task_list_file&gt; ) or the VNF Instance ( -i &lt;vnf_instance_id&gt;) on
+					which to execute the script.</p>
+				<note>
+					<p>You should have already generated the TaskList file. If you have not already
+						generated the Tasklist file, generate the TaskList file using the procedure
+							<!--xref URI: t-upgrade-generating-TaskList.xml#Generating-TaskList--><xref
+							keyref="id9YZ-09018-IN00-RJZZA-Generating-TaskList"/>. The TaskList file
+						defines tasks to be executed in one run and in sequence.  </p>
+					<p>For information about TaskList, see section
+							<!--xref URI: t-upgrade-task-list-file.xml#TaskList-specification--><xref
+							keyref="id9YZ-09018-IN00-RJZZA-TaskList-specification"/>.</p>
+				</note>
+			</sectiondiv>To execute pAutoSU:</context><steps>
+
+<step><cmd><draft-comment>FIXME - put an instruction here</draft-comment></cmd><info>
+<note>
+
+<p>During this step, there might be a need to perform the procedure <!--xref URI: t-upgrade-checking-DB-VMs.xml#Performing-manual-steps--><xref keyref="id9YZ-09018-IN00-RJZZA-Performing-manual-steps"/>. For
+information about TaskList, see <!--xref URI: t-upgrade-task-list-file.xml#TaskList-specification--><xref keyref="id9YZ-09018-IN00-RJZZA-TaskList-specification"/>.</p>
+</note>
+<p>As <codeph>root</codeph> user, execute pAutoSU as follows:</p><ol>
+
+<li>
+<p>Perform one of the following as required:</p><ul>
+
+<li>
+<p>For VMware, enter:</p>
+<p>
+<codeph>cd $AUTO_HOME</codeph>
+</p>
+</li>
+<li>
+<p>For OpenStack, enter:</p>
+<p>
+<codeph>cd $AUTO_HOME</codeph>
+</p>
+<p>
+<codeph>source &lt;PROJECT&gt;-openrc.sh</codeph>
+</p>
+<p>Based on the version of OpenStack, you may be prompted to OS_PASSWORD when you source the openrc file. At the prompt enter your OS_PASSWORD if required:</p>
+<p>
+<systemoutput>Please enter your OpenStack Password for project &lt;PROJECT&gt; as user &lt;OS_USERNAME&gt;: &lt;OS_PASSWORD&gt;</systemoutput>
+</p>
+</li>
+</ul>
+</li>
+</ol>
+</info></step>
+<step><cmd>Enter one of the following:</cmd><info>
+					<ul>
+						<li>
+							<p>To execute the pAutoSU with a specific task list and pause after
+								executing each task successfully:<codeph>./autoSU.py -f
+									&lt;task_list_file&gt; [-p|--pause] </codeph>
+							</p>
+						</li>
+						<li>
+							<p>Run with specific task list:</p>
+							<p>
+								<codeph>./autoSU.py -f &lt;task_list_file&gt; </codeph>
+							</p>
+						</li>
+						<li>
+							<p>Run with specific task list and a specific VNF instance id:</p>
+							<p>
+								<codeph>./autoSU.py -f &lt;task_list_file&gt; -i &lt;vnfid&gt;
+								</codeph>
+							</p>
+						</li>
+						<li>
+							<p>Allow pAutoSU to continue tasks from wherever it stopped and
+								exited:</p>
+							<p>
+								<codeph>./autoSU.py -f &lt;task_list_file&gt; -c</codeph>
+							</p>
+						</li>
+					</ul>
+					<p>Where:</p>
+					<p>
+						<b>-h</b> or <b>--help</b> prints this help message and exits.</p>
+					<p>“<b>-p</b>” or “<b>--pause</b>” is an optional parameter that allows a pause
+						after executing each task successfully. You will need to enter “c” to
+						continue to execute the next task, or press “r” to run through to the last
+						task without a pause, or press “q” to quit.</p>
+					<p>“<b>-c</b>” is an optional parameter used in a new command that allows the
+						pAutoSU script to continue performing tasks from where it stopped and
+						exited.</p>
+					<p>“<b>-f &lt;task_list_file&gt;</b>” is the file which defines the task list
+						(mandatory). The path is tools/genTasklist/tasklist-upgrade.txt, which is
+						for updating all VMs in one attempt, where autoSU.py is only run the one
+						time. If you choose to upgrade using the before and after tasklist, it means
+						the autoSU.py script is run twice as follows: </p>
+					<ul>
+						<li>
+							<p>Once for tasklist-upgrade-before-soak.txt—for updating half of VMs in
+								one attempt</p>
+						</li>
+						<li>
+							<p>Once for tasklist-upgrade-after-soak.txt—for updating the rest of the
+								VMs</p>
+						</li>
+					</ul>
+					<p>“<b>-i &lt;vnfid&gt;</b>” is an optional parameter that allows you to execute
+						the script on a specific VNF instance. If this option is not provided, vnfId
+						value from su_config.yaml will be used.</p>
+					<p>
+						<b>Expected outcome</b>
+					</p>
+					<p>The upgrade will proceed to completion. However, if the pAutoSU script fails
+						during a group upgrade, the script will stop and exit. In this case, you
+						will need to run the backout procedure and restart the ISU procedures. See
+							<!--xref URI: #Upgrade-backup--><xref
+							keyref="id9YZ-09018-IN00-RJZZA-Upgrade-backup"/> for basic instruction
+						about backing out of an upgrade.</p>
+					<note>If the backout is performed for a group, and then the upgrade of that
+						group is performed again, operators cannot use
+						tasklist-upgrade-after-soak.txt and must use tasklist-upgrade-&lt;group
+						id>.txt, for example, tasklist-upgrade-group3.txt. This is because, during
+						the backout of a specific group, <b>FROM</b> load vnf extensions is used and
+						then during upgrade of that group, return to using <b>TO</b> load vnf
+						extensions. The <b>tasklist-upgrade-after-soak.txt</b> does not contain this
+						provision of updating the vnf extensions.</note>
+					<p>If there is a problem with the upgrade at this point, you will need to
+						troubleshoot the problem as follows:</p>
+					<ul>
+						<li>
+							<p>The SU_VM $AUTO_HOME/su.log should be examined.</p>
+						</li>
+						<li>
+							<p>The CBAM /var/log/cbam/workflows.log should be examined. </p>
+						</li>
+						<li>
+							<p>The CBAM /var/log/cbam/&lt;VNF ID&gt;.log should be examined. Where
+								&lt;VNF ID&gt; is the VNF ID of the VNF being upgraded. For example:
+								/var/log/cbam/vnf_CBAM-b9651edb444b4b87ac4dda723652094a.log</p>
+						</li>
+					</ul>
+					<note>After the upgrade is committed, you must update the version on the
+						non-impacted nodes. This is performed in step 19 of the primary procedure
+						(To upgrade the NCC).</note>
+				</info></step>
+</steps>
+</taskbody></task>

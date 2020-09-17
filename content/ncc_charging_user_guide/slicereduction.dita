@@ -1,0 +1,521 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-slicereduction"><title>Slice reduction functionality</title><conbody>
+<section><title>Overview</title>
+<p>Before this feature, the threshold or cap was not considered during reservation, which resulted in delay in triggering the associated rule actions and produced incorrect behavior. For example, if a threshold or cap level is configured to send a notification to the user once the data usage reaches 80% of the account balance, then the notification was sent only at commit despite of the reservation logic realizing that the threshold or cap level is crossing 80% at the time of reservation. In this case, the actions associated with the threshold or cap level led to inaccurate results as logic took the decision at commit and by that time, the current usage already crossed the defined threshold or cap value by a significant gap. Therefore, to reduce this gap, the slice reduction feature was introduced to make the actions associated with the threshold or cap value more accurate.</p>
+<p>The slice reduction feature checks the upcoming threshold or cap values defined for a (main or carry-over) bucket, counter, account balance, or Aggregate View (AV) and its associated actions, such as <systemoutput>Notification</systemoutput>, <systemoutput>Notification-Stop</systemoutput>, <systemoutput>Notification-Reject</systemoutput>, <systemoutput>Send-SNR</systemoutput>, or <systemoutput>Send-RAR</systemoutput> at the time of reservation. With this feature, when the current usage approaches the upcoming threshold or cap value, the slice size is reduced in such a way that the result of actions become more accurate for the defined threshold or cap values.</p>
+<p>This feature is applicable to both centralized and decentralized charging calls and performed for all defined threshold or cap actions.</p>
+<note type="important">
+<p>It is recommended not to use the slice reduction feature with <i>DYNAMIC_ALGO</i> or <i>DYNAMIC_ALGO_2</i> because the slice reduction logic is itself an algorithm, which reduces the slice size depending on the upcoming threshold or cap value. However, if the slice reduction logic and <i>DYNAMIC_ALGO</i> or <i>DYNAMIC_ALGO_2</i> are configured together, then the feature behavior might change and this may lead to unexpected results.</p>
+</note>
+<sectiondiv>
+<p><b>Counter on reservation</b></p>
+<p>A counter is updated only at the time of commit and therefore, reservation request for a counter is to be stored so that both current value and reservation value of a counter is taken into account while executing the actions associated with a threshold or cap on counter on reservation. The following call flow is considered for counter on reservation:</p><ol>
+<li>
+<p>When a reservation request is received, identify all the counters applicable to this call.</p>
+</li>
+<li>
+<p>Store the list of all applicable counters used during this call.</p>
+</li>
+<li>
+<p>Reservation from a specific entity (account, bucket, or <i>No-Charge</i>) takes place.</p>
+</li>
+</ol>
+<p>For example, we have a device <varname>D1</varname> and a device counter <varname>C1</varname>, which is configured with the device <varname>D1</varname>. The device <varname>D1</varname> is subscribed with a device subscription <varname>Sub1</varname>, and the subscription has a counter <varname>C2</varname> and a bucket <varname>B1</varname>.</p>
+<p>A call is initiated from device <varname>D1</varname> with an RSU of 40 MB. The amount is reserved from the bucket <varname>B1</varname>. Both counters <varname>C1</varname> and <varname>C2</varname> are applicable to the call. The current values of the counters remain unchanged while its new attribute is also incremented with a value of 40 MB. The map associated with the counters are also updated with session ID and reserved values.</p>
+<p>
+<b>Delta value calculation</b>
+</p>
+<p>Following is the delta value calculation logic using thresholds of all applicable counters during a call:</p><ol>
+<li>
+<p>To calculate the counter delta value, examine each threshold profile group attached to the counter. The thresholds are fetched from each threshold profile group and evaluated against the current usage (committed quantity + reserved quantity).</p>
+<p>
+<b>Note:</b> If the <uicontrol>Ignore Reserved Quota</uicontrol> is set as <varname>Counter</varname> in a slicing profile and <i>No-Charge</i> billing is done, then the reserved quantity for delta calculation is ignored.</p>
+</li>
+<li>
+<p>Consider both recurring and non-recurring thresholds.</p>
+</li>
+<li>
+<p>Consider the <i>Threshold Profile Type</i>, such as <varname>Absolute from Start</varname> and <varname>Percentage</varname> as per the following conditions:</p><ul>
+<li>
+<p>If the usage limit is not defined in a counter, then the delta is calculated only from absolute thresholds and the delta value calculated as per the upcoming threshold is returned. If the difference between upcoming threshold and current value is negative, then the value returned is zero.</p>
+</li>
+<li>
+<p>If the usage limit is defined in a counter, then delta calculation also considers percentage thresholds and overage thresholds (if available) as explained further:</p>
+<p>(a) First, calculate delta from usage thresholds considering both percentage and absolute thresholds.</p>
+<p>(b) While processing the usage thresholds, if the difference between the upcoming threshold and current usage value is negative, then zero value is assigned to delta and control is returned as no further processing of overage threshold is required, which becomes the case of minimum slice allocation.</p>
+<p>(c) If there are no upcoming usage thresholds, which means delta from usage threshold is <varname>-1</varname>, then process the overage thresholds for delta calculation.</p>
+<p>(d) If a delta value greater than <varname>0</varname> is returned from usage thresholds, then iterate the overage thresholds as well.</p>
+<p>(e) For delta calculation from overage thresholds, first calculate delta value from current overage block thresholds. The current overage block is calculated based on counter current value.</p>
+<p>As explained in point (b) to (d), we can have delta values as <varname>0</varname>, <varname>-1</varname>, or greater than <varname>0</varname>.</p>
+<p>(f) If there is no upcoming threshold in current overage block, which means delta is <varname>-1</varname>, then calculate delta from the next overage block. For example: If <i>Usage Limit</i> = <varname>100 Bytes</varname> and <i>Overage Limit</i> = <varname>20 Bytes</varname> with <i>Overage Threshold</i> at <varname>10 Bytes</varname>.  Now, counter value = <varname>111 Bytes</varname>, which refers to the first overage block and there is no upcoming threshold in overage block 1 as overage threshold as 10 Bytes is crossed.  So, the upcoming threshold is at 10 Bytes of overage block 2 (that is reached at counter value 130). Delta is calculated as <varname>19</varname>.</p>
+<p>(g) Compare the delta from usage block and overage block, and return the minimum value as counter delta.</p>
+</li>
+</ul>
+</li>
+</ol>
+</sectiondiv>
+<sectiondiv id="Monitorytounit">
+<p><b>Monetary to unit conversion for threshold or cap on monetary resources</b></p>
+<p>The following call flow is considered for monetary to unit conversion for threshold or cap on monetary resources</p><ol>
+<li>
+<p>If threshold or cap is configured on the monetary resource, then check for the upcoming threshold or cap value.</p>
+</li>
+<li>
+<p>Find the difference between the (sum of committed and reserved values) and upcoming event value. </p>
+</li>
+<li>
+<p>Calculate the maximum amount used in the current request using the formula:</p>
+<p>(Value from point 2 * factor) / 100</p>
+</li>
+<li>
+<p>Pass the value from point 3 to money for unit conversion logic with an RSU.</p>
+</li>
+<li>
+<p>Check whether the input cost grants RSU passed as input or calculates the maximum possible RSU from input cost.</p>
+</li>
+<li>
+<p>Return either the RSU value pass as input or some other value, which is less than the RSU to be used in the slice reduction logic.</p>
+<p>
+<b>Note:</b> The existing rate calculation logic is re-used partially.</p>
+</li>
+</ol>
+</sectiondiv>
+<sectiondiv>
+<p><b>Bucket on reservation</b></p>
+<p>The upcoming thresholds are calculated based on the committed and reserved quantities of AV and those thresholds are used along with the threshold or cap values associated with a bucket or counter to determine the dynamic slice size. Find all AVs corresponding to the bucket and execute the bucket threshold reservation to find the bucket delta value.</p>
+<p>Find all AVs corresponding to the bucket and execute the bucket threshold reservation to find the bucket delta value following the given steps:</p><ol>
+<li>
+<p>To calculate this AV delta, examine each threshold profile group attached to AV. The thresholds are fetched from each threshold profile group and evaluated against the unused AV value. If the threshold value is less than the unused AV value, then add the difference between threshold value and current value of AV to the AV delta.</p>
+</li>
+<li>
+<p>All the <i>Threshold Profile Type</i>, such as <varname>Absolute from Start</varname>, <varname>Absolute from End</varname>, and <varname>Percentage</varname> are considered.</p>
+</li>
+<li>
+<p>Both recurring and non-recurring thresholds are considered.</p>
+</li>
+<li>
+<p>While processing the thresholds, if the difference between the upcoming threshold and current usage value is negative, then zero value is assigned to delta and control is returned as no further processing is required. This becomes the case of minimum slice allocation.</p>
+</li>
+<li>
+<p>After calculating the AV delta, first find the minimum of these AV deltas and this minimum AV delta is compared with the bucket delta (calculated in point 2) to find the minimum delta out of these two values.</p>
+</li>
+<li>
+<p>Whichever delta value (AV delta or bucket delta) is minimum is then used with the counter delta value for slice reduction.</p>
+</li>
+</ol>
+<p>The AV initial value, current value, and unused value are fetched from carry-over utility. If the <i>Threshold</i> flag is set as <varname>True</varname>, then it includes the carry-over bucket values. Otherwise, if the <i>Threshold</i> flag is set as <varname>False</varname>, then the carry-over buckets are not included while returning these values.</p>
+<p>For example:</p><ol>
+<li>
+<p>Consider a device <varname>D1</varname> is attached to a subscription <varname>S1</varname> and bundle <varname>BL</varname>.</p>
+</li>
+<li>
+<p>The bundle <varname>B1</varname> contains charging services <varname>CS1</varname> and <varname>CS2</varname>. <varname>CS2</varname> contains a volume bucket B1 (200 bytes) and B2 (200 bytes).</p>
+</li>
+<li>
+<p>
+<varname>BL</varname> contains threshold T1 at 50 with <varname>Absolute from start with stop</varname> action. <varname>CS2</varname> contains time bucket B3 (500 seconds).</p>
+</li>
+<li>
+<p>Aggregate volume bucket <varname>AV1</varname> contains charging services <varname>CS1</varname> and <varname>CS2</varname> attached to the device <varname>D1</varname>. AV contains balance of buckets <varname>B1</varname> and <varname>B2</varname> along with threshold (T2) action as continue at 20 with <systemoutput>Absolute from start</systemoutput> action.</p>
+<p>AV Initial = 400 bytes</p>
+<p>AV Current = 400 bytes</p>
+<p>AV Unused = 400 bytes</p>
+</li>
+<li>
+<p>An initial reserve request arrives with RSU = 20 bytes from <varname>B1</varname>. Then, execute threshold reservation for <varname>BL</varname> as well as <varname>AV1</varname>. The bucket delta for <varname>B1</varname> is calculated as 50 and AV delta for AV is calculated as 20.</p>
+</li>
+<li>
+<p>Minimum slice size = 10 bytes and allocation factor is 90%.</p>
+</li>
+<li>
+<p>The minimum delta between bucket delta and AV delta are selected. Therefore, minimum delta = 20. Since, there is no applicable counter, slice reduction uses the above delta to calculate dynamic slice. The dynamic RSU comes out to be 18 bytes and the reservation of 18 bytes is done from <varname>BL</varname> and <varname>AV1</varname> current value is also updated according to reserved value.</p>
+</li>
+</ol>
+</sectiondiv>
+</section>
+<section><title>Parameters for controlling slice size</title>
+<p>Following two parameters are defined in the slicing profile rule for controlling the slice size:</p><ul>
+<li>
+<p>
+<uicontrol>Slice Allocation Factor</uicontrol>: This parameter is defined in 0-100% and is calculated on the delta between current usage (committed quantity + reserved quantity) and threshold value.</p>
+</li>
+<li>
+<p>
+<uicontrol>MIN Slice Size</uicontrol>: This parameter indicates the minimum slice to be allocated and is defined in bytes. It is applicable to the Granted Service Unit () of the volume type.</p>
+</li>
+</ul>
+<note>
+<p>The slice reduction takes place even when the <uicontrol>MIN Slice Size</uicontrol> is not configured in the slicing profile or its value is set as zero. However, for the slice reduction to take place, the <uicontrol>Slice Allocation Factor</uicontrol> parameter must be configured in the slicing profile to a value greater than zero.</p>
+</note>
+</section>
+<section><title>Configuring slice reduction functionality</title>
+<p>The slice reduction logic is executed as follows:</p><ol>
+<li>
+<p>Calculate the delta (D) between current usage (committed quantity + reserved quantity) and upcoming threshold value.</p>
+</li>
+<li>
+<p>Apply the <i>Slice Allocation Factor (SAF)</i> value on the above delta (D) value using the <uicontrol>Slice Allocation Factor</uicontrol> parameter defined in the slicing profile rule.</p>
+</li>
+<li>
+<p>Compare the above calculated value with the Requested Service Units (RSU) and identify the smaller value as <i>SMIN</i>.</p>
+</li>
+<li>
+<p>Compare the <uicontrol>MIN Slice Size</uicontrol> or SAS value with <i>SMIN</i> and grant the one with larger value.</p>
+</li>
+</ol>
+</section>
+<section id="EPC-49645"><title>Additional information</title>
+<p>Following are some important points to note for this feature:</p><ul>
+<li>
+<p>If multiple threshold or cap levels are configured and more than one threshold or cap levels are exceeded at the time of reservation, then this feature considers the threshold or cap level, which was first exceeded.</p>
+</li>
+<li>
+<p>This feature is applicable only to ECUR and SCUR calls.</p>
+</li>
+<li>
+<p>This feature does not consider milestones while calculating the slice size.</p>
+</li>
+<li>
+<p>There is no recommended value for the <uicontrol>Slice Allocation Factor</uicontrol> and <uicontrol>MIN Slice Size</uicontrol>, but smaller the value of these two parameters, more accurate is the threshold or cap. However, smaller values may impact the performance, therefore, you need to set the value of these parameters to work out both balance performance and accuracy.</p>
+</li>
+<li>
+<p>This feature makes the threshold or cap actions more accurate, but it does not guarantee 100% accuracy due to dynamic scenarios, which contribute to data calls. Some of the example cases are stated below:</p><ul>
+<li>
+<p>Over-commit scenarios wherein slice is reduced at the time of reservation to threshold or cap value. The over-commit is reported in the next CCR-U message that crosses the threshold or cap.</p>
+</li>
+<li>
+<p>Given that this feature works with respect to the minimum slice allocation, in case of parallel calls (multiple MSCC or group sharing) on the same resource, there is a possibility that the minimum slice allocated to each MSCC or parallel calls may cross the threshold or cap only at the time of reservation. This may eventually lead to cross the threshold or cap at commit.</p>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+<section><title>Implementing slice reduction feature in centralized calls</title>
+<p>Consider the following points when slice reduction feature is applied to the centralized charging call:</p><ul>
+<li>
+<p>This feature is applicable only when both <uicontrol>Slice Allocation Factor</uicontrol> and <uicontrol>MIN Slice Size</uicontrol> parameters are present in the slicing profile object rule provisioned.</p>
+<p>However, if <i>DYNAMIC_ALGO_2</i> is used, then <uicontrol>MIN Slice Size</uicontrol> passed to the <i>DYNAMIC_ALGO_2</i> is considered. If this feature is not configured with <i>DYNAMIC_ALGO_2</i>, then the <i>MIN Slice Size</i> is considered as <varname>0</varname> by default. If both <i>DYNAMIC_ALGO_2</i> and <uicontrol>MIN Slice Size</uicontrol> is configured, then preference is given to the <uicontrol>MIN Slice Size</uicontrol> configured by the <i>DYNAMIC_ALGO_2</i>.</p>
+</li>
+<li>
+<p>If no slicing profile rule is provisioned in the slicing profile object, then the <i>DefaultAction</i> is considered.</p>
+<p>However, if both <uicontrol>Slice Allocation Factor</uicontrol> and <uicontrol>MIN Slice Size</uicontrol> parameters are present in the default actions object rule, then execute the slice reduction feature.</p>
+</li>
+<li>
+<p>If the threshold value or cap limit is not defined, then the default <uicontrol>MIN Slice Size</uicontrol> is always considered in cases where the RSU is less than the <uicontrol>MIN Slice Size</uicontrol> parameter value.</p>
+</li>
+</ul>
+<sectiondiv>
+<p><b>Example</b></p>
+<p>Consider the following example for understanding the slice reduction feature implementation:</p><ol>
+<li>
+<p>Assume that there is a user with a subscription of 2 GB with a notification defined at 80% threshold (1638 MB) and a <systemoutput>Send-SNR</systemoutput> action defined at 100% (2048 MB).</p>
+</li>
+<li>
+<p>The slice size (granted service units) calculated by the centralized slicing is 50 MB.</p>
+</li>
+<li>
+<p>The current usage of the user is 1550 MB.</p>
+</li>
+<li>
+<p>When a CCR-U is received from PGW with USU = 50 MB, the current usage of the user becomes 1600 MB. The allocation of another 50 MB at reservation crosses the notification threshold defined at 80%.</p>
+</li>
+<li>
+<p>The slice size is calculated as per the slice reduction feature logic. Let us consider that the slice size comes to be 38 MB and the same is set as GSU in CCA sent to the PGW.</p>
+</li>
+<li>
+<p>When a CCR-U is received from PGW with USU = 38 MB, the current usage of the user becomes 1638 MB. It reaches to 80% of usage threshold and thus, a notification is sent to the user.</p>
+</li>
+<li>
+<p>A couple of more CCR and CCA messages are exchanged between the PGW and OCS node. At a given point of time, the current usage of user becomes 1950 MB.</p>
+</li>
+<li>
+<p>When a CCR-U is received from PGW with USU = 50 MB, the current usage of the user becomes 2000 MB. The allocation of another 50 MB at reservation crosses the <systemoutput>Send-SNR</systemoutput> threshold defined at 100%.</p>
+</li>
+<li>
+<p>The slice size is calculated as per the slice reduction feature logic. Let us consider the slice size comes to be 48 MB and the same is set as GSU in CCA sent to the PGW.</p>
+</li>
+<li>
+<p>When a CCR-U is received from PGW with USU = 48 MB, the current usage of the user becomes 2048 MB. It reaches to 100% of usage threshold, a <systemoutput>Send-SNR</systemoutput> action is performed and the data consumption speed is degraded.</p>
+</li>
+</ol>
+</sectiondiv>
+</section>
+<section><title>Implementing slice reduction feature in decentralized calls</title>
+<p>Consider the following points when slice reduction feature is applied to the decentralized charging call:</p><ul>
+<li>
+<p>If the default slicing profile entity is not configured, then the call is not rejected in a decentralized call. Set the values of <uicontrol>Slice Allocation Factor</uicontrol> and <uicontrol>MIN Slice Size</uicontrol> as zero, <i>VT</i> is set to 10.</p>
+</li>
+<li>
+<p>If the slicing profile rules are not configured and <i>DefaultAction</i> is non-empty, then trigger the <i>DefaultAction</i> for rule execution. As per the result, use the values of <i>QHT</i>, <i>VT</i>, <i>SliceSize</i>, <uicontrol>MIN Slice Size</uicontrol>, <uicontrol>Slice Allocation Factor</uicontrol> accordingly.</p>
+<p>
+<b>Note</b>: In case, there is no result from <i>DefaultAction</i>, then it populates the <i>QHT</i> or <i>VT</i> accordingly from the slice profile entity or the default values, as available.</p>
+</li>
+<li>
+<p>In case of decentralized charging, the RSU value sent by Packet Data Gateway (PGW) should always be greater than the <uicontrol>MIN Slice Size</uicontrol> parameter value. If the RSU value is less than the <uicontrol>MIN Slice Size</uicontrol> parameter value, then the <uicontrol>MIN Slice Size</uicontrol> parameter value is considered.</p>
+</li>
+<li>
+<p>If the slicing profile rules are configured, then execute the rule provisioned for slicing profile entity and set the values of <uicontrol>QHT</uicontrol>, <uicontrol>VT</uicontrol>, <uicontrol>SliceSize</uicontrol>, <uicontrol>MIN Slice Size</uicontrol>, and <uicontrol>Slice Allocation Factor</uicontrol> accordingly.</p>
+</li>
+</ul>
+</section>
+    <section><title>Examples</title></section>
+    <section id="exe">
+            <title>Example 1: Slice reduction with account thresholds</title>
+            <p>Consider the following examples for a better understanding of the slicing reduction
+                functionality:</p>
+            <p>The following example shows how the final slice reduction value is calculated.</p>
+            <b>Preconditions:</b>
+            <p>Perform the following steps:</p><ol>
+                <li>
+                    <p>Create a slicing profile with <uicontrol>Slice Allocation Factor</uicontrol>
+                        = <varname>70</varname> and <uicontrol>MIN Slice Size</uicontrol> =
+                            <varname>30</varname>.</p>
+                </li>
+                <li>
+                    <p>Create an account <i>A1</i> with main account balance set as
+                            <varname>100</varname> and overage limit = <varname>0</varname>.</p>
+                </li>
+                <li>
+                    <p>Create a threshold profile group <varname>TPG1</varname> with threshold
+                        profile set to <varname>ABSOLUTE_FROM_ZERO</varname> for threshold
+                            <i>Th1</i> = <varname>30</varname>.</p>
+                </li>
+                <li>
+                    <p>The threshold <i>Th1</i> rule is set with the following <i>Notification
+                            Action</i> and <i>Notification Variable</i>:</p>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.3/Slicing_configuration_example_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-slicing_configuration_example_default.png"
+                        scale="65"/>
+                    <p/><!--MMO resource relative URI: ../Graphics/Release_19.3/Threshold_configuration_example_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-threshold_configuration_example_default.png"
+                        scale="75"/>
+                </li>
+                <li>
+                    <p>Associate the threshold profile group <i>TPG1</i> with the account
+                        <i>A1</i>.</p>
+                </li>
+            </ol>
+            <p>
+                <b>Post-conditions:</b>
+            </p><p>The final slice reduction is calculated as:</p><ul>
+                <li>
+                    <p>Main account balance = <varname>100</varname>
+                    </p>
+                </li>
+                <li>
+                    <p>Upcoming threshold value = <varname>30</varname>
+                    </p>
+                </li>
+                <li>
+                    <p>Delta value = main account balance - upcoming threshold value =
+                            <varname>100</varname> - <varname>30</varname> = <varname>70</varname>
+                    </p>
+                </li>
+                <li>
+                    <p>SAF slice size = Delta value * SAF = <varname>70</varname> *
+                            <varname>0.7</varname> = <varname>49</varname>
+                    </p>
+                </li>
+            </ul>
+            <p>Therefore, the final slice reduction value is <varname>49</varname> for the above
+                example.</p>
+        </section>
+    
+<section>
+<p><b>Example 2: Implementing slice reduction for an AV bucket</b></p>
+<p>The following example describes how slice reduction feature helps to calculate the minimum slice size for an AV bucket.</p>
+<p>
+<b>Preconditions:</b>
+</p><ol>
+<li>
+<p>Consider a device D1 attached to a subscription S1 with a bundle B1.</p>
+</li>
+<li>
+<p>Bundle B1 contains two charging services CS1 and CS2:</p>
+<p/><ul>
+<li>
+<p>CS1 contains a volume bucket B1 (100 bytes) and B2 (100 bytes). B1 contains a threshold T1 at 40 bytes with a <systemoutput>Absolute from start with stop</systemoutput> action.</p>
+</li>
+<li>
+<p>CS2 contains a time bucket B3 (500 seconds).</p>
+</li>
+</ul>
+</li>
+<li>
+<p>An AV bucket with CS1 and CS2 is attached to the device D1.</p>
+</li>
+<li>
+<p>An aggregate view contains balance of buckets B1 and B2 with threshold action (T2) set as <systemoutput>Absolute from start</systemoutput>.</p>
+<p>AV initial = 200 bytes</p>
+<p>AV current = 200 bytes</p>
+<p>AV unused = 200 bytes</p>
+</li>
+</ol>
+<p>
+<b>Post-conditions:</b>
+</p><ul>
+<li>
+<p>An initial reserve request arrives with RSU set as 20 bytes from B1.</p>
+</li>
+<li>
+<p>The slice reduction feature is executed, which calculates dynamic RSU as 10 bytes considered B1 and AV bucket.</p>
+</li>
+<li>
+<p>The allocation factor is set as 100% and minimum slice size as 10 bytes.</p>
+</li>
+<li>
+<p>The reservation is done from B1 and AV current value is also updated according to the reserved value.</p>
+</li>
+<li>
+<p>A commit request is received from B1 for 40 bytes.</p>
+</li>
+<li>
+<p>The commit request from B1 is initiated, balance is updated and threshold is evaluated.</p>
+</li>
+<li>
+<p>Update the AV current value and unused value based on committed value.</p>
+</li>
+<li>
+<p>Evaluate AV thresholds. Threshold T2 is crossed.</p>
+</li>
+<li>
+<p>Handover commit. Update B1 balance and evaluate its thresholds and set action. Threshold T1 is crossed.</p>
+</li>
+<li>
+<p>Update AV balance and evaluate its thresholds and set action.</p>
+</li>
+</ul>
+</section>
+<section id="ex1">
+<p><b>Example 3: Executing cap action after reducing the allocated slice size for a decentralized call</b></p>
+<p>The following example shows that cap actions, such as <systemoutput>Send-RAR (Reauthorize call)</systemoutput>, <systemoutput>Reject</systemoutput>, or <systemoutput>Notification-Stop (Stop using the resource)</systemoutput> are executed on committed quantities but the allocated slice size is reduced while approaching the cap value. This results to trigger the cap actions at more accurate values.</p>
+<p>
+<b>Preconditions:</b>
+</p><ol>
+<li>
+<p>Bob has an iPhone associated with a data counter and device subscription.</p>
+</li>
+<li>
+<p>The device subscription is further associated with another data counter (subscription counter) and a data bucket of 2 GB balance.</p>
+</li>
+<li>
+<p>A cap limit is applied on the subscription counter with a defined action <systemoutput>Reject</systemoutput> to reject call after consuming more than 120 MB of balance. For example, after consuming 120 MB of balance, further calls are rejected and a notification is sent to Bob that consumption of resources beyond 120 MB is not allowed.</p>
+</li>
+<li>
+<p>SAF is configured as 70% and <uicontrol>MIN Slice Size</uicontrol> = <varname>30</varname> in slicing profile rule.</p>
+</li>
+</ol>
+<p>
+<b>Post-conditions:</b>
+</p><ul>
+<li>
+<p>When the iPhone initiates a data call with an RSU of 50 MB, the amount required to complete the call is reserved from the data bucket associated with the device subscription.</p>
+</li>
+<li>
+<p>Both the counters, individual data counter associated with the iPhone and the data counter associated with the device subscription, are applicable for the call charges.</p>
+<p>
+<b>Note:</b> The cap associated with the subscription counter is considered at the time of reservation for the call.</p>
+</li>
+<li>
+<p>The slicing profile rule is executed at the time of reservation and the RSU value is calculated by this feature as delta = 120- 0 = 120.</p>
+<p>Apply SAF = 0.7 * 120 = 84. However, given that RSU is less than 84, the RSU is kept as 50 MB only. For example, the cap limit is 120 MB beyond which the cap action is set to <systemoutput>Reject</systemoutput>. Thus, the iPhone completes the call consuming 50 MB from the device bucket.</p>
+</li>
+<li>
+<p>The iPhone again initiates a call with an RSU of 80 MB. At the time of reservation, the RSU value is recalculated as:</p>
+<p>Delta = 120 - 50 = 70.</p>
+<p>Apply SAF = 0.7 * 70 = 49 and reduce the slice to 49 because the cap limit of 120 MB is approaching.</p>
+</li>
+<li>
+<p>The iPhone cannot be granted more than 70 MB as cap of 120 MB is crossed. iPhone completes the call and cap action is triggered when 120 MB is crossed in commit and then further calls are rejected because the applied cap limit has reached. Therefore, usage of the slice reduction logic allows modification of RSU at the time of call reservation. This helps to control the consumption of resources associated with the device.</p>
+</li>
+</ul>
+</section>
+<section>
+<p><b>Example 3: Executing threshold action of bucket after reducing the allocated slice size for a decentralized call</b></p>
+<p>This example shows that threshold actions continue to be executed on committed quantities but the allocated slice size is reduced while approaching the threshold value. This results to trigger the threshold actions at more accurate values.</p>
+<p>
+<b>Preconditions:</b>
+</p><ol>
+<li>
+<p>John has an iPhone subscribed to a device subscription associated with a data bucket of 200 MB balance.</p>
+</li>
+<li>
+<p>The threshold is defined, for example the threshold sends a notification when 50 percent of the total resources, that is 100 MB of bucket balance is consumed.</p>
+<p>
+<uicontrol>Slice Allocation Factor</uicontrol> = 50%</p>
+<p>
+<uicontrol>MIN Slice Size</uicontrol> = 30</p>
+</li>
+</ol>
+<p>
+<b>Post-conditions:</b>
+</p><ul>
+<li>
+<p>When the iPhone initiates a data call with an RSU of 40 MB, then the amount required to complete the call is reserved from the bucket balance of 200 MB. The slicing profile rule is executed at the time of reservation and the RSU is modified for the upcoming event value.</p>
+<p>Given that delta = 100, apply SAF = 0.5 * 100 = 50 and keep the RSU as 40 MB only since RSU is less than calculated slice since RSU is less than the calculated slice.</p>
+</li>
+<li>
+<p>iPhone commits 40 MB and requests another call with RSU 100 MB. </p>
+</li>
+<li>
+<p>RSU is modified and delta = 100 - 40 = 60 and apply SAF = 0.5 * 60 = 30. Therefore, RSU is changed to 30 and 100 MB threshold is not crossed, and later, on the committed value, threshold is triggered notifying John about the remaining balance after 100 MB is used.</p>
+</li>
+<li>
+<p>John can commit a new call checking the available balance in his device bucket. In this case, if slicing reduction logic was not executed, then the threshold value may not have triggered a notification until 140 MB of the total resource were used up. But due to modified RSU using slice reduction, John received an early notification because the RSU was modified.</p>
+</li>
+</ul>
+</section>
+<section>
+<p><b>Example 4: Applying slice reduction functionality on a multi-bundle counter</b></p>
+<p>The following example explains how the slice reduction functionality is applied on a multi-bundle counter.</p>
+<note>
+<p>If the <varname>Notification-Stop</varname> threshold action of a multi-bundle counter having is crossed, then during the reservation for parallel call, delta for the slice is calculated with next priority multi-bundle counter instead of granting <uicontrol>MIN Slice Size</uicontrol>. The highest priority multi-bundle counter is ignored for parallel calls in case the counter has a <varname>Notification-Stop</varname> threshold action.</p>
+</note>
+<p>
+<b>Preconditions:</b>
+</p><ol>
+<li>
+<p>A base bundle is defined with two charging services:</p>
+<p>- The first charging service is associated with a multi-bundle counter <varname>ABY</varname>, which has a threshold of 50 GB.</p>
+<p>- The second charging service is associated with a subscription counter <varname>TBY</varname>, which has a threshold of 15 GB.</p>
+</li>
+<li>
+<p>Define a domestic databoost bundle with a multi-bundle counter <varname>ABB</varname>, which has a <varname>Notification-Stop</varname> threshold at 10 GB.</p>
+</li>
+<li>
+<p>The slicing profile has a <uicontrol>SAF</uicontrol> of 50% and <uicontrol>MIN Slice Size</uicontrol> of 1 GB.</p>
+</li>
+<li>
+<p>Subscribe a device to the base bundle.</p>
+</li>
+</ol>
+<p>
+<b>Post-conditions:</b>
+</p><ul>
+<li>
+<p>Execute domestic calls from a device till the <varname>ABY</varname> counter value becomes 40 GB.</p>
+<p>Verify whether the <varname>ABY</varname> counter threshold is considered for slice reduction.</p>
+</li>
+<li>
+<p>The device subscribes to domestic databoost bundle.</p>
+</li>
+<li>
+<p>For next data reservation, the <varname>ABB</varname> counter is considered for slice reduction.</p>
+</li>
+<li>
+<p>Execute more calls, such that the <varname>ABB</varname> counter value reaches 9.5 GB.</p>
+</li>
+<li>
+<p>Execute a tethered call and verify whether the <uicontrol>MIN Slice Size</uicontrol> of 1 GB is granted.</p>
+<p>Now, the committed value of the <varname>ABB</varname> counter is 9.5 GB, and (committed + reserved) value is 10.5 GB.</p>
+</li>
+<li>
+<p>Execute domestic call.</p>
+<p>Verify in slice reduction whether <uicontrol>MIN Slice Size</uicontrol> is granted and <varname>ABY</varname> counter delta value is considered for determining the slice size.</p>
+</li>
+</ul>
+</section>
+</conbody></concept>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//NSN//DTD DITA Concept//EN" "nsnconcept.dtd">
+		<concept id="id9YZ-09018--PL00-FPZZA-d1e26329"><title>Case 8: Policy based on VoLTE application </title><conbody>
+
+<section><title>Overview</title>
+
+<p>This use case demonstrates the ability of NCC to support VoLTE calls. PCRF role for VoLTE is
+                    based on Diameter AF procedures and integrating with IMS.</p><ul>
+
+<li>Defines QoS and prioritization for a default bearer for IMS signaling over a dedicated APN. </li>
+<li>Performs Rx to Gx message translation in creating a dedicated bearer for the purpose of the
+     call, providing QoS, prioritization as well as charging information to PGW. </li>
+</ul>
+<fig>
+<title>Policy based on VoLTE application</title>
+<!--MMO resource relative URI: ../graphics/polBasedOnVolte_default.png-->
+<image href="../images/polbasedonvolte_default.png" placement="break" scale="60" align="left" />
+</fig>
+</section>
+<section><title>Flow of events</title>
+
+<p/><ul>
+
+<li>
+<p>Simulate attachment for a device on VoLTE APN:</p>
+<p>If <emphasis>Called-Station-Id</emphasis> = <varname>ims</varname>, then verify that NCC returns
+                                   <emphasis>QCI</emphasis> = <varname>5</varname>, <emphasis>ARP
+                                   Priority</emphasis> = <varname>2</varname>,
+                                   <emphasis>Pre-emption-capability</emphasis> =
+                                   <varname>DISABLED</varname>,
+                                   <emphasis>Pre-emption-vulnerability</emphasis> =
+                                   <varname>DISABLED</varname>.</p>
+</li>
+<li>
+Simulate an Rx AAR with one <emphasis>Media-Component-Description</emphasis> with <emphasis>Media-Type</emphasis> = <varname>audio</varname>.
+</li>
+<li> Verify the NCC generates Gx RAR towards the PGW to install a dynamic PCC rule for audio (also
+                         replies over Rx with AAA with SUCCESS). </li>
+<li>
+Simulate an Rx STR for the same AF session ID.
+</li>
+<li> Verify that NCC generates Gx RAR towards the PGW to remove the dynamic PCC rule for audio (also
+                         replies over Rx with STA with SUCCESS). </li>
+</ul>
+</section>
+<section><title>Provisioning</title>
+
+<note type="attention">
+
+<p>Ensure that after creating a record, you distribute it to ME. Otherwise, the provisioning will not be successful. </p>
+</note>
+<p>Provision the following data:</p><ol>
+
+<li>NCC provides support for VoLTE. The Rx to Gx is done by code together with couple of default
+                         rule groups provided by NCC. The QoS for the VoLTE default bearer can be
+                         defined in rules. </li>
+<li>Log in to the SM GUI and navigate to <uicontrol>Subscriber Manager</uicontrol> and select
+      <uicontrol>Devices</uicontrol> tab. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png"/> to create a device. </li>
+<li>Create a rule group for IMS as shown in the following figure. To do this, log in to SM GUI and
+     navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select
+      <uicontrol>Policy</uicontrol> tab, and select <uicontrol>Rules And Variables</uicontrol> from
+     the drop-down list. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png"/> to create a rule group. <!--MMO resource relative URI: ../graphics/Bearer_default.png-->
+     <image href="../images/bearer_default.png"/>
+    </li>
+</ol>
+</section>
+</conbody></concept>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="id9YZ-09126-MT00-REZZA-SP2-attrdefin"><title>To install, copy, and distribute the attribute definition and custom vendor definition files</title><taskbody>
+<steps>
+<step><cmd>If this is an installation, obtain the VsaToContextMapping.xml, AttributeDefinition.xml and CustomVendorDefinition.xml files that you need from the appropriate repository location provided by Nokia.</cmd><info/></step>
+<step><cmd>Connect to the SM active OAME as the root user.</cmd><info/></step>
+<step><cmd>Put the files obtained in step 1 in a directory of your choice on the SM’s Active OAME. </cmd><info><p>If you have added to the VsaToContextMapping.xml, AttributeDefinition.xml and CustomVendorDefinition.xml files that already exist in the “/opt/tpa/conf/sac/diameter/vsa” directory, go to the next step.</p><note>
+<p>Before copying any files to any NCC VMs, the user must execute the df and du Linux commands from
+                            each VM to determine the storage available and whether or not the
+                            copying of new files can proceed. Usage of the Linux commands df
+                            (abbreviation for disk free) and du (abbreviated from disk usage) can be
+                            found on every VM via the Linux manual page by using “man df” and “man
+                            du” as root user. There are two storage directories that can be used on
+                            any VM as follows:</p><ul>
+<li>
+<p> First choice, is under the /appdata directory which is created and mounted to the cinder volume (OpenStack)/independent disk (VMware) on every VM.</p>
+</li>
+<li>
+<p>Second choice, is under the /var/log directory which is created and mounted to the cinder volume (OpenStack)/independent disk (VMware) on every VM.</p>
+</li>
+</ul>
+<p>If there is enough storage available, proceed.</p>
+<p>When you have completed the task, clean-up the files that are no longer needed.</p>
+<p>If there is not enough space, either do some clean-up or contact Nokia Support.</p>
+</note></info></step>
+<step><cmd>Run the following command on each SM's Active OAME:</cmd><info><p>
+<userinput>/opt/tpa/bin/distribute-diameter-dictionaries -d &lt;directory&gt;</userinput>
+</p><p>Where the &lt;directory&gt; is the directory containing the VsaToContextMapping.xml, AttributeDefinition.xml and CustomVendorDefinition.xml files.</p><p>The command performs the following:</p><ul>
+<li>
+<p>Pushes the dictionary files to the SM application nodes in that SM site.</p>
+</li>
+<li>
+<p>Reloads rules in all the SM app nodes.</p>
+</li>
+<li>
+<p>Creates an archive of the dictionary files and pushes it to the Active OAME node on the ME sites.</p>
+</li>
+</ul></info></step>
+<step><cmd>Run the following command on each ME's Active OAME:</cmd><info><p>
+<userinput>/opt/tpa/bin/distribute-diameter-dictionaries</userinput>
+</p><p>The command performs the following:</p><ul>
+<li>
+<p>Extracts the archive already transferred from the SM.</p>
+</li>
+<li>
+<p>Pushes the dictionary files to the Diameter applications and Common Services nodes in the ME site.</p>
+</li>
+<li>
+<p>Reloads the rules in all the applicable nodes.</p>
+</li>
+</ul></info></step>
+</steps>
+</taskbody></task>

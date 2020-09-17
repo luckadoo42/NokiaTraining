@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-removedata"><title>db-remove-data tool</title><conbody>
+<section><title>Description</title>
+<p>This tool is used to perform a durable delete of data from a set (table) in the NCC database. At
+            times, it may be required to empty a given data set. db-remove-data allows users to
+            remove all records from a data set in a simple, efficient manner. </p>
+<p>This tool may also be used to clean all data from a given node the next time that node reboots.  This is achieved by the tool setting a flag that gets read during the next node reboot, which will then remove all database disk files and force a clean boot (relying instead on the data from peer database nodes to populate the database on that node). </p>
+<p>
+<i>CAUTION:</i> This command will remove ALL data from the specified data set. Once complete, this action cannot be reversed. Ensure this is what you want to do before running the db-remove-data tool.</p>
+<note>A clean boot is required anytime a node has been out-of-service for more than a couple hours,
+            prior to bringing that node back in-service, to ensure that no deleted records will get
+            mistakenly re-inserted back into the database cluster. See
+               <!--xref URI: #cleanrebootremovdata--><xref
+               keyref="id9YZ-09126-MT00-REZZA-SP2-cleanrebootremovdata"/> for
+            instruction.<p/></note>
+<note>
+<p>db-remove-data will not run if there is an instance running of db-backup, db-restore, or db-remove-data for the same data set. In this case, an error message will be displayed. </p>
+</note>
+<note>
+<p>Before copying any files to any NCC VMs, the user must execute the df and du Linux commands from
+               each VM to determine the storage available and whether or not the copying of new
+               files can proceed. Usage of the Linux commands df (abbreviation for disk free) and du
+               (abbreviated from disk usage) can be found on every VM via the Linux manual page by
+               using “man df” and “man du” as root user. There are two storage directories that can
+               be used on any VM as follows:</p><ul>
+<li>
+<p> First choice, is under the /appdata directory which is created and mounted to the cinder volume (OpenStack)/independent disk (VMware) on every VM.</p>
+</li>
+<li>
+<p>Second choice, is under the /var/log directory which is created and mounted to the cinder volume (OpenStack)/independent disk (VMware) on every VM.</p>
+</li>
+</ul>
+<p>If there is enough storage available, proceed.</p>
+<p>When you have completed the task, clean-up the files that are no longer needed.</p>
+<p>If there is not enough space, either do some clean-up or contact Nokia Support.</p>
+</note>
+</section>
+<section><title>Syntax</title>
+<codeblock>db-remove-data -s &lt;set&gt; [-n namespace] [-r]</codeblock>
+<codeblock>db-remove-data -w &lt;node&gt;</codeblock>
+<codeblock>db-remove-data -c &lt;node&gt; </codeblock>
+<note>
+<p>Durable delete only gives 6 hours of protection to prevent the resurrections of deleted records. If a node has been down for longer than that 6 hours, a "clean boot" (db-remove-data -c) should be used before bringing the node up again. If the database node comes back after 6 hours of duration, you must execute db-remove-data on the faulty database node prior to it being up with either the “-c” or the “-w” option based on the following option descriptions table.</p>
+</note>
+<note>
+<p>The value for cleanboot=true is not set by default.</p>
+</note>
+<table>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+<p>Code</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+<codeblock>No arguments</codeblock>
+</entry>
+<entry>
+Displays usage/help information. 
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-h</codeblock>
+</entry>
+<entry>
+Displays usage/help information. 
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-s &lt;set&gt;</codeblock>
+</entry>
+<entry>
+Specifies the data set (table) from which to remove the data.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-n &lt;namespace&gt;</codeblock>
+</entry>
+<entry>
+Namespace for the specified set, or all.  Default is all.  “all” means to remove data from the given set from all namespaces that include a set by that name.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-r</codeblock>
+</entry>
+<entry>
+<p>Remove records completely without the durable delete feature, leaving behind no tombstones.</p>
+<p>
+<i>CAUTION:</i> This can leave the system vulnerable to resurrected records that were previously deleted.  This option should therefore NOT BE USED for most situations.</p>
+<p>This option should only be used for specific use cases by users who completely understand the impacts.</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-w &lt;node&gt;</codeblock>
+</entry>
+<entry>
+<p>Wipe all data from a given database node, where &lt;node&gt; is the IP address. This removes all database disk files from that node so that a database restart on that node will populate its database by retrieving data from peer database nodes, rather than from its local disk files.  </p>
+<p>
+<i>NOTE:</i> This can only be used on a node that is reachable, but where the database is currently OOS.</p>
+<p>
+<i>NOTE:</i> If the given node is unreachable, use the -c option instead.</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-c &lt;node&gt;</codeblock>
+</entry>
+<entry>
+Clean all data from a given node the next time that node reboots, where &lt;node&gt; is the Host-name. This removes all database disk files from that node the next that it restarts, so that the database will populate its data by retrieving from peer database nodes, rather than from its local disk files.  
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section><title>Example:  db-remove-data for a given data set, across all namespaces</title>
+<fig>
+<codeblock>db-remove-data -s clubDynamic
+
+**** CAUTION: You are about to REMOVE ALL DATA from [clubDynamic] ****
+THIS CANNOT BE UNDONE.
+Do you wish to continue? [y/n] y
+
+Are you sure you wish to REMOVE ALL DATA from set [clubDynamic]? [y/n] y
+
+The data removal process may take several minutes.
+Data Removal is in progress. 3,130,695 records deleted so far...
+Data Removal is in progress. 6,433,095 records deleted so far...
+Data Removal is in progress. 9,730,083 records deleted so far...
+Data Removal is in progress. 13,022,940 records deleted so far...
+Data Removal is in progress. 16,349,413 records deleted so far...
+Data Removal is in progress. 19,485,965 records deleted so far...
+
+Deletion of records has completed.
+Records deleted: 20,000,000
+Use db-stats to confirm all records are removed and no more were
+added while this tool was running
+
+</codeblock>
+</fig>
+</section>
+<section><title>Example:  db-remove-data for a given data set in a specific namespace</title>
+<fig>
+<codeblock>db-remove-data -s clubDynamic -n spspd0102
+
+**** CAUTION: You are about to REMOVE ALL DATA from [clubDynamic] in namespace [spspd0102] ****
+THIS CANNOT BE UNDONE.
+Do you wish to continue? [y/n] y
+
+Are you sure you wish to REMOVE ALL DATA from set [clubDynamic] in namespace [spspd0102]? [y/n] y
+
+The data removal process may take several minutes.
+Data Removal is in progress. 3,130,695 records deleted so far...
+Data Removal is in progress. 6,433,095 records deleted so far...
+Data Removal is in progress. 9,730,083 records deleted so far...
+
+Deletion of records has completed.
+Records deleted: 10,000,000
+Use db-stats to confirm all records are removed and no more were
+added while this tool was running
+</codeblock>
+</fig>
+</section>
+<section><title>Example:  Request a clean boot next time a given node restarts</title>
+<fig>
+<codeblock>db-remove-data -c sps-me-db-0    
+
+**** CAUTION:  This will REMOVE ALL LOCAL DATA from node [sps-me-db-0] ****
+Once the node has been booted, THIS CANNOT BE UNDONE.
+
+Do you wish to continue? [y/n] y
+
+Created /opt/tpa/tmp/ALAtpaaero.cleanboot.spsfairville17-161.12.123.008    
+</codeblock>
+</fig>
+</section>
+<section><title>Example:  Attempt to wipe the data from a given node where the database is currently in service </title>
+<fig>
+<codeblock>db-remove-data -w 161.12.123.007    
+
+**** CAUTION:  This will REMOVE ALL LOCAL DATA from node [161.12.123.007] ****
+THIS CANNOT BE UNDONE.
+
+Do you wish to continue? [y/n] y
+
+Note:  Once this process is started, it cannot be stopped.
+Are you sure you wish to REMOVE ALL DATA from node [161.12.123.007]? [y/n] y
+
+Exiting.  Database server is currently running on node [161.12.123.007]
+   </codeblock>
+</fig>
+</section>
+</conbody></concept>

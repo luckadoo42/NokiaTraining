@@ -1,0 +1,8156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-spsmeas"><title>NCC measurements</title><conbody>
+<section><title>Overview</title>
+<p>NCC collects measurements for the following areas:</p><ul>
+<li>
+<p>
+<!--xref URI: #DiamPR-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/DiamPR"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #diasupplemantal-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/diasupplemantal"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #DCNmetrics-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/DCNmetrics"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #LDAPPR-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/LDAPPR"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #surepaymet-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/surepaymet"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #HTTPPr-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/HTTPPr"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #HTTPPr5-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/HTTPPr5"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #siteroutMet-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/siteroutMet"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #rulmet-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/rulmet"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #OvLoadmetProm-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/OvLoadmetProm"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #RatingMet-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/RatingMet"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #cbncnb-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/cbncnb"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #entCount1-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/entCount1"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #CDRmet1-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/CDRmet1"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #Notific-server-metrics-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/Notific-server-metrics"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #NRF-metrics-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/NRF-metrics"/>
+</p>
+</li>
+</ul>
+<note>
+<p>For average_latency_last_interval, this is the change in latency over a configurable period of time, which can be increasing as well as decreasing. For example, using the diameter_inbound_sum and diameter_inbound_count metrics, the average_latency_last_interval is calculated as follows:</p>
+<p>
+<codeph>rate(diameter_outbound_sum[&lt;period&gt;]) / rate(diameter_outbound_count[&lt;period&gt;])</codeph>
+</p>
+<p>Where for example, in the last &lt;period&gt; (let’s say period of 5 minutes), the first value of "diameter_inbound_sum" is S1, and the last value of "diameter_inbound_sum” is S5. Then:  </p>
+<p>
+<codeph>"rate(diameter_inbound_sum[&lt;period&gt;])" is equal to "(S5 - S1) / 300s"</codeph>
+</p>
+<p>and in the last &lt;period&gt;, the first value of "diameter_inbound_count" is C1, and the last value of "diameter_inbound_count" is C5. Then:</p>
+<p>
+<codeph>"rate(diameter_inbound_count[5 minutes])" is equal to "(C5 - C1) / 300s"</codeph>
+</p>
+<p>Then the average latency in the last 5 minutes is as follows:</p>
+<p>
+<codeph>((S5 - S1) / 300s) / ((C5 - C1) / 300s) </codeph>
+</p>
+</note>
+<note>
+<p>The value of any of the <i>count since last interval</i> metrics is an extrapolated value and never an exact value. This behavior is from the way that Prometheus does the calculation. This is calculated using the increase( ) function; for example, <i>increase(diameter_inbound_count[10m])</i> or <i>increase(ldap_count[10m])</i>, etc. The "Increase()" function uses a minimum of two data points over a time period and based on these two data points a change in count since last interval value is calculated. Prometheus does an approximation because it calculates count since last interval in a fail safe way that is resistant to failures such as scrape miss, node restarts, etc. </p>
+<p>The recommended value for last interval (default 10 minutes), should be at least twice that of
+                              the granularity period gen3gppxml/default_gran_period) defined in
+                              Gen3GPPXML tool. This is to ensure that the Gen3GPPXML tool, would be
+                              able to take the snapshot of count since last interval metrics at
+                              least once. For example, if the granularity period configured is 300s
+                              (5 minutes), you should configure the last interval window in count
+                              since last interval metrics as 10 minutes. See the “Gen3gppxml
+                              section” in the NCC Installation and Upgrade Guide for more
+                              information about these parameters.</p>
+</note>
+<note>
+<p>Prometheus uses a MEAS mechanism for integrating collected metrics into the Prometheus framework. NetAct interacts with the Gen3gppXML tool, which takes input from Prometheus and the configuration file corresponding to the Gen3gppxml.xml file. There are two measgroups available: measgroups and measgroups2. Measgroups2 supports FastPass and Measgroups, being the older version, does not support FastPass. If the version of NetAct that you are supporting supports FastPass mode, every metric that is available in Gen3gppxml is available in NetAct. Older versions of NetAct that do not support FastPass mode, certain metrics are not available to be displayed in NetAct.</p>
+</note>
+<note>
+<p>When an incoming 5G message arrives at an NCC ME over HTTP/2, it may be site-routed to another
+                              home NCC ME. For example, consider a case where an incoming N7 request
+                              that first lands on ME 1 is site-routed to ME 2, which is the home for
+                              the device (PGW &gt; ME1 &gt; ME2). The metrics for this example are
+                              established as follows:</p><ul>
+<li>
+<p>On ME1, http_3gpp_inbound metrics are pegged along with the site_routing metric pegged with the “InProtocol” label indicating “http_3gpp” and the “Decision” label indicating “message sent to primary”.</p>
+</li>
+<li>
+<p>From ME1 to ME2, the message is forwarded using the Diameter protocol. </p>
+</li>
+<li>
+<p>On ME2, the diameter_inbound metrics are pegged to set the “DiameterApp” label to N7 (for this example) to distinguish this from standard 4G Diameter messages received. The site_routing metric is then pegged with the “InProtocol” label indicating ‘http_3gpp’ and the “Decision” label indicating “processed locally”. </p>
+</li>
+</ul>
+</note>
+</section>
+<section id="DiamPR"><title>Diameter (Base) metrics</title>
+<p>The base Diameter measurements record the number of Diameter messages in and out of NCC, the
+                        specific type of messages, the result of the message processing, and who was
+                        the peer. There are a number of labels within these measurements that
+                        provide a rich set of detailed information for understanding the behavior of
+                        the NCC Diameter interactions. These metrics are recorded on the ME Diameter
+                        Application nodes.</p>
+<p>See the following for Diameter base metrics:</p><ul>
+<li>
+<p>
+<!--xref URI: #DiamPr3-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/DiamPr3"/> describes the Diameter inbound metrics.</p>
+</li>
+<li>
+<p>
+<!--xref URI: #DiamPr1-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/DiamPr1"/> describes the Diameter inbound metrics.</p>
+</li>
+<li>
+<p>
+<!--xref URI: #Diaoutbound-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/diaoutbound"/> describes the Diameter outbound metrics.</p>
+</li>
+<li>
+<p>
+<!--xref URI: #Diamsuppl1-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/Diamsuppl1"/> describes the Diameter inbound and outbound supplemental metrics.</p>
+</li>
+</ul>
+<sectiondiv id="DiamPr3">
+<p><b>Diameter General (base) metrics</b></p>
+<table colsep="1" rowsep="1">
+                              <title>Diameter_General (Base) metrics </title>
+                              <tgroup cols="3">
+                                    <colspec colname="col1"/>
+                                    <colspec colname="COLSPEC2"/>
+                                    <colspec colname="COLSPEC1"/>
+                                    <thead>
+                                          <row>
+                                                <entry>
+                                                  <p>
+                                                  <b>Metrics </b>
+                                                  </p>
+                                                </entry>
+                                                <entry>
+                                                  <p>
+                                                  <b>Description</b>
+                                                  </p>
+                                                </entry>
+                                                <entry>
+                                                  <p>Updated this release</p>
+                                                </entry>
+                                          </row>
+                                    </thead>
+                                    <tbody>
+                                          <row>
+                                                <entry> diameter_outstanding_message_count </entry>
+                                                <entry> Number of Diameter messages in the system
+                                                  for which processing is not complete. </entry>
+                                                <entry> New 20.8 </entry>
+                                          </row>
+                                          <row>
+                                                <entry> diameter_average_request_processing_latency </entry>
+                                                <entry> Average latency for a message arriving in
+                                                  the system until the message leaves the system. </entry>
+                                                <entry> New 20.8 </entry>
+                                          </row>
+                                          <row>
+                                                <entry nameend="COLSPEC1" namest="col1">
+                                                  <b>Labels</b>
+                                                </entry>
+                                          </row>
+                                          <row>
+                                                <entry> APP </entry>
+                                                <entry> Always ‘1’ in this version. </entry>
+                                                <entry> New 20.8 </entry>
+                                          </row>
+                                          <row>
+                                                <entry> DIA </entry>
+                                                <entry> Always ‘1’ in this version. </entry>
+                                                <entry> New 20.8 </entry>
+                                          </row>
+                                          <row>
+                                                <entry> HOST </entry>
+                                                <entry> NCC host name (e.g. VM name) </entry>
+                                                <entry> New 20.8 </entry>
+                                          </row>
+                                          <row>
+                                                <entry nameend="COLSPEC1" namest="col1">
+                                                  <p>
+                                                  <b>Examples</b>
+                                                  </p>
+                                                  <p>Example XML format:</p>
+                                                  <codeblock>&lt;measType p="1"&gt;diameter_outstanding_message_count&lt;/measType&gt;
+&lt;measType p="2"&gt;diameter_average_request_processing_latency&lt;/measType&gt;
+&lt;measValue measObjLdn="APP=1,HOST=sps-me-diameterapp-0,DIA=1"&gt;
+                &lt;r p="1"&gt;19&lt;/r&gt;
+                &lt;r p="2"&gt;41&lt;/r&gt;
+&lt;/measValue&gt;</codeblock>
+                                                </entry>
+                                          </row>
+                                    </tbody>
+                              </tgroup>
+                        </table>
+</sectiondiv>
+<sectiondiv id="DiamPr1">
+<p><b>Diameter inbound metrics</b></p>
+<table><title>Diameter_inbound (Base) metrics </title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC2"/>
+<colspec colname="COLSPEC1"/>
+<thead>
+<row>
+<entry>
+<p>
+<b>Metrics </b>
+</p>
+</entry>
+<entry>
+<p>
+<b>Description</b>
+</p>
+</entry>
+<entry>
+<p>Updated this release</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+diameter_inbound_count
+</entry>
+<entry>
+Number of inbound Diameter messages accumulated since the start of this node
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+diameter_inbound_rate
+</entry>
+<entry>
+Average rate of inbound Diameter messages (per second) during this recent interval.  (calculated sum/interval duration).
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+diameter_inbound_count_last_interval
+</entry>
+<entry>
+The count of Diameter inbound request for a configured last interval, which is calculated using the formula: increase( ). The Default value for last interval is 10 minutes.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+diameter_inbound_average_latency_last_interval
+</entry>
+<entry>
+Average latency during this recent interval (calculated sum/count).
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+diameter_inbound_average_latency_overall 
+</entry>
+<entry>
+Average latency for all accumulated intervals (calculated sum/count).
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+diameter_inbound_sum
+</entry>
+<entry>
+<p>Sum of all latencies accumulated since the start of this node (to calculate averages)</p>
+<p>If there has been a restart since node start, the value will be from that point in time.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC1" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+app
+</entry>
+<entry> Always ‘1’ in this NCC version. </entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+dia
+</entry>
+<entry> Always ‘1’ in this NCC version. </entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+host
+</entry>
+<entry> NCC host name (e.g. VM name) </entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Application
+</entry>
+<entry>
+<p>Diameter App</p>
+<p>Possible values are Gx, Gy, NASREQ, Rx, S9, Sd, Sh, and Sy.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Command
+</entry>
+<entry>
+<p>Possible values are RAR, CCR, AAR, ASR , STR, SNR, SLR, LR, SNR, CER, DWR, and DPR.</p>
+<p> See also <!--xref URI: #Appcmdcombos--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/Appcmdcombos"/>.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+RequestType
+</entry>
+<entry>
+<p>Diameter Request Type</p>
+<p>Possible values:</p>
+<p>INITIAL_REQUEST (1)</p>
+<p>UPDATE_REQUEST (2)</p>
+<p>TERMINATION_REQUEST (3)</p>
+<p>EVENT_REQUEST (4)</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Result
+</entry>
+<entry>
+<p>Possible values are </p>
+<p>DIAMETER_SUCCESS,</p>
+<p>DIAMETER_LIMITED_SUCCESS, </p>
+<p>DIAMETER_AVP_NOT_ALLOWED etc.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+IngressPeerOriginHost
+</entry>
+<entry>
+The Diameter Ingress Peer Realm and Host. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+OriginHost
+</entry>
+<entry>
+The Diameter Origin Realm and Host. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+CustomLabel
+</entry>
+<entry>
+<p>Custom labels are optional AVPs and may be different for each measurement instance, providing additional system insights as available. For example, this could indicate that the Event Trigger was an UE_IP_ADDRESS_ALLOCATE (18).</p>
+<p>See <!--xref URI: #DiaInboundCustLabel--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/DiaInboundCustLabel"/> for more information about custom labels.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC1" namest="col1">
+<p>
+<b>Examples</b>
+</p>
+<p>The following are examples in XML format (with some labels muted):</p>
+<codeblock>&lt;measType p="1"&gt;diameter_inbound_sum&lt;/measType&gt;
+&lt;measType p="2"&gt;diameter_inbound_count&lt;/measType&gt;
+&lt;measType p="3"&gt;diameter_inbound_count_last_interval&lt;/measType&gt;
+&lt;measType p="4"&gt;diameter_inbound_rate&lt;/measType&gt;
+&lt;measType p="5"&gt;diameter_inbound_average_latency_overall&lt;/measType&gt;
+&lt;measType p="6"&gt;diameter_inbound_average_latency_last_interval&lt;/measType&gt;
+
+&lt;measValue measObjLdn="app=1, dia=1, host=ME2-diameterapp-1, Application=Gx, Command=CCR, RequestType=INITIAL_REQUEST (1), Result=DIAMETER_SUCCESS, OriginHost=NA, IngressPeerOriginHost=NA, CustomLabel={"EventTrigger":"UE_IP_ADDRESS_ALLOCATE (18)"}"&gt;
+      &lt;r p="1"&gt;1390744&lt;/r&gt;
+      &lt;r p="2"&gt;109246&lt;/r&gt;
+      &lt;r p="3"&gt;11&lt;/r&gt;
+      &lt;r p="4"&gt;2.7228070175438592&lt;/r&gt;
+      &lt;r p="5"&gt;12.73076500430395&lt;/r&gt;
+      &lt;r p="6"&gt;11.13917525773196&lt;/r&gt;
+&lt;/measValue&gt;</codeblock>
+<p>Example XML format (with all labels unmuted):</p>
+<codeblock>&lt;measValue measObjLdn="app=1, dia=1, host=ME2-diameterapp-1, Application=Gx, Command=CCR, RequestType=INITIAL_REQUEST (1), Result=UNKNOWN, OriginHost=clientHost1.clientRealm1, IngressPeerOriginHost= clientHost1.clientRealm1, CustomLabel={"EventTrigger":"UE_IP_ADDRESS_ALLOCATE (18)"}"&gt;
+      &lt;r p="1"&gt;1390744&lt;/r&gt;
+      &lt;r p="2"&gt;109246&lt;/r&gt;
+      &lt;r p="3"&gt;11&lt;/r&gt;
+      &lt;r p="4"&gt;2.7228070175438592&lt;/r&gt;
+      &lt;r p="5"&gt;12.73076500430395&lt;/r&gt;
+      &lt;r p="6"&gt;11.13917525773196&lt;/r&gt;
+&lt;/measValue&gt;</codeblock>
+<p>Example XML format if overload is configured as a Custom Label and shedding is configured in the Overload Protection Profile:</p>
+<codeblock>measValue measObjLdn="app=1, dia=1, host=ME2-diameterapp-1, Application=Gx, Command=CCR, RequestType=INITIAL_REQUEST (1), Result=DIAMETER_TOO_BUSY, OriginHost=clientHost1.clientRealm1, IngressPeerOriginHost= clientHost1.clientRealm1, CustomLabel={&amp;quot;Shedding Action&amp;quot;:&amp;quot;Reject&amp;quot;,&amp;quotShedding Reason&amp;quot:&amp;quot;SystemOverload&amp;quot;}"&gt;</codeblock>
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC1" namest="col1">
+<p>Further information is available at the following:</p><ul>
+<li>
+<p>
+<!--xref URI: #ReqTypeInbound-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/ReqTypeInbound"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #resultcodes-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/resultcodes"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #Appcmdcombos-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/Appcmdcombos"/>
+</p>
+</li>
+</ul>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+<sectiondiv>
+<p><b>Diameter outbound metrics</b></p>
+<table id="diaoutbound" colsep="1" rowsep="1">
+                              <title>Diameter_outbound (Base) metrics </title>
+                              <tgroup cols="3">
+                                    <colspec colname="col1"/>
+                                    <colspec colname="COLSPEC4"/>
+                                    <colspec colname="COLSPEC3"/>
+                                    <thead>
+                                          <row>
+                                                <entry>
+                                                  <p>
+                                                  <b>Metrics </b>
+                                                  </p>
+                                                </entry>
+                                                <entry>
+                                                  <p>
+                                                  <b>Description</b>
+                                                  </p>
+                                                </entry>
+                                                <entry>
+                                                  <p>Updated this release</p>
+                                                </entry>
+                                          </row>
+                                    </thead>
+                                    <tbody>
+                                          <row>
+                                                <entry> diameter_outbound_count </entry>
+                                                <entry> Number of outbound Diameter messages
+                                                  accumulated since the start of this node </entry>
+                                                <entry> — </entry>
+                                          </row>
+                                          <row>
+                                                <entry> diameter_outbound_rate </entry>
+                                                <entry> Average rate of outbound Diameter messages
+                                                  (per second) during this recent interval.
+                                                  (calculated sum/interval duration). </entry>
+                                                <entry> — </entry>
+                                          </row>
+                                          <row>
+                                                <entry> diameter_outbound_count_last_interval </entry>
+                                                <entry> The count of Diameter outbound requests for
+                                                  a configured last interval, which is calculated
+                                                  using the formula: increase( ). The Default value
+                                                  for last interval is 10 minutes. </entry>
+                                                <entry> — </entry>
+                                          </row>
+                                          <row>
+                                                <entry>
+                                                  diameter_outbound_average_latency_last_interval </entry>
+                                                <entry> Average latency during this recent interval
+                                                  (calculated sum/count). </entry>
+                                                <entry> — </entry>
+                                          </row>
+                                          <row>
+                                                <entry> diameter_outbound_average_latency_overall </entry>
+                                                <entry> Average latency for all accumulated
+                                                  intervals (calculated sum/count). </entry>
+                                                <entry> — </entry>
+                                          </row>
+                                          <row>
+                                                <entry> diameter_outbound_sum </entry>
+                                                <entry>
+                                                  <p>Sum of all latencies accumulated since the
+                                                  start of this node (to calculate averages)</p>
+                                                  <p>If there has been a restart since node start,
+                                                  the value will be from that point in time.</p>
+                                                </entry>
+                                                <entry> — </entry>
+                                          </row>
+                                          <row>
+                                                <entry nameend="COLSPEC3" namest="col1">
+                                                  <b>Labels</b>
+                                                </entry>
+                                          </row>
+                                          <row>
+                                                <entry> app </entry>
+                                                <entry> Always ‘1’ in this NCC version. </entry>
+                                                <entry> — </entry>
+                                          </row>
+                                          <row>
+                                                <entry> dia </entry>
+                                                <entry> Always ‘1’ in this NCC version. </entry>
+                                                <entry> — </entry>
+                                          </row>
+                                          <row>
+                                                <entry> host </entry>
+                                                <entry> NCC host name (e.g. VM name) </entry>
+                                                <entry> — </entry>
+                                          </row>
+                                          <row>
+                                                <entry> Application </entry>
+                                                <entry>
+                                                  <p>Diameter App</p>
+                                                  <p>Possible values are Gx, Sy, and Gy.</p>
+                                                </entry>
+                                                <entry> — </entry>
+                                          </row>
+                                          <row>
+                                                <entry> Command </entry>
+                                                <entry>
+                                                  <p>Possible values are RAR, CCR, AAR, ASR , STR,
+                                                  SNR, SLR, LR, SNR, CER, DWR, and DPR.</p>
+                                                  <p> See also <!--xref URI: #Appcmdcombos--><xref
+                                                  keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/Appcmdcombos"
+                                                  />.</p>
+                                                </entry>
+                                                <entry> — </entry>
+                                          </row>
+                                          <row>
+                                                <entry> RequestType </entry>
+                                                <entry>
+                                                  <p>Diameter Request Type</p>
+                                                  <p>Possible values:</p>
+                                                  <p>INITIAL_REQUEST (1)</p>
+                                                  <p>UPDATE_REQUEST (2)</p>
+                                                  <p>TERMINATION_REQUEST (3)</p>
+                                                  <p>EVENT_REQUEST (4)</p>
+                                                </entry>
+                                                <entry> — </entry>
+                                          </row>
+                                          <row>
+                                                <entry> Result </entry>
+                                                <entry>
+                                                  <p>Possible values are </p>
+                                                  <p>DIAMETER_SUCCESS,</p>
+                                                  <p>DIAMETER_LIMITED_SUCCESS, </p>
+                                                  <p>DIAMETER_AVP_NOT_ALLOWED etc.</p>
+                                                </entry>
+                                                <entry> — </entry>
+                                          </row>
+                                          <row>
+                                                <entry> DestinationHost </entry>
+                                                <entry> The Diameter Destination Peer Realm and
+                                                  Host. Will be muted by default (shown as NA) to
+                                                  reduce metrics verbosity. </entry>
+                                                <entry> — </entry>
+                                          </row>
+                                          <row>
+                                                <entry> EgressPeerOriginHost </entry>
+                                                <entry> The Diameter Egress Realm and Host. Will be
+                                                  muted by default (shown as NA) to reduce metrics
+                                                  verbosity. </entry>
+                                                <entry> — </entry>
+                                          </row>
+                                          <row>
+                                                <entry> CustomLabel </entry>
+                                                <entry>
+                                                  <p>Custom labels are optional AVPs and may be
+                                                  different for each measurement instance, providing
+                                                  additional system insights as available. For
+                                                  example, this could indicate that the ReleaseCause
+                                                  is an UNSPECIFIED_REASON.</p>
+                                                  <p>See <!--xref URI: #diamoutbndcustlabel--><xref
+                                                  keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/diamoutbndcustlabel"
+                                                  />for more information about custom labels.</p>
+                                                </entry>
+                                                <entry> — </entry>
+                                          </row>
+                                          <row>
+                                                <entry nameend="COLSPEC3" namest="col1">
+                                                  <p>
+                                                  <b>Examples</b>
+                                                  </p>
+                                                  <p>The following are examples in XML format (with
+                                                  some labels muted):</p>
+                                                  <codeblock>&lt;measType p="1"&gt;diameter_outbound_sum&lt;/measType&gt;
+&lt;measType p="2"&gt;diameter_outbound_count&lt;/measType&gt;
+&lt;measType p="3"&gt;diameter_outbound_count_last_interval&lt;/measType&gt;
+&lt;measType p="4"&gt;diameter_outbound_rate&lt;/measType&gt;
+&lt;measType p="5"&gt;diameter_outbound_average_latency_overall&lt;/measType&gt;
+&lt;measType p="6"&gt;diameter_outbound_average_latency_last_interval&lt;/measType&gt;
+
+&lt;measValue measObjLdn="app=1, dia=1, host=ME2-diameterapp-3, Application=Gx, Command=RAR, RequestType=INITIAL_REQUEST (1), Result= DIAMETER_UNABLE_TO_COMPLY, DestinationHost=NA, EgressPeerOriginHost=NA, CustomLabel={&amp;quot;SessionReleaseCause&amp;quot;:&amp;quot;INSUFFICIENT_SERVER_RESOURCES (2)&amp;quot;}"&gt;
+      &lt;r p="1"&gt;1390744&lt;/r&gt;
+      &lt;r p="2"&gt;109246&lt;/r&gt;
+      &lt;r p="3"&gt;16&lt;/r&gt;
+      &lt;r p="4"&gt;2.7228070175438592&lt;/r&gt;
+      &lt;r p="5"&gt;12.73076500430395&lt;/r&gt;
+      &lt;r p="6"&gt;11.13917525773196&lt;/r&gt;
+&lt;/measValue&gt; </codeblock>
+                                                  <p>Example XML format (with all labels
+                                                  unmuted):</p>
+                                                  <codeblock>&lt;measValue measObjLdn="app=1, dia=1, host=ME2-diameterapp-3, Application=Gx, Command=RAR, RequestType=INITIAL_REQUEST (1), Result= DIAMETER_UNABLE_TO_COMPLY, DestinationHost=clientHost1.clientRealm1, EgressPeerOriginHost=clientHost1.clientRealm1, CustomLabel={&amp;quot;SessionReleaseCause&amp;quot;:&amp;quot;INSUFFICIENT_SERVER_RESOURCES (2)&amp;quot;}"&gt;
+      &lt;r p="1"&gt;1390744&lt;/r&gt;
+      &lt;r p="2"&gt;109246&lt;/r&gt;
+      &lt;r p="3"&gt;16&lt;/r&gt;
+      &lt;r p="4"&gt;2.7228070175438592&lt;/r&gt;
+      &lt;r p="5"&gt;12.73076500430395&lt;/r&gt;
+      &lt;r p="6"&gt;11.13917525773196&lt;/r&gt;
+&lt;/measValue&gt;</codeblock>
+                                                </entry>
+                                          </row>
+                                          <row>
+                                                <entry nameend="COLSPEC3" namest="col1">
+                                                  <p>Further information is available at the
+                                                  following:</p>
+                                                  <ul>
+                                                  <li>
+                                                  <p>
+                                                  <!--xref URI: #ReqTypeInbound-->
+                                                  <xref
+                                                  keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/ReqTypeInbound"
+                                                  />
+                                                  </p>
+                                                  </li>
+                                                  <li>
+                                                  <p>
+                                                  <!--xref URI: #resultcodes-->
+                                                  <xref
+                                                  keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/resultcodes"
+                                                  />
+                                                  </p>
+                                                  </li>
+                                                  <li>
+                                                  <p>
+                                                  <!--xref URI: #Appcmdcombos-->
+                                                  <xref
+                                                  keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/Appcmdcombos"
+                                                  />
+                                                  </p>
+                                                  </li>
+                                                  </ul>
+                                                </entry>
+                                          </row>
+                                    </tbody>
+                              </tgroup>
+                        </table>
+</sectiondiv>
+<sectiondiv id="ReqTypeInbound">
+<p><b>Request Type values by interface and message</b></p>
+<table><title>Request Type values by interface and message for Diameter metrics</title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<colspec colname="col3"/>
+<thead>
+<row>
+<entry>
+<p>Interface</p>
+</entry>
+<entry>
+<p>Message</p>
+</entry>
+<entry>
+<p>Request Type values</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+<p>Gx</p>
+<p>Gy</p>
+<p>Sd</p>
+</entry>
+<entry>
+CCR
+</entry>
+<entry>
+<p>INITIAL_REQUEST (1)</p>
+<p>UPDATE_REQUEST (2)</p>
+<p>TERMINATION_REQUEST (3)</p>
+<p>EVENT_REQUEST(4)</p>
+</entry>
+</row>
+<row>
+<entry>
+Rx
+</entry>
+<entry>
+AAR
+</entry>
+<entry>
+<p>INITIAL_REQUEST (1)</p>
+<p>UPDATE_REQUEST (2)</p>
+<p>PCSCF_RESTORATION (3)</p>
+</entry>
+</row>
+<row>
+<entry>
+Sy
+</entry>
+<entry>
+SLR
+</entry>
+<entry>
+<p>INITIAL_REQUEST(0)</p>
+<p>INTERMEDIATE_REQUEST(1)</p>
+</entry>
+</row>
+<row>
+<entry>
+<p>NASREQ</p>
+<p>Rx</p>
+<p>Sy</p>
+</entry>
+<entry>
+STR
+</entry>
+<entry>
+SESSION_TERMINATION_REQUEST
+</entry>
+</row>
+<row>
+<entry>
+NASREQ
+</entry>
+<entry>
+ACR
+</entry>
+<entry>
+<p>EVENT_RECORD (1),</p>
+<p>START_RECORD (2),</p>
+<p>INTERIM_RECORD (3),</p>
+<p>STOP_RECORD (4)</p>
+</entry>
+</row>
+<row>
+<entry>
+Sy
+</entry>
+<entry>
+SNR
+</entry>
+<entry>
+<p>NORMAL_REQUEST (1),</p>
+<p>ABORT_SESSION_REQUEST (2)</p>
+<p>
+<b>Note:</b>NORMAL_REQUEST (1) is recorded when the SN-Request-Type AVP is not included in the SNR. </p>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+<sectiondiv id="resultcodes">
+<p><b>Diameter Result code values</b></p>
+<note>
+<p>A Diameter call fail-over scenario can occur when an outbound RAR request is sent out and there is no response received, the Result-Code tag dumped in the metrics will contain DIAMETER_NO_RESPONSE as the value.</p>
+</note>
+<table colsep="1" pgwide="1"><title>Diameter Result Codes</title>
+<tgroup cols="1" colsep="1">
+<colspec colname="1" colnum="1"/>
+<thead>
+<row>
+<entry>
+<p>Result</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry colname="1">
+<p>The Diameter result codes are:</p><ul>
+<li>
+<p>DIAMETER_ACCESS_PROFILE_FAILURE</p>
+</li>
+<li>
+<p>DIAMETER_APPLICATION_UNSUPPORTED</p>
+</li>
+<li>
+<p>DIAMETER_AUTHENTICATION_REJECTED</p>
+</li>
+<li>
+<p>DIAMETER_AUTHORIZATION_REJECTED</p>
+</li>
+<li>
+<p>DIAMETER_AVP_NOT_ALLOWED</p>
+</li>
+<li>
+<p>DIAMETER_AVP_OCCURS_TOO_MANY_TIMES</p>
+</li>
+<li>
+<p>DIAMETER_AVP_UNSUPPORTED</p>
+</li>
+<li>
+<p>DIAMETER_BEARER_EVENT</p>
+</li>
+<li>
+<p>DIAMETER_COMMAND_UNSUPPORTED</p>
+</li>
+<li>
+<p>DIAMETER_COMMIT_FAILURE</p>
+</li>
+<li>
+<p>DIAMETER_CONTRADICTING_AVPS</p>
+</li>
+<li>
+<p>DIAMETER_CREDIT_CONTROL_NOT_APPLICABLE</p>
+</li>
+<li>
+<p>DIAMETER_CREDIT_LIMIT_REACHED</p>
+</li>
+<li>
+<p>DIAMETER_END_USER_SERVICE_DENIED</p>
+</li>
+<li>
+<p>DIAMETER_ERROR_AUTH_SCHEME_NOT_SUPPORTED</p>
+</li>
+<li>
+<p>DIAMETER_ERROR_END_TO_END_MIP_KEY_ENCRYPTION</p>
+</li>
+<li>
+<p>DIAMETER_ERROR_FEATURE_UNSUPPORTED</p>
+</li>
+<li>
+<p>DIAMETER_ERROR_HA_NOT_AVAILABLE</p>
+</li>
+<li>
+<p>DIAMETER_ERROR_IDENTITIES_DONT_MATCH</p>
+</li>
+<li>
+<p>DIAMETER_ERROR_IDENTITY_ALREADY_REGISTERED</p>
+</li>
+<li>
+<p>DIAMETER_ERROR_IDENTITY_NOT_REGISTERED</p>
+</li>
+<li>
+<p>DIAMETER_ERROR_IN_ASSIGNMENT_TYPE</p>
+</li>
+<li>
+<p>DIAMETER_ERROR_INITIAL_PARAMETERS</p>
+</li>
+<li>
+<p>DIAMETER_ERROR_MIP_FILTER_NOT_SUPPORTED</p>
+</li>
+<li>
+<p>DIAMETER_ERROR_MIP_REPLY_FAILURE</p>
+</li>
+<li>
+<p>DIAMETER_ERROR_NO_FOREIGN_HA_SERVICE</p>
+</li>
+<li>
+<p>DIAMETER_ERROR_NO_SUBSCRIPTION_TO_DATA</p>
+</li>
+<li>
+<p>DIAMETER_ERROR_NOT_SUPPORTED_USER_DATA</p>
+</li>
+<li>
+<p>DIAMETER_ERROR_OPERATION_NOT_ALLOWED</p>
+</li>
+<li>
+<p>DIAMETER_ERROR_ROAMING_NOT_ALLOWED</p>
+</li>
+<li>
+<p>DIAMETER_ERROR_SUBS_DATA_ABSENT</p>
+</li>
+<li>
+<p>DIAMETER_ERROR_TOO_MUCH_DATA</p>
+</li>
+</ul>
+</entry>
+</row>
+<row>
+<entry>
+<p>(Result continued)</p><ul>
+<li>
+<p>DIAMETER_ERROR_TRANSPARENT_DATA_OUT_OF_SYNC</p>
+</li>
+<li>
+<p>DIAMETER_ERROR_TRIGGER_EVENT</p>
+</li>
+<li>
+<p>DIAMETER_ERROR_USER_DATA_CANNOT_BE_NOTIFIED</p>
+</li>
+<li>
+<p>DIAMETER_ERROR_USER_DATA_CANNOT_BE_READ</p>
+</li>
+<li>
+<p>DIAMETER_ERROR_USER_DATA_NOT_RECOGNIZED</p>
+</li>
+<li>
+<p>DIAMETER_ERROR_USER_UNKNOWN</p>
+</li>
+<li>
+<p>DIAMETER_PENDING_TRANSACTION</p>
+</li>
+<li>
+<p>DIAMETER_INSUFFICIENT_RESOURCES</p>
+</li>
+<li>
+<p>DIAMETER_INVALID_AVP_BIT_COMBO</p>
+</li>
+<li>
+<p>DIAMETER_INVALID_AVP_BITS</p>
+</li>
+<li>
+<p>DIAMETER_INVALID_AVP_LENGTH</p>
+</li>
+<li>
+<p>DIAMETER_INVALID_AVP_VALUE</p>
+</li>
+<li>
+<p>DIAMETER_INVALID_BIT_IN_HEADER</p>
+</li>
+<li>
+<p>DIAMETER_INVALID_HDR_BITS</p>
+</li>
+<li>
+<p>DIAMETER_INVALID_MESSAGE_LENGTH</p>
+</li>
+<li>
+<p>DIAMETER_LIMITED_SUCCESS</p>
+</li>
+<li>
+<p>DIAMETER_LOOP_DETECTED</p>
+</li>
+<li>
+<p>DIAMETER_MISSING_AVP</p>
+</li>
+<li>
+<p>DIAMETER_MODIFICATION_FAILURE</p>
+</li>
+<li>
+<p>DIAMETER_MULTI_ROUND_AUTH</p>
+</li>
+<li>
+<p>DIAMETER_NO_COMMON_APPLICATION</p>
+</li>
+<li>
+<p>DIAMETER_NO_COMMON_SECURITY</p>
+</li>
+<li>
+<p>DIAMETER_OUT_OF_SPACE</p>
+</li>
+<li>
+<p>DIAMETER_PCC_BEARER_EVENT</p>
+</li>
+<li>
+<p>DIAMETER_PCC_RULE_EVENT</p>
+</li>
+<li>
+<p>DIAMETER_PRIOR_UPDATE_IN_PROGRESS</p>
+</li>
+<li>
+<p>DIAMETER_QOS_PROFILE_FAILURE</p>
+</li>
+</ul>
+</entry>
+</row>
+<row>
+<entry>
+<p>(Result continued)</p><ul>
+<li>
+<p>DIAMETER_QOS_RULE_EVENT</p>
+</li>
+<li>
+<p>DIAMETER_RADIUS_AVP_UNTRANSLATABLE</p>
+</li>
+<li>
+<p>DIAMETER_RATING_FAILED</p>
+</li>
+<li>
+<p>DIAMETER_REALM_NOT_SERVED</p>
+</li>
+<li>
+<p>DIAMETER_REDIRECT_INDICATION</p>
+</li>
+<li>
+<p>DIAMETER_RESOURCES_EXCEEDED</p>
+</li>
+<li>
+<p>DIAMETER_SERVER_SELECTION</p>
+</li>
+<li>
+<p>DIAMETER_SUBSEQUENT_REGISTRATION</p>
+</li>
+<li>
+<p>DIAMETER_SUCCESS</p>
+</li>
+<li>
+<p>DIAMETER_SUCCESS_AUTH_SENT_SERVER_NOT_STORED</p>
+</li>
+<li>
+<p>DIAMETER_SUCCESS_SERVER_NAME_NOT_STORED</p>
+</li>
+<li>
+<p>DIAMETER_TOO_BUSY</p>
+</li>
+<li>
+<p>DIAMETER_UNABLE_TO_COMPLY</p>
+</li>
+<li>
+<p>DIAMETER_UNABLE_TO_DELIVER</p>
+</li>
+<li>
+<p>DIAMETER_UNKNOWN_PEER</p>
+</li>
+<li>
+<p>DIAMETER_UNKNOWN_SESSION_ID</p>
+</li>
+<li>
+<p>DIAMETER_UNREGISTERED_SERVICE</p>
+</li>
+<li>
+<p>DIAMETER_UNSUPPORTED_VERSION</p>
+</li>
+<li>
+<p>DIAMETER_USER_DATA_NOT_AVAILABLE</p>
+</li>
+<li>
+<p>DIAMETER_USER_NAME_REQUIRED</p>
+</li>
+<li>
+<p>DIAMETER_USER_UNKNOWN</p>
+</li>
+<li>
+<p>DUPLICATED_AF_SESSION</p>
+</li>
+</ul>
+</entry>
+</row>
+<row>
+<entry>
+<p>(Result continued)</p><ul>
+<li>
+<p>ELECTION_LOST</p>
+</li>
+<li>
+<p>FILTER_RESTRICTIONS</p>
+</li>
+<li>
+<p>DIAMETER_FIRST_REGISTRATION</p>
+</li>
+<li>
+<p>INVALID_SERVICE_INFORMATION</p>
+</li>
+<li>
+<p>IP_CAN_SESSION_NOT_AVAILABLE</p>
+</li>
+<li>
+<p>REQUESTED_SERVICE_NOT_AUTHORIZED</p>
+</li>
+<li>
+<p>UNAUTHORIZED_NON_EMERGENCY_SESSION</p>
+</li>
+</ul>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+<sectiondiv id="Appcmdcombos">
+<p><b>Combinations of Diameter application and command</b></p>
+<p>The following table shows the typical expected combination of Diameter Application and Command.</p>
+<table><title>Application and Command combinations</title>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC0"/>
+<thead>
+<row>
+<entry>
+<p>Application (Interface)</p>
+</entry>
+<entry>
+<p>Command (Message)</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+Gx
+</entry>
+<entry>
+<p>CCR  (Credit Control Request)</p>
+<p>RAR  (Re-Auth Request)</p>
+</entry>
+</row>
+<row>
+<entry>
+Gy
+</entry>
+<entry>
+<p>CCR  (Credit Control Request)</p>
+<p>RAR  (Re-Auth Request)</p>
+</entry>
+</row>
+<row>
+<entry>
+S9
+</entry>
+<entry>
+<p>CCR  (Credit Control Request)</p>
+<p>RAR  (Re-Auth Request)</p>
+</entry>
+</row>
+<row>
+<entry>
+Sd
+</entry>
+<entry>
+<p>CCR  (Credit Control Request)</p>
+<p>RAR  (Re-Auth Request)</p>
+</entry>
+</row>
+<row>
+<entry>
+Rx
+</entry>
+<entry>
+<p>AAR  (AA Request)</p>
+<p>ASR  (Abort Session Request)</p>
+<p>CCR  (Credit Control Request)</p>
+<p>RAR  (Re-Auth Request)</p>
+<p>STR  (Session Termination Request)</p>
+</entry>
+</row>
+<row>
+<entry>
+Sy
+</entry>
+<entry>
+<p>SLR  (Spending Limit Request)</p>
+<p>SNR  (Subscribe Notification Request)</p>
+<p>STR  (Session Termination Request)</p>
+</entry>
+</row>
+<row>
+<entry>
+NASREQ
+</entry>
+<entry>
+<p>AAR  (AA Request)</p>
+<p>RAR  (Re-Auth Request)</p>
+<p>ASR  (Abort Session Request)</p>
+<p>STR  (Session Termination Request)</p>
+<p>ACR  (Accounting Request)</p>
+</entry>
+</row>
+<row>
+<entry>
+Sh
+</entry>
+<entry>
+<p>PNR  (Push Notification Requst)</p>
+<p>SNR  (Subscribe Notification Request)</p>
+<p>UDR  (User Data Request)</p>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+<sectiondiv id="DiaInboundCustLabel">
+<p><b>Diameter Inbound CustomLabel parameters</b></p>
+<table><title>Diameter Inbound custom labels</title>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+<p>Custom Label</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+EventTrigger
+</entry>
+<entry>
+<p>The values available are as follows:</p>
+<p>SGSN_CHANGE (0) </p>
+<p>QOS_CHANGE (1) </p>
+<p>RAT_CHANGE (2) </p>
+<p>TFT_CHANGE (3)  </p>
+<p>PLMN_CHANGE (4)  </p>
+<p>LOSS_OF_BEARER (5)  </p>
+<p>RECOVERY_OF_BEARER (6)  </p>
+<p>IP_CAN_CHANGE (7)  </p>
+<p>QOS_CHANGE_EXCEEDING_AUTHORIZATION (11)  </p>
+<p>RAI_CHANGE (12)  </p>
+<p>USER_LOCATION_CHANGE (13)  </p>
+<p>NO_EVENT_TRIGGER (14)  </p>
+<p>OUT_OF_CREDIT (15)  </p>
+<p>REALLOCATION_OF_CREDIT (16)  </p>
+<p>REVALIDATION_TIMEOUT (17)  </p>
+<p>UE_IP_ADDRESS_ALLOCATE (18)  </p>
+<p>UE_IP_ADDRESS_RELEASE (19)  </p>
+<p>DEFAULT_EPS_BEARER_QOS_CHANGE (20)  </p>
+<p>AN_GW_CHANGE (21)  </p>
+<p>SUCCESSFUL_RESOURCE_ALLOCATION (22)  </p>
+<p>RESOURCE_MODIFICATION_REQUEST (23)  </p>
+<p>PGW_TRACE_CONTROL (24) </p>
+<p>UE_TIME_ZONE_CHANGE (25)  </p>
+<p>USAGE_REPORT (26) TAI_CHANGE (27) </p>
+<p>ECGI_CHANGE (28)  </p>
+<p>CHARGING_CORRELATION_EXCHANGE (29) </p>
+</entry>
+</row>
+<row>
+<entry>
+EventTrigger (continued)
+</entry>
+<entry>
+<p>APN_AMBR_MODIFICATION_FAILURE (30)  </p>
+<p>USER_CSG_INFORMATION_CHANGE (31)  </p>
+<p>DEFAULT_EPS_BEARER_QOS_MODIFICATION_FAILURE (32) </p>
+<p>USER_CSG_HYBRID_SUBSCRIBED_INFORMATION_CHANGE (33)  </p>
+<p>USER_CSG_HYBRID_UNSUBSCRIBED_INFORMATION_CHANGE (34)  </p>
+<p>MAX_MBR_APN_AMBR_CHANGE (35) </p>
+<p>RESERVED_36 (36)</p>
+<p>  RESERVED_37 (37)  </p>
+<p>RESERVED_38 (38) </p>
+<p>SERVICE_FLOW_DETECTION (1002)  </p>
+<p>APPLICATION_START (39)  APPLICATION_STOP (40)</p>
+<p> ADC_REVALIDATION_TIMEOUT (41)</p>
+<p>  UE_LOCAL_IP_ADDRESS_CHANGE (43)</p>
+<p>  ACCESS_NETWORK_INFO_REPORT (45)  </p>
+<p>APP_CHANGE_TO_TETHERING_STATE (1501)</p>
+<p> APP_CHANGE_FROM_TETHERING_STATE (1502)  </p>
+<p>SUBNET_CHANGE (2000)</p>
+<p>Note: More Event Trigger option values can be found in the “Policy rules” chapter of the <i>NCC
+                                                  User Guide</i> under “Enumeration Types and Event
+                                                  Triggers”.</p>
+<p>If the Event-Trigger AVP appears multiple times in a given request then each one is recorded, separated by a pipe (‘|’) delimiter, for example:  </p>
+<p>Event Trigger= USER_LOCATION_CHANGE (13) | IP_CAN_CHANGE (7)</p>
+</entry>
+</row>
+<row>
+<entry>
+ResultCodeOverridden
+</entry>
+<entry>
+This will contain the failure result code (for example, 3004). The attribute is populated when the application preference: “Session TEM Reschedule Offset” value is greater than 0 and when CCRT comes in, it is to be rejected with “Diameter too busy”. However, it is returned with Diameter Success.   
+</entry>
+</row>
+<row>
+<entry>
+Session Replacement 
+</entry>
+<entry> This custom label: “Session Replacement” is used to track session replacement scenarios. The
+                                                  “Session Replacement = true” that appears means
+                                                  that a session replacement occurred. The Session
+                                                  Replacement occurs on NCC and a RAR is not
+                                                  triggered towards the PGW for the previous session
+                                                  provided that the Disable Gx-RAR on Session
+                                                  Replacement application preference is also set to
+                                                  “true”. </entry>
+</row>
+<row>
+<entry>
+PacketFilterOperation
+</entry>
+<entry>
+<p>Possible values are:</p><ul>
+<li>
+<p>DELETION (0) </p>
+</li>
+<li>
+<p>ADDITION (1) </p>
+</li>
+<li>
+<p>MODIFICATION (2)</p>
+</li>
+</ul>
+</entry>
+</row>
+<row>
+<entry>
+ServiceURN
+</entry>
+<entry>
+Possible values are all Service-URN values received in AAR message
+</entry>
+</row>
+<row>
+<entry>
+FlowUsage
+</entry>
+<entry>
+<p>The values available are: </p><ul>
+<li>
+<p>NO_INFORMATION (0)</p>
+</li>
+<li>
+<p>RTCP (1) </p>
+</li>
+<li>
+<p>AF_SIGNALLING (2).</p>
+</li>
+</ul>
+<p>If the Flow-Usage AVP appears multiple times in a given request then each one is recorded, separated by a pipe (‘|’) delimiter. For example: </p>
+<p>FlowUsage=No Information (0) | RTCP (1)</p>
+</entry>
+</row>
+<row>
+<entry>
+FlowStatus
+</entry>
+<entry>
+<p>The values available are: </p><ul>
+<li>
+<p>ENABLED_UPLINK (0)</p>
+</li>
+<li>
+<p>ENABLED_DOWNLINK (1)</p>
+</li>
+<li>
+<p>ENABLED (2)</p>
+</li>
+<li>
+<p>DISABLED (3) </p>
+</li>
+<li>
+<p>REMOVED (4)</p>
+</li>
+</ul>
+<p>If the Flow-Status AVP appears multiple times in a given request then each one is recorded, separated by a pipe (‘|’) delimiter.</p>
+<p>For example: Flow Status=Enabled (2) | Enabled Uplink (0)</p>
+</entry>
+</row>
+<row>
+<entry>
+IpDomainId
+</entry>
+<entry>
+<p>Possible value is a valid FQDN formatted Ip-Domain-Id AVP received in AAR message.</p>
+<p>For Example: </p>
+<p>
+<systemoutput>pcrf56.18001.clientRealm.18001</systemoutput>
+</p>
+</entry>
+</row>
+<row>
+<entry>
+ServiceContext
+</entry>
+<entry>
+<p>The value received in Service-Context-Id AVP received in CCR message, identifying the Diameter Credit-Control service.</p>
+<p>For example:</p>
+<p>32251@3gpp.org for PS charging,</p>
+<p>32260@3gpp.org for IMS charging,</p>
+<p>32270@3gpp.org for MMS charging,</p>
+<p>32274@3gpp.org for SMS charging, etc</p>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+<sectiondiv id="diamoutbndcustlabel">
+<p><b>Diameter Outbound CustomLabel parameters</b></p>
+<table><title>Diameter Outbound custom labels</title>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+<p>Custom Label</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+SessionReleaseCause
+</entry>
+<entry>
+<p>Possible values are: </p><ul>
+<li>
+<p>UNSPECIFIED_REASON (0)</p>
+</li>
+<li>
+<p>UE_SUBSCRIPTION_REASON (1)</p>
+</li>
+<li>
+<p>INSUFFICIENT_SERVER_RESOURCES (2)</p>
+</li>
+<li>
+<p>IP_CAN_SESSION_TERMINATION (3)</p>
+</li>
+</ul>
+</entry>
+</row>
+<row>
+<entry>
+APN
+</entry>
+<entry>
+The layer 2 address (Access Point Name) to which a user is connected.
+</entry>
+</row>
+<row>
+<entry>
+GeneratingEvent
+</entry>
+<entry>
+<p>This custom label will be present only in case of outbound Gx RARs in a 4G environment. Possible values are:</p><ul>
+<li>
+<p>SPS_INTERNAL</p>
+</li>
+<li>
+<p>TERMINATE</p>
+</li>
+<li>
+<p>SESSION_AUDIT</p>
+</li>
+<li>
+<p>RX</p>
+</li>
+<li>
+<p>SD</p>
+</li>
+<li>
+<p>SY</p>
+</li>
+<li>
+<p>SPR</p>
+</li>
+<li>
+<p>PDST/WESP/ST </p>
+</li>
+</ul>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+<sectiondiv id="Diamsuppl1">
+<p><b>Diameter supplemental metrics</b></p>
+<p>
+<!--xref URI: #diasupplemantal-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/diasupplemantal"/> describes the Diameter inbound and outbound supplemental metrics available in Prometheus. These extended metrics are also recorded in the Gen3GPPXML files.</p>
+<p>These metrics will be logged when the application preference “Enable Extended Metrics” value is set to true. See the <i>Global Configuration Guide</i> for more information.</p>
+<table id="diasupplemantal"><title>Diameter supplemental metrics </title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC6"/>
+<colspec colname="COLSPEC5"/>
+<thead>
+<row>
+<entry>
+<p>Metric</p>
+</entry>
+<entry align="left">
+<p>Description</p>
+</entry>
+<entry>
+<p>Updated this release</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+diameter_in_access_tech
+</entry>
+<entry>
+This metric logs the RAT-Type AVP received over Gx or Rx. 
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC5" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+OriginHost 
+</entry>
+<entry>
+The Diameter Origin Host. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+OriginRealm
+</entry>
+<entry>
+The Diameter Origin Realm. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Application
+</entry>
+<entry>
+<p>The Diameter Application.</p>
+<p>Possible values are Gx, Gy, NASREQ, Rx, S9, Sd, Sh, and Sy.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Command
+</entry>
+<entry>
+<p>Possible values are RAR, CCR, AAR, ASR , STR, SNR, SLR, LR, SNR, CER, DWR, and DPR.</p>
+<p> See also <!--xref URI: #Appcmdcombos--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/Appcmdcombos"/>.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+RequestType
+</entry>
+<entry>
+<p>Diameter Request Type</p>
+<p>Possible values:</p>
+<p>INITIAL_REQUEST (1)</p>
+<p>UPDATE_REQUEST (2)</p>
+<p>TERMINATION_REQUEST (3)</p>
+<p>EVENT_REQUEST (4)</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+IngressPeerOriginHost
+</entry>
+<entry>
+The Diameter Ingress Peer Realm and Host. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+IngressPeerOriginRealm
+</entry>
+<entry>
+Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Result
+</entry>
+<entry>
+<p>Possible values are </p>
+<p>DIAMETER_SUCCESS,</p>
+<p>DIAMETER_LIMITED_SUCCESS, </p>
+<p>DIAMETER_AVP_NOT_ALLOWED etc.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+RadioAccess
+</entry>
+<entry>
+<p>The radio access technology serving the UE is taken from the RAT-Type AVP. The supported RAT-Types are:</p>
+<p>	WLAN</p>
+<p> 	VIRTUAL</p>
+<p> 	UTRAN</p>
+<p> 	GERAN</p>
+<p> 	GAN</p>
+<p> 	HSPA_EVOLUTION</p>
+<p> 	EUTRAN</p>
+<p> 	CDMA2000_1X</p>
+<p> 	HRPD</p>
+<p> 	UMB</p>
+<p> 	EHRPD</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+CustomLabel
+</entry>
+<entry>
+<p>Custom labels are optional AVPs and may be different for each measurement instance, providing additional system insights as available. For example, this could indicate that the Event Trigger was an UE_IP_ADDRESS_ALLOCATE (18).</p>
+<p>See <!--xref URI: #DiaInboundCustLabel--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/DiaInboundCustLabel"/> for more information about custom labels.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC5" namest="col1">
+<p>
+<b>Example (For IP-CAN Establishment)</b>
+</p>
+<codeblock>diam_in_access_tech{Application="Gx",Command="CCR",CustomLabel="{"Request Type":"INITIAL_REQUEST (1)"}",IngressPeerOriginHost="NA",IngressPeerOriginRealm="NA",OriginHost="NA",OriginRealm="NA",RadioAccess="EUTRAN",RequestType="INITIAL_REQUEST (1)",Result="DIAMETER_SUCCESS",instance="localhost:9111",job="application_metrics"}</codeblock>
+</entry>
+</row>
+<row>
+<entry>
+<b>Metric</b>
+</entry>
+<entry align="left">
+<b>Description</b>
+</entry>
+<entry valign="bottom">
+<b>Updated this release</b>
+</entry>
+</row>
+<row>
+<entry>
+diam_in_charging_info_cca
+</entry>
+<entry>
+This metrics logs Charging-Info AVP sent over Gx in a CCA message at IPCAN Establishment.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC5" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+OriginHost 
+</entry>
+<entry>
+The Diameter Origin Host. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+OriginRealm
+</entry>
+<entry>
+The Diameter Origin Realm. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Application
+</entry>
+<entry>
+<p>The Diameter Application.</p>
+<p>Possible values are Gx, Gy, NASREQ, Rx, S9, Sd, Sh, and Sy.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Command
+</entry>
+<entry>
+<p>Possible values are RAR, CCR, AAR, ASR , STR, SNR, SLR, LR, SNR, CER, DWR, and DPR.</p>
+<p> See also <!--xref URI: #Appcmdcombos--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/Appcmdcombos"/>.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+RequestType
+</entry>
+<entry>
+<p>Diameter Request Type</p>
+<p>Possible values:</p>
+<p>INITIAL_REQUEST (1)</p>
+<p>UPDATE_REQUEST (2)</p>
+<p>TERMINATION_REQUEST (3)</p>
+<p>EVENT_REQUEST (4)</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+IngressPeerOriginHost
+</entry>
+<entry>
+The Diameter Ingress Peer Realm and Host. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+IngressPeerOriginRealm
+</entry>
+<entry>
+Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Result
+</entry>
+<entry>
+<p>Possible values are </p>
+<p>DIAMETER_SUCCESS,</p>
+<p>DIAMETER_LIMITED_SUCCESS, </p>
+<p>DIAMETER_AVP_NOT_ALLOWED etc.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+OCSRealm
+</entry>
+<entry>
+The address of the primary online charging system taken from the Primary-Event-Charging-Function-Name AVP present in Grouped AVP Charging-Information.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+CustomLabel
+</entry>
+<entry>
+<p>Custom labels are optional AVPs and may be different for each measurement instance, providing additional system insights as available. For example, this could indicate that the ReleaseCause is an UNSPECIFIED_REASON.</p>
+<p>See <!--xref URI: #diamoutbndcustlabel--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/diamoutbndcustlabel"/>for more information about custom labels.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC5" namest="col1">
+<p>
+<b>Examples</b>
+</p>
+<codeblock>diam_in_charging_info_cca{Application="Gx",Command="CCR",CustomLabel="{"Request Type":"INITIAL_REQUEST (1)"}",IngressPeerOriginHost="NA",IngressPeerOriginRealm="NA",OCSRealm="aaa://primaryOcs.abc.com",OriginHost="NA",OriginRealm="NA",RequestType="INITIAL_REQUEST (1)",Result="DIAMETER_SUCCESS",instance="localhost:9111",job="application_metrics"}</codeblock>
+</entry>
+</row>
+<row>
+<entry>
+<b>Metric</b>
+</entry>
+<entry align="left">
+<b>Description</b>
+</entry>
+<entry valign="bottom">
+<b>Updated this release</b>
+</entry>
+</row>
+<row>
+<entry>
+diam_out_charging_info_rar
+</entry>
+<entry>
+This metric logs the Charging-Info AVP sent over Gx in a RAR message, which could be from a trigger over Rx.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC5" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+DestinationHost 
+</entry>
+<entry>
+The Diameter Destination Host. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+DestinationRealm
+</entry>
+<entry>
+The Diameter Destination Peer Realm. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Application
+</entry>
+<entry>
+<p>The Diameter Application.</p>
+<p>Possible values are Gx, Gy, NASREQ, Rx, S9, Sd, Sh, and Sy.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Command
+</entry>
+<entry>
+<p>Possible values are RAR, CCR, AAR, ASR , STR, SNR, SLR, LR, SNR, CER, DWR, and DPR.</p>
+<p> See also <!--xref URI: #Appcmdcombos--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/Appcmdcombos"/>.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+OCSRealm
+</entry>
+<entry>
+The address of the primary online charging system taken from the Primary-Event-Charging-Function-Name AVP present in Grouped AVP Charging-Information.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+EgressPeerOriginHost
+</entry>
+<entry>
+The Diameter Egress Realm and Host. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+EgressPeerOriginRealm
+</entry>
+<entry>
+Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Result
+</entry>
+<entry>
+<p>Possible values are </p>
+<p>DIAMETER_SUCCESS,</p>
+<p>DIAMETER_LIMITED_SUCCESS, </p>
+<p>DIAMETER_AVP_NOT_ALLOWED etc.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+CustomLabel
+</entry>
+<entry>
+<p>Custom labels are optional AVPs and may be different for each measurement instance, providing additional system insights as available. For example, this could indicate that the ReleaseCause is an UNSPECIFIED_REASON.</p>
+<p>See <!--xref URI: #diamoutbndcustlabel--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/diamoutbndcustlabel"/>for more information about custom labels.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+RequestType
+</entry>
+<entry>
+<p>Diameter Request Type</p>
+<p>Possible values:</p>
+<p>INITIAL_REQUEST (1)</p>
+<p>UPDATE_REQUEST (2)</p>
+<p>TERMINATION_REQUEST (3)</p>
+<p>EVENT_REQUEST (4)</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC5" namest="col1">
+<p>
+<b>Examples</b>
+</p>
+<codeblock>diam_out_charging_info_rar{Application="Gx",Command="RAR",CustomLabel="{"generatingEvent":"RX"}",DestinationHost="NA",DestinationRealm="NA",EgressPeerOriginHost="NA",EgressPeerOriginRealm="NA",OCSRealm="aaa://primaryOcs.abc.com",RequestType="NA",Result="DIAMETER_SUCCESS",instance="localhost:9111",job="application_metrics"}</codeblock>
+</entry>
+</row>
+<row>
+<entry>
+<b>Metric</b>
+</entry>
+<entry align="left">
+<b>Description</b>
+</entry>
+<entry valign="bottom">
+<b>Updated this release</b>
+</entry>
+</row>
+<row>
+<entry>
+diameter_out_apn
+</entry>
+<entry>
+This metric logs the Called-Station-Id AVP that is sent over Gx in a RAR message, which could be from a trigger over Rx.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC5" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+DestinationHost 
+</entry>
+<entry>
+The Diameter Destination Host. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+DestinationRealm
+</entry>
+<entry>
+The Diameter Destination Peer Realm. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Application
+</entry>
+<entry>
+<p>The Diameter Application.</p>
+<p>Possible values are Gx, Gy, NASREQ, Rx, S9, Sd, Sh, and Sy.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Command
+</entry>
+<entry>
+<p>Possible values are RAR, CCR, AAR, ASR , STR, SNR, SLR, LR, SNR, CER, DWR, and DPR.</p>
+<p> See also <!--xref URI: #Appcmdcombos--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/Appcmdcombos"/>.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+EgressPeerOriginHost
+</entry>
+<entry>
+The Diameter Egress Realm and Host. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+EgressPeerOriginRealm
+</entry>
+<entry>
+Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Result
+</entry>
+<entry>
+<p>Possible values are </p>
+<p>DIAMETER_SUCCESS,</p>
+<p>DIAMETER_LIMITED_SUCCESS, </p>
+<p>DIAMETER_AVP_NOT_ALLOWED etc.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+APN
+</entry>
+<entry>
+<p>Taken from the Called-Station-Id AVP it is the layer 2 address to which a user is connected.</p>
+<p>The available values are all of the layer 2 addresses for which metrics have been collected to this point in time.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+CustomLabel
+</entry>
+<entry>
+<p>Custom labels are optional AVPs and may be different for each measurement instance, providing additional system insights as available. For example, this could indicate that the ReleaseCause is an UNSPECIFIED_REASON.</p>
+<p>See <!--xref URI: #diamoutbndcustlabel--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/diamoutbndcustlabel"/>for more information about custom labels.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+RequestType
+</entry>
+<entry>
+<p>Diameter Request Type</p>
+<p>Possible values:</p>
+<p>INITIAL_REQUEST (1)</p>
+<p>UPDATE_REQUEST (2)</p>
+<p>TERMINATION_REQUEST (3)</p>
+<p>EVENT_REQUEST (4)</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC5" namest="col1">
+<p>
+<b>Examples</b>
+</p>
+<codeblock>diam_out_apn{APN="EPC-66077",Application="Gx",Command="RAR",CustomLabel="{"generatingEvent":"RX"}",DestinationHost="NA",DestinationRealm="NA",EgressPeerOriginHost="NA",EgressPeerOriginRealm="NA",RequestType="NA",Result="DIAMETER_SUCCESS",instance="localhost:9111",job="application_metrics"}</codeblock>
+</entry>
+</row>
+<row>
+<entry>
+<b>Metric</b>
+</entry>
+<entry align="left">
+<b>Description</b>
+</entry>
+<entry valign="bottom">
+<b>Updated this release</b>
+</entry>
+</row>
+<row>
+<entry>
+diam_out_baserule_count
+</entry>
+<entry>
+Total number of Charging Rule Base Names identified in current traffic.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC5" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+DestinationHost 
+</entry>
+<entry>
+The Diameter Destination Host. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+DestinationRealm
+</entry>
+<entry>
+The Diameter Destination Peer Realm. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Application
+</entry>
+<entry>
+<p>The Diameter Application.</p>
+<p>Possible values are Gx, Gy, NASREQ, Rx, S9, Sd, Sh, and Sy.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Command
+</entry>
+<entry>
+<p>Possible values are RAR, CCR, AAR, ASR , STR, SNR, SLR, LR, SNR, CER, DWR, and DPR.</p>
+<p> See also <!--xref URI: #Appcmdcombos--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/Appcmdcombos"/>.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+EgressPeerOriginHost
+</entry>
+<entry>
+The Diameter Egress Realm and Host. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+EgressPeerOriginRealm
+</entry>
+<entry>
+Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Result
+</entry>
+<entry>
+<p>Possible values are </p>
+<p>DIAMETER_SUCCESS,</p>
+<p>DIAMETER_LIMITED_SUCCESS, </p>
+<p>DIAMETER_AVP_NOT_ALLOWED etc.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+CustomLabel
+</entry>
+<entry>
+<p>Custom labels are optional AVPs and may be different for each measurement instance, providing additional system insights as available. For example, this could indicate that the ReleaseCause is an UNSPECIFIED_REASON.</p>
+<p>See <!--xref URI: #diamoutbndcustlabel--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/diamoutbndcustlabel"/>for more information about custom labels.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+RequestType
+</entry>
+<entry>
+<p>Diameter Request Type</p>
+<p>Possible values:</p>
+<p>INITIAL_REQUEST (1)</p>
+<p>UPDATE_REQUEST (2)</p>
+<p>TERMINATION_REQUEST (3)</p>
+<p>EVENT_REQUEST (4)</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+ChargingRuleBaseName
+</entry>
+<entry>
+<p>The name of a pre-defined group of PCC rules , taken from the Charging-Rule-Base-Name AVP. </p>
+<p>If this AVP appears multiple times in a given request, it will be recorded with '|' delimiter.</p>
+<p>The available values are all of the pre-defined PCC rules for which metrics have been collected to this point in time.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC5" namest="col1">
+<p>
+<b>Example</b>
+</p>
+<codeblock>diam_out_rule_count{Application="Gx", ChargingRuleBaseName="crbn",Command="RAR",CustomLabel="{"generatingEvent":"RX"}",DestinationHost="NA",DestinationRealm="NA",EgressPeerOriginHost="NA",EgressPeerOriginRealm="NA",RequestType="NA",Result="DIAMETER_SUCCESS",instance="localhost:9111",job="application_metrics"}</codeblock>
+</entry>
+</row>
+<row>
+<entry>
+<b>Metric</b>
+</entry>
+<entry align="left">
+<b>Description</b>
+</entry>
+<entry valign="bottom">
+<b>Updated this release</b>
+</entry>
+</row>
+<row>
+<entry>
+diam_out_rule_count
+</entry>
+<entry>
+Total number of Charging Rule Names identified in current traffic.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC5" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+DestinationHost 
+</entry>
+<entry>
+The Diameter Destination Host. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+DestinationRealm
+</entry>
+<entry>
+The Diameter Destination Peer Realm. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Application
+</entry>
+<entry>
+<p>The Diameter Application.</p>
+<p>Possible values are Gx, Gy, NASREQ, Rx, S9, Sd, Sh, and Sy.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Command
+</entry>
+<entry>
+<p>Possible values are RAR, CCR, AAR, ASR , STR, SNR, SLR, LR, SNR, CER, DWR, and DPR.</p>
+<p> See also <!--xref URI: #Appcmdcombos--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/Appcmdcombos"/>.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+EgressPeerOriginHost
+</entry>
+<entry>
+The Diameter Egress Realm and Host. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+EgressPeerOriginRealm
+</entry>
+<entry>
+Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Result
+</entry>
+<entry>
+<p>Possible values are </p>
+<p>DIAMETER_SUCCESS,</p>
+<p>DIAMETER_LIMITED_SUCCESS, </p>
+<p>DIAMETER_AVP_NOT_ALLOWED etc.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+CustomLabel
+</entry>
+<entry>
+<p>Custom labels are optional AVPs and may be different for each measurement instance, providing additional system insights as available. For example, this could indicate that the ReleaseCause is an UNSPECIFIED_REASON.</p>
+<p>See <!--xref URI: #diamoutbndcustlabel--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/diamoutbndcustlabel"/>for more information about custom labels.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+RequestType
+</entry>
+<entry>
+<p>Diameter Request Type</p>
+<p>Possible values:</p>
+<p>INITIAL_REQUEST (1)</p>
+<p>UPDATE_REQUEST (2)</p>
+<p>TERMINATION_REQUEST (3)</p>
+<p>EVENT_REQUEST (4)</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+ChargingRuleName
+</entry>
+<entry>
+<p>The name of PCC rules taken from the Charging-Rule-Name AVP. </p>
+<p>If this AVP appears multiple times in a given request, it will be recorded with '|' delimiter.</p>
+<p>The available values are all of the PCC rules for which metrics have been collected to this point in time.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC5" namest="col1">
+<p>
+<b>Examples</b>
+</p>
+<codeblock>diam_out_rule_count{Application="Gx",ChargingRuleName="MT:VIDEO MCN:1 FN:1 Rule#:1",Command="RAR",CustomLabel="{"generatingEvent":"RX"}",DestinationHost="NA",DestinationRealm="NA",EgressPeerOriginHost="NA",EgressPeerOriginRealm="NA",RequestType="NA",Result="DIAMETER_SUCCESS",instance="localhost:9111",job="application_metrics"}</codeblock>
+</entry>
+</row>
+<row>
+<entry>
+<b>Metric</b>
+</entry>
+<entry align="left">
+<b>Description</b>
+</entry>
+<entry valign="bottom">
+<b>Updated this release</b>
+</entry>
+</row>
+<row>
+<entry>
+diam_out_specific_reason_cause 
+</entry>
+<entry>
+Total number of outgoing Diameter messages with the given specific reason or abort cause.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC5" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+DestinationHost 
+</entry>
+<entry>
+The Diameter Destination Host. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+DestinationRealm
+</entry>
+<entry>
+The Diameter Destination Peer Realm. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Application
+</entry>
+<entry>
+<p>The Diameter Application.</p>
+<p>Possible values are Gx, Gy, NASREQ, Rx, S9, Sd, Sh, and Sy.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Command
+</entry>
+<entry>
+<p>Possible values are RAR, CCR, AAR, ASR , STR, SNR, SLR, LR, SNR, CER, DWR, and DPR.</p>
+<p> See also <!--xref URI: #Appcmdcombos--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/Appcmdcombos"/>.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+EgressPeerOriginHost
+</entry>
+<entry>
+The Diameter Egress Realm and Host. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+EgressPeerOriginRealm
+</entry>
+<entry>
+Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Result
+</entry>
+<entry>
+<p>Possible values are </p>
+<p>DIAMETER_SUCCESS,</p>
+<p>DIAMETER_LIMITED_SUCCESS, </p>
+<p>DIAMETER_AVP_NOT_ALLOWED etc.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+CustomLabel
+</entry>
+<entry>
+<p>Custom labels are optional AVPs and may be different for each measurement instance, providing additional system insights as available. For example, this could indicate that the ReleaseCause is an UNSPECIFIED_REASON.</p>
+<p>See <!--xref URI: #diamoutbndcustlabel--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/diamoutbndcustlabel"/>for more information about custom labels.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+RequestType
+</entry>
+<entry>
+<p>Diameter Request Type</p>
+<p>Possible values:</p>
+<p>INITIAL_REQUEST (1)</p>
+<p>UPDATE_REQUEST (2)</p>
+<p>TERMINATION_REQUEST (3)</p>
+<p>EVENT_REQUEST (4)</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Reason
+</entry>
+<entry>
+<p>The reasons for the generation of an Rx RAR command, taken from the Specific-Action AVP if one exists, or alternatively taken from the Abort-Cause AVP. </p>
+<p>If neither exists, a dash (-) will be used. </p>
+<p>If both exist they are combined using slash (/).</p>
+<p>The supported Specific Actions are:</p>
+<p>SERVICE_INFORMATION_REQUEST</p>
+<p>CHARGING_CORRELATION_EXCHANGE</p>
+<p>INDICATION_OF_LOSS_OF_BEARER</p>
+<p>INDICATION_OF_RECOVERY_OF_BEARER</p>
+<p>INDICATION_OF_RELEASE_OF_BEARER</p>
+<p>INDICATION_OF_ESTABLISHMENT_OF_BEARER</p>
+<p>IP_CAN_CHANGE</p>
+<p>INDICATION_OF_OUT_OF_CREDIT</p>
+<p>INDICATION_OF_SUCCESSFUL_RESOURCES_ALLOCATION </p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+<p>Reason</p>
+<p>(continued)</p>
+</entry>
+<entry>
+<p>INDICATION_OF_FAILED_RESOURCES_ALLOCATION </p>
+<p>INDICATION_OF_LIMITED_PCC_DEPLOYMENT</p>
+<p>USAGE_REPORT</p>
+<p>ACCESS_NETWORK_INFO_REPORT</p>
+<p>INDICATION_OF_ACCESS_NETWORK_INFO_REPORTING_FAILURE</p>
+<p>The supported Abort Causes are:</p>
+<p>BEARER_RELEASED</p>
+<p>INSUFFICIENT_SERVER_RESOURCES</p>
+<p>INSUFFICIENT_BEARER_RESOURCES</p>
+<p>PS_TO_CS_HANDOVER</p>
+<p>SPONSORED_DATA_CONNECTIVITY_DISALLOWED</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC5" namest="col1">
+<p>
+<b>Example</b>
+</p>
+<codeblock>diam_out_specific_reason_cause{Application="Sd",Command="TSR",CustomLabel="{}",DestinationHost="NA",DestinationRealm="NA",EgressPeerOriginHost="NA",EgressPeerOriginRealm="NA",Reason="NA",RequestType="NA",Result="DIAMETER_SUCCESS",instance="localhost:9111",job="application_metrics"}</codeblock>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+</section>
+<section id="HTTPPr5"><title>HTTP_3GPP metrics for 5G</title>
+<p>NCC supports integration into 5G networks using newer message protocols built on HTTP/2. These 5G
+                        requests are named with a prefix of http_3gpp and are somewhat analogous to
+                        the Diameter inbound and outbound message exchanges in 4G networks. The 5G
+                        measurements record the number of 5G HTTP requests to and from NCC, the
+                        specific type of request, the result of the request processing, and who was
+                        the peer. There are a number of labels within these measurements that
+                        provide a rich set of detailed information for understanding the behavior of
+                        the NCC 5G http_3gpp interactions. These metrics are recorded on the NCC ME
+                        App nodes.</p>
+<p>See the following:</p><ul>
+<li>
+<p>
+<!--xref URI: #inboundfiveG-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/inboundfiveG"/> describes the http_3gpp inbound metrics. </p>
+</li>
+<li>
+<p>
+<!--xref URI: #fiveGoutboundmet-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/fiveGoutboundmet"/> describes the http_3gpp outbound metrics.</p>
+</li>
+<li>
+<p>
+<!--xref URI: #HTTP3GPPsupp-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/HTTP3GPPsupp"/> describes the http_3gpp inbound and outbound supplental metrics.</p>
+</li>
+</ul>
+<sectiondiv id="inboundfiveG">
+<p><b>http_3gpp inbound</b></p>
+<table><title>http_3gpp inbound metrics </title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC10"/>
+<colspec colname="COLSPEC9"/>
+<thead>
+<row>
+<entry>
+<p>
+<b>Metrics</b>
+</p>
+</entry>
+<entry>
+<p>
+<b>Description</b>
+</p>
+</entry>
+<entry>
+<p>Updated this release</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+http_3gpp_inbound_count
+</entry>
+<entry>
+Number of inbound 5G HTTP requests accumulated since this node start
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+http_3gpp_inbound_rate
+</entry>
+<entry>
+Average rate of inbound 5G HTTP requests (per second) during this recent interval.  (calculated sum/interval duration).
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+http_3gpp_inbound_count_last_interval
+</entry>
+<entry>
+The count of inbound 5G HTTP/2 requests accumulated since last interval count, which is calculated using the formula: increase( ). The Default value for last interval is 10 minutes.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+http_3gpp_inbound_average_latency_last_interval
+</entry>
+<entry>
+<p>Average latency during this recent interval</p>
+<p>(calculated sum/count).</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+http_3gpp_inbound_average_latency_overall
+</entry>
+<entry>
+Average latency for all accumulated intervals (calculated sum/count).
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+http_3gpp_inbound_sum
+</entry>
+<entry>
+<p>Sum of all latencies accumulated since the start of this node (to calculate averages).</p>
+<p>If there has been a restart since node start, the value will be from that point in time.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC9" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+APP
+</entry>
+<entry> Always ‘1’ in this NCC version. </entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+HT3GPP
+</entry>
+<entry> Always ‘1’ in this NCC version. </entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+HOST
+</entry>
+<entry> NCC host name (e.g. VM name) </entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+SOURCE
+</entry>
+<entry>
+Source IP address. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+INTF
+</entry>
+<entry>
+Interface (N7, N40, etc.).  
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+FCN
+</entry>
+<entry>
+<p>Function. For example, some of the possible values are:</p><ul>
+<li>
+<p>Npcf_SMPolicyControl_Create</p>
+</li>
+<li>
+<p>Npcf_SMPolicyControl_Delete</p>
+</li>
+<li>
+<p>Npcf_SMPolicyControl_Update</p>
+</li>
+<li>
+<p>Npcf_SMPolicyControl_UpdateNotify</p>
+</li>
+<li>
+<p>Nsmf_EventExposure_Subscribe</p>
+</li>
+<li>
+<p>etc.</p>
+</li>
+</ul>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+RESULT
+</entry>
+<entry>
+<p>5G response messages include an appropriate ProblemDetails structure, with the “title” field populated. This “title” field is populated as the result. See <!--xref URI: #problemdetails--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/problemdetails"/> for information about the ProblemDetails attribute.</p>
+<p>Possible values for result are as follows: </p><ul>
+<li>
+<p>
+<b>Success</b>
+</p>
+</li>
+<li>
+<p>
+<b>Invalid JSON message</b>: The JSON message is not valid to parse.</p>
+</li>
+<li>
+<p>
+<b>Unexpected processing error</b>: An unexpected error happens when processing the inbound http message.</p>
+</li>
+<li>
+<p>
+<b>Converting inbound request error</b>: An error happens when converting the inbound http message to internal message</p>
+</li>
+<li>
+<p>
+<b>Sending internal request error</b>: An error happens when populating or sending the internal message</p>
+</li>
+<li>
+<p>
+<b>Converting internal message error</b>: An error happens when converting internal message to http message.</p>
+</li>
+<li>
+<p>
+<b>Application is too busy</b>: Application is too busy to handle request.</p>
+</li>
+<li>
+<p>
+<b>Unable to route the request</b>: Unable to route the request</p>
+</li>
+<li>
+<p>
+<b>Loop detected while routing the request</b>: Loop detected while routing the request</p>
+</li>
+<li>
+<p>
+<b>Request is not supported</b>: The request type not supported</p>
+</li>
+<li>
+<p>
+<b>Authentication rejected</b>: The authentication process for the user failed</p>
+</li>
+<li>
+<p>
+<b>Attribute unsupported</b>: Message that contained an attribute that is not supported.</p>
+</li>
+<li>
+<p>
+<b>Attribute missing</b>: The request did not contain an attribute that is required.</p>
+</li>
+<li>
+<p>
+<b>Invalid attribute value</b>: The request contained an atrtibute with an invalid value.</p>
+</li>
+<li>
+<p>
+<b>Authorization rejected</b>: Request was received for which the user could not be authorized.</p>
+</li>
+<li>
+<p>
+<b>Unknown session</b>: The request contained an unknown Session.</p>
+</li>
+<li>
+<p>
+<b>Unknown user</b>: The request contained an unknown user information.</p>
+</li>
+<li>
+<p>
+<b>User service denied</b>: The server denies the service request due to service restrictions.</p>
+</li>
+<li>
+<p>
+<b>Credit limit reached</b>: The server denies the service request due to the credit limit reached.</p>
+</li>
+<li>
+<p>
+<b>Rating failed</b>: The server cannot rate the service request due to insufficient rating input.</p>
+</li>
+<li>
+<p>
+<b>Unable to handle the request</b>: The default error, this error is returned when a request is rejected for unspecified reasons.</p>
+</li>
+</ul>
+<p>
+<b>Note:</b> These values are not used for http_3gpp_outbound values as the values are set by the peer side.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+STATUS
+</entry>
+<entry>
+HTTP result status (per HTTP standards)
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+CUSTOM
+</entry>
+<entry>
+Custom labels are optional AVPs and may be different for each measurement instance, providing additional system insights as available.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC9" namest="col1">
+<p>Example XML format (with some labels muted):</p>
+<codeblock>&lt;measType p="1"&gt;http_3gpp_inbound_sum&lt;/measType&gt;
+&lt;measType p="2"&gt;http_3gpp_inbound_count&lt;/measType&gt;
+&lt;measType p="3"&gt;http_3gpp_inbound_count_last_interval&lt;/measType&gt;
+&lt;measType p="4"&gt;http_3gpp_inbound_rate&lt;/measType&gt;
+&lt;measType p="5"&gt;http_3gpp_inbound_average_latency_overall&lt;/measType&gt;
+&lt;measType p="6"&gt;http_3gpp_inbound_average_latency_last_interval&lt;/measType&gt;
+
+&lt;measValue measObjLdn="APP=1,HOST=sps-ig-diameterapp-1,HT3GPP=1,INTF=N7,FCN=Npcf_SMPolicyControl_Create,SOURCE=NA,STATUS=201,RESULT=SUCCESS,CUSTOM={}"&gt; 
+      &lt;r p="1"&gt;1390744&lt;/r&gt;
+      &lt;r p="2"&gt;109246&lt;/r&gt;
+      &lt;r p="3"&gt;19&lt;/r&gt;
+      &lt;r p="4"&gt;2.7228070175438592&lt;/r&gt;
+      &lt;r p="5"&gt;12.73076500430395&lt;/r&gt;
+      &lt;r p="6"&gt;11.13917525773196&lt;/r&gt;
+&lt;/measValue&gt;</codeblock>
+<p>Example XML format (with all labels unmuted):</p>
+<codeblock>&lt;measValue measObjLdn="APP=1,HOST=sps-ig-diameterapp-1,HT3GPP=1,INTF=N7,FCN=Npcf_SMPolicyControl_Create,SOURCE=NA,STATUS=201,RESULT=SUCCESS,CUSTOM={}"&gt; 
+      &lt;r p="1"&gt;1390744&lt;/r&gt;
+      &lt;r p="2"&gt;109246&lt;/r&gt;
+      &lt;r p="3"&gt;19&lt;/r&gt;
+      &lt;r p="4"&gt;2.7228070175438592&lt;/r&gt;
+      &lt;r p="5"&gt;12.73076500430395&lt;/r&gt;
+      &lt;r p="6"&gt;11.13917525773196&lt;/r&gt;
+&lt;/measValue&gt;</codeblock>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+<sectiondiv id="problemdetails">
+<p><b>HTTP response with error http status code in ProblemDetails</b></p>
+<p>When the HTTP response message is set with an error http status code, an attribute called  ProblemDetails, which is defined in 29.571, is used in the response content. The ProblemDetails attribute is defined in the following table.</p>
+<table pgwide="1">
+<tgroup cols="5">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<colspec colname="COLSPEC4"/>
+<colspec colname="COLSPEC7"/>
+<colspec colname="col5"/>
+<thead>
+<row>
+<entry>
+<p>Problem Details attribute name</p>
+</entry>
+<entry>
+<p>Data type</p>
+</entry>
+<entry>
+<p>Value mapped from in Http response from Diameter response (N7 create/update/delete) </p>
+</entry>
+<entry>
+<p>Value mapped to Diameter AVP in Diameter response from value of ProblemDetails attribute (N7 notification update/delete)</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+type
+</entry>
+<entry>
+Uri
+</entry>
+<entry>
+uri of the Server request path
+</entry>
+<entry>
+not mapped
+</entry>
+<entry>
+A URI reference according to IETF RFC 3986 [6] that identifies the problem type.
+</entry>
+</row>
+<row>
+<entry>
+title
+</entry>
+<entry>
+string
+</entry>
+<entry>
+Diameter Result-Code AVP or Result-Code in Experimental-Result AVP (when result-code is not present)
+</entry>
+<entry>
+not mapped
+</entry>
+<entry>
+A short, human-readable summary of the problem type. It should not change from occurrence to occurrence of the problem.
+</entry>
+</row>
+<row>
+<entry>
+status
+</entry>
+<entry>
+integer
+</entry>
+<entry>
+Http error status code
+</entry>
+<entry>
+Mapped to Diameter Result-Code
+</entry>
+<entry>
+The HTTP status code for this occurrence of the problem.
+</entry>
+</row>
+<row>
+<entry>
+detail
+</entry>
+<entry>
+string
+</entry>
+<entry>
+Error-Message AVP’s value
+</entry>
+<entry>
+Mapped to Diameter Error-Message AVP’s value
+</entry>
+<entry>
+A human-readable explanation specific to this occurrence of the problem.
+</entry>
+</row>
+<row>
+<entry>
+instance
+</entry>
+<entry>
+Uri
+</entry>
+<entry>
+—
+</entry>
+<entry>
+not mapped
+</entry>
+<entry>
+A URI reference that identifies the specific occurrence of the problem.
+</entry>
+</row>
+<row>
+<entry>
+cause
+</entry>
+<entry>
+string
+</entry>
+<entry>
+Not used
+</entry>
+<entry>
+not mapped
+</entry>
+<entry>
+<p>A machine-readable application error cause specific to this occurrence of the problem.</p>
+<p>This application error should be present and provide application-related error information, if available.</p>
+</entry>
+</row>
+<row>
+<entry rowsep="0">
+invalidParams
+</entry>
+<entry rowsep="0">
+array(InvalidParam)
+</entry>
+<entry>
+Not used
+</entry>
+<entry>
+not mapped
+</entry>
+<entry rowsep="0">
+Description of parameters for a request rejected due to invalid parameters.  Parameters in the array have both a "param" a JSON Pointer string to the invalid parameter and an optional "reason" string.
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>The following tables describe successful  http status code and Diameter result code mapping.</p>
+<table><title>Diameter Answer message to Http Response</title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<colspec colname="col3"/>
+<thead>
+<row>
+<entry>
+<p>Diameter Result-Code AVP</p>
+</entry>
+<entry>
+<p>Http response Status</p>
+</entry>
+<entry>
+<p>Function</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+2xxx
+</entry>
+<entry>
+201
+</entry>
+<entry>
+N7 create
+</entry>
+</row>
+<row>
+<entry>
+2xxx
+</entry>
+<entry>
+200
+</entry>
+<entry>
+N7 update
+</entry>
+</row>
+<row>
+<entry>
+2xxx
+</entry>
+<entry>
+204
+</entry>
+<entry>
+N7 delete
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<table><title>Http response to Diameter answer</title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<colspec colname="col3"/>
+<thead>
+<row>
+<entry>
+<p>HttpResponse  status</p>
+</entry>
+<entry>
+<p>Diameter Result-Code AVP</p>
+</entry>
+<entry>
+<p>Function</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+200
+</entry>
+<entry>
+2001
+</entry>
+<entry>
+N7 notfication update
+</entry>
+</row>
+<row>
+<entry>
+204
+</entry>
+<entry>
+2001
+</entry>
+<entry>
+N7 notfication delete
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+<sectiondiv id="fiveGoutboundmet">
+<p><b>http_3gpp outbound metrics</b></p>
+<table><title>http_3gpp outbound metrics </title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC12"/>
+<colspec colname="COLSPEC11"/>
+<thead>
+<row>
+<entry>
+<p>
+<b>Metrics</b>
+</p>
+</entry>
+<entry>
+<p>
+<b>Description</b>
+</p>
+</entry>
+<entry>
+<p>Updated this release</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+http_3gpp_outbound_count
+</entry>
+<entry>
+Number of outbound 5G HTTP requests accumulated since this node start
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+http_3gpp_outbound_rate
+</entry>
+<entry>
+Average rate of outbound 5G HTTP requests (per second) during this recent interval.  (calculated sum/interval duration).
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+http_3gpp_outbound_count_last_interval
+</entry>
+<entry>
+The count of outbound 5G HTTP/2 requests accumulated since last count interval, which is calculated using the formula: increase( ). The Default value for last interval is 10 minutes.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+http_3gpp_outbound_average_latency_last_interval
+</entry>
+<entry>
+<p>Average latency during this recent interval</p>
+<p>(calculated sum/count).</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+http_3gpp_outbound_average_latency_overall
+</entry>
+<entry>
+Average latency for all accumulated intervals (calculated sum/count).
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+http_3gpp_outbound_sum
+</entry>
+<entry>
+<p>Sum of all latencies accumulated since the start of this node (to calculate averages).</p>
+<p>If there has been a restart since node start, the value will be from that point in time.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC11" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+APP
+</entry>
+<entry> Always ‘1’ in this NCC version. </entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+HT3GPP
+</entry>
+<entry> Always ‘1’ in this NCC version. </entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+HOST
+</entry>
+<entry> NCC host name (e.g. VM name) </entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+INTF
+</entry>
+<entry>
+Interface (N5, N7, N28, etc.).  
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+FCN
+</entry>
+<entry>
+<p>Function. For example, some of the possible values are:</p><ul>
+<li>
+<p>Npcf_SMPolicyControl_Create</p>
+</li>
+<li>
+<p>Npcf_SMPolicyControl_Delete</p>
+</li>
+<li>
+<p>Npcf_SMPolicyControl_Update</p>
+</li>
+<li>
+<p>Npcf_SMPolicyControl_UpdateNotify</p>
+</li>
+<li>
+<p>Nsmf_EventExposure_Subscribe</p>
+</li>
+<li>
+<p>etc.</p>
+</li>
+</ul>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+DEST
+</entry>
+<entry>
+Destination IP address. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+RESULT
+</entry>
+<entry>
+<p>This is the value from the “title” field in the problemDetails of the 5G http response message, for example:</p>
+<p>
+<systemoutput>SUCCESS</systemoutput>
+</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+STATUS
+</entry>
+<entry>
+HTTP result status (per HTTP standards)
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+CUSTOM
+</entry>
+<entry>
+<p>Custom labels are optional AVPs and may be different for each measurement instance, providing additional system insights as available.</p>
+<p>See <!--xref URI: #http3gppoutbndcustlabel--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/http3gppoutbndcustlabel"/> for more information about http_3gpp_outbound custom labels </p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC11" namest="col1">
+<p>Example XML format (with some labels muted):</p>
+<codeblock>&lt;measType p="1"&gt;http_3gpp_outbound_sum&lt;/measType&gt;
+&lt;measType p="2"&gt;http_3gpp_outbound_count&lt;/measType&gt;
+&lt;measType p="3"&gt;http_3gpp_outbound_count_last_interval&lt;/measType&gt;
+&lt;measType p="4"&gt;http_3gpp_outbound_rate&lt;/measType&gt;
+&lt;measType p="5"&gt;http_3gpp_outbound_average_latency_overall&lt;/measType&gt;
+&lt;measType p="6"&gt;http_3gpp_outbound_average_latency_last_interval&lt;/measType&gt;
+
+&lt;measValue measObjLdn="APP=1,HOST=sps-ig-diameterapp-1,HT3GPP=1,INTF=N7,FCN=Npcf_SMPolicyControl_UpdateNotify,DEST=NA,STATUS=200,RESULT=SUCCESS,CUSTOM={_generatingEvent_:_RX___DNN_:_TMO.US_}"&gt; 
+      &lt;r p="1"&gt;1390744&lt;/r&gt;
+      &lt;r p="2"&gt;109246&lt;/r&gt;
+      &lt;r p="3"&gt;16&lt;/r&gt;
+      &lt;r p="4"&gt;2.7228070175438592&lt;/r&gt;
+      &lt;r p="5"&gt;12.73076500430395&lt;/r&gt;
+      &lt;r p="6"&gt;11.13917525773196&lt;/r&gt;
+&lt;/measValue&gt;</codeblock>
+<p>Example XML format (with all labels unmuted):</p>
+<codeblock>&lt;measValue measObjLdn="APP=1,HOST=sps-ig-diameterapp-1,HT3GPP=1,INTF=N7,FCN=Npcf_SMPolicyControl_UpdateNotify,DEST=NA,STATUS=200,RESULT=SUCCESS,CUSTOM={_generatingEvent_:_RX___DNN_:_TMO.US_}"&gt;
+      &lt;r p="1"&gt;1390744&lt;/r&gt;
+      &lt;r p="2"&gt;109246&lt;/r&gt;
+      &lt;r p="3"&gt;16&lt;/r&gt;
+      &lt;r p="4"&gt;2.7228070175438592&lt;/r&gt;
+      &lt;r p="5"&gt;12.73076500430395&lt;/r&gt;
+      &lt;r p="6"&gt;11.13917525773196&lt;/r&gt;
+&lt;/measValue&gt;</codeblock>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+<sectiondiv id="http3gppoutbndcustlabel">
+<p><b>Http_3gpp_outbound CustomLabel parameters</b></p>
+<table><title>Http_3gpp_outbound custom labels</title>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+<p>Custom Label</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+DNN
+</entry>
+<entry>
+The layer 2 address (Data Network Name) to which a user is connected in a 5G environment.
+</entry>
+</row>
+<row>
+<entry>
+GeneratingEvent
+</entry>
+<entry>
+<p>This custom label will be present only in the case of outbound N7 Npcf_SMPolicyControl_UpdateNotify in a 5G environment:</p><ul>
+<li>
+<p>SPS_INTERNAL</p>
+</li>
+<li>
+<p>TERMINATE</p>
+</li>
+<li>
+<p>SESSION_AUDIT</p>
+</li>
+<li>
+<p>NCHF</p>
+</li>
+<li>
+<p>NPCF</p>
+</li>
+<li>
+<p>SY</p>
+</li>
+<li>
+<p>SPR</p>
+</li>
+</ul>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+<sectiondiv id="HTTP3GPPsupp">
+<p><b>HTTP_3GPP supplemental metrics</b></p>
+<p>
+<!--xref URI: http3gppsupplemantal-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/http3gppsupplemantal"/> describes the HTTP_3GPP inbound and outbound supplemental metrics available in Prometheus.</p>
+<p>These metrics will be logged when the application preference “Enable Extended Metrics” value is set to true. See the <i>Global Configuration Guide</i> for more information.</p>
+<table id="http3gppsupplemantal"><title>HTTP_3GPP supplemental metrics </title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC1"/>
+<colspec colname="COLSPEC0"/>
+<thead>
+<row>
+<entry>
+<p>Metric</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+<entry>
+<p>Updated this release</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+http_3gpp_access_tech
+</entry>
+<entry>
+This metric logs the Access-Type attribute that is received over N7 in Subscribe request from the SMF.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC0" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+Function
+</entry>
+<entry>
+<p>Function. For example, some of the possible values are:</p><ul>
+<li>
+<p>Npcf_SMPolicyControl_Create</p>
+</li>
+<li>
+<p>Npcf_SMPolicyControl_Delete</p>
+</li>
+<li>
+<p>Npcf_SMPolicyControl_Update</p>
+</li>
+<li>
+<p>Npcf_SMPolicyControl_UpdateNotify</p>
+</li>
+<li>
+<p>Nsmf_EventExposure_Subscribe</p>
+</li>
+<li>
+<p>etc.</p>
+</li>
+</ul>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Result
+</entry>
+<entry>
+<p>This is the value from the “title” field in the problemDetails of the 5G http response message, for example:</p>
+<p>
+<systemoutput>SUCCESS</systemoutput>
+</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Status
+</entry>
+<entry>
+HTTP result status (per HTTP standards)
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Interface
+</entry>
+<entry>
+Interface (N5, N7, N28, etc.).  
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+RadioAccess (RAT)
+</entry>
+<entry>
+<p>Possible value of the radio access technology, serving the UE in a 5G environment, are:</p><ul>
+<li>
+<p>NR</p>
+</li>
+</ul>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+SourceIP
+</entry>
+<entry>
+Source IP address. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+CustomLabel
+</entry>
+<entry>
+<p>Custom labels are optional AVPs and may be different for each measurement instance, providing additional system insights as available.</p>
+<p>See <!--xref URI: #http3gppoutbndcustlabel--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/http3gppoutbndcustlabel"/> for more information about http_3gpp_outbound custom labels </p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC0" namest="col1">
+<p>
+<b>Example</b>
+</p>
+<codeblock>http_3gpp_access_tech{CustomLabel="{}",Function="Npcf_SMPolicyControl_Create",Interface="N7",RadioAccess="NR",Result="SUCCESS",SourceIP="NA",Status="201",instance="135.249.93.130:9111",job="application_metrics"}</codeblock>
+</entry>
+</row>
+<row>
+<entry>
+<b>Metric</b>
+</entry>
+<entry>
+<b>Description</b>
+</entry>
+<entry>
+<b>Updated this release</b>
+</entry>
+</row>
+<row>
+<entry>
+http_3gpp_charging_info_subscribe_response
+</entry>
+<entry>
+This metric logs Charging-Info sent to SMF over N7 in Subscribe Response during PDU Establishment.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC0" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+Function
+</entry>
+<entry>
+<p>Function. For example, some of the possible values are:</p><ul>
+<li>
+<p>Npcf_SMPolicyControl_Create</p>
+</li>
+<li>
+<p>Npcf_SMPolicyControl_Delete</p>
+</li>
+<li>
+<p>Npcf_SMPolicyControl_Update</p>
+</li>
+<li>
+<p>Npcf_SMPolicyControl_UpdateNotify</p>
+</li>
+<li>
+<p>Nsmf_EventExposure_Subscribe</p>
+</li>
+<li>
+<p>etc.</p>
+</li>
+</ul>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Result
+</entry>
+<entry>
+<p>This is the value from the “title” field in the problemDetails of the 5G http response message, for example:</p>
+<p>
+<systemoutput>SUCCESS</systemoutput>
+</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Status
+</entry>
+<entry>
+HTTP result status (per HTTP standards)
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Interface
+</entry>
+<entry>
+Interface (N5, N7, N28, etc.).  
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+SourceIP
+</entry>
+<entry>
+Source IP address. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+CustomLabel
+</entry>
+<entry>
+<p>Custom labels are optional AVPs and may be different for each measurement instance, providing additional system insights as available.</p>
+<p>See <!--xref URI: #http3gppoutbndcustlabel--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/http3gppoutbndcustlabel"/> for more information about http_3gpp_outbound custom labels </p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC0" namest="col1">
+<p>
+<b>Examples</b>
+</p>
+<codeblock>http_3gpp_charging_info_subscribe_response{CustomLabel="{}",Function="Npcf_SMPolicyControl_Create",Interface="N7",Result="SUCCESS",SourceIP="NA",Status="201",instance="135.249.93.130:9111",job="application_metrics",targetUri="http://135.250.218.81:11004/endpoints",secondaryTargetUri=”NA”}</codeblock>
+</entry>
+</row>
+<row>
+<entry>
+<b>Metric</b>
+</entry>
+<entry>
+<b>Description</b>
+</entry>
+<entry>
+<b>Updated this release</b>
+</entry>
+</row>
+<row>
+<entry>
+http_3gpp_charging_info_updatenotify
+</entry>
+<entry>
+This metric logs Charging-Info details sent to SMF over N7 in Update_Notify request.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC0" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+Function
+</entry>
+<entry>
+<p>Function. For example, some of the possible values are:</p><ul>
+<li>
+<p>Npcf_SMPolicyControl_Create</p>
+</li>
+<li>
+<p>Npcf_SMPolicyControl_Delete</p>
+</li>
+<li>
+<p>Npcf_SMPolicyControl_Update</p>
+</li>
+<li>
+<p>Npcf_SMPolicyControl_UpdateNotify</p>
+</li>
+<li>
+<p>Nsmf_EventExposure_Subscribe</p>
+</li>
+<li>
+<p>etc.</p>
+</li>
+</ul>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Result
+</entry>
+<entry>
+<p>This is the value from the “title” field in the problemDetails of the 5G http response message, for example:</p>
+<p>
+<systemoutput>SUCCESS</systemoutput>
+</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Status
+</entry>
+<entry>
+HTTP result status (per HTTP standards)
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Interface
+</entry>
+<entry>
+Interface (N5, N7, N28, etc.).  
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+DestinationIP
+</entry>
+<entry>
+Destination IP address. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+CustomLabel
+</entry>
+<entry>
+<p>Custom labels are optional AVPs and may be different for each measurement instance, providing additional system insights as available.</p>
+<p>See <!--xref URI: #http3gppoutbndcustlabel--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/http3gppoutbndcustlabel"/> for more information about http_3gpp_outbound custom labels </p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC0" namest="col1">
+<p>
+<b>Examples</b>
+</p>
+<codeblock>http_3gpp_charging_info_updatenotify{CustomLabel="{}",DestinationIP="NA",Function="Npcf_SMPolicyControl_UpdateNotify",Interface="N7",targetUri=" http://135.250.218.81:11004/endpoints ",secondaryTargetUri=”NA”,Result="SUCCESS",Status="200",instance="localhost:9111",job="application_metrics"}</codeblock>
+</entry>
+</row>
+<row>
+<entry>
+<b>Metric</b>
+</entry>
+<entry>
+<b>Description</b>
+</entry>
+<entry>
+<b>Updated this release</b>
+</entry>
+</row>
+<row>
+<entry>
+http_3gpp_dnn
+</entry>
+<entry>
+This metric logs the DNN attribute that is received or sent over N7 from SMF during Subscribe, Subscribe Response, or Update Notify.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC0" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+DNN
+</entry>
+<entry>
+The layer 2 address (Data Network Name) to which a user is connected in a 5G environment.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+DestinationIP
+</entry>
+<entry>
+Destination IP address. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Function
+</entry>
+<entry>
+<p>Function. For example, some of the possible values are:</p><ul>
+<li>
+<p>Npcf_SMPolicyControl_Create</p>
+</li>
+<li>
+<p>Npcf_SMPolicyControl_Delete</p>
+</li>
+<li>
+<p>Npcf_SMPolicyControl_Update</p>
+</li>
+<li>
+<p>Npcf_SMPolicyControl_UpdateNotify</p>
+</li>
+<li>
+<p>Nsmf_EventExposure_Subscribe</p>
+</li>
+<li>
+<p>etc.</p>
+</li>
+</ul>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Result
+</entry>
+<entry>
+<p>This is the value from the “title” field in the problemDetails of the 5G http response message, for example:</p>
+<p>
+<systemoutput>SUCCESS</systemoutput>
+</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Status
+</entry>
+<entry>
+HTTP result status (per HTTP standards)
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Interface
+</entry>
+<entry>
+Interface (N5, N7, N28, etc.).  
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC0" namest="col1">
+<p>
+<b>Examples</b>
+</p>
+<codeblock>http_3gpp_dnn{CustomLabel="{"generatingEvent":"NCHF"}",DNN="TMO.US",DestinationIP="NA",Function="Npcf_SMPolicyControl_UpdateNotify",Interface="N7",Result="SUCCESS",Status="200",instance="135.249.93.130:9111",job="application_metrics"}</codeblock>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+</section>
+<section id="DCNmetrics"><title>Device notification metrics</title>
+<p>NCC can be configured to capture the count of notification messages sent to the SM from the ME,
+                        as well as to capture the count of acknowledgements received from the SM to
+                        the ME. The Device Notification (DCN) metrics are captured at both the SM
+                        and the ME and can be used to know the status of the requests at the SM and
+                        the ME respectively. </p>
+<p>DCN metrics are recorded on ME Diameter application nodes and SM application nodes and specify:</p><ul>
+<li>
+<p>the type of entity (Device, User, Account, Group) for which the notification was sent to the SM</p>
+</li>
+<li>
+<p>the type of operation (Create, Modify, Delete) for the entity</p>
+</li>
+<li>
+<p>the status of the request</p>
+</li>
+<li>
+<p>the Target SM and ME to which the notification and acknowledgement are being sent </p>
+</li>
+<li>
+<p>the Source ME from which the notification is being received at the SM</p>
+</li>
+</ul>
+<p>DCN metrics are recorded as follows:</p><ul>
+<li>
+<p>
+<!--xref URI: #DCNMEmetrics-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/DCNMEmetrics"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #DCNSMmetrics-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/DCNSMmetrics"/>
+</p>
+</li>
+</ul>
+<sectiondiv id="DCNMEmetrics">
+<p><b>DCN ME metrics</b></p>
+<p>
+<!--xref URI: #DCNTable1-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/dcntable1"/> describes outbound DCN Metrics captured at the ME along with their labels. SUBSCRIBER_SYNC_OUTBOUND metrics describe the DCN Outbound messages, which denote the Subscriber Sync Notify requests sent to the SM.</p>
+<p>
+<!--xref URI: #DCNTable1a-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/dcntable1a"/> describes inbound DCN Metrics captured at the ME along with their labels. SUBSCRIBER_SYNC_INBOUND metrics describe the DCN Inbound messages, which denote the acknowledgements received at the ME from the SM for the Subscriber Sync Notify requests.</p>
+<p>
+<!--xref URI: #DCNTable1B-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/dcntable1b"/> describes outbound DCN Metrics captured at the ME along with their labels. SUBSCRIBER_SYNC_OUTBOUND_ECOSYSTEM_COUNT metrics describe the Subscriber Data Record Ecosystems sent to SM from ME per batch.</p>
+<table id="dcntable1"><title>Outbound DCN metrics captured for the ME</title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC40"/>
+<colspec colname="COLSPEC39"/>
+<thead>
+<row>
+<entry>
+<p>
+<b>Metrics </b>
+</p>
+</entry>
+<entry>
+<p>
+<b>Description</b>
+</p>
+</entry>
+<entry>
+<p>Updated this release</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+subscriber_sync_outbound_count
+</entry>
+<entry>
+Number of Subscriber Sync Notify requests sent from ME to SM.
+</entry>
+<entry>
+New
+</entry>
+</row>
+<row>
+<entry>
+subscriber_sync_outbound_count_last_interval
+</entry>
+<entry>
+Number of Subscriber Sync Notify requests sent from ME to SM since last count interval. 
+</entry>
+<entry>
+New
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC39" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+ENTITY
+</entry>
+<entry>
+<p>The Subscriber Entity Type.</p>
+<p>Possible values are:</p><ul>
+<li>
+<p>DEVICE</p>
+</li>
+<li>
+<p>USER</p>
+</li>
+<li>
+<p>ACCOUNT</p>
+</li>
+<li>
+<p>GROUP</p>
+</li>
+</ul>
+</entry>
+<entry>
+New
+</entry>
+</row>
+<row>
+<entry>
+OPRTN
+</entry>
+<entry>
+<p>The Type of Operation performed on the Subscriber Entity for which the Notify is sent to SM from ME.</p>
+<p>Possible values are:</p><ul>
+<li>
+<p>CREATE</p>
+</li>
+<li>
+<p>MODIFY</p>
+</li>
+<li>
+<p>DELETE</p>
+</li>
+</ul>
+</entry>
+<entry>
+New
+</entry>
+</row>
+<row>
+<entry>
+TRGTSM
+</entry>
+<entry>
+The Target SM on which the Subscriber Sync Notify is sent.
+</entry>
+<entry>
+New
+</entry>
+</row>
+<row>
+<entry>
+STATUS
+</entry>
+<entry>
+<p>The Status of the Subscriber Sync Notify sent to SM.</p>
+<p>Possible values are:</p><ul>
+<li>
+<p>
+<b>NOTIFY_SUCCESS</b>: Notification successfully queued at target SM.</p>
+</li>
+<li>
+<p>
+<b>NOTIFY_FAILURE</b>: Notification failed at SM because SM could not be contacted.</p>
+</li>
+<li>
+<p>
+<b>SM_QUEUE_FULL_FAILURE</b>: Notification could not be queued at SM because SM queue was full.</p>
+</li>
+</ul>
+</entry>
+<entry>
+New
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC39" namest="col1">
+<p>Example XML format:</p>
+<codeblock>subscriber_sync_outbound_count{EntityType="DEVICE",Operation="CREATE",TargetSM="hostSM",Status="NOTIFY_SUCCESS",} 2.0
+</codeblock>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<table id="dcntable1a"><title>Inbound DCN metrics captured for the ME</title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC42"/>
+<colspec colname="COLSPEC41"/>
+<thead>
+<row>
+<entry>
+<p>
+<b>Metrics </b>
+</p>
+</entry>
+<entry>
+<p>
+<b>Description</b>
+</p>
+</entry>
+<entry>
+<p>Updated this release</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+subscriber_sync_inbound_count
+</entry>
+<entry>
+Number of Subscriber Sync Notify requests received from ME to SM.
+</entry>
+<entry>
+New
+</entry>
+</row>
+<row>
+<entry>
+subscriber_sync_inbound_count_last_interval
+</entry>
+<entry>
+Number of Subscriber Sync Notify requests received from ME to SM since last count interval. 
+</entry>
+<entry>
+New
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC41" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+ENTITY
+</entry>
+<entry>
+<p>The Subscriber Entity Type.</p>
+<p>Possible values are:</p><ul>
+<li>
+<p>DEVICE</p>
+</li>
+<li>
+<p>USER</p>
+</li>
+<li>
+<p>ACCOUNT</p>
+</li>
+<li>
+<p>GROUP</p>
+</li>
+</ul>
+</entry>
+<entry>
+New
+</entry>
+</row>
+<row>
+<entry>
+OPRTN
+</entry>
+<entry>
+<p>The Type of Operation performed on the Subscriber Entity for which the Notify is sent to SM from ME.</p>
+<p>Possible values are:</p><ul>
+<li>
+<p>CREATE</p>
+</li>
+<li>
+<p>MODIFY</p>
+</li>
+<li>
+<p>DELETE</p>
+</li>
+</ul>
+</entry>
+<entry>
+New
+</entry>
+</row>
+<row>
+<entry>
+SMACK
+</entry>
+<entry>
+The acknowledgement status received from the SM.
+</entry>
+<entry>
+New
+</entry>
+</row>
+<row>
+<entry>
+MESTAT
+</entry>
+<entry>
+<p>The Status of the processing performed at the ME after acknowledgement from the SM is received at the ME.</p>
+<p>Possible values are:</p><ul>
+<li>
+<p>SUCCESS</p>
+</li>
+<li>
+<p>FAILED</p>
+</li>
+<li>
+<p>IGNORED</p>
+</li>
+</ul>
+</entry>
+<entry>
+New
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC41" namest="col1">
+<p>Example XML format:</p>
+<codeblock>subscriber_sync_inbound_count{EntityType="DEVICE",Operation="CREATE",SMAckStatus="ACK_RECEIVED",MEProcessStatus="SUCCESS",} 2.0</codeblock>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<table id="dcntable1b"><title>Outbound DCN ECOSYSTEM metrics captured for the ME</title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC44"/>
+<colspec colname="COLSPEC43"/>
+<thead>
+<row>
+<entry>
+<p>
+<b>Metrics </b>
+</p>
+</entry>
+<entry>
+<p>
+<b>Description</b>
+</p>
+</entry>
+<entry>
+<p>Updated this release</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+subscriber_sync_outbound_ecosystem_count
+</entry>
+<entry>
+Number of Subscriber Data Record Ecosystems sent from ME to SM in each batch.
+</entry>
+<entry>
+New
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC43" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+TYPE
+</entry>
+<entry>
+<p>The Label for capturing count of SDR Ecosystems.</p>
+<p>Possible value is:</p><ul>
+<li>
+<p>SDREcosystem</p>
+</li>
+</ul>
+</entry>
+<entry>
+New
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC43" namest="col1">
+<p>Example XML format:</p>
+<codeblock>subscriber_sync_outbound_ecosystem_count{EntityType="SDREcosystem",} 1.0</codeblock>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+<sectiondiv id="DCNSMmetrics">
+<p><b>DCN SM metrics</b></p>
+<p>
+<!--xref URI: #DCNTable2-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/dcntable2"/> describes the inbound DCN Metrics captured at the SM along with their labels. SM SUBSCRIBER SYNC INBOUND metrics describe the DCN Inbound messages at the SM, which denote the Subscriber Sync Notify requests received at the SM from the Source ME.</p>
+<p>
+<!--xref URI: #DCNTable2a-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/dcntable2a"/> describes the outbound DCN Metrics captured at the SM along with their labels. SM SUBSCRIBER SYNC OUTBOUND metrics describe the DCN Outbound messages at the SM, which are the acknowledgements sent to the Target ME after processing at the SM is performed.</p>
+<p>
+<!--xref URI: #DCNTable2b-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/dcntable2b"/> describes the inbound DCN Metrics captured at the SM along with their labels. SM_SUBSCRIBER_SYNC_INBOUND_ECOSYSTEM_COUNT describes the count of Subscriber Data Record Ecosystems received at the SM from the ME per batch.</p>
+<table id="dcntable2"><title>Inbound DCN metrics captured for the SM</title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC46"/>
+<colspec colname="COLSPEC45"/>
+<thead>
+<row>
+<entry>
+<p>
+<b>Metrics </b>
+</p>
+</entry>
+<entry>
+<p>
+<b>Description</b>
+</p>
+</entry>
+<entry>
+<p>Updated this release</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+sm_subscriber_sync_inbound_count
+</entry>
+<entry>
+Number of Subscriber Sync Notify requests received at the SM from the ME.
+</entry>
+<entry>
+New
+</entry>
+</row>
+<row>
+<entry>
+sm_subscriber_sync_inbound_count_last_interval
+</entry>
+<entry>
+Number of Subscriber Sync Notify requests received at the SM from the ME since last count interval. 
+</entry>
+<entry>
+New
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC45" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+ENTITY
+</entry>
+<entry>
+<p>The Subscriber Entity Type.</p>
+<p>Possible values are:</p><ul>
+<li>
+<p>DEVICE</p>
+</li>
+<li>
+<p>USER</p>
+</li>
+<li>
+<p>ACCOUNT</p>
+</li>
+<li>
+<p>GROUP</p>
+</li>
+</ul>
+</entry>
+<entry>
+New
+</entry>
+</row>
+<row>
+<entry>
+OPRTN
+</entry>
+<entry>
+<p>The Type of Operation performed on the Subscriber Entity for which the Notify is received at SM from ME.</p>
+<p>Possible values are:</p><ul>
+<li>
+<p>CREATE</p>
+</li>
+<li>
+<p>MODIFY</p>
+</li>
+<li>
+<p>DELETE</p>
+</li>
+</ul>
+</entry>
+<entry>
+New
+</entry>
+</row>
+<row>
+<entry>
+SRCME
+</entry>
+<entry>
+The Source ME from which the Subscriber Sync Notify Acknowledgement is received at SM.
+</entry>
+<entry>
+New
+</entry>
+</row>
+<row>
+<entry>
+STATUS
+</entry>
+<entry>
+<p>The Status of the Subscriber Sync Notify received from ME.</p>
+<p>Possible value is:</p><ul>
+<li>
+<p>
+<b>NOTIFY_RECEIVED</b>
+</p>
+</li>
+</ul>
+</entry>
+<entry>
+New
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC45" namest="col1">
+<p>Example XML format:</p>
+<codeblock>sm_subscriber_sync_inbound_count{EntityType="DEVICE",Operation="CREATE",SourceME="hostME",Status="NOTIFY_RECEIVED",} 1.0</codeblock>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<table id="dcntable2a"><title>Outbound DCN metrics captured for the SM</title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC48"/>
+<colspec colname="COLSPEC47"/>
+<thead>
+<row>
+<entry>
+<p>
+<b>Metrics </b>
+</p>
+</entry>
+<entry>
+<p>
+<b>Description</b>
+</p>
+</entry>
+<entry>
+<p>Updated this release</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+sm_subscriber_sync_outbound_count
+</entry>
+<entry>
+Number of Subscriber Sync Notify acknowledgement requests sent to Target ME from SM after processing at SM is performed.
+</entry>
+<entry>
+New
+</entry>
+</row>
+<row>
+<entry>
+sm_subscriber_sync_outbound_count_last_interval
+</entry>
+<entry>
+Number of Subscriber Sync Notify acknowledgement requests sent to Target ME from SM after processing at SM is performed since last count interval. 
+</entry>
+<entry>
+New
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC47" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+ENTITY
+</entry>
+<entry>
+<p>The Subscriber Entity Type.</p>
+<p>Possible values are:</p><ul>
+<li>
+<p>DEVICE</p>
+</li>
+<li>
+<p>USER</p>
+</li>
+<li>
+<p>ACCOUNT</p>
+</li>
+<li>
+<p>GROUP</p>
+</li>
+</ul>
+</entry>
+<entry>
+New
+</entry>
+</row>
+<row>
+<entry>
+OPRTN
+</entry>
+<entry>
+<p>The Type of Operation performed on the Subscriber Entity for which the Notify is received at SM from ME.</p>
+<p>Possible values are:</p><ul>
+<li>
+<p>CREATE</p>
+</li>
+<li>
+<p>MODIFY</p>
+</li>
+<li>
+<p>DELETE</p>
+</li>
+</ul>
+</entry>
+<entry>
+New
+</entry>
+</row>
+<row>
+<entry>
+TRGTME
+</entry>
+<entry>
+The target ME from which the Subscriber Sync Notify Acknowledgement is sent from SM.
+</entry>
+<entry>
+New
+</entry>
+</row>
+<row>
+<entry>
+STATUS
+</entry>
+<entry>
+<p>The Status of the Subscriber Sync Notify acknowledgement sent to ME.</p>
+<p>Possible value is:</p><ul>
+<li>
+<p>
+<b>ACK_SENT</b>: When acknowledgement is sent successfully to ME.</p>
+</li>
+<li>
+<p>
+<b>ACK_FAILED</b>: When acknowledgement could not be sent to ME.</p>
+</li>
+</ul>
+</entry>
+<entry>
+New
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC47" namest="col1">
+<p>Example XML format:</p>
+<codeblock>sm_subscriber_sync_outbound_count{EntityType="DEVICE",Operation="CREATE",TargetME="hostME",Status="ACK_SENT",} 1.0</codeblock>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<table id="dcntable2b"><title>Inbound ECOSYSTEM metrics captured for the SM</title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC50"/>
+<colspec colname="COLSPEC49"/>
+<thead>
+<row>
+<entry>
+<p>
+<b>Metrics </b>
+</p>
+</entry>
+<entry>
+<p>
+<b>Description</b>
+</p>
+</entry>
+<entry>
+<p>Updated this release</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+sm_subscriber_sync_inbound_ecosystem_count
+</entry>
+<entry>
+Number of Subscriber Data Record Ecosystems received at SM from ME in each batch.
+</entry>
+<entry>
+New
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC49" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+TYPE
+</entry>
+<entry>
+<p>The Label for capturing count of SDR Ecosystems.</p>
+<p>Possible value is:</p><ul>
+<li>
+<p>SDREcosystem</p>
+</li>
+</ul>
+</entry>
+<entry>
+New
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC49" namest="col1">
+<p>Example XML format:</p>
+<codeblock>sm_subscriber_sync_inbound_ecosystem_count{EntityType="SDREcosystem",} 1.0</codeblock>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<table id="dcntable3a"><title>E-Commerce API Metrics (ME)</title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC50"/>
+<colspec colname="COLSPEC49"/>
+<thead>
+<row>
+<entry>
+<p>
+<b>Metrics </b>
+</p>
+</entry>
+<entry>
+<p>
+<b>Description</b>
+</p>
+</entry>
+<entry>
+<p>Updated this release</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+ecommerce_api_count
+</entry>
+<entry>
+Number of e-commerce API accumulated since the start of this node. This count denotes the total number of requests received at ME.
+</entry>
+<entry>
+<p>New</p>
+<p>20.6</p>
+</entry>
+</row>
+<row>
+<entry>
+ecommerce_api_rate 
+</entry>
+<entry>
+Average rate of e-commerce API messages (per second) during this recent interval at ME. (calculated sum/interval duration).
+</entry>
+<entry>
+<p>New</p>
+<p>20.6</p>
+</entry>
+</row>
+<row>
+<entry>
+ecommerce_api_average_latency_last_interval
+</entry>
+<entry>
+Average latency of e-commerce API messages during this recent interval (calculated sum/count).
+</entry>
+<entry>
+<p>New</p>
+<p>20.6</p>
+</entry>
+</row>
+<row>
+<entry>
+ecommerce_api_average_latency_overall
+</entry>
+<entry>
+Average latency for all accumulated intervals (calculated sum/count) of e-commerce API messages received at ME.
+</entry>
+<entry>
+<p>New</p>
+<p>20.6</p>
+</entry>
+</row>
+<row>
+<entry>
+ecommerce_api_sum
+</entry>
+<entry>
+Sum of all latencies accumulated since the start of this node (to calculate averages) of e-commerce API messages received at ME.
+</entry>
+<entry>
+<p>New</p>
+<p>20.6</p>
+</entry>
+</row>
+<row>
+<entry>
+ecommerce_api_count_last_interval
+</entry>
+<entry>
+Number of e-commerce API messages accumulated since last count interval.
+</entry>
+<entry>
+<p>New</p>
+<p>20.6</p>
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC49" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+RQNAME
+</entry>
+<entry>
+<p>The Request Name value. </p>
+<p>Possible values are::</p><ul>
+<li>
+<p>DIRECT_DEBIT_AMOUNT</p>
+</li>
+<li>
+<p>UC_QUERY_BALANCE</p>
+</li>
+</ul>
+</entry>
+<entry>
+<p>New</p>
+<p>20.6</p>
+</entry>
+</row>
+<row>
+<entry>
+RSCODE
+</entry>
+<entry>
+<p>The Response Code for the E-Commerce API received at ME after processing. This can be any value listed in “RatingEngineResultCodes”. </p>
+<p>Common values include:</p><ul>
+<li>
+<p>CALL_OK</p>
+</li>
+<li>
+<p>MULTIPLE_DEVICES_FOUND_FOR_GPSI</p>
+</li>
+<li>
+<p>CC_DEVICE_CONTEXT_MISSING</p>
+</li>
+<li>
+<p>GENERIC_RATING_ERROR, etc</p>
+</li>
+</ul>
+</entry>
+<entry>
+<p>New</p>
+<p>20.6</p>
+</entry>
+</row>
+<row>
+<entry>
+STATUS
+</entry>
+<entry>
+<p>The Status of the E-Commerce API request received at ME after processing. </p>
+<p> Possible values include:</p><ul>
+<li>
+<p>SUCCESS </p>
+</li>
+<li>
+<p>FAILURE</p>
+</li>
+<li>
+<p>EXCEPTION </p>
+</li>
+</ul>
+</entry>
+<entry>
+<p>New</p>
+<p>20.6</p>
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC49" namest="col1">
+<p>Example XML format:</p>
+<codeblock>&lt;measInfo measInfoId="M151"&gt;
+       &lt;granPeriod duration="PT300S" endTime="2020-06-01T22:50:00+05:30" /&gt;
+       &lt;repPeriod duration="PT300S" /&gt;
+       &lt;measType p="1"&gt;ecommerce_api_sum&lt;/measType&gt;
+       &lt;measType p="2"&gt;ecommerce_api_count&lt;/measType&gt;
+       &lt;measType p="3"&gt;ecommerce_api_count_last_interval&lt;/measType&gt;
+       &lt;measType p="4"&gt;ecommerce_api_rate&lt;/measType&gt;
+       &lt;measType p="5"&gt;ecommerce_api_average_latency_overall&lt;/measType&gt;
+       &lt;measType p="6"&gt;ecommerce_api_average_latency_last_interval&lt;/measType&gt;
+       &lt;measValue measObjLdn="PLTFM=1,HOST=sps-me-diameterapp-1,RQNAME=UC_QUERY_BALANCE,RSCODE=CALL_OK,STATUS=SUCCESS"&gt;
+       &lt;r p="1"&gt;&lt;225/r&gt;
+       &lt;r p="2"&gt;&lt;1/r&gt;
+       &lt;r p="3"&gt;&lt;0/r&gt;
+       &lt;r p="4"&gt;&lt;0/r&gt;
+       &lt;r p="5"&gt;&lt;225/r&gt;
+    &lt;/measValue&gt;
+&lt;/measInfo&gt;</codeblock>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<table id="dcntable4a"><title>E-Commerce API Metrics (SM)</title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC50"/>
+<colspec colname="COLSPEC49"/>
+<thead>
+<row>
+<entry>
+<p>
+<b>Metrics </b>
+</p>
+</entry>
+<entry>
+<p>
+<b>Description</b>
+</p>
+</entry>
+<entry>
+<p>Updated this release</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+sm_ecommerce_api_count
+</entry>
+<entry>
+Number of e-commerce API accumulated since the start of this node. This count denotes the total number of requests received at SM.
+</entry>
+<entry>
+<p>New</p>
+<p>20.6</p>
+</entry>
+</row>
+<row>
+<entry>
+sm_ecommerce_api_rate 
+</entry>
+<entry>
+Average rate of e-commerce API messages (per second) during this recent interval at SM. (calculated sum/interval duration).
+</entry>
+<entry>
+<p>New</p>
+<p>20.6</p>
+</entry>
+</row>
+<row>
+<entry>
+sm_ecommerce_api_average_latency_last_interval
+</entry>
+<entry>
+Average latency of e-commerce API messages during this recent interval (calculated sum/count).
+</entry>
+<entry>
+<p>New</p>
+<p>20.6</p>
+</entry>
+</row>
+<row>
+<entry>
+sm_ecommerce_api_average_latency_overall
+</entry>
+<entry>
+Average latency for all accumulated intervals (calculated sum/count) of e-commerce API messages received at SM.
+</entry>
+<entry>
+<p>New</p>
+<p>20.6</p>
+</entry>
+</row>
+<row>
+<entry>
+sm_ecommerce_api_sum
+</entry>
+<entry>
+Sum of all latencies accumulated since the start of this node (to calculate averages) of e-commerce API messages received at SM.
+</entry>
+<entry>
+<p>New</p>
+<p>20.6</p>
+</entry>
+</row>
+<row>
+<entry>
+sm_ecommerce_api_count_last_interval
+</entry>
+<entry>
+Number of e-commerce API messages accumulated since last count interval.
+</entry>
+<entry>
+<p>New</p>
+<p>20.6</p>
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC49" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+RQNAME
+</entry>
+<entry>
+<p>The Request Name value. </p>
+<p>Possible values are::</p><ul>
+<li>
+<p>DIRECT_DEBIT_AMOUNT</p>
+</li>
+<li>
+<p>UC_QUERY_BALANCE</p>
+</li>
+</ul>
+</entry>
+<entry>
+<p>New</p>
+<p>20.6</p>
+</entry>
+</row>
+<row>
+<entry>
+MENAME
+</entry>
+<entry>
+The name of the ME on which the E-Commerce API request was sent. If the value is NA, then the request could not be sent to the ME due to an exception.
+</entry>
+<entry>
+<p>New</p>
+<p>20.6</p>
+</entry>
+</row>
+<row>
+<entry>
+RSCODE
+</entry>
+<entry>
+<p>The Response Code for the E-Commerce API received at ME after processing. This can be any value listed in “RatingEngineResultCodes”. </p>
+<p>Common values include:</p><ul>
+<li>
+<p>CALL_OK</p>
+</li>
+<li>
+<p>MULTIPLE_DEVICES_FOUND_FOR_GPSI</p>
+</li>
+<li>
+<p>CC_DEVICE_CONTEXT_MISSING</p>
+</li>
+<li>
+<p>GENERIC_RATING_ERROR, etc</p>
+</li>
+</ul>
+</entry>
+<entry>
+<p>New</p>
+<p>20.6</p>
+</entry>
+</row>
+<row>
+<entry>
+STATUS
+</entry>
+<entry>
+<p>The Status of the E-Commerce API request received at ME after processing. </p>
+<p> Possible values include:</p><ul>
+<li>
+<p>SUCCESS </p>
+</li>
+<li>
+<p>FAILURE</p>
+</li>
+<li>
+<p>EXCEPTION </p>
+</li>
+</ul>
+</entry>
+<entry>
+<p>New</p>
+<p>20.6</p>
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC49" namest="col1">
+<p>Example XML format:</p>
+<codeblock>&lt;measInfo measInfoId="M152"&gt;
+    &lt;granPeriod duration="PT300S" endTime="2020-06-01T22:50:00+05:30" /&gt;
+    &lt;repPeriod duration="PT300S" /&gt;
+    &lt;measType p="1"&gt;sm_ecommerce_api_sum&lt;/measType&gt;
+    &lt;measType p="2"&gt;sm_ecommerce_api_count&lt;/measType&gt;
+    &lt;measType p="3"&gt;sm_ecommerce_api_count_last_interval&lt;/measType&gt;
+    &lt;measType p="4"&gt;sm_ecommerce_api_rate&lt;/measType&gt;
+    &lt;measType p="5"&gt;sm_ecommerce_api_average_latency_overall&lt;/measType&gt;
+    &lt;measType p="6"&gt;sm_ecommerce_api_average_latency_last_interval&lt;/measType&gt;
+    &lt;measValue measObjLdn="APP=1,HOST=sps-sm-smapp-0,RQNAME=UC_QUERY_BALANCE,MENAME=sps-me1,RSCODE=CALL_OK,STATUS=SUCCESS"&gt;
+    &lt;r p="1"&gt;&lt;225/r&gt;
+    &lt;r p="2"&gt;&lt;1/r&gt;
+    &lt;r p="3"&gt;&lt;0/r&gt;
+    &lt;r p="4"&gt;&lt;0/r&gt;
+    &lt;r p="5"&gt;&lt;225/r&gt;
+  &lt;/measValue&gt;
+&lt;/measInfo&gt;     </codeblock>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+</section>
+<section id="LDAPPR"><title>LDAP metrics</title>
+<p>NCC can be configured to have its MEs query subscriber/device information from an external SPR
+                        via LDAP. The LDAP metrics record those query attempts and their
+                        success/failure rate. These metrics are recorded on the SPS ME IOHO nodes,
+                        where the LDAP concentrator resides.</p>
+<table><title>LDAP metrics </title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC52"/>
+<colspec colname="COLSPEC51"/>
+<thead>
+<row>
+<entry>
+<p>
+<b>Metrics </b>
+</p>
+</entry>
+<entry>
+<p>
+<b>Description</b>
+</p>
+</entry>
+<entry>
+<p>Updated this release</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+ldap_count
+</entry>
+<entry>
+Number of LDAP query attempts accumulated since the start of this node.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+ldap_rate
+</entry>
+<entry>
+Average rate of LDAP query attempts (per second) during this recent interval. (calculated sum/interval duration).
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+ldap_count_last_interval
+</entry>
+<entry>
+The count of LDAP query attempts accumulated since last count interval, which is calculated using the formula: increase( ). The Default value for last interval is 10 minutes. 
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+ldap_average_latency_last_interval
+</entry>
+<entry>
+<p>Average latency during this recent interval.</p>
+<p>(calculated sum/count).</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+ldap_average_latency_overall
+</entry>
+<entry>
+Average latency for all accumulated intervals (calculated sum/count).
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+ldap_sum
+</entry>
+<entry>
+<p>Sum of all latencies accumulated since the start of this node (to calculate averages).</p>
+<p>If there has been a restart since node start, the value will be from that point in time.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC51" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+app
+</entry>
+<entry> Always ‘1’ in this NCC version. </entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+ldap
+</entry>
+<entry> Always ‘1’ in this NCC version. </entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+host
+</entry>
+<entry> NCC host name (e.g. VM name) </entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+ldapSubscriberSearch
+</entry>
+<entry>
+<p>Whether the search was successful. Will be unmuted by default, but may be muted (shown as NA) to reduce metrics verbosity.  </p>
+<p>Possible values are:</p>
+<p>Success</p>
+<p>Failure</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+CustomLabel
+</entry>
+<entry>
+Custom labels are optional AVPs and may be different for each measurement instance, providing additional system insights as available.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC51" namest="col1">
+<p>Example XML format (with all labels unmuted):</p>
+<codeblock>&lt;measType p="1"&gt;ldap_sum&lt;/measType&gt;
+&lt;measType p="2"&gt;ldap_count&lt;/measType&gt;
+&lt;measType p="3"&gt;ldap_count_last_interval&lt;/measType&gt;
+&lt;measType p="4"&gt;ldap_rate&lt;/measType&gt;
+&lt;measType p="5"&gt;ldap_average_latency_overall&lt;/measType&gt;
+&lt;measType p="6"&gt;ldap_average_latency_last_interval&lt;/measType&gt;
+
+&lt;measValue measObjLdn="app=1, ldap=1, host=sps-me-1-ioho-1, ldapSubscriberSearch=Success, CustomLabel={}"&gt;
+      &lt;r p="1"&gt;1144&lt;/r&gt;
+      &lt;r p="2"&gt;50&lt;/r&gt;
+      &lt;r p="3"&gt;0&lt;/r&gt;
+      &lt;r p="4"&gt;0&lt;/r&gt;
+      &lt;r p="5"&gt;22.88&lt;/r&gt;
+      &lt;r p="6"&gt;0&lt;/r&gt;
+&lt;/measValue&gt;</codeblock>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section id="surepaymet"><title>Surepay LDAP metrics</title>
+<p>SPS-Charging can be configured to work with SurePay as an LDAP server and client. The following metrics can be collected from SPS:</p><ul>
+<li>
+<p>
+<!--xref URI: #SMLDAPPR-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/SMLDAPPR"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #MELDAPPR-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/MELDAPPR"/>
+</p>
+</li>
+</ul>
+<sectiondiv id="SMLDAPPR">
+<p><b>SMLDAP metrics</b></p>
+<p>SPS can be configured to handle subscriber/device information query request from SurePay as an LDAP server. The SMLDAP metrics record those query attempts and whether the device is found or not. These metrics are recorded on the SPS SM Application nodes. </p>
+<table><title>SMLDAP metrics </title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC30"/>
+<colspec colname="COLSPEC29"/>
+<thead>
+<row>
+<entry>
+<p>
+<b>Metrics </b>
+</p>
+</entry>
+<entry>
+<p>
+<b>Description</b>
+</p>
+</entry>
+<entry>
+<p>Updated this release</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+spis_ldap_query_count
+</entry>
+<entry>
+Number of device query received from SurePay Index Server.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+spis_ldap_query_count_last_interval
+</entry>
+<entry>
+Number of device query received from SurePay Index Server since last count interval. 
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC29" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+APP
+</entry>
+<entry>
+Always ‘1’ in this SPS version.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+SMLDAP
+</entry>
+<entry>
+Always ‘1’ in this SPS version.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+HOST
+</entry>
+<entry>
+SPS host name (e.g. VM name)
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+FOUND
+</entry>
+<entry>
+<p>Whether the queried device is found or not.  </p>
+<p>Possible values are:</p>
+<p>Found</p>
+<p>NotFound</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC29" namest="col1">
+<p>Example XML format (with all labels unmuted):</p>
+<codeblock>&lt;measType p="1"&gt;ldap_index_count&lt;/measType&gt;
+&lt;measType p="2"&gt;ldap_index_count_last_interval&lt;/measType&gt;
+&lt;measValue measObjLdn="app=1, smldap=1, host=sps-sm-smapp-0,
+ found=Found, CustomLabel={}"&gt;
+  &lt;r p="1"&gt;5&lt;/r&gt;
+  &lt;r p="2"&gt;0&lt;/r&gt;
+/measValue&gt;</codeblock>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+<sectiondiv id="MELDAPPR">
+<p><b>MELDAP metrics</b></p>
+<p>SPS can be configured to broadcast subscriber information to SurePay as an LDAP client. The MELDAP metrics record those query attempts and their operations. These metrics are recorded on the SPS ME IOHO nodes, where the LDAP concentrator resides.</p>
+<table><title>MELDAP metrics </title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC32"/>
+<colspec colname="COLSPEC31"/>
+<thead>
+<row>
+<entry>
+<p>
+<b>Metrics </b>
+</p>
+</entry>
+<entry>
+<p>
+<b>Description</b>
+</p>
+</entry>
+<entry>
+<p>Upgraded this release</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+ldap_index_count
+</entry>
+<entry>
+Number of LDAP query attempts accumulated since the start of this node.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+ldap_index_count_last_interval
+</entry>
+<entry>
+The count of LDAP query attempts accumulated since last count interval, which is calculated using the formula: increase( ). The Default value for last interval is 10 minutes. 
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC31" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+APP
+</entry>
+<entry>
+Always ‘1’ in this SPS version.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+MELDAP
+</entry>
+<entry>
+Always ‘1’ in this SPS version.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+HOST
+</entry>
+<entry>
+SPS host name (e.g. VM name)
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+OPER
+</entry>
+<entry>
+<p>The operation type.  </p>
+<p>Possible values are:</p>
+<p>Insert</p>
+<p>Delete</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC31" namest="col1">
+<p>Example XML format (with all labels unmuted):</p>
+<codeblock>&lt;measType p="1"&gt;ldap_index_count&lt;/measType&gt;
+&lt;measType p="2"&gt;ldap_index_count_last_interval&lt;/measType&gt;
+&lt;measValue measObjLdn="app=1, meldap=1, host=sps-me-ioho-0,
+ oper=Insert, CustomLabel={}"&gt;
+  &lt;r p="1"&gt;5&lt;/r&gt;
+  &lt;r p="2"&gt;0&lt;/r&gt;
+/measValue&gt;</codeblock>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+</section>
+<section id="HTTPPr"><title>HTTP metrics</title>
+<p>HTTP metrics record the various SPS access attempts over HTTP, including all the external access into the SPS SM. Labels are provided for recording detailed information about which local HTTP context is being accessed, from which sources, using what HTTP method, and the resulting HTTP status.</p>
+<p>These metrics are recorded on the SPS SM application nodes, where incoming HTTP requests are processed (including GUI, external data servers, northbound OSS systems, or external systems otherwise using the SPS SM API gateway). These metrics are also recorded on the SPS ME Comsvcs nodes.</p>
+<table><title>HTTP metrics </title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC54"/>
+<colspec colname="COLSPEC53"/>
+<thead>
+<row>
+<entry>
+<p>
+<b>Metric Name</b>
+</p>
+</entry>
+<entry>
+<p>
+<b>Description</b>
+</p>
+</entry>
+<entry>
+<p>Updated this release</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+http_count
+</entry>
+<entry>
+Number of inbound HTTP requests accumulated since the start of this node
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+http_rate
+</entry>
+<entry>
+Average rate of inbound HTTP requests (per second) during this recent interval.  (calculated sum/interval duration).
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+http_average_latency_last_interval
+</entry>
+<entry>
+<p>Average latency during this recent interval</p>
+<p>(calculated sum/count).</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+http_average_latency_overall
+</entry>
+<entry>
+Average latency for all accumulated intervals (calculated sum/count).
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+http_sum
+</entry>
+<entry>
+<p>Sum of all latencies accumulated since the start of this node (to calculate averages)</p>
+<p>If there has been a restart since node start, the value will be from that point in time.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+http_count_last_interval
+</entry>
+<entry>
+The count of inbound HTTP requests accumulated since last count interval, which is calculated using the formula: increase( ). The Default value for last interval is 10 minutes. 
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC53" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+app
+</entry>
+<entry>
+Always ‘1’ in this SPS version.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+http
+</entry>
+<entry>
+Always ‘1’ in this SPS version.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+host
+</entry>
+<entry>
+SPS host name (e.g. VM name)
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+HttpMethod
+</entry>
+<entry>
+<p>HTTP method.  </p>
+<p>Possible values are:</p>
+<p>GET</p>
+<p>PUT</p>
+<p>POST</p>
+<p>DELETE</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Status
+</entry>
+<entry>
+HTTP result status (per HTTP standards)
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+ContextRoot
+</entry>
+<entry>
+The context root of the HTTP URI address that shows which REST API was invoked. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+SourceIP
+</entry>
+<entry>
+IP address of the source initiating this HTTP request. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC53" namest="col1">
+<p>Example XML format (with some labels muted):</p>
+<codeblock>&lt;measType p="1"&gt;http_sum&lt;/measType&gt;
+&lt;measType p="2"&gt;http_count&lt;/measType&gt;
+&lt;measType p="3"&gt;http_count_last_interval&lt;/measType&gt;
+&lt;measType p="4"&gt;http_rate&lt;/measType&gt;
+&lt;measType p="5"&gt;http_avg_latncy_overall&lt;/measType&gt;
+&lt;measType p="6"&gt;http_avg_latncy_last_intv&lt;/measType&gt;
+
+&lt;measValue measObjLdn="app=1, http=1, host=sps-sm-1-smapp-4, ContextRoot=NA, HttpMethod=POST, SourceIP=NA, Status=200"&gt;
+      &lt;r p="1"&gt;405334&lt;/r&gt;
+      &lt;r p="2"&gt;4078&lt;/r&gt;
+      &lt;r p="3"&gt;5&lt;/r&gt;
+      &lt;r p="4"&gt;0.10175438596491228&lt;/r&gt;
+      &lt;r p="5"&gt;99.40446406671572&lt;/r&gt;
+      &lt;r p="6"&gt;52&lt;/r&gt;
+&lt;/measValue&gt;</codeblock>
+<p>Example XML format (with all labels unmuted):</p>
+<codeblock>&lt;measValue measObjLdn="app=1, http=1, host=sps-sm-1-smapp-4, ContextRoot=/services/ServiceManager/authenticate/version, HttpMethod=POST, SourceIP=135.250.218.39, Status=200"&gt;
+      &lt;r p="1"&gt;405334&lt;/r&gt;
+      &lt;r p="2"&gt;4078&lt;/r&gt;
+      &lt;r p="3"&gt;5&lt;/r&gt;
+      &lt;r p="4"&gt;0.10175438596491228&lt;/r&gt;
+      &lt;r p="5"&gt;99.40446406671572&lt;/r&gt;
+      &lt;r p="6"&gt;52&lt;/r&gt;
+&lt;/measValue&gt;</codeblock>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section id="siteroutMet"><title>Site Routing metrics </title>
+<p>SPS provides advanced routing features between SPS sites to help guarantee data integrity and to simplify operator networks such that external routers are not required.  Each time a new message arrives at an SPS ME, the site routing function is performed to determine at which ME the message needs to be processed. Each device/subscriber/etc. has a primary and secondary ME in the network and the site routing function is responsible for routing each message to the correct ME, which depends upon network conditions and the health of the MEs. The message may need to be processed locally, or may need to be routed to a different ME. These metrics are recorded on the SPS ME application nodes. </p>
+<table><title>Site Routing metrics </title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC14"/>
+<colspec colname="COLSPEC13"/>
+<thead>
+<row>
+<entry>
+<p>
+<b>Metrics</b>
+</p>
+</entry>
+<entry>
+<p>
+<b>Description</b>
+</p>
+</entry>
+<entry>
+<p>Updated this release</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+site_routing
+</entry>
+<entry>
+Number of incoming messages processed by the SPS ME site routing function.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+site_routing_count_last_interval
+</entry>
+<entry>
+The count of SITE ROUTING application metric counts generated as count per last interval, which is calculated using the formula: increase( ). The Default value for last interval is 10 minutes. 
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC13" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+APP
+</entry>
+<entry>
+Always ‘1’ in this SPS version.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+SITROU
+</entry>
+<entry>
+Always ‘1’ in this SPS version.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+IPROTO
+</entry>
+<entry>
+<p>Indicates over which protocol the incoming message was received. Possible values are:</p><ul>
+<li>
+<p>Diameter—An incoming message from the 4G network.</p>
+</li>
+<li>
+<p>Http_3gpp—An incoming message from the 5G network.</p>
+</li>
+</ul>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+HOST
+</entry>
+<entry>
+SPS host name (e.g. VM name)
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+STATUS
+</entry>
+<entry>
+<p>The status/result of the site routing, which contributes to the Decision.  Possible values:</p>
+<p>Site routing succeeds</p>
+<p>Primary site is OOS</p>
+<p>Primary site is not reachable</p>
+<p>Primary and secondary sites are OOS</p>
+<p>Primary and secondary sites are not reachable</p>
+<p>No site Id exists for the request</p>
+<p>Requests with no site routing resolver</p>
+<p>Site routing lookup failed</p>
+<p>Site routing will not process the request</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+DECSN
+</entry>
+<entry>
+<p>Site routing decision.  Possible values:</p>
+<p>Requests processed locally: Message sent to a local app for processing.</p>
+<p>Requests routed to primary: Message sent to the primary SPS ME for processing.</p>
+<p>Requests routed to secondary: Message sent to the secondary SPS ME for processing. </p>
+<p>Reject message: message is rejected due to an error in site routing, which could be the target site is OOS, not reachable, a site ID look up failed, or some other failure case.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+MSGRF
+</entry>
+<entry>
+<p>From whom this incoming message is received. The value of the origin host of the Diameter peer that sent this request message, which could be another SPS site or external GW.</p>
+<p>This label is muted by default. It can be unmuted using the application preference: “Mute Site Routing metric labels”. See also, <!--xref URI: #labelmuting--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-metconfig/labelmuting"/> in this guide and the <i>Global Configuration Guide</i> for more information.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+PSITE
+</entry>
+<entry>
+The resolved primary Site ID (SPS ME) for the device/subscriber/etc. contained in this message
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+SSITE
+</entry>
+<entry>
+The resolved secondary Site ID (SPS ME) for the device/subscriber/etc. contained in this message
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+SITROL
+</entry>
+<entry>
+<p>The site role of this local SPS ME for the device/subscriber/etc. contained in this message.  Possible values:</p>
+<p>Primary site</p>
+<p>Secondary site</p>
+<p>Third site (local site is neither the primary nor secondary)</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+INST
+</entry>
+<entry>
+<p>SPS instance generating metrics.</p>
+<p>This label is available in Prometheus; however, the label is not written into the 3GPPXML files and is not available to NetAct.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC13" namest="col1">
+<p>Example XML format:</p>
+<codeblock>&lt;measType p="1"&gt;site_routing&lt;/measType&gt;
+&lt;measType p="2"&gt;site_routing_count_last_interval&lt;/measType&gt;
+
+&lt;measValue measObjLdn="app=1, sitrou=1, InProtocol=Diameter, host=ME2-diameterapp-4, Decision=Requests processed locally, MsgRcvFrom=pgw.diam.originRealm1.com, PrimeSiteId=3, SecSiteId=5, SiteRole=Secondary site, Status=Primary site is not reachable"&gt;  
+      &lt;r p="1"&gt;405876&lt;/r&gt;
+      &lt;r p="2"&gt;5&lt;/r&gt;
+&lt;/measValue&gt;</codeblock>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section id="rulmet"><title>Rules metrics </title>
+<p> SPS provides a powerful rules engine that enables great flexibility in the SPS processing of events. The rules metrics record the number of executions for each of the rule tables and rules. </p>
+<table><title>Rules metrics </title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC16"/>
+<colspec colname="COLSPEC15"/>
+<thead>
+<row>
+<entry>
+<p>
+<b>Metrics</b>
+</p>
+</entry>
+<entry>
+<p>
+<b>Description</b>
+</p>
+</entry>
+<entry>
+<p>Updated this release</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+rules
+</entry>
+<entry>
+Number of executions for each of the rule tables and rules.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+rules_count_last_interval
+</entry>
+<entry>
+The count of RULES application metric counts that are generated as count per last interval, which is calculated using the formula: increase( ). The Default value for last interval is 10 minutes. 
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC15" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+APP
+</entry>
+<entry>
+Always ‘1’ in this SPS version.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+RULES
+</entry>
+<entry>
+Always ‘1’ in this SPS version.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+HOST
+</entry>
+<entry>
+SPS host name (e.g. VM name)
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+RSV
+</entry>
+<entry>
+Rule System Version
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+RTABLE
+</entry>
+<entry>
+Rule Table applied 
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+RULE
+</entry>
+<entry>
+Rule applied
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+INST
+</entry>
+<entry>
+<p>SPS instance generating metrics.</p>
+<p>This label is available in Prometheus; however, the label is not written into the 3GPPXML files and is not available to NetAct.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC15" namest="col1">
+<p>Example XML format:</p>
+<codeblock>&lt;measType p="1"&gt;rules&lt;/measType&gt;
+&lt;measType p="2"&gt;rules_count_last_interval&lt;/measType&gt;
+
+&lt;measValue measObjLdn="app=1, rules=1, host=ME2-diameterapp-4, RSV=Dec21Update, RuleTable= RuleSet:AF_SESSION_ESTABLISHMENT-Defaults, Rule=DefaultActions"&gt;
+      &lt;r p="1"&gt;405876&lt;/r&gt;
+      &lt;r p="2"&gt;4&lt;/r&gt;
+&lt;/measValue&gt;</codeblock>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section id="OvLoadmetProm"><title>Overload Metrics </title>
+<p>SPS has an overload strategy to protect it against unexpected overloads and to continue processing a reduced amount of traffic according to overload policy and controls.  The overload metric counts the number of overload events of a given node, the type of overload, and the severity.</p>
+<table><title>Overload metrics </title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC18"/>
+<colspec colname="COLSPEC17"/>
+<thead>
+<row>
+<entry>
+<p>
+<b>Metrics</b>
+</p>
+</entry>
+<entry>
+<p>
+<b>Description</b>
+</p>
+</entry>
+<entry>
+<p>Updated this release</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+overload
+</entry>
+<entry>
+Count of the number of overload events.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+overload_count_last_interval
+</entry>
+<entry>
+The count of OVERLOAD application metric counts generated as count per last interval, which is calculated using the formula: increase( ). The Default value for last interval is 10 minutes.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC17" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+APP
+</entry>
+<entry>
+Always ‘1’ in this SPS version.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+OVERLD
+</entry>
+<entry>
+Always ‘1’ in this SPS version.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+HOST
+</entry>
+<entry>
+SPS host name (e.g. VM name)
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+COMP
+</entry>
+<entry>
+<p>What component is triggering overload. Possible values:</p>
+<p>Java Heap Memory Usage (State:  85% minor, 90% major, 95% resource critical)</p>
+<p>Diameter latency</p>
+<p>Diameter message count</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+STATE
+</entry>
+<entry>
+<p>Severity of the overload.  Possible values:</p>
+<p>resource critical</p>
+<p>critical</p>
+<p>major</p>
+<p>minor</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+INST
+</entry>
+<entry>
+<p>SPS instance generating metrics.</p>
+<p>This label is available in Prometheus; however, the label is not written into the 3GPPXML files and is not available to NetAct.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC17" namest="col1">
+<p>Example XML format:</p>
+<codeblock>&lt;measType p="1"&gt;overload&lt;/measType&gt;
+&lt;measType p="2"&gt;overload_count_last_interval&lt;/measType&gt;
+
+&lt;measValue measObjLdn="app=1, overld=1, host=ME2-diameterapp-4, Components=Diameter latency, State=minor"&gt;
+      &lt;r p="1"&gt;405876&lt;/r&gt;
+      &lt;r p="2"&gt;405876&lt;/r&gt;
+&lt;/measValue&gt;</codeblock>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section id="RatingMet"><title>Rating metrics</title>
+<table><title>Rating metrics </title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC20"/>
+<colspec colname="COLSPEC19"/>
+<thead>
+<row>
+<entry>
+<p>
+<b>Metrics </b>
+</p>
+</entry>
+<entry>
+<p>
+<b>Description</b>
+</p>
+</entry>
+<entry>
+<p>Updated this release</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+rating_count
+</entry>
+<entry>
+Number of rating messages accumulated since the start of this node
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+rating_sum
+</entry>
+<entry>
+<p>Sum of all latencies accumulated since the start of this node (to calculate averages)</p>
+<p>If there has been a restart since node start, the value will be from that point in time.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+rating_count_last_interval
+</entry>
+<entry>
+Rating application metric counts generated as count per last interval, which is calculated using the formula: increase(). The Default value for last interval is 10 minutes. 
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC19" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+APP
+</entry>
+<entry>
+Always ‘1’ in this SPS version.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+RATING
+</entry>
+<entry>
+Always ‘1’ in this SPS version.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+HOST
+</entry>
+<entry>
+SPS host name (e.g. VM name)
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+REQ
+</entry>
+<entry>
+<p>Diameter Request Type</p>
+<p>Possible values:</p>
+<p>INITIAL_REQUEST (1)</p>
+<p>UPDATE_REQUEST (2)</p>
+<p>TERMINATION_REQUEST (3)</p>
+<p>EVENT_REQUEST (4)</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+IRMHOST
+</entry>
+<entry>
+<p>The Diameter Ingress Peer Realm and Host. Will be muted by default (shown as NA) to reduce metrics verbosity.</p>
+<p>This label is available in Prometheus; however, the label and is not written into the 3GPPXML files and is not available to NetAct.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+ORMHOST
+</entry>
+<entry>
+The Diameter Origin Realm and Host. Will be muted by default (shown as NA) to reduce metrics verbosity.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+RATGRP
+</entry>
+<entry>
+Rating group.  The charging key for the Diameter Credit-Control service identifying a rating group (uniquely identified by the combination of Service-Context-Id and Rating-Group). All the services subject to the same rating type are part of the same rating group.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+SRVIDN
+</entry>
+<entry>
+Service Identifier.  The charging key for the Diameter Credit-Control service identifying a service (uniquely identified by the combination of Service-Context-Id and Service-Identifier).
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+RESULT
+</entry>
+<entry>
+<p>Possible values are </p>
+<p>DIAMETER_SUCCESS,</p>
+<p>DIAMETER_LIMITED_SUCCESS, </p>
+<p>DIAMETER_AVP_NOT_ALLOWED etc.</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+SRVCON
+</entry>
+<entry>
+The Service context.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+CustomLabel
+</entry>
+<entry>
+<p>Custom labels are optional AVPs and may be different for each measurement instance, providing additional system insights as available. </p>
+<p>The current custom label are: CallSubType and Media Type.</p>
+<p>Possible values for CallSubType are:</p><ul>
+<li>
+<p>PS (Packet Switching)</p>
+</li>
+<li>
+<p>MOC (IMS Mobile Originated Call)</p>
+</li>
+<li>
+<p>MTC (IMS Mobile Terminated Call)</p>
+</li>
+<li>
+<p>FWD (IMS Forwarded call)</p>
+</li>
+<li>
+<p>MMS (MMS general)</p>
+</li>
+<li>
+<p>MO (MMS Mobile Originated)</p>
+</li>
+<li>
+<p>SMS_MO (SMS Mobile Originated)</p>
+</li>
+<li>
+<p>SMS_MT (SMS Mobile Terminated)</p>
+</li>
+</ul>
+<p>
+<b>Note: </b>The CallSubType is recorded only at the end of a rating session to provide a count of the rating sessions per call sub type. </p>
+<p>
+<b>Note: </b>CallSubType is not recorded when there is early rejection, because the request does not go for rating processing. Early rejection in the following cases for example:</p><ul>
+<li>
+<p>UNKNOWN_SESSION_ID</p>
+</li>
+<li>
+<p>DEVICE_NOT_FOUND</p>
+</li>
+<li>
+<p>INVALID_AVP</p>
+</li>
+<li>
+<p>etc.</p>
+</li>
+</ul>
+</entry>
+<entry>
+Updated 20.6
+</entry>
+</row>
+<row>
+<entry>
+<p>CustomLabel</p>
+<p>(continued)</p>
+</entry>
+<entry>
+<p>Possible values for Media Type are:</p><ul>
+<li>
+<p>audio</p>
+</li>
+<li>
+<p>video</p>
+</li>
+</ul>
+<p>The Media Type metric checks the media name for an Ro call. After a CCRi or CCRu with the media change trigger, the service judges the media name and if it contains a video media name then it generates video metrics. If it does not contain a video media name, the service generates audio metrics.</p>
+<p>This metric is only for a Volte session call. To generate this metric the application preference: “Mute rating metrics label” must be set to false and the “GY_PRE_PROCESSING.DisableCharging-CDR” should not be set.</p>
+</entry>
+<entry/>
+</row>
+<row>
+<entry>
+<p>CustomLabel</p>
+<p>(continued)</p>
+</entry>
+<entry>
+<p>For a Media Type in a CCRu, the logic of metrics is as follows:</p><ul>
+<li>
+<p>if Trigger Feature Supported is N, the media type of CCRu is the same as the media type of the last message, does not generate media type metrics.</p>
+</li>
+<li>
+<p>if Trigger Feature Supported is N, the media type of the CCRu is different than the media type of the last message, generates media type metrics.</p>
+</li>
+<li>
+<p>if Trigger Feature Supported is Y, Trigger-Type CHANGE_IN_MEDIA_COMPOSITION is armed. The media type of the CCRu is the same as the media type of the last message, does not generate media type metrics.</p>
+</li>
+<li>
+<p>if Trigger Feature Supported is Y, Trigger-Type CHANGE_IN_MEDIA_COMPOSITION is armed. The media type of the CCRu is different with the media type of the last message, generates media type metrics.</p>
+</li>
+<li>
+<p>if Trigger Feature Supported is Y, Trigger-Type CHANGE_IN_MEDIA_COMPOSITION is not armed. The media type of the CCRu is the same as the media type of the last message, does not generate media type metrics.</p>
+</li>
+<li>
+<p>if Trigger Feature Supported is Y, Trigger-Type CHANGE_IN_MEDIA_COMPOSITION is not armed. The media type of the CCRu is different than the media type of the last message, does not generate media type metrics.</p>
+</li>
+<li>
+<p>if Trigger Feature Supported is Y, Trigger-Type CHANGE_IN_MEDIA_COMPOSITION is armed. The media type of the CCRu is different than the media type of the last message, but balance is not enough to change the media type. For example: from audio to video, does not generate media type metrics.</p>
+</li>
+</ul>
+</entry>
+<entry/>
+</row>
+<row>
+<entry nameend="COLSPEC19" namest="col1">
+<p>
+<b>Examples</b>
+</p>
+<p>The following are examples in XML format (with some labels muted):</p>
+<codeblock>&lt;measType p="1"&gt;rating_sum&lt;/measType&gt;
+&lt;measType p="2"&gt;rating_count&lt;/measType&gt;
+&lt;measType p="3"&gt;rating_count_last_interval&lt;/measType&gt;
+
+&lt;measValue measObjLdn="host=sps-ig-diameterapp-0,rating=1,app=1,CustomLabel={},IngressPeerOriginHost=NA,OriginHost=NA,RatingGroup=10,RequestType=INITIAL_REQUEST,Result=DIAMETER_SUCCESS,ServiceContext=32251@3gpp.org,ServiceIdentifier=121,instance=sps-ig-diameterapp-0:9111,job=diameterapp_metrics"&gt;
+      &lt;r p="1"&gt;128&lt;/r&gt;
+      &lt;r p="2"&gt;1&lt;/r&gt;
+      &lt;r p="3"&gt;1&lt;/r&gt;
+&lt;/measValue&gt;</codeblock>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section id="cbncnb"><title>PCRF and PCF metrics</title>
+<p>SPS-Policy is responsible for the provisioning of PCC rules to PCEF/SMF, which contains a set of information elements that enable the detection of a service data flow and provides parameters for policy control and/or charging control. The PCC_Rule measurement counts the number of PCC Rules provisioned by  SPS-Policy. These metrics are recorded on the SPS ME application nodes. </p>
+<p>SPS-Policy provides metrics on the count of installs and removals for CRNs and CRBNs, as well as for 5G PCC rules that are available in 4G or 5G environments. The metrics are provided as either CSV files or Prometheus metrics, which is optional. </p>
+<p>Implicit PCC rule removals owing to session terminations are not included in these metrics.</p>
+<table><title>diameter_pcc_rule metrics</title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC22"/>
+<colspec colname="COLSPEC21"/>
+<thead>
+<row>
+<entry>
+<p>Metrics</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+<entry>
+<p>Updated this release</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+diameter_pcc_rule 
+</entry>
+<entry>
+Count of the number of PCC Rules provisioned by PCRF to PCEF in a 4G environment.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+diameter_pcc_rule_count_last_interval 
+</entry>
+<entry>
+Count of the number of PCC Rules provisioned by PCRF to PCEF since last interval count, which is calculated using the formula: increase( ). The Default value for last interval is 10 minutes.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC21" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+APP
+</entry>
+<entry>
+Always ‘1’ in this SPS version
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+PCRF
+</entry>
+<entry>
+Always ‘1’ in this SPS version
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+HOST
+</entry>
+<entry>
+SPS host name (for example, VM name.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+NAME
+</entry>
+<entry>
+The name of the PCC Rule.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+TYPE
+</entry>
+<entry>
+<p>Possible values are:</p><ul>
+<li>
+<p>CRN</p>
+</li>
+<li>
+<p>CRBN</p>
+</li>
+</ul>
+<p>Where, CRN indicates PCC rules dynamically provisioned by the PCRF to PCEF, and CRBN indicates pre-defined group of PCC rules (preconfigured in the PCEF).</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+ACTION
+</entry>
+<entry>
+<p>Possible values are:</p><ul>
+<li>
+<p>INSTALLED</p>
+</li>
+<li>
+<p>REMOVED</p>
+</li>
+</ul>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+APN
+</entry>
+<entry>
+The layer 2 address (Access Point Name) to which a user is connected in a 4G environment.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+RAT
+</entry>
+<entry>
+<p>Possible values of the radio access technology, serving the UE in a 4G environment, are:</p><ul>
+<li>
+<p>WLAN</p>
+</li>
+<li>
+<p>VIRTUAL</p>
+</li>
+<li>
+<p>UTRAN</p>
+</li>
+<li>
+<p>GERAN</p>
+</li>
+<li>
+<p>GAN</p>
+</li>
+<li>
+<p>HSPA_EVOLUTION</p>
+</li>
+<li>
+<p>EUTRAN</p>
+</li>
+<li>
+<p>CDMA2000_1X</p>
+</li>
+<li>
+<p>HRPD</p>
+</li>
+<li>
+<p>UMB</p>
+</li>
+<li>
+<p>EHRPD</p>
+</li>
+</ul>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+CUSTOM
+</entry>
+<entry>
+Open label where you can provide values in form of "Key Value Pair" basically acting as custom data.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC21" namest="col1">
+<p>
+<b>Examples</b>
+</p>
+<p>The following are examples in XML format:</p>
+<codeblock>&lt;measType p="1"&gt;diameter_pcc_rule &lt;/measType&gt;
+
+&lt;measValue measObjLdn=Action="INSTALLED",Apn="TestAPN",CustomLabel="{}",Name="CRN1",RadioAccess="EUTRAN",Type="CRN",instance="135.249.93.45:9111",job="application_metrics45"}&gt;
+      &lt;r p="1"&gt;1&lt;/r&gt;
+&lt;/measValue&gt;</codeblock>
+<codeblock>&lt;measType p="1"&gt;diameter_pcc_rule &lt;/measType&gt;
+
+&lt;measValue measObjLdn=Action="INSTALLED",Apn="TestAPN",CustomLabel="{}",Name="CRBN1",RadioAccess="EUTRAN",Type="CRN",instance="135.249.93.45:9111",job="application_metrics45"}&gt;
+      &lt;r p="1"&gt;1&lt;/r&gt;
+&lt;/measValue&gt;</codeblock>
+<codeblock>&lt;measType p="1"&gt;diameter_pcc_rule &lt;/measType&gt;
+
+&lt;measValue measObjLdn=Action="REMOVED",Apn="TestAPN",CustomLabel="{}",Name="CRBN1",RadioAccess="EUTRAN",Type="CRBN",instance="135.249.93.45:9111",job="application_metrics45"
+      &lt;r p="1"&gt;1&lt;/r&gt;
+&lt;/measValue&gt;</codeblock>
+<codeblock>&lt;measType p="1"&gt;diameter_pcc_rule &lt;/measType&gt;
+
+&lt;measValue measObjLdn=Action="REMOVED",Apn="TestAPN",CustomLabel="{}",Name="CRN1",RadioAccess="EUTRAN",Type="CRN",instance="135.249.93.45:9111",job="application_metrics45"
+      &lt;r p="1"&gt;1&lt;/r&gt;
+&lt;/measValue&gt;</codeblock>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>This metric is collected in a 5G environment.</p>
+<table><title>http_3gpp_pcc_rule metrics</title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC24"/>
+<colspec colname="COLSPEC23"/>
+<thead>
+<row>
+<entry>
+<p>Metrics</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+<entry>
+<p>Updated this release</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+http_3gpp_pcc_rule
+</entry>
+<entry>
+Count of the number of PCC Rules provisioned by PCF to SMF in a 5G environment.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+http_3gpp_pcc_rule_count_last_interval 
+</entry>
+<entry>
+Count of the number of PCC Rules provisioned by PCF to SMF since last interval count, which is calculated using the formula: increase( ). The Default value for last interval is 10 minutes.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC23" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+APP
+</entry>
+<entry>
+Always ‘1’ in this SPS version
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+PCRF
+</entry>
+<entry>
+Always ‘1’ in this SPS version
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+HOST
+</entry>
+<entry>
+SPS host name (for example, VM name.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+NAME
+</entry>
+<entry>
+The name of the PCC Rule.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+TYPE
+</entry>
+<entry>
+<p>Possible values are:</p><ul>
+<li>
+<p>CRN</p>
+</li>
+<li>
+<p>CRBN</p>
+</li>
+</ul>
+<p>Where, CRN indicates PCC rules dynamically provisioned by the PCF to the SMF, and CRBN indicates pre-defined group of PCC rules (preconfigured in the SMF)</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+ACTION
+</entry>
+<entry>
+<p>Possible values are:</p><ul>
+<li>
+<p>INSTALLED</p>
+</li>
+<li>
+<p>REMOVED</p>
+</li>
+</ul>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+DNN
+</entry>
+<entry>
+The layer 2 address (Data Network Name) to which a user is connected in a 5G environment.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+RAT
+</entry>
+<entry>
+<p>Possible values of the radio access technology, serving the UE in a 4G environment, are:</p><ul>
+<li>
+<p>WLAN</p>
+</li>
+<li>
+<p>VIRTUAL</p>
+</li>
+<li>
+<p>UTRAN</p>
+</li>
+<li>
+<p>GERAN</p>
+</li>
+<li>
+<p>GAN</p>
+</li>
+<li>
+<p>HSPA_EVOLUTION</p>
+</li>
+<li>
+<p>EUTRAN</p>
+</li>
+<li>
+<p>CDMA2000_1X</p>
+</li>
+<li>
+<p>HRPD</p>
+</li>
+<li>
+<p>UMB</p>
+</li>
+<li>
+<p>EHRPD</p>
+</li>
+</ul>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+CUSTOM
+</entry>
+<entry>
+Open label where you can provide values in form of "Key Value Pair" basically acting as custom data.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC23" namest="col1">
+<p>
+<b>Examples</b>
+</p>
+<p>The following are examples in XML format:</p>
+<codeblock>&lt;measType p="1"&gt;http_3gpp_pcc_rule &lt;/measType&gt;
+
+&lt;measValue measObjLdn=Action="INSTALLED",CustomLabel="{}",Dnn="network1",Name="CRBN2",RadioAccess="EUTRAN",Type="CRBN",instance="135.249.93.45:9111",job="application_metrics45"&gt;
+      &lt;r p="1"&gt;1&lt;/r&gt;
+&lt;/measValue&gt;</codeblock>
+<codeblock>&lt;measType p="1"&gt;http_3gpp_pcc_rule &lt;/measType&gt;
+
+&lt;measValue measObjLdn=Action="INSTALLED",CustomLabel="{}",Dnn="network1",Name="CRN2",RadioAccess="EUTRAN",Type="CRN",instance="135.249.93.45:9111",job="application_metrics45"
+      &lt;r p="1"&gt;1&lt;/r&gt;
+&lt;/measValue&gt;</codeblock>
+<codeblock>&lt;measType p="1"&gt;http_3gpp_pcc_rule &lt;/measType&gt;
+
+&lt;measValue measObjLdn=Action="REMOVED",CustomLabel="{}",Dnn="network1",Name="CRBN2",RadioAccess="EUTRAN",Type="CRBN",instance="135.249.93.45:9111",job="application_metrics45"
+      &lt;r p="1"&gt;1&lt;/r&gt;
+&lt;/measValue&gt;</codeblock>
+<codeblock>&lt;measType p="1"&gt;http_3gpp_pcc_rule &lt;/measType&gt;
+
+&lt;measValue measObjLdn=Action="REMOVED",CustomLabel="{}",Dnn="network1",Name="CRN2",RadioAccess="EUTRAN",Type="CRN",instance="135.249.93.45:9111",job="application_metrics45
+      &lt;r p="1"&gt;1&lt;/r&gt;
+&lt;/measValue&gt;</codeblock>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section id="entCount1"><title>Entity count metrics</title>
+<p>This metric provides the current count of entities in SPS database. This metrics collects data by fetching the secondary index counts from database nodes at regular intervals. For example, when a device is created, the device count increments by 1, and will remain the same until some device is created or deleted. Once it is deleted, the device count is decremented by 1, and will remain the same until some device is created or deleted.</p>
+<note>
+<p>The Entity count metrics found in this section contain the metrics and descriptions for metrics reported using Prometheus. </p>
+</note>
+<p>This metric always gives the current count of the entities in the database, not per interval. The regular interval for Entity count metrics is configurable using the following application preference:</p>
+<p>
+<varname>Entity Metrics Monitoring Interval (secs)</varname>
+</p>
+<p>See the <i>Global configuration Guide</i> for more information about configuring the “Entity Metrics Monitoring Interval (secs)” application preference.</p>
+<p> Currently, only counts for Devices and Policy Sessions are supported.</p>
+<p>After an upgrade, the initial metrics will not be accurate for a length of time because the secondary indexes will not have valid data. The secondary indexes are updated when the session is updated via some kind of event (SPR update, diameter etc.) that results in that index being adjusted.</p>
+<table><title>Entity_count metrics</title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC26"/>
+<colspec colname="COLSPEC25"/>
+<thead>
+<row>
+<entry>
+<p>Metrics</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+<entry>
+<p>Updated this release</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+entity_count
+</entry>
+<entry>
+<p>Total count of entities in db.</p>
+<p>The session_count_overall" and "subscriber_count_overall" metrics are derived from the base metric "entity_count".</p>
+</entry>
+<entry>
+Updated
+</entry>
+</row>
+<row>
+<entry>
+session_count_overall
+</entry>
+<entry>
+<p>Currently only the count of Policy Sessions.</p>
+<p>Prometheus rule to get total count of sessions (equivalent to promql query):</p>
+<p>
+<userinput>entity_count{Type="Session"})</userinput>
+</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+subscriber_count_overall
+</entry>
+<entry>
+<p>Currently only the count of Devices.</p>
+<p>Prometheus rule to get Total count of subscribers (equivalent to promql query:</p>
+<p>
+<userinput> entity_count{Type="Subscriber"})</userinput>
+</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC25" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+APP
+</entry>
+<entry>
+Always ‘1’ in this SPS version
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+PCRF
+</entry>
+<entry>
+Always ‘1’ in this SPS version
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+HOST
+</entry>
+<entry>
+SPS host name (for example, VM name.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+TYPE
+</entry>
+<entry>
+<p>Possible values are:</p><ul>
+<li>
+<p>Session</p>
+</li>
+<li>
+<p>Subscriber</p>
+</li>
+</ul>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+SUBTYP
+</entry>
+<entry>
+<p>Possible values are:</p><ul>
+<li>
+<p>Session</p><ul>
+<li>
+<p>IPCanSession</p>
+</li>
+<li>
+<p>PDUSession</p>
+</li>
+<li>
+<p>AfSession</p>
+</li>
+<li>
+<p>SySession</p>
+</li>
+<li>
+<p>NchfSession</p>
+</li>
+<li>
+<p>SdSession</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Subscriber</p><ul>
+<li>
+<p>Device</p>
+</li>
+</ul>
+</li>
+</ul>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+CUSTOM
+</entry>
+<entry>
+Open label where you can provide values in form of "Key Value Pair" basically acting as custom data.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC25" namest="col1">
+<p>
+<b>Examples</b>
+</p>
+<p>The following are examples in XML format:</p>
+<codeblock>&lt;measInfo&gt;
+ &lt;granPeriod duration="PT60S" endTime="2019-07-17T11:04:00+00:00" /&gt;
+ &lt;repPeriod duration="PT60S" /&gt;
+ &lt;measType p="1"&gt;session_count_overall&lt;/measType&gt;
+ &lt;measValue measObjLdn="APP=1,HOST=sps-ig-oame-0,PCRF=1,TYPE=Session,SUBTYP=AfSession,CUSTOM={}"&gt;
+  &lt;r p="1"&gt;2&lt;/r&gt;
+ &lt;/measValue&gt;
+ &lt;measValue measObjLdn="host=135.249.93.79,pcrf=1,app=1,Type=Session,SubTyp=IPCanSession,Custom={},instan=135.249.93.79:9111,job=oame_metrics"&gt;
+  &lt;r p="1"&gt;3&lt;/r&gt;
+ &lt;/measValue&gt;
+ &lt;measValue measObjLdn="host=135.249.93.79,pcrf=1,app=1,Type=Session,SubTyp=PDUSession,Custom={},instan=135.249.93.79:9111,job=oame_metrics"&gt;
+  &lt;r p="1"&gt;2&lt;/r&gt;
+ &lt;/measValue&gt;
+ &lt;measValue measObjLdn="host=135.249.93.79,pcrf=1,app=1,Type=Session,SubTyp=SdSession,Custom={},instan=135.249.93.79:9111,job=oame_metrics"&gt;
+  &lt;r p="1"&gt;1&lt;/r&gt;
+ &lt;/measValue&gt;
+ &lt;measValue measObjLdn="host=135.249.93.79,pcrf=1,app=1,Type=Session,SubTyp=SySession,Custom={},instan=135.249.93.79:9111,job=oame_metrics"&gt;
+  &lt;r p="1"&gt;0&lt;/r&gt;
+ &lt;/measValue&gt;
+&lt;/measInfo&gt;
+&lt;measInfo&gt;
+ &lt;granPeriod duration="PT60S" endTime="2019-07-17T11:04:00+00:00" /&gt;
+ &lt;repPeriod duration="PT60S" /&gt;
+ &lt;measType p="1"&gt;subscriber_count_overall&lt;/measType&gt;
+ &lt;measValue measObjLdn="APP=1,HOST=sps-ig-oame-0,PCRF=1,TYPE=Subscriber,SUBTYP=Device,CUSTOM={}"&gt;
+    &lt;r p="1"&gt;8&lt;/r&gt;
+ &lt;measValue&gt;
+&lt;measInfo&gt;</codeblock>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section id="CDRmet1"><title>CDR metrics</title>
+<p>The following metrics are visible in Prometheus and Grafana only, and are not visible in the Gen3gppXML file. The metrics are dumped per CDR Node and provide a cumulative count of CDRs from CDR node startup time until the present time over a time period (1 hour, 2 hour etc).</p>
+<p>
+<!--xref URI: #cdrwrit-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/cdrwrit"/> describes the cdr_Record_Written metrics available in Prometheus.</p>
+<p>
+<!--xref URI: #cdrre-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/cdrre"/> describes the cdr_Record_Received metrics available in Prometheus.</p>
+<table id="cdrwrit"><title>cdr_Record_Written</title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC28"/>
+<colspec colname="COLSPEC27"/>
+<thead>
+<row>
+<entry>
+<p>Metrics</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+<entry>
+<p>Updated this release</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+cdr_Record_Written 
+</entry>
+<entry>
+This will show the cumulative count of CDR Records written (as a value) since the node startup time until the present.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+cdr_record_written_last_interval 
+</entry>
+<entry>
+This will show the count of CDR Records written in the last 10 minutes (as a Value) and it is calculated using the formula increase(cdr_Record_Written[10m]).
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC27" namest="col1">
+<p>
+<b>Examples</b>
+</p>
+<codeblock>cdr_Record_Written{exported_instance="sps-ig-cdr-0,index="1".instance="sps-ig-cdr-0:5555",job="cdr_metrics",service="CDR"}
+Value = 5
+cdr_Record_Written{exported_instance="sps-ig-cdr-0,index="2".instance="sps-ig-cdr-0:5555",job="cdr_metrics",service="CDR"}
+Value = 10
+cdr_Record_Written{exported_instance="sps-ig-cdr-1,index="1".instance="sps-ig-cdr-1:5555",job="cdr_metrics",service="CDR"} 
+Value = 15
+cdr_Record_Written{exported_instance="sps-ig-cdr-1,index="2".instance="sps-ig-cdr-1:5555",job="cdr_metrics",service="CDR"}
+Value = 15
+</codeblock>
+<codeblock>cdr_record_written_last_interval{exported_instance="sps-ig-cdr-0,index="1".instance="sps-ig-cdr-0:5555",job="cdr_metrics",service="CDR"}
+Value = 0
+cdr_record_written_last_interval{exported_instance="sps-ig-cdr-0,index="2".instance="sps-ig-cdr-0:5555",job="cdr_metrics",service="CDR"}
+Value = 5.555555555555555555
+cdr_record_written_last_interval{exported_instance="sps-ig-cdr-1,index="1".instance="sps-ig-cdr-1:5555",job="cdr_metrics",service="CDR"} 
+Value = 5.555555555555555555
+cdr_record_written_last_interval{exported_instance="sps-ig-cdr-1,index="2".instance="sps-ig-cdr-1:5555",job="cdr_metrics",service="CDR"}
+Value = 11.111111111111111
+</codeblock>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>
+<!--xref URI: #cdrrecordwrit-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/cdrrecordwrit"/> shows an example of the cdr_Record_Written metrics in the Prometheus GUI.</p>
+<fig id="cdrrecordwrit">
+<title>cdr_Record_Written in Prometheus</title>
+<!--MMO resource relative URI: ../Graphics/PromCDRmet1a_default.png-->
+<image href="img9yz-09126-mt00-rezza-sp2-promcdrmet1a_default.png"/>
+</fig>
+<table id="cdrre"><title>cdr_Record_Received</title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC34"/>
+<colspec colname="COLSPEC33"/>
+<thead>
+<row>
+<entry>
+<p>Metrics</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+<entry>
+<p>Updated this release</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+cdr_Record_Received
+</entry>
+<entry>
+This will show the cumulative count of CDR Records received (as a value) since the node startup time until the present.  
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+cdr_record_received_last_interval 
+</entry>
+<entry>
+This will show the count of CDR Records written in the last 10 minutes (as a Value) and it is calculated using the formula increase(cdr_Record_Received[10m]).
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC33" namest="col1">
+<p>
+<b>Examples</b>
+</p>
+<codeblock>cdr_Record_Received{exported_instance="sps-ig-cdr-0,index="1".instance="sps-ig-cdr-0:5555",job="cdr_metrics",service="CDR"}
+Value = 5
+cdr_Record_Received{exported_instance="sps-ig-cdr-0,index="2".instance="sps-ig-cdr-0:5555",job="cdr_metrics",service="CDR"}
+Value = 10
+cdr_Record_Received{exported_instance="sps-ig-cdr-1,index="1".instance="sps-ig-cdr-1:5555",job="cdr_metrics",service="CDR"} 
+Value = 10
+cdr_Record_Received{exported_instance="sps-ig-cdr-1,index="2".instance="sps-ig-cdr-1:5555",job="cdr_metrics",service="CDR"}
+Value = 5
+</codeblock>
+<codeblock>cdr_record_received_last_interval{exported_instance="sps-ig-cdr-0,index="2".instance="sps-ig-cdr-0:5555",job="cdr_metrics",service="CDR"}
+Value = 5.555555555555555555
+</codeblock>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>
+<!--xref URI: #cdrrecordRec-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas/cdrrecordrec"/> shows an example of the cdr_Record_Received metrics in the Prometheus GUI.</p>
+<fig id="cdrrecordrec">
+<title>cdr_Record_Received in Prometheus</title>
+<!--MMO resource relative URI: ../Graphics/PromGuiCDR2_default.png-->
+<image href="img9yz-09126-mt00-rezza-sp2-promguicdr2_default.png"/>
+</fig>
+</section>
+<section id="Notific-server-metrics"><title>Notification server metrics</title>
+<p>The following table describes the metrics for the SPS notification server.</p>
+<table><title>Notification server metrics</title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC8"/>
+<colspec colname="COLSPEC7"/>
+<thead>
+<row>
+<entry>
+<p>Metrics</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+<entry>
+<p>Updated this release</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+notificationserver_count
+</entry>
+<entry>
+Number of inbound notification server requests accumulated since the start of this node
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+notificationserver_rate
+</entry>
+<entry>
+Average rate of inbound notification server requests (per second) during this recent interval. (calculated sum/interval duration).
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+notificationserver_average_latency_last_interval
+</entry>
+<entry>
+Average latency during this recent interval (calculated sum/count).
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+notificationserver_average_latency_overall
+</entry>
+<entry>
+Average latency for all accumulated intervals (calculated sum/count).
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+notificationserver_sum
+</entry>
+<entry>
+Sum of all latencies accumulated since the start of this node (to calculate averages)
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+notificationserver_count_last_interval
+</entry>
+<entry>
+Number of inbound/outbound notification server requests accumulated since last count interval
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+<b>Labels (in XML)</b>
+</entry>
+<entry/>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+OperationName 
+</entry>
+<entry>
+Always ‘pushNotification/process’ in this SPS version
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+RequestType
+</entry>
+<entry>
+Always ‘INBOUND/OUTBOUND’ in this SPS version
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+TemplateName
+</entry>
+<entry>
+SPS Notification Server's Template name (e.g. Template1)
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Channel
+</entry>
+<entry>
+Notification Channels (e.g. KAFKA, REST, SOAP, EMAIL, SMS and TCP etc)
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Status
+</entry>
+<entry>
+<p>Notification INBOUND Status: (OK, SUCCESS, FAILURE, Bad Request), </p>
+<p>Notification OUTBOUND Status: (SUCCESS, FAILURE, RETRY)</p>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry rowsep="0">
+CustomLabel
+</entry>
+<entry>
+Notification custom level (e.g. for success - OK and for failure - Unable to process your request)
+</entry>
+<entry>
+—
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section id="NRF-metrics"><title>NRF metrics</title>
+<p>The following table describes the NRF inbound metrics.</p>
+<table><title>NRF Inbound metrics</title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC36"/>
+<colspec colname="COLSPEC35"/>
+<thead>
+<row>
+<entry>
+<p>Metrics</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+<entry>
+<p>Updated this release</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+nrf_inbound_count
+</entry>
+<entry>
+Number of inbound NRF messages accumulated since the start of this node. This only specifies the number of NFStatusNotify messages received from NRF.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+nrf_inbound_rate
+</entry>
+<entry>
+Average rate of inbound NFStatusNotify messages (per second) during this recent interval.  (calculated sum/interval duration).
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+nrf_inbound_average_latency_last_interval
+</entry>
+<entry>
+Average latency of inbound NRF messages during this recent interval (calculated sum/count).
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+nrf_inbound_average_latency_overall
+</entry>
+<entry>
+Average latency for all accumulated intervals (calculated sum/count) of inbound NRF messages
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+nrf_inbound_sum
+</entry>
+<entry>
+Sum of all latencies accumulated since the start of this node (to calculate averages) of inbound NRF messages.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+nrf_inbound_count_last_interval
+</entry>
+<entry>
+Number of inbound NFStatusNotify messages accumulated since last count interval
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+<b>Labels (in XML)</b>
+</entry>
+<entry/>
+<entry colsep="0">
+—
+</entry>
+</row>
+<row>
+<entry>
+MSTYPE
+</entry>
+<entry>
+<p>The Message Type value, which can be one of the following:</p><ul>
+<li>
+<p>NOTIFY_NF_REGISTERED </p>
+</li>
+<li>
+<p>NOTIFY_NF_DEREGISTERED</p>
+</li>
+<li>
+<p>NOTIFY_NF_PROFILE_CHANGED </p>
+</li>
+</ul>
+</entry>
+<entry>
+Updated
+</entry>
+</row>
+<row>
+<entry>
+CMPNT   
+</entry>
+<entry>
+<p>The Component on which the metrics are captured. Possible values are: </p><ul>
+<li>
+<p>Diam-App</p>
+</li>
+<li>
+<p>OAME</p>
+</li>
+</ul>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+ID
+</entry>
+<entry>
+The Id of the Subscription for which the NFStatusNotify is received from NRF.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+STATUS
+</entry>
+<entry>
+The HTTP Status Code for the NFSatusNotify operation.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry rowsep="0">
+CUSTOM
+</entry>
+<entry>
+<p>The Custom Label for NRF inbound messages to specify the Status of the request. Possible values are:</p><ul>
+<li>
+<p>PASS</p>
+</li>
+<li>
+<p>FAIL</p>
+</li>
+<li>
+<p>TIMEOUT</p>
+</li>
+</ul>
+</entry>
+<entry>
+—
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>The following table describes the NRF outbound metrics.</p>
+<table><title>NRF Outbound metrics</title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC38"/>
+<colspec colname="COLSPEC37"/>
+<thead>
+<row>
+<entry>
+<p>Metrics</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+<entry>
+<p>Updated this release</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+nrf_outbound_count
+</entry>
+<entry>
+Number of outbound NRF messages accumulated since the start of this node. This specifies the sum of NFRegister, NFDeregister, NFUpdate, NFHeartBeat, Probe, NFStatusSubscribe, NFStatusUnSubscribe, NFDiscover messages received from NRF.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+nrf_outbound_rate
+</entry>
+<entry>
+Average rate of outbound NRF messages (per second) during this recent interval.  (calculated sum/interval duration).
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+nrf_outbound_average_latency_last_interval
+</entry>
+<entry>
+Average latency of outbound NRF messages during this recent interval (calculated sum/count).
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+nrf_outbound_average_latency_overall
+</entry>
+<entry>
+Average latency for all accumulated intervals (calculated sum/count) of outbound NRF messages
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+nrf_outbound_sum
+</entry>
+<entry>
+Sum of all latencies accumulated since the start of this node (to calculate averages) of outbound NRF messages.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+nrf_outbound_count_last_interval
+</entry>
+<entry>
+Number of outbound NRF messages accumulated since last count interval
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC37" namest="col1">
+<b>Labels (in XML)</b>
+</entry>
+</row>
+<row>
+<entry>
+MSTYPE
+</entry>
+<entry>
+<p>The message type value. Possible values are::</p><ul>
+<li>
+<p>REGISTER</p>
+</li>
+<li>
+<p>DEREGISTER</p>
+</li>
+<li>
+<p>UPDATE</p>
+</li>
+<li>
+<p>DISCOVERQUERY</p>
+</li>
+<li>
+<p>HEARTBEAT</p>
+</li>
+<li>
+<p>PROBE</p>
+</li>
+<li>
+<p>SUBSCRIBE</p>
+</li>
+<li>
+<p>UNSUBSCRIBE</p>
+</li>
+<li>
+<p>SUBSCRIPTION_UPDATE</p>
+</li>
+</ul>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+CMPNT   
+</entry>
+<entry>
+<p>The Component on which the metrics are captured. Possible values are: </p><ul>
+<li>
+<p>Diam-App</p>
+</li>
+<li>
+<p>OAME</p>
+</li>
+</ul>
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+ID
+</entry>
+<entry>
+The Id of the DiscoveryQuery/NFProfile/Subscription  depending on the NRF outbound message.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+STATUS
+</entry>
+<entry>
+The HTTP Status Code for the Discovery/Register/Deregister/Subscribe/Heartbeat/Probe operation.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+NRFSVR
+</entry>
+<entry>
+The Id of the NRFServer on which the NRF message is sent.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry rowsep="0">
+CUSTOM
+</entry>
+<entry>
+<p>The Custom Label for NRF inbound messages to specify the Status of the request. Possible values are:</p><ul>
+<li>
+<p>PASS</p>
+</li>
+<li>
+<p>FAIL</p>
+</li>
+<li>
+<p>TIMEOUT</p>
+</li>
+</ul>
+</entry>
+<entry>
+—
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+</conbody></concept>

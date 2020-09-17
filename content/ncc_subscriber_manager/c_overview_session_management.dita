@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id ="id9YZ-08540-UG05-PCZZA-d1e76682"><title>Overview</title><conbody>
+<section>
+
+<p>This section contains information about how to view the following NCC-Policy sessions
+                information:</p><ul>
+
+<li>
+<p>Gx/IP-CAN</p>
+</li>
+<li>
+<p>Rx/AF</p>
+</li>
+<li>
+<p>Sy</p>
+</li>
+</ul>
+<p>The IP-CAN, AF, and Sy sessions have configurable audit intervals. At each interval, the sessions
+                are examined. If any session is inactive greater than the audit interval, NCC-Policy
+                does one of the following:</p><ul>
+
+<li>
+<p>For IP-CAN sessions and AF sessions, the NCC polls the gateway or AF to determine the status of
+                        the session. </p>
+</li>
+<li>
+<p>If the session does not exist, the session is terminated and any related sessions are updated as required.</p>
+</li>
+</ul>
+<sectiondiv>
+<p><b>IP-CAN session overview</b></p>
+<p>An IP-CAN session is the association between a UE and an IP network. The association is identified by a UE IP address and UE identity information, if available. An IP-CAN session incorporates one or more IP-CAN bearers. Support for multiple IP-CAN bearers per IP-CAN session is IP-CAN specific. An IP-CAN session exists as long as the UE IP address is established and announced to the IP network. </p>
+<p>On each IP-CAN session establishment, the NCC checks to determine if there is an existing IP-CAN
+                    session for the identity provided in the IP-CAN session establishment message.
+                    If an existing IP-CAN session is found, this session is replaced on the NCC. If
+                    an existing IP-CAN session is not found, a new session is created on the NCC.
+                    The same subscriber can have multiple connections to an APN (with different IP
+                    addresses). To allow two IP-CAN sessions with the same UE IP address, the
+                    gateways initiating the request must be different. The system preference
+                    &#8220;Session Replacement Uses Diameter Peer&#8221; can be configured so that
+                    the overlapping session binding information is constrained to a Diameter peer
+                    during session replacement. When this system preference is set to true, the
+                    gateway is considered, which is useful in cases where a gateway uses overlapping
+                    IP address pools. When set to false, the gateway is not considered when session
+                    replacement occurs.</p>
+<p>In order to match an existing IP-CAN session for a given APN, all of the subscription Id type pairs in the new message must match (or subset match) the subscription Id type pairs in the existing IP-CAN session.</p>
+<p>When two IP-CAN sessions have the same subscription Id type but different values, the two sessions will not be treated as the same session. If two IP-CAN sessions have the same APN and IP address, then they are a match.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>AF session overview</b></p>
+<p>An AF session is an application-level session. The session is established by an application-level signaling protocol that is offered by the AF. The AF Session requires a session setup with explicit session descriptions before the service is used. </p>
+<p>The AF session provides applications that require the PCC of user traffic resources. NCC-Policy
+                    includes policy control decisions and functions. NCC-Policy receives session and
+                    media-related information from the AF and sends the AF traffic plane event
+                    information. The service information is used to determine the QoS for the
+                    service.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Sd session overview</b></p>
+<p>The Sd reference point is located between the Policy and Charging Rules Function (PCRF) and the Traffic Detection Function (TDF). The Sd reference point connects the PCRF to the standalone TDF function. The protocol supported on the Sd interface is Diameter. The Sd session initiation and modification is always done by the PCRF.</p>
+<p>The PCRF activates or deactivates ADC rules in TDF on session initiation. Session termination may occur when the user logs out of the GW or when an RAR is received from PCRF for final rule de-activation.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Sy session overview</b></p>
+<p>An Sy session (policy charging session) is a Diameter session between OCS (server) and the NCC
+                    (client) that allows the OCS to communicate charging information related to
+                    policy control. </p>
+</sectiondiv>
+<sectiondiv>
+<p><b>PDU session overview</b></p>
+<p>A PDU session is an HTTP/2 session between a UE and an IP network. The UE receives services through a protocol data unit (PDU) session, which is a logical connection between the UE and the data network. Various PDU session types are supported, for example, IPv4, IPv6, Ethernet, etc. The association is identified by a UE IP address and UE identity information, if available. </p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Nchf session overview</b></p>
+<p>An Nchf session is a Charging application-level session. The session is established by an application-level signaling protocol that is offered by the CHF. The Nchf session also contains N28 interface session information, which requires a session setup with explicit session descriptions before the service is used. The N28 interface allows communicatin between the PCF and CHF in 5G environments to provide functionality similar to that of the Sy session in a 4G environment.</p>
+</sectiondiv>
+</section>
+</conbody></concept>

@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="id9YZ-09126-MT02-REZZA-Configuring-Airflow-when-using-package"><title>Configuring Airflow GUI when a workflow configuration package is used</title><taskbody id="d1e3910"><context>
+                                                  <p>This section describes how to configure the
+                                                  Airflow GUI when a workflow configuration package
+                                                  is used for installation or execution of test
+                                                  suites.</p>
+                                                  <sectiondiv>
+                                                  <p><b>Workflow configuration package</b></p>
+                                                  <p>Installation and testing in Airflow requires a
+                                                  package that contains all configurations and
+                                                  definitions needed for scheduling and executing
+                                                  workflows. A workflow represents a task or a
+                                                  collection of tasks with a specific purpose such
+                                                  as NCC installation or regression testing. The
+                                                  workflow configuration package is uploaded to the
+                                                  Maestro VM using Package Manager in the Airflow
+                                                  GUI. The workflow configuration package has to be
+                                                  prepared in accordance with the following:</p>
+                                                  <ul id="ul_uwv_1zc_ymb">
+                                                  <li>
+                                                  <p>The package has only one definition file at its
+                                                  root.</p>
+                                                  </li>
+                                                  <li>
+                                                  <p>Each definition file can be used to create
+                                                  multiple workflows.</p>
+                                                  </li>
+                                                  <li>
+                                                  <p>Each workflow encapsulates one or more tasks.
+                                                  This collection of tasks is also known as a
+                                                  task-list.</p>
+                                                  </li>
+                                                  <li>
+                                                  <p>Each task in a task-list should have a
+                                                  reference to the task definition in the same
+                                                  file.</p>
+                                                  </li>
+                                                  <li>
+                                                  <p>Each task definition should describe the type
+                                                  of operation and the command to execute that
+                                                  task.</p>
+                                                  </li>
+                                                  <li>
+                                                  <p>The name of the task is arbitrary.</p>
+                                                  </li>
+                                                  <li>
+                                                  <p>This file can also be used to configure
+                                                  <filepath>clouds-config</filepath> file.</p>
+                                                  </li>
+                                                  <li>
+                                                  <p>E-mail notifications can be configured for each
+                                                  workflow.</p>
+                                                  </li>
+                                                  <li>
+                                                  <p>Each workflow can be scheduled.</p>
+                                                  </li>
+                                                  <li>
+                                                  <p>Except for
+                                                  <filepath>workflow-defintion.yaml</filepath> file,
+                                                  there is no naming or directory structure
+                                                  requirement. For more information on
+                                                  <filepath>workflow-defintion.yaml</filepath> file,
+                                                  see
+                                                  <!--xref URI: t-devops-reference-workflow-definition-file.xml#Workflow-Definition-file--><xref
+                                                  keyref="id9YZ-09126-MT02-REZZA-Workflow-Definition-file"
+                                                  />.</p>
+                                                  </li>
+                                                  </ul>
+                                                  <note>
+                                                  <p>The sample package for installation and testing
+                                                  in Airflow is available for reference. This
+                                                  package is called Sample package.</p>
+                                                  </note>
+                                                  </sectiondiv>
+<note>
+<p>In the Airflow GUI, when the workflow definition package is used, DAGs represent workflows.</p>
+</note></context><prereq>
+<p>Before beginning this procedure, ensure the following:</p><ul>
+<li>
+<p>The Maestro VM includes the Airflow server, which runs on port 80.</p>
+</li>
+<li>
+<p>The workflow configuration package is ready.</p>
+</li>
+</ul>
+			<p>To configure the Airflow GUI for workflows execution:</p>
+</prereq><steps>
+<step><cmd>From the Maestro VM, log in to the Airflow GUI.</cmd><info><note>
+<p>Internet Explorer is not supported to access the Airflow GUI.</p>
+</note><note>
+<p>By default the Airflow GUI is accessible with the Maestro IP address. For example, if the Maestro VM is installed with IPv4 and its IP address is 10.10.10.10, the Airflow GUI is accessible with <userinput>http://10.10.10.10/admin</userinput> address. If the Maestro VM is installed with IPv6 and its IP address is [3010::29:119:0:0:10], the Airflow GUI is accessible with <userinput>http://[3010::29:119:0:0:10]/admin</userinput> address.</p>
+</note></info></step>
+<step><cmd>In the Airflow GUI, click the <b>Package Manager</b> tab and do the following to upload the Airflow package ZIP file:</cmd><info><ul>
+<li>
+<p>Click <b>Choose File</b> and select the workflow configuration package to upload.</p>
+</li>
+<li>
+<p>Upload this package.</p>
+</li>
+<li>
+<p>Upload the package as follows:</p><ul>
+<li>
+<p>To validate and save click <b>Validate &amp; Save</b>.</p>
+</li>
+<li>
+<p>To skip validation, select the <b>Skip Validation</b> check box and click <b>Save</b>.</p>
+</li>
+</ul>
+<p>Click .</p>
+</li>
+</ul><note>
+<p/><ul>
+<li>
+<p>Uploading an invalid <filepath>workflow-definition.yaml</filepath> file makes the workflows unstable.</p>
+</li>
+<li>
+<p>To delete the uploaded packages, click the <b>Trash</b> icon. When a package is deleted, all the DAGs referencing that package are deleted as well.</p>
+</li>
+</ul>
+</note><p>
+<b>Expected outcome</b>
+</p><p>If the package uploads successfully, the following occurs:</p><ul>
+<li>
+<p>The message <b>Package saved successfully</b> appears, and the package name appears in the table that lists all the uploaded packages.</p>
+</li>
+<li>
+<p>DAGs are generated.</p>
+</li>
+</ul><note>
+<p>Uploading another Airflow package with the same name overrides the existing package and its corresponding DAGs.</p>
+</note></info></step>
+<step><cmd>If the package uploads successfully, verify that the generated DAGs correspond to each of your workflows and that the tasks are created for each workflow. Verify as follows:</cmd><info><ul>
+<li>
+<p>In the Airflow GUI, click the <b>Dags</b> tab. A list of generated DAGs appears.</p>
+</li>
+<li>
+<p>Choose a DAG to verify and click this DAG. The tasks corresponding to this DAG appear.</p>
+</li>
+</ul><note>
+<p>The set of tasks can be viewed with <b>Graph View</b> or <b>Tree View</b>. To view the log, click a task.</p>
+</note><note>
+<p>For more information on Airflow related queries, see Airflow documentation.</p>
+</note></info></step>
+</steps>
+</taskbody></task>

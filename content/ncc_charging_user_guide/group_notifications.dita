@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e210716"><title>Group notifications</title><conbody>
+<section><title>Overview</title>
+<p>Notifications can be sent to group resources for the following cases:</p><ul>
+<li>
+<p>
+<uicontrol>Notification from lifecycle of the group</uicontrol>: In this case, the lifecycle module includes Group ID in the notification request sent to NS.</p>
+</li>
+<li>
+<p>
+<uicontrol>Notification from lifecycle of subscription attached to the group</uicontrol>: In this case, the lifecycle module includes Group ID in the notification request sent to NS.</p>
+</li>
+<li>
+<p>
+<uicontrol>Notification from the threshold/cap attached to the group resources such as bucket, counter, and AV</uicontrol>: In this case, the threshold/cap rule includes the Group ID in the notification request sent to NS. Within the rule, you can define the variable <varname>Notification-Destination</varname> to select either Device or Group such as <userinput>THRESHOLD.Notification-Destination = NotificationDestinationType_DEVICE</userinput> for notification. In case of deviceGroupCounter, notifications are pushed to device or group depending on Notification-Destination. If nothing is mentioned, the notification is sent to device. </p>
+</li>
+</ul>
+<p>If a rule with <varname>Notification-Destination</varname> is not specified, then a notification is triggered as follows:</p><ul>
+<li>
+<p>For group counter, notification is sent to group.</p>
+</li>
+<li>
+<p>For device counter, notification is sent to device</p>
+</li>
+<li>
+<p>For device-group counter, notification is sent based on the <varname>Notification-Destination</varname> defined. </p>
+</li>
+<li>
+<p>For device or group subscription counter, notification is sent based on the type of subscription (group or device).</p>
+</li>
+<li>
+<p>For AV, notification is sent based on the type of subscription (group or device).</p>
+</li>
+<li>
+<p>For group or device subscription bucket, notification is sent based on the type of subscription (group or device).</p>
+</li>
+</ul>
+</section>
+<section><title>Configuring group notification</title>
+<p>Following are the methods to activate the group notification feature:</p><ul>
+<li>
+                    <p>Configure the <varname>Notification-Destination</varname> in rules.</p>
+                    <!--MMO resource relative URI: ../Graphics/Release_18.9/GroupNotification_Threshold_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-groupnotification_threshold_default.png"
+                        scale="50"/>
+                </li>
+<li>
+<p>Configure the subscription resource and attach it to a group for notifications. Threshold reached attached with AV accumulates the subscription of group. Threshold/cap reached attached with counter accumulates the subscription of group. Threshold reached attached with bucket accumulates the subscription of group.</p>
+</li>
+</ul>
+</section>
+<section><title>Assumptions</title>
+<p>Following assumptions apply to the group notification feature:</p><ul>
+<li>
+<p>The recipient of the group notification is decided by the Group Notification profile (available under <uicontrol>Notification Management</uicontrol> → <uicontrol>Notification Preferences</uicontrol> → ≡ → <uicontrol>Group Notification Profiles</uicontrol>). </p>
+<p>For NCC, only <uicontrol>All Members and Group Admin</uicontrol>, <uicontrol>All Members except
+                            Group Admin</uicontrol>, <uicontrol>Group Admin</uicontrol>, and
+                            <uicontrol>None</uicontrol> can be used. See the following table for
+                        descriptions.</p>
+<table pgwide="1" colsep="1" rowsep="1">
+                        <tgroup cols="2">
+                            <colspec colname="col1"/>
+                            <colspec colname="col2"/>
+                            <thead>
+                                <row>
+                                    <entry>
+                                        <p>Value</p>
+                                    </entry>
+                                    <entry>
+                                        <p>Description</p>
+                                    </entry>
+                                </row>
+                            </thead>
+                            <tbody>
+                                <row>
+                                    <entry> Group Selected Members </entry>
+                                    <entry> The notifications are sent to selected members specified
+                                        in the incoming request. </entry>
+                                </row>
+                                <row>
+                                    <entry> Group Admin </entry>
+                                    <entry> The notifications are sent to only the group admin.
+                                    </entry>
+                                </row>
+                                <row>
+                                    <entry> Group Admin and Selected Members </entry>
+                                    <entry> The notifications are sent to the group admin and
+                                        selected members specified in the incoming request. </entry>
+                                </row>
+                                <row>
+                                    <entry> All Members and Group Admin </entry>
+                                    <entry> The notifications are sent to all group members
+                                        including the group admin. </entry>
+                                </row>
+                                <row>
+                                    <entry> All Members except Group Admin </entry>
+                                    <entry> The notifications are sent to all group members in the
+                                        group except for the group admin. </entry>
+                                </row>
+                                <row>
+                                    <entry> None </entry>
+                                    <entry> No notification is sent. </entry>
+                                </row>
+                            </tbody>
+                        </tgroup>
+                    </table>
+</li>
+<li>
+<p>There is no dynamic parameter except Group Id.</p>
+</li>
+<li>
+<p>For group notification, the lifecycle EDR contains the tag recipient id with the value of first retrieved group administrator.</p>
+</li>
+</ul>
+</section>
+<section><title>Group lifecycle notification</title>
+<p>The <i>Send Notification</i> action is enhanced to send notifications to group. The groupId template parameter is added for group notification and can be used in the notification template. For example, create a new group lifecycle. Add the <varname>Send Notification Action</varname> for event <uicontrol>Activate</uicontrol> and provide the <uicontrol>Notification Template Id</uicontrol>. Create a new group with the entity lifecycle created. Whenever the configured event occurs on a group, the notification action is triggered for the group.</p>
+<fig>
+                <!--MMO resource relative URI: ../Graphics/Release_18.9/Groupex1_default.png-->
+                <image href="../images/img9yz-09126-ug01-pczza-sp1-groupex1_default.png" scale="70"
+                />
+            </fig>
+</section>
+<section><title>Group subscription notification</title>
+<p>The subscription type (TypeOfSubscription) checks and send notifications for group if the subscription type is Group. For example, create a new subscription entity lifecycle. Add the <varname>Send Notification Action</varname> for events <uicontrol>Subscription Renewed Event</uicontrol>, <uicontrol>Activate</uicontrol>, <uicontrol>Deactivate</uicontrol> and provide the <uicontrol>Notification Template Id</uicontrol> in the lifecycle entity. Create a charging service and associate it to a new bundle. Associate the entity lifecycle with the bundle created as shown in the following figure. Associate this bundle to the group. </p>
+<p>Whenever a configured event such as <uicontrol>Subscription Renewed Event</uicontrol> occurs on the group subscription, then notification action gets triggered for the group. Attach the <uicontrol>EnterpriseGroupLifeCycle</uicontrol> and <uicontrol>Bundle123</uicontrol> to the group entity (as shown in the following example).</p>
+<p>
+<uicontrol>Lifecycle creation:</uicontrol>
+</p>
+<fig>
+                <!--MMO resource relative URI: ../Graphics/Release_18.9/GroupLC_default.png-->
+                <image href="../images/img9yz-09126-ug01-pczza-sp1-grouplc_default.png" scale="55"/>
+            </fig>
+<p>Ensure that you have created a charging service before creating the bundle.</p>
+<p>
+<uicontrol>Bundle creation: </uicontrol>
+</p>
+<fig>
+                <!--MMO resource relative URI: ../Graphics/Release_18.9/BundleEntity_default.png-->
+                <image href="../images/img9yz-09126-ug01-pczza-sp1-bundleentity_default.png"
+                    scale="65"/>
+            </fig>
+<p>Ensure that you have created an account to associate with the bundle.</p>
+<p>
+<uicontrol>Group creation:</uicontrol>
+</p>
+<fig>
+                <!--MMO resource relative URI: ../Graphics/Release_18.9/Groupentity_default.png-->
+                <image href="../images/img9yz-09126-ug01-pczza-sp1-groupentity_default.png"
+                    scale="60"/>
+            </fig>
+</section>
+<section><title>Group threshold/cap notification</title>
+<p>The subscription type (TypeOfSubscription) checks if the subscription type and <varname>Notification-Destination</varname> is Group. Then notification is sent to the Group Admins or All Members. A sample is shown in the following figure where a notification is from the threshold or cap attached to group resources such as bucket, counters:</p>
+<fig>
+                <!--MMO resource relative URI: ../Graphics/Release_18.9/GroupNotification_Threshold_default.png-->
+                <image
+                    href="../images/img9yz-09126-ug01-pczza-sp1-groupnotification_threshold_default.png"
+                    scale="60"/>
+            </fig>
+</section>
+<section><title>Examples</title>
+<sectiondiv>
+<p><b>Example 1: Notification sent to admin when notification profile is set to GROUP ADMIN</b></p>
+<p>A notification is sent to group when the group subscription bucket usage is reached as per threshold defined. The group notification profile is set to <varname>GROUP ADMIN</varname>.</p>
+<p>Configure the following entities for this example:<table pgwide="1" colsep="1" rowsep="1">
+                        <tgroup cols="2">
+                            <colspec colname="col1" colwidth="1*"/>
+                            <colspec colname="col2" colwidth="1.98*"/>
+                            <thead>
+                                <row>
+                                    <entry>
+                                        <p>Entity</p>
+                                    </entry>
+                                    <entry>
+                                        <p>Task</p>
+                                    </entry>
+                                </row>
+                            </thead>
+                            <tbody>
+                                <row>
+                                    <entry> Notification server </entry>
+                                    <entry> Configure the Email and SMS servers. </entry>
+                                </row>
+                                <row>
+                                    <entry> Notification template </entry>
+                                    <entry>
+                                        <p>Create a template with <uicontrol>Name</uicontrol>:
+                                                <varname>Usage_Notification_Data</varname>,
+                                                <uicontrol>Notification Priority</uicontrol>:
+                                                <varname>Normal</varname> and the details as shown
+                                            in the following figure:</p>
+                                        <!--MMO resource relative URI: ../Graphics/Release_18.9/NT_Ex1_default.png-->
+                                        <image
+                                            href="../images/img9yz-09126-ug01-pczza-sp1-nt_ex1_default.png"
+                                            scale="60"/>
+                                    </entry>
+                                </row>
+                                <row>
+                                    <entry> Notification preferences </entry>
+                                    <entry>Create a group notification profile. See the figure after
+                                        the table for details.</entry>
+                                </row>
+                                <row>
+                                    <entry> Thresholds </entry>
+                                    <entry> Create the threshold profile group (TPG1). See the
+                                        figure after the table for details. </entry>
+                                </row>
+                                <row>
+                                    <entry> Counter </entry>
+                                    <entry> Create a counter with <uicontrol>Unit Type</uicontrol>:
+                                            <varname>Byte</varname>, <uicontrol>Counter
+                                            Type</uicontrol>: <varname>Usage</varname>,
+                                            <uicontrol>Counter Consumption Type</uicontrol>:
+                                            <varname>All</varname>, <uicontrol>Counter
+                                            Scope</uicontrol>: <varname>All</varname>,
+                                            <uicontrol>Threshold Profile Group ID List</uicontrol>:
+                                            <varname>TPG1</varname>
+                                    </entry>
+                                </row>
+                                <row>
+                                    <entry> Charging Services </entry>
+                                    <entry>
+                                        <p>Create bucket and tariff for non-monetary bucket.</p>
+                                        <!--MMO resource relative URI: ../Graphics/Release_18.9/CS_EX1_default.png-->
+                                        <image
+                                            href="../images/img9yz-09126-ug01-pczza-sp1-cs_ex1_default.png"
+                                        />
+                                    </entry>
+                                </row>
+                                <row>
+                                    <entry> Bundles </entry>
+                                    <entry> Create a bundle with fee = 0 and associate the charging
+                                        service created. </entry>
+                                </row>
+                                <row>
+                                    <entry> Account </entry>
+                                    <entry> Create an account. </entry>
+                                </row>
+                                <row>
+                                    <entry> User </entry>
+                                    <entry> Create a user. </entry>
+                                </row>
+                                <row>
+                                    <entry> Group </entry>
+                                    <entry> Create the group with subscription (bundle created) and
+                                        select the Notification profile created for group. </entry>
+                                </row>
+                                <row>
+                                    <entry> Device </entry>
+                                    <entry> Create the device with subscription (bundle created) and
+                                        link the user and group. </entry>
+                                </row>
+                            </tbody>
+                        </tgroup>
+                    </table></p>
+<p>
+<uicontrol>Notification preferences (Group notification profile):</uicontrol>
+</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_18.9/NP_Ex1_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-np_ex1_default.png"
+                        scale="65"/>
+                </fig>
+<p>
+<uicontrol>Thresholds (TPG1):</uicontrol>
+</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_18.9/GroupNotification_Threshold_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-groupnotification_threshold_default.png"
+                        scale="55"/>
+                </fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 2: Notification from lifecycle linked to group subscription</b></p>
+<p>A notification is sent to the users of the group when a subscription lifecycle is attached to the group. The group notification profile is set to <varname>ALL MEMBERS</varname>.</p>
+<p>Configure the following entities for this example:<table pgwide="1" colsep="1" rowsep="1">
+                        <tgroup cols="2">
+                            <colspec colname="col1" colwidth="1*"/>
+                            <colspec colname="col2" colwidth="1.97*"/>
+                            <thead>
+                                <row>
+                                    <entry>
+                                        <p>Entity</p>
+                                    </entry>
+                                    <entry>
+                                        <p>Task</p>
+                                    </entry>
+                                </row>
+                            </thead>
+                            <tbody>
+                                <row>
+                                    <entry> Notification server </entry>
+                                    <entry> Configure the Email server. </entry>
+                                </row>
+                                <row>
+                                    <entry> Notification template </entry>
+                                    <entry>
+                                        <p>Create a template with <uicontrol>Name</uicontrol>:
+                                                <varname>Recharge_Template</varname>,
+                                                <uicontrol>Notification Priority</uicontrol>:
+                                                <varname>Normal</varname> and the details as shown
+                                            in the following figure:</p>
+                                        <!--MMO resource relative URI: ../Graphics/Release_18.9/NT_Ex2_default.png-->
+                                        <image
+                                            href="../images/img9yz-09126-ug01-pczza-sp1-nt_ex2_default.png"
+                                        />
+                                    </entry>
+                                </row>
+                                <row>
+                                    <entry> Notification preferences </entry>
+                                    <entry> Create a group notification profile with
+                                            <uicontrol>Name</uicontrol>:
+                                            <varname>NotificationProfile1</varname>,
+                                            <uicontrol>Type</uicontrol>: <varname>Group
+                                            Profile</varname>, <uicontrol>Receiver</uicontrol>:
+                                            <varname>All Members</varname>,
+                                            <uicontrol>Channels</uicontrol>:
+                                            <varname>EMAIL</varname>, <uicontrol>Notification
+                                            Type</uicontrol>: <varname>Usage</varname>,
+                                            <uicontrol>Local</uicontrol>: True,
+                                            <uicontrol>Languages</uicontrol>:
+                                            <varname>ENGLISH</varname>
+                                    </entry>
+                                </row>
+                                <row>
+                                    <entry> Lifecycles </entry>
+                                    <entry> Create the Enterprise Group subscription lifecycle with
+                                            <uicontrol>Name</uicontrol>:
+                                            <varname>EnterpriseGroupLifecycle1</varname>,
+                                            <uicontrol>Type</uicontrol>: <varname>Object Status
+                                            Lifecycle</varname>, <uicontrol>Applicable
+                                            to</uicontrol>: <varname>Subscription</varname>,
+                                            <uicontrol>States</uicontrol>:
+                                        <varname>Active</varname>, <varname>Disconnected</varname>,
+                                            <varname>Inactive</varname>. See the lifecycle state
+                                        figures after the table. </entry>
+                                </row>
+                                <row>
+                                    <entry> Counter </entry>
+                                    <entry> Create counters - Device counter (C1), Device Group
+                                        counter (C2) with <uicontrol>Unit Type</uicontrol>:
+                                            <varname>MByte</varname>, <uicontrol>Counter
+                                            Type</uicontrol>: <varname>Usage</varname>,
+                                            <uicontrol>Counter Scope</uicontrol>:
+                                            <varname>Self</varname>, <uicontrol>Counter Consumption
+                                            Type</uicontrol>: <varname>All</varname>. </entry>
+                                </row>
+                                <row>
+                                    <entry> Charging Services </entry>
+                                    <entry> Create two charging services - CS1 and CS2. </entry>
+                                </row>
+                                <row>
+                                    <entry> Bundles </entry>
+                                    <entry> Create two bundles : Bundle1 with fee = 25 and Bundle 2
+                                        with fee = 30 accordingly and associate the charging
+                                        services (CS1 for Bundle1) (CS2 for Bundle2) created.
+                                    </entry>
+                                </row>
+                                <row>
+                                    <entry> Account </entry>
+                                    <entry> Create an account. </entry>
+                                </row>
+                                <row>
+                                    <entry> User </entry>
+                                    <entry> Create a user. </entry>
+                                </row>
+                                <row>
+                                    <entry> Group </entry>
+                                    <entry> Create the group with subscription (bundle created) and
+                                        select the <varname>EnterpriseGroupLifecycle1</varname>
+                                        created. </entry>
+                                </row>
+                                <row>
+                                    <entry> Device </entry>
+                                    <entry> Create the device with subscription (bundle1 created)
+                                        and link the user and group. </entry>
+                                </row>
+                                <row>
+                                    <entry nameend="col2" namest="col1"> Using the <uicontrol>Add
+                                            Counter</uicontrol> option (that displays once you mouse
+                                        over the created record), add the C1 device counter to
+                                        Device and C2 device group counter to group. </entry>
+                                </row>
+                            </tbody>
+                        </tgroup>
+                    </table></p>
+<p>
+<uicontrol>Lifecycles (EnterpriseGroupLifecycle1):</uicontrol>
+</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_18.9/LC1_Ex2_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-lc1_ex2_default.png"
+                        scale="80"/>
+                </fig>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_18.9/LC2_Ex2_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-lc2_ex2_default.png"
+                        scale="80"/>
+                </fig>
+</sectiondiv>
+</section>
+</conbody></concept>

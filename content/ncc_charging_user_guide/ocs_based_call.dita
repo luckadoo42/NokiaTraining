@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e237055"><title>OCS-based call redirection for VoLTE MO calls</title><conbody>
+<section><title>Overview</title>
+<p>For VoLTE calls there is a functionality to redirect a MO voice call to a configured destination
+                using ABD table configuration. This is usually used by operators to route calls to
+                DA and customer care 611.</p>
+</section>
+<section><title>Mapping table and custom data configuration</title>
+<p>Configure appropriate custom data for device. ABD routing is be supported for either the global
+                level or device level for VoLTE calls.</p>
+<p>Configure a mapping table with <uicontrol>Pattern Type</uicontrol> as <varname>REGEX_PATTERN</varname> as follows:</p>
+<fig>
+                                                  <!--MMO resource relative URI: ../Graphics/Release_20.6/f_com_map_dacall_default.png-->
+                                                  <image
+                                                  href="../images/img9yz-09126-ug01-pczza-sp1-f_com_map_dacall_default.png"
+                                                  scale="60"/>
+                                                </fig>
+</section>
+<section><title>Rule examples</title>
+<sectiondiv>
+<p><b>611 calls</b></p>
+<p>When a successful CCA is returned and a routing number is configured then the FUI is set as follows:</p><ul>
+<li>
+<p>
+<varname>Final-Unit-Action</varname> AVP is set as <varname>REDIRECT</varname>
+</p>
+</li>
+<li>
+<p>
+<varname>Redirect-Address-Type</varname> AVP is set to the <varname>SIP URL</varname>
+</p>
+</li>
+<li>
+<p>
+<varname>Redirect-Server-Address</varname> AVP is set as a configurable string</p>
+</li>
+</ul>
+<fig>
+                                                  <!--MMO resource relative URI: ../Graphics/Release_20.6/f_611call_1_default.png-->
+                                                  <image
+                                                  href="../images/img9yz-09126-ug01-pczza-sp1-f_611call_1_default.png"
+                                                  scale="50"/>
+                                                  </fig>
+<p>The <varname>Requested-Party-Address</varname> AVP is used for ABD routing determination. If this AVP is not populated, then <varname>Called-Party-Address</varname> AVP is used.</p>
+<fig>
+                                                  <!--MMO resource relative URI: ../Graphics/Release_20.6/f_611call_2_default.png-->
+                                                  <image
+                                                  href="../images/img9yz-09126-ug01-pczza-sp1-f_611call_2_default.png"
+                                                  scale="50"/>
+                                                  </fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>DA calls</b></p>
+<p>For a DA query call, the TAS is sent to the OCS as a DA indicator. For example, the TAS sends <i>Primary Call Type</i> = 14, <i>Service Type != 59</i> (59 indicates DA transfer), and the <i>Service Type</i> is set to 35 (35 indicates ABD).</p>
+<p>For a DA transfer call, there is no change to current behavior.  TAS sends <i>Service Type = 59</i> to the OCS.</p>
+<fig>
+                                                  <!--MMO resource relative URI: ../Graphics/Release_20.6/f_da_redir_default.png-->
+                                                  <image
+                                                  href="../images/img9yz-09126-ug01-pczza-sp1-f_da_redir_default.png"
+                                                  scale="50"/>
+                                                  </fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>Free calls with 4011 result and FUI</b></p>
+<p>If an ABD call returns 4011 in the result (Command level result), it needs apply below logic:</p><ol>
+<li>
+<p>Rule is used to determine whether VoLTE free call supports ABD routing.</p>
+</li>
+<li>
+<p>If it returns true, then FUI for routing number is included for 4011 result in command level and only FUI related AVPs is included in category level.</p>
+</li>
+</ol>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/f_4011_call_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-f_4011_call_default.png"/>
+</fig>
+</sectiondiv>
+</section>
+</conbody></concept>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="btel_telemetry_and_efk_stack">
+    <title>NCC telemetry</title>
+    <conbody>
+        <p>NCC CNF adheres to cloud-native principles in its telemetry architecture. It writes logs
+            and alarms to stdout, and makes metrics available to Prometheus. NCC uses a Prometheus
+            client library to expose metrics using an HTTP web service, which are then scraped by a
+            Prometheus server (default interval is 60 seconds).</p>
+        <p>As a deployment option, NCC CNF can include a set of telemetry services by delivering
+            BTEL (Blueprint for Telemetry). This includes the EFK stack with Fluentd, Elasticsearch,
+            and Kibana. Prometheus and Grafana software are included for metrics handling. Nokia
+            Gen3GPPXML tool is included for creating XML files for enabling northbound systems to
+            collect the metrics using SFTP. Finally, an alarm management component is included that
+            can manage alarms and send using SMPP.</p>
+        <p>Some operators might already have their own telemetry infrastructure and need NCC CNF to
+            integrate into that. There are various ways how this might be achieved and further
+            discussion with Nokia is required to align on a specific strategy and its details.
+            Examples might include having the operator's Fluentd read the stdout for logs and
+            alarms, potentially configured to feed those back into the NCC telemetry for its own
+            local collection. And/or having NCC stream alarms, logs, and metrics out using a common
+            VNF Event Stream (VES). In some cases, it might be required that NCC keeps a local copy
+            of its own telemetry for troubleshooting purposes, even if the operator has their own
+            telemetry infrastructure.</p>
+        <p>The following figure shows an example of how NCC telemetry infrastructure is integrated
+            into an operator's environment that includes sending the data with a VES stream.</p>
+        <fig id="fig_et4_nmz_cmb">
+            <title>Telemetry data</title>
+            <image placement="break" href="../images/cnf_overview_telemetry-data.GIF" scale="26"
+                align="center" id="image_ft4_nmz_cmb"/>
+        </fig>
+    </conbody>
+</concept>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="SPS_CDR_Streams_Stream_Overview_kafka_commit">
+<title>Kafka commit</title>
+<body>
+                
+                <p>Whenever a consumer polls from the egress topic, the poll returns records written
+                    to Kafka that consumers in the group have not read yet. Kafka allows consumers
+                    to use the broker to track their position (offset) in each partition. The action
+                    of updating the current position in the partition is called a commit.</p>
+                <p>A given consumer cannot poll more than a configured number of messages,
+            controlled by node parameter <codeph>ConsumerMaxPollRecords</codeph>. The number N set
+            in this parameter is equivalent to a commit size in database terminology, i.e. the
+            consumer will successfully handle N polled messages or nothing if any errors occur.</p>
+                <p>CG Kafka Node performs commit once all the polled messages have either been
+            stored to database successfully or filtered out. Only fatal errors, such as database
+            unreachable or Kafka broker unreachable, cause the node not to perform a commit. In such
+            a case, the messages remain in the topic and are picked up for reprocessing by another
+            consumer. Other errors, such as message decoding errors, do not prevent the commit to
+            Kafka. The messages are filtered out, and Kafka commit is performed so that corrupted
+            messages are effectively removed from the egress topic. All error situations generate
+            aggregated alerts, to which the Administrator can then react.</p>
+            </body>
+</topic>

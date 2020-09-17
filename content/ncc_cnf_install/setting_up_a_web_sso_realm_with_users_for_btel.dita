@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="setting_up_a_web_sso_realm_with_users_for_btel">
+    <title>Setting up a Web SSO realm for BTEL</title>
+    <taskbody>
+        <context>This procedure provides instructions on how to set up a Web SSO realm for
+            BTEL.</context>
+        <steps>
+            <step>
+                <cmd>Update example BTEL realm files by entering:</cmd>
+                <info>
+                    <codeblock>cat &lt;&lt;EOF > btel-auth.yaml
+keycloak:
+  realm: "btel-auth"
+EOF
+ 
+ 
+cp ../configuration-examples/btel-auth-keycloak-*.json .
+ 
+# Parse topology.yaml to generate a list of URLs for each ME.
+# This awk should be ran as a single command:
+export URL_LIST=$(awk '
+    BEGIN {
+        IN_SITE_LIST = "false";
+        FQDN = "";
+        IS_ME = "false";
+    }
+    /spssite:/ { IN_SITE_LIST = "true"; }
+    IN_SITE_LIST != "true" { next; }
+    /id:/ {
+        FQDN = "";
+        IS_ME = "false";
+    }
+    /name:/ { SITE = $NF; }
+    /trafficipaddress:/ { FQDN = $NF; }
+    /types:/ { if (index($0, "SPS-SM") == 0) IS_ME = "true"; }
+    FQDN != "" &amp;&amp; IS_ME == "true" {
+        printf "\"https://%s/grafana-me/*\",\n", FQDN;
+        FQDN = "";
+        IS_ME = "false";
+    }
+' ../topology.yaml)
+# End awk command.
+ 
+# Insert the list of URLs into the Keycloak config:
+echo "$(awk '/"\/grafana-sm\/\*"/ { print ENVIRON["URL_LIST"] } 1 { print $0 }' btel-auth-keycloak-realm-example.json)" > btel-auth-keycloak-realm-example.json
+URL_LIST=$(echo "$URL_LIST" | sed 's/grafana/logviewer/g')
+echo "$(awk '/"\/logviewer-sm\/\*"/ { print ENVIRON["URL_LIST"] } 1 { print $0 }' btel-auth-keycloak-realm-example.json)" > btel-auth-keycloak-realm-example.json
+ 
+ 
+#Run these commands in sequence to create realm and users yaml input files so it can be merged into a values.yaml.
+cat btel-auth-keycloak-realm-example.json > btel-realm.yaml
+sed -i -e 's/^/  /' btel-realm.yaml
+sed -i '1 i\realmJson: |-' btel-realm.yaml
+cat btel-auth-keycloak-users-example.json > btel-users.yaml
+sed -i -e 's/^/  /' btel-users.yaml
+sed -i '1 i\usersJson: |-' btel-users.yaml
+ 
+OVERRIDE_FILES="values_keycloak_config_loader.yaml sizing_keycloak_config_loader_lab.yaml btel-auth.yaml btel-realm.yaml btel-users.yaml"</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Merge Override files for BTEL realm by entering:</cmd>
+                <info>
+                    <codeblock>docker run --rm -v ${PWD}:/workdir:z registry1-docker-io.repo.lab.pl.alcatel-lucent.com/mikefarah/yq yq m -x $OVERRIDE_FILES > btel_keycloak_config_loader.yaml</codeblock>
+                </info>
+            </step>
+        </steps>
+    </taskbody>
+</task>

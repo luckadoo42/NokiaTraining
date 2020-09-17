@@ -1,0 +1,1612 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-pf"><title>Prorate bundle functionality </title><conbody>
+<section><title>Overview</title>
+<p>The prorate bundle functionality allows service operators to prorate the value of a bundle or subscription under the following scenarios:</p><ul>
+<li>
+<p>When a new bundle or subscription is added to a device or group using the <i>Change Bundle</i> option, <i>Subscribe Bundle</i> API, or <systemoutput>Add Subscription</systemoutput> action in the lifecycle. The subscription can be added in the midway of the billing cycle. For example, 15th day of the billing cycle.</p>
+</li>
+<li>
+<p>When a new device or group is added with a subscription.</p>
+</li>
+<li>
+<p>When a billing cycle is updated.</p>
+</li>
+<li>
+<p>When a subscription is modified using the <i>Template</i> API.</p>
+<p/><ul>
+<li>
+<p>For daily subscriptions, the prorating is done based on the number of hours.</p>
+</li>
+<li>
+<p>For weekly and monthly subscriptions, the prorating is done based on the number of days.</p>
+</li>
+</ul>
+<p>During calculation, rounding off is not done but calculation precision is considered, and time is measured in milliseconds.</p>
+</li>
+</ul>
+<p>The buckets, counters, and thresholds are reset based on the prorated function instead of the initial values. Also, the percentage-based notification for that month is based on the percentage of prorated value instead of the actual value. At the end of the prorated month, when the Billing Cycle Reset (BCR) happens, the subscription returns to its normal value and notifications use this value for further action.</p>
+<p>After applying the prorated values to a bundle (with a counter) before the next billing cycle,
+    NCC sends notification based on the following conditions:</p><ul>
+<li>
+<p>If cap is applied on a counter, then it is prorated. After the billing cycle, the cap of the counter is used.</p>
+</li>
+<li>
+<p>If usage limit is applied, then prorated usage limit (instead of usage limit) is applied to the counter.</p>
+<p>After the billing cycle, the usage limit of the counter is used.</p>
+</li>
+</ul>
+<note>
+<p/><ul>
+<li>
+<p>The overage limit in a counter is not prorated</p>
+</li>
+<li>
+<p>The percentage-based notification does not support counter with cap.</p>
+</li>
+</ul>
+</note>
+</section>
+<section><title>Configuring prorating functionality</title>
+<p>To configure the prorating functionality, define the values for the following fields in the bundle entity:</p><ul>
+<li>
+<p>
+<i>Bundle fee / Overidden bundle fee</i>
+</p>
+</li>
+<li>
+<p>
+<i>Fee Reference for Prorate</i>
+</p>
+</li>
+<li>
+<p>
+<i>Bucket Prorate Mode</i>
+</p>
+</li>
+<li>
+<p>
+<i>Counter Prorate Mode</i>
+</p>
+</li>
+<li>
+<p>
+<i>Bundle fee on billing cycle date update</i>
+</p>
+</li>
+</ul>
+<p>For information on the values of the above fields, login to the SM GUI, navigate to <uicontrol>Charging &amp; Policy Configuration</uicontrol> &gt; <uicontrol>Charging</uicontrol> and select <uicontrol>Bundles</uicontrol>. See the <!--xref URI: c-Service_Model.xml#BE--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-BE"/> for bundle prorating related parameters.</p>
+</section>
+<section><title>Additional information</title>
+<p>Following are the points to note for the prorating functionality:</p><ul>
+<li>
+<p>At the time of bundle renewal, refund of fee is done based on the remaining period of bill cycle. It is not done based on the remaining balance of bucket or counter.</p>
+</li>
+<li>
+<p>The prorating functionality is not applicable to carry over bucket.</p>
+</li>
+<li>
+<p>If the buckets are prorated, then the threshold based on percentage is executed on the prorated values.</p>
+</li>
+<li>
+<p>If the buckets are prorated, then the threshold based on <uicontrol>Absolute From Start</uicontrol> is executed  when configured absolute value is reached. Prorated bucket values have no impact on the threshold based on <uicontrol>Absolute From Start</uicontrol> and <uicontrol>Absolute From End</uicontrol>.</p>
+</li>
+<li>
+<p>The prorating function is supported for <varname>Charge fee action</varname> defined in initial state of periodic lifecycle of a subscription when immediate prorating of charge fees on activation is applicable. For future activation of subscription, the <varname>Charge fee action</varname> can be defined in any other state of periodic lifecycle.</p>
+</li>
+<li>
+<p>Prorating for counter of the bundle signifies only subscription counter.</p>
+<p>
+<b>Note:</b> A device counter or group counter and device group counters are excluded from this.</p>
+</li>
+<li>
+<p>If the <varname>Charge fee action</varname> is applied multiple times in the initial state, then the fee is prorated each time. It is recommended to have a configuration of <varname>Charge fee action</varname> at zero timer at initial state.</p>
+</li>
+<li>
+<p>Defining the overage value in a counter is not supported.</p>
+</li>
+<li>
+<p>It is recommended not to apply prorate feature to hours/minutes/seconds type of subscription. </p>
+</li>
+<li>
+<p>Prorating is done for threshold or cap with <systemoutput>Notification-Stop</systemoutput> action. If threshold or cap is applied on counter, then to stop prorate of counter, the counter prorate value in bundle definition must be set to <varname>None</varname>.</p>
+</li>
+<li>
+<p>The periodic lifecycle for a subscription must contain the <systemoutput>Reset Period</systemoutput> action and either of <systemoutput>Renew Subscription</systemoutput> action or <systemoutput>Reset Subscription</systemoutput> action. The <systemoutput>Reset Period</systemoutput> action is configured after the <systemoutput>Renew Subscription</systemoutput> action or <systemoutput>Reset Subscription</systemoutput> action. If not configured, then fees deducted or resources reset is not in sync with the end time. </p>
+</li>
+<li>
+<p>If you need the current value of counter in threshold notification parameters, then use <varname>Counter-Current-Value</varname> instead of <varname>Threshold-Current-Absolute-Value</varname>.</p>
+</li>
+<li>
+<p>For a valid lifecycle for an account, the <systemoutput>Reset Period</systemoutput> action must be in actions to create start time and end time of account or subscription.</p>
+</li>
+<li>
+<p>For a valid lifecycle for a subscription, the <systemoutput>Reset Period</systemoutput> action must be in actions to create start time and end time of subscription.</p>
+</li>
+<li>
+<p>Either the <varname>Bundle fee/ Overidden fee</varname> or <varname>Charge fee action</varname> is prorated based on the value of the <i>Fee Reference for Prorate</i> value inside the bundle definition. Note that the fee deducted through the <systemoutput>Add Subscription</systemoutput> action is also prorated when the respective flags are set as true.</p>
+</li>
+<li>
+<p>The NCC service considers the timezone ID of the account for subscription when the prorating fee
+      is charged, the subscription purchase fee is refunded, the prorated bucket or counter value is
+      calculated, or the billing cycle date is modified.</p>
+</li>
+<li>
+<p>When the <i>DayOfMonth</i> is greater than the end of month (number of days in a month), the prorate feature may not work as expected. For example, consider that <i>DayOfMonth</i> is 31, subscription subscribed on 1st of Feb, end of month is 28. In monthly subscription, the end date is 28th Feb.</p>
+</li>
+</ul>
+</section>
+<section><title>Prorating when a subscription is added in an account or subscription lifecycle</title>
+<p>A subscription can be added using the <systemoutput>Add Subscription</systemoutput> action of an account or subscription lifecycle using SM GUI or REST API. If a device takes a subscription in the midway of a billing cycle, then the values of the following fields are prorated based on the configurations in the bundle definition:</p><ul>
+<li>
+<p>
+<i>Bundle Fee</i>
+</p>
+</li>
+<li>
+<p>
+<i>Bucket Initial Value</i>
+</p>
+</li>
+<li>
+<p>
+<i>Bucket Current Value</i>
+</p>
+</li>
+</ul>
+<p>The prorating values for bundle is calculated based on the following formula:</p>
+<systemoutput>
+Prorating Bundle Fee = Bundle Fee * ((Next Renewal Day - Bundle Applicable Day) / Current Bill Cycle Days)
+
+ Prorating Bucket Initial Value = Bucket Initial Value * ((Next Renewal Day - Bundle Applicable Day) / Current Bill Cycle Days)
+
+ Prorating Bucket Current Value = Bucket Current Value * ((Next Renewal Day - Bundle Applicable Day) / Current Bill Cycle Days)</systemoutput>
+<p>where:</p><ul>
+<li>
+<p>
+<i>Next Renewal Time</i>: This can either be the subscription end time or in case, the subscription does not have its own periodic lifecycle, then it refers to the account end time.</p>
+</li>
+<li>
+<p>
+<i>Bundle Applicable Time</i>: This value depends upon the bundle <i>Prorate Granularity</i> value as, which may be <varname>Default</varname>, <varname>Hours</varname>, or <varname>Days</varname>.</p>
+</li>
+</ul>
+<note>
+<p>The preceding behavior is also applicable to the case when a new device or group is added.</p>
+</note>
+<p>The following list provides information on the formula used to calculate the billing cycle days.</p><ul>
+<li>
+<p>The following formula is used to calculate the current billing days irrespective of whether a bundle has its own billing cycle or not.</p>
+<p>
+<userinput>Current billing days = End time - Periodicity</userinput>
+</p>
+</li>
+<li>
+<p>When a bundle has its own billing cycle, then the <userinput>Current billing cycle days = Subscription End time - Periodicity</userinput>
+</p>
+</li>
+<li>
+<p>When a bundle does not have its own billing cycle date, then the <userinput>Current billing cycle days = Account End time - Periodicity</userinput>
+</p>
+</li>
+</ul>
+<p>The following table shows the total duration when the bundle does not have its own billing cycle
+    and is prorated based on account billing cycle. The periodicity is 1 month.<table frame="all"
+     pgwide="1" colsep="1" rowsep="1">
+     <tgroup cols="5">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <colspec colname="col3"/>
+      <colspec colname="col4"/>
+      <colspec colname="col5"/>
+      <thead>
+       <row>
+        <entry align="left">
+         <p>Account Start Date</p>
+        </entry>
+        <entry align="left">
+         <p>Account End Date</p>
+        </entry>
+        <entry align="left">
+         <p>Day of Month in Account Billing Info</p>
+        </entry>
+        <entry align="left">
+         <p>Subscription Purchased Date</p>
+        </entry>
+        <entry align="left">
+         <p>Current billing cycle days</p>
+         <p>(Account end date - Periodicity)</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry align="left" valign="middle"> 29th May </entry>
+        <entry align="left" valign="middle"> 29th June </entry>
+        <entry align="left" valign="middle"> 29 </entry>
+        <entry align="left" valign="middle"> 20th June </entry>
+        <entry align="left" valign="middle"> 31 days </entry>
+       </row>
+       <row>
+        <entry align="left" valign="middle"> 29th May </entry>
+        <entry align="left" valign="middle"> 10th June </entry>
+        <entry align="left" valign="middle"> 10 </entry>
+        <entry align="left" valign="middle"> 5th June </entry>
+        <entry align="left" valign="middle"> 31 days </entry>
+       </row>
+       <row>
+        <entry align="left" valign="middle"> 29th May </entry>
+        <entry align="left" valign="middle"> 30th May </entry>
+        <entry align="left" valign="middle"> 30 </entry>
+        <entry align="left" valign="middle"> 29th May </entry>
+        <entry align="left" valign="middle"> 30  days </entry>
+       </row>
+       <row>
+        <entry align="left" valign="middle"> 15th June </entry>
+        <entry align="left" valign="middle"> 15th July </entry>
+        <entry align="left" valign="middle"> 15 </entry>
+        <entry align="left" valign="middle"> 20th June </entry>
+        <entry align="left" valign="middle"> 30 days </entry>
+       </row>
+       <row>
+        <entry align="left" valign="middle"> 15th July </entry>
+        <entry align="left" valign="middle"> 15th August </entry>
+        <entry align="left" valign="middle"> 15 </entry>
+        <entry align="left" valign="middle"> 17th July </entry>
+        <entry align="left" valign="middle"> 31 days </entry>
+       </row>
+       <row>
+        <entry align="left" valign="middle"> 24th February </entry>
+        <entry align="left" valign="middle"> 24th March </entry>
+        <entry align="left" valign="middle"> 24 </entry>
+        <entry align="left" valign="middle"> 26th February </entry>
+        <entry align="left" valign="middle"> 28/29 days </entry>
+       </row>
+       <row>
+        <entry align="left" valign="middle"> 24th February </entry>
+        <entry align="left" valign="middle"> 24th March </entry>
+        <entry align="left" valign="middle"> 24 </entry>
+        <entry align="left" valign="middle"> 12th March </entry>
+        <entry align="left" valign="middle"> 28/29 days </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table></p>
+<p>The following table shows the total duration when the bundle has its own lifecycle and is
+    prorated based on its own billing cycle. The periodicity is 1 month. <table frame="all"
+     pgwide="1" colsep="1" rowsep="1">
+     <tgroup cols="5">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <colspec colname="col3"/>
+      <colspec colname="col4"/>
+      <colspec colname="col5"/>
+      <thead>
+       <row>
+        <entry align="left">
+         <p>Subscription Start Date</p>
+        </entry>
+        <entry align="left">
+         <p>Subscription End Date</p>
+        </entry>
+        <entry align="left">
+         <p>Day of Month in Bundle Billing Info</p>
+        </entry>
+        <entry align="left">
+         <p>Subscription Purchased Date</p>
+        </entry>
+        <entry align="left">
+         <p>Current billing cycle days</p>
+         <p>(Subscription End time - Periodicity)</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry align="left" valign="middle"> 29th May </entry>
+        <entry align="left" valign="middle"> 29th June </entry>
+        <entry align="left" valign="middle"> 29 </entry>
+        <entry align="left" valign="middle"> 27th May </entry>
+        <entry align="left" valign="middle"> 31 days </entry>
+       </row>
+       <row>
+        <entry align="left" valign="middle"> 29th May </entry>
+        <entry align="left" valign="middle"> 10th June </entry>
+        <entry align="left" valign="middle"> 10 </entry>
+        <entry align="left" valign="middle"> 5th June </entry>
+        <entry align="left" valign="middle"> 31 days </entry>
+       </row>
+       <row>
+        <entry align="left" valign="middle"> 29th May </entry>
+        <entry align="left" valign="middle"> 30th May </entry>
+        <entry align="left" valign="middle"> 30 </entry>
+        <entry align="left" valign="middle"> 29th May </entry>
+        <entry align="left" valign="middle"> 30 days </entry>
+       </row>
+       <row>
+        <entry align="left" valign="middle"> 15th June </entry>
+        <entry align="left" valign="middle"> 15th July </entry>
+        <entry align="left" valign="middle"> 15 </entry>
+        <entry align="left" valign="middle"> 15th June </entry>
+        <entry align="left" valign="middle"> 30 days </entry>
+       </row>
+       <row>
+        <entry align="left" valign="middle"> 15th June </entry>
+        <entry align="left" valign="middle"> 15th July </entry>
+        <entry align="left" valign="middle"> 15 </entry>
+        <entry align="left" valign="middle"> 12th July </entry>
+        <entry align="left" valign="middle"> 30 days </entry>
+       </row>
+       <row>
+        <entry align="left" valign="middle"> 24th February </entry>
+        <entry align="left" valign="middle"> 24th March </entry>
+        <entry align="left" valign="middle"> 24 </entry>
+        <entry align="left" valign="middle"> 24th February </entry>
+        <entry align="left" valign="middle"> 28/29 days </entry>
+       </row>
+       <row>
+        <entry align="left" valign="middle"> 24th February </entry>
+        <entry align="left" valign="middle"> 24th March </entry>
+        <entry align="left" valign="middle"> 24 </entry>
+        <entry align="left" valign="middle"> 12th March </entry>
+        <entry align="left" valign="middle"> 28/29 days </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table></p>
+</section>
+<section><title>Prorating when a subscription is renewed in an account lifecycle</title>
+<p>A subscription can be renewed using either of the following actions through SM GUI or REST API:</p><ul>
+<li>
+<p>
+<systemoutput>Renew Subscription</systemoutput> action for an account</p>
+</li>
+<li>
+<p>
+<systemoutput>Reset Subscription</systemoutput> action or <systemoutput>Reset Period</systemoutput> action for a subscription lifecycle</p>
+</li>
+</ul>
+<p>The prorating behavior is explained using the following examples:</p>
+<sectiondiv>
+<p><b>Example 1</b></p>
+<p>
+<b>Provisioning:</b>
+</p>
+<p>Consider that an account has an entity lifecycle <userinput>DefaultAccountLifecycle</userinput> and a periodic lifecycle with periodic length of 30 days using the <systemoutput>Renew Subscription</systemoutput> action. A subscription has a subscription lifecycle <userinput>SubscriptionEntityLifeCycle</userinput> and a periodic lifecycle with periodic length of 30 days using the <systemoutput>Renew Subscription</systemoutput> action, <systemoutput>Reset Period</systemoutput> action, and <i>Subscription Billing Info</i> set as null or <varname>Not Present</varname>.</p>
+<p>The time related information for account and subscription is as follows:</p>
+<fig>
+<codeblock>Account
+Start Time   October 5, 2018 10:35 AM
+End Time 		 November 4, 2018 4:00 AM
+
+Subscription
+Creation Time 	October 15, 2018 10:33:51.020 AM 
+Start Time 		Monday, October 15, 2018 10:33:51.490 AM
+End Time 			Wednesday, November 14, 2018 4:00:00 AM</codeblock>
+</fig>
+<p>
+<b>Result:</b>
+</p>
+<p>The end time of subscription crosses the end time of account. In this case, the bundle fees is deducted without prorating. It gets deducted again on November 4, 2018. Therefore, the bundle fees is charged twice for the period of November 4, 2018 to November 14, 2018. To prevent the fees getting deducted from account for <systemoutput>Renew Subscription</systemoutput> action, specify the billing information for subscription.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 2</b></p>
+<p>Consider that an account has an entity lifecycle named <userinput>DefaultAccountLifecycle</userinput> and a periodic lifecycle with period length of 1 month and the day of month set as 23. A subscription has a <userinput>SubscriptionEntityLifeCycle</userinput> and a periodic lifecycle with periodic length of 1 month with <systemoutput>Renew Subscription</systemoutput> action and <systemoutput>Reset Period</systemoutput> action.</p>
+<p>The time related information for account and subscription is as follows:</p>
+<fig>
+<codeblock>Account
+Start Time   October 24, 2018 1:30 PM
+End Time 		 November 23, 2018 12:00 AM
+
+Subscription
+Creation Time 	October 24, 2018 02:30:00 PM 
+Start Time 		October 24, 2018 02:30:00 PM
+End Time 			November 23, 2018 02:00:00 PM   
+Actual End Time: As per 1 month calculation: November 23, 2018 02:30:00 PM </codeblock>
+</fig>
+<p>The end time is 30 minutes less than the calculated actual end time.</p>
+<p>Following calculation shows the actual billable hours:</p>
+<fig>
+<codeblock>Start Time: 24th October 02:30:00 PM (in milliseconds: 1540391400000)
+End Time: 23rd November 02:00:00 PM (in milliseconds: 1542981600000)
+Duration in milliseconds = 1542981600000 - 1540391400000 = 2590200000.
+Converting the value in hours: 2590200000 / 60*60*1000 = 719.5 hours. 
+</codeblock>
+</fig>
+<note>
+<p>The value (time) is used as it is without rounding off but with calculation precision as per configuration.</p>
+</note>
+<fig>
+<codeblock>Prorate factor = 719.5/744</codeblock>
+</fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 3</b></p>
+<p>Consider that an account has an entity lifecycle named <userinput>DefaultAccountLifecycle</userinput> and a periodic lifecycle with period length of 1 month and day of month set as 24. A subscription has a <userinput>SubscriptionEntityLifeCycle</userinput> and does not have its own periodic lifecycle.</p>
+<p>The time related information for account and subscription is as follows: </p>
+<fig>
+<codeblock>Account
+Start Time November 23, 2018 1:30 PM 
+End Time December 24, 2018 12:00 AM
+
+Subscription Creation Time December 5, 2018 02:30:00 PM
+Start Time December 5, 2018 02:30:00 PM 
+End Time December 23, 2018 02:00:00 PM
+Actual End Time: As per 30 days calculation: December 23, 2018 02:30:00 PM</codeblock>
+</fig>
+<p>The end time is 30 minutes less than the calculated actual end time. </p>
+<p>Following calculation shows the actual billable hours:</p>
+<fig>
+<codeblock>Start Time: 24th November 02:30:00 PM (in milliseconds: 1540391400000)
+End Time: 23rd December 02:00:00 PM (in milliseconds: 1542981600000)
+Duration in milliseconds = 1542981600000 - 1540391400000 = 2590200000
+Converting the value in hours: 2590200000 / 60*60*1000 = 719.5 hours.</codeblock>
+</fig>
+<note>
+<p>The value (time) is used as it is without rounding off but with calculation precision as per configuration.</p>
+</note>
+<p>In this case, since the bundle does not have its own lifecycle, the total duration is 30 days. It is account end time - periodicity = 30 days = 720 </p>
+<fig>
+<codeblock>Prorate factor = 719.5/720</codeblock>
+</fig>
+</sectiondiv>
+</section>
+<section><title>Prorating for a Subscribe Bundle or Remove Bundle API</title>
+<p>In case of the <i>Subscriber Bundle</i> or <i>Remove Bundle</i> API, if the bundle fee is greater
+    than zero, then the <i>Bundle fee / Overidden bundle fee</i> and <i>Fee Reference for
+     Prorate</i> defined in the bundle are checked to confirm whether prorating fee must be applied
+    to a bundle. If there are buckets and counters in the bundle, then the NCC checks their
+    prorating modes and takes actions accordingly.</p>
+<p>The following figure shows the prorating fields in the SM GUI.</p>
+<fig>
+<title>Prorating</title>
+<!--MMO resource relative URI: ../Graphics/Release_19.0/Bundle_Prorate_snapshot_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-bundle_prorate_snapshot_default.png"/>
+</fig>
+<p>The following table provides information on different actions taken based on the value set for
+    the Bundle fee / Overidden bundle fee parameter.<table pgwide="1" colsep="1" rowsep="1">
+     <title>Bundle fee / Overridden bundle fee</title>
+     <tgroup cols="2">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Bundle fee / Overridden bundle fee</p>
+        </entry>
+        <entry>
+         <p>Action </p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> None </entry>
+        <entry> No prorating fee for the bundle. </entry>
+       </row>
+       <row>
+        <entry> Subscription Start </entry>
+        <entry>
+         <p>NCC prorates the bundle fee according to the exact available day of the current bill
+          cycle using the given formula:</p>
+         <systemoutput>Prorating Bundle Fee = Bundle Fee * ((Next Renewal Day - Bundle Applicable
+          Day) / Current Bill Cycle Days)</systemoutput>
+        </entry>
+       </row>
+       <row>
+        <entry> Subscription End </entry>
+        <entry>
+         <p>NCC refunds the bundle fee according to the days left in the bill cycle using the given
+          formula:</p>
+         <systemoutput>Refund Bundle Fee = Bundle Fee * ((Next Renewal Day - Bundle Applicable Day
+          -1) / Current Bill Cycle Days)</systemoutput>
+         <p>
+          <b>Note:</b> (-1) in the formula is to exclude the current day from the remaining
+          days.</p>
+        </entry>
+       </row>
+       <row>
+        <entry> Both </entry>
+        <entry>
+         <p>When the subscription is taken or removed, NCC prorates the bundle fee accordingly using
+          the given formula:</p>
+         <systemoutput>Prorating Bundle Fee = Bundle Fee * ((Next Renewal Day - Bundle Applicable
+          Day) / Current Bill Cycle Days)</systemoutput>
+        </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table></p>
+<p>The following table provides information on different actions taken based on the value set for
+    the Bucket Prorate Mode parameter.<table pgwide="1" colsep="1" rowsep="1">
+     <title>Bucket Prorate Mode</title>
+     <tgroup cols="2">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Bucket Prorate Mode</p>
+        </entry>
+        <entry>
+         <p>Action </p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> None </entry>
+        <entry> No prorating for the bucket value. </entry>
+       </row>
+       <row>
+        <entry> Subscription Start </entry>
+        <entry>
+         <p>NCC prorates the bucket value according to the exact available day of the current bill
+          cycle using the given formula:</p>
+         <systemoutput>Prorating Bucket Value = Bucket Initial Value * ((Next Renewal Day - Bundle
+          Applicable Day) / Current Bill Cycle Days)</systemoutput>
+         <p>Note that the prorating bucket value is used as bucket initial value temporarily in the
+          current bill cycle. In the next bill cycle, the defined bucket initial value is used.</p>
+        </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table></p>
+<p>The following table provides information on different actions taken based on the value set for
+    the Counter Prorate Mode parameter.<table pgwide="1" colsep="1" rowsep="1">
+     <title>Counter Prorate Mode</title>
+     <tgroup cols="2">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Counter Prorate Mode</p>
+        </entry>
+        <entry>
+         <p>Action </p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> None </entry>
+        <entry> No prorating for the counter value. </entry>
+       </row>
+       <row>
+        <entry> Subscription Start </entry>
+        <entry>
+         <p>NCC checks the counter prorating cap value according to the exact available day of
+          current bill cycle of counter cap value using the following formula:</p>
+         <systemoutput>Prorating Bucket Value = Bucket Initial Value * ((Next Renewal Day - Bundle
+          Applicable Day) / Current Bill Cycle Days)</systemoutput>
+         <p>If a cap is defined for the counter or usage limit, then the following formula is used
+          for prorating limit value calculation using the following formula:</p>
+         <systemoutput>Prorating Limit Value = usage limit * ((Next Reset Day - Bundle Applicable
+          Day) / Current Bill Cycle Days)</systemoutput>
+         <p>The prorating limit value is used as counter limit value temporarily in the current bill
+          cycle.</p>
+         <p>
+          <b>Note:</b> If overage value is defined for a counter, then it is not prorated.</p>
+        </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table></p>
+</section>
+<section><title>Prorating bundle fee based on the prorated fee selection</title>
+<p>The following figure shows the <i>Fee Reference for Prorate</i> option available in the SM GUI
+    and based on its selection, the NCC performs the prorating function.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_19.0/Bundle_Prorate_snapshot1_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-bundle_prorate_snapshot1_default.png"/>
+</fig>
+<p>If the <i>Bundle fee / Overidden bundle fee</i> is not set as <varname>None</varname> and the <i>Fee Reference for Prorate</i> is set as <varname>Bundle fee / Overridden fee</varname>, then the prorating is applied as follows:</p><ul>
+<li>
+<p>Prorating is taken care when a new device or group is added with subscription.</p>
+</li>
+<li>
+<p>Prorating is taken care when a new subscription is attached to a device or group.</p>
+</li>
+<li>
+<p>Prorating is taken care when a new subscription is added to a device or group using the <systemoutput>Add Subscription</systemoutput> action in lifecycle.</p>
+</li>
+<li>
+<p>Prorating is taken care when a subscription has its own bill cycle.</p>
+</li>
+</ul>
+<p>If the <varname>Charge fee action</varname> is triggered inside any other state apart from
+    initial state of periodic lifecycle of a subscription, then the NCC system checks for
+     <varname>Charge fee action</varname> in the <i>Fee Reference for Prorate</i> and a valid future
+    activation date for charge fee prorate as applicable.</p>
+</section>
+<section><title>Prorating bundle fee based on billing cycle modification</title>
+<p>When the <systemoutput>Renew Subscription</systemoutput> action is triggered, the NCC checks
+    prorating since there may be an update in the billing cycle date. If the billing cycle
+    information (<i>Day of Month</i> or <i>Day of Week</i>) is changed for an account or
+    subscription, then the NCC checks the following:</p><ul>
+<li>
+<p>Whether subscriptions are attached to an account whose billing cycle information is changed.</p>
+</li>
+<li>
+<p>Whether subscription under the device is directly attached to an account.</p>
+</li>
+<li>
+<p>Whether devices in the group are attached to an account.</p>
+</li>
+</ul>
+<p>If the Bundle fee on billing cycle date update prorating mode is not set as None, then the NCC
+    prorates the bundle fee and bucket or counter values as follows:<table pgwide="1" colsep="1"
+     rowsep="1">
+     <tgroup cols="2">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Prorate mode</p>
+        </entry>
+        <entry>
+         <p>Action</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> Prorate </entry>
+        <entry> NCC prorates based on controlling parameters in the bundle definition. For <i>Bundle
+          fee / Overridden bundle fee</i>, prorate is done as long as it is not
+          <varname>None</varname>. The <i>Fee Reference for Prorate</i> parameter is not considered
+         in this case. </entry>
+       </row>
+       <row>
+        <entry> Force Prorate </entry>
+        <entry> NCC prorates without considering the values of controlling parameters in the bundle
+         definition. </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table></p>
+<p>When the BCR happens in the old billing cycle end date, if prorating is needed, then the <systemoutput>Prorated Value = original full value * (new bill cycle end date - old bill cycle end date) / current bill cycle days</systemoutput>. For the bundle fee, the prorated bundle fee is charged to the account. For bucket value, the prorated value is added to the current value of bucket. The counter cap is also prorated. If the new bill cycle end date equals the old bill cycle end date, then there is no prorating.</p>
+<note>
+<p>The bill cycle end date is the latest end date based on day of month and current date. </p>
+</note>
+<sectiondiv>
+<p><b>Example</b></p>
+<p>
+<b>Provisioning:</b>
+</p><ol>
+<li>
+<p>Create a subscription on the first of the month and billing cycle is set as first of every month. The subscription has a monthly lifecycle and the billing cycle associated with the subscription is updated.</p>
+</li>
+<li>
+<p>A bundle has a prorating configuration of <i>Bundle fee / Overidden bundle fee</i>, <i>Bucket Prorate Mode</i> set as <varname>Subscription Start</varname>, and <i>Bundle fee on billing cycle date update</i> set as <varname>Prorate</varname>.</p>
+</li>
+</ol>
+<p>
+<b>Result:</b>
+</p>
+<p>In the next billing cycle, prorating of renewal fee, bundle fee, or bundle fee and bucket initial value or bucket current value is done.</p>
+</sectiondiv>
+</section>
+<section><title>Prorating when end time of a subscription is modified</title>
+<p>If the end time of a subscription is updated, then the NCC prorates the associated bundle
+    parameters. If the end time is changed using the REST API, then no prorating is done.</p>
+<note>
+<p/><ul>
+<li>
+<p>If the end time of the subscription is increase by <i>x</i> number of days, then prorating does not charge extra for those <i>x</i> number of days. Subscriber gets those <i>x</i> number of days without any cost.</p>
+</li>
+<li>
+<p>If the end time of the subscription is decreased by <i>x</i> number of days, then prorating does not refund for those <i>x</i> number of days. Subscriber gets charged twice for those <i>x</i> number of days in case of renewal of periodic cycle.</p>
+</li>
+</ul>
+</note>
+<sectiondiv>
+<p><b>Example 1: Manually updating the subscription end time</b></p>
+<p>
+<b>Provisioning:</b>
+</p><ol>
+<li>
+<p>Set the <i>Subscription Start Time</i> as <varname>01/11/2018</varname>.</p>
+</li>
+<li>
+<p>Set the <i>Subscription End Time</i> as <varname>01/12/2018</varname>.</p>
+</li>
+</ol>
+<p>
+<b>Result:</b>
+</p>
+<p>On 15/11/2018, the billing information is changed as <i>Day of Month</i> set as <varname>15</varname>.</p>
+<p>During BCR on 01/12/2018, next billing cycle starts from 01/12/2018 and lasts till 15/12/2018.</p>
+<p>During the next billing cycle, prorating happens depending on the flags. The current billing cycle days is 30 in this case, that is, 01/12/2018 - Monthly periodicity.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 2: Updating subscription end time using REST API</b></p>
+<p>
+<b>Provisioning:</b>
+</p><ol>
+<li>
+<p>Set the <i>Subscription Start Time</i> as <varname>01/11/2018</varname>.</p>
+</li>
+<li>
+<p>Set the <i>Subscription End Time</i> as <varname>01/12/2018</varname>.</p>
+</li>
+</ol>
+<p>
+<b>Result:</b>
+</p>
+<p>If you change the end time from 01/12/2018 to 04/12/2018 using the <i>updateTime</i> REST API, then subscriber is not charged for days between 04/12/2018 to 01/12/2018.</p>
+</sectiondiv>
+</section>
+<section><title>Prorating when a bundle is modified using Change Bundle option</title>
+<p>When a bundle is modified using the REST API or SM GUI, the NCC prorates associated bundle
+    parameters.</p>
+<p>For example, a bundle has a periodic lifecycle of one month and the <i>Change Bundle</i> option is used to modify it using the <i>Immediately with prorating</i> mode. The API has a prorating configuration for <i>Bundle fee / Overidden bundle fee</i> and <i>Bucket Prorate Mode</i>. The end time is calculated less than the expected renewal time, which means the subscription is available for 15 days of the current billing cycle. In this case, the <i>Bundle fee / Overidden bundle fee</i> and associated bucket initial and current values are prorated.</p>
+</section>
+<section><title>Prorating when a bundle is customized using the Template API</title>
+<p>If the bucket initial and current values are updated using the <i>Template</i> API
+     (<i>update/BucketInstance</i>), then the NCC prorates the associated bundle parameters.</p>
+<p>For example, a subscription is created on first of month and billing cycle is first of every month. Subscription has a monthly lifecycle, the bucket initial value is updated in permanent mode, and subscription billing cycle is updated. Bundle has prorating configuration of <i>Bundle fee / Overidden bundle fee</i>, <i>Bucket Prorate Mode</i> and <i>Bundle fee on billing cycle date update</i>. In the next billing cycle, bucket initial and current value are prorated with updated initial values. If change in initial value is temporary, then the bucket initial and current value are prorated with values retrieved from the bundle definition.</p>
+</section>
+<section><title>Prorating when a subscription is scheduled for a future date using the activation date</title>
+<p>A subscription can be scheduled for a future date by setting the activation date. For example, subscription is taken on 5th day of the billing cycle and activated on 10th day of the billing cycle.</p>
+<table pgwide="1" colsep="1" rowsep="1">
+    <tgroup cols="2">
+     <colspec colname="col1"/>
+     <colspec colname="col2"/>
+     <thead>
+      <row>
+       <entry>
+        <p>If...</p>
+       </entry>
+       <entry>
+        <p>Then...</p>
+       </entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry> The <i>Bundle fee / Overidden bundle fee</i> is not set as <varname>None</varname>,
+        and </entry>
+       <entry morerows="1">
+        <p>The NCC checks whether the <i>Fee Reference for Prorate</i> is set to <varname>Charge fee
+          action</varname>.</p>
+        <p>If yes, then NCC prorates the charge fee when the current date or activated date is not
+         equal to the billing cycle date.</p>
+       </entry>
+      </row>
+      <row>
+       <entry> The <varname>Charge fee action</varname> is triggered from any state and subscription
+        has a future activate date, </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+<sectiondiv>
+<p><b>Example</b></p>
+<p>
+<b>Provisioning:</b>
+</p>
+<p>A device purchases a subscription and fee reference is set to <varname>Charge fee action</varname> and subscription has a future activation.</p>
+<p>
+<b>Result:</b>
+</p>
+<p>A device subscribes a subscription with future activation, which is prorated based on the end date of an account. The account balance is 3000. For this case, let us consider that the prorating is done based on the selections made as shown in the following figure:</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.0/Bundle_example_image1_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-bundle_example_image1_default.png"/>
+</fig>
+<p>In the lifecycle, a bundle subscription lifecycle is defined with <varname>Charge fee action</varname> set to <varname>1000</varname> as shown in the following figure:</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.0/Bundle_example_image2_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-bundle_example_image2_default.png"/>
+</fig>
+<p>Configuring subscription with a future activation date as shown in the following figure:</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.0/Bundle_example_image3_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-bundle_example_image3_default.png"/>
+</fig>
+<p>The following figure shows the prorated charge fee deduction and the value of buckets after prorating is applied:</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.0/Prorating_new_image_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-prorating_new_image_default.png"/>
+</fig>
+</sectiondiv>
+</section>
+<section><title>Examples</title>
+<p>Assume the following conditions for the examples listed in this section:</p><ul>
+<li>
+<p>Lifecycle of subscription or account is properly configured.</p>
+</li>
+<li>
+<p>If the periodicity of a lifecycle is defined in days, weeks, or months, then the NCC affects the
+      end time of subscription at the time of subscription.</p>
+</li>
+<li>
+<p>If subscription is deleted before the expected end time, then the NCC gives the refund based on
+      duration difference.</p>
+</li>
+</ul>
+<sectiondiv>
+<p><b>Case 1: When a bundle attached to a device does not have a billing lifecycle</b></p>
+<p>
+<b>Provisioning:</b>
+</p>
+<p>The following table has details about the bundle with prorate field values:</p>
+<table pgwide="1" colsep="1" rowsep="1">
+     <tgroup cols="10">
+      <colspec colname="col1" colwidth="1*"/>
+      <colspec colname="col2" colwidth="1*"/>
+      <colspec colname="COLSPEC0" colwidth="1.03*"/>
+      <colspec colname="col3" colwidth="1.88*"/>
+      <colspec colname="col4" colwidth="1.24*"/>
+      <colspec colname="col5" colwidth="1.48*"/>
+      <colspec colname="col6" colwidth="1.76*"/>
+      <colspec colname="col7" colwidth="1.47*"/>
+      <colspec colname="col8" colwidth="1.47*"/>
+      <colspec colname="col9" colwidth="1*"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Bundle name</p>
+        </entry>
+        <entry>
+         <p>Fee</p>
+        </entry>
+        <entry>
+         <p>Charge Fee</p>
+        </entry>
+        <entry>
+         <p>Bucket/Counter</p>
+        </entry>
+        <entry>
+         <p>Initial value/Cap</p>
+        </entry>
+        <entry>
+         <p>Bundle fee / Overridden bundle fee</p>
+        </entry>
+        <entry>
+         <p>Fee reference for prorate</p>
+        </entry>
+        <entry>
+         <p>Bucket Prorate Mode</p>
+        </entry>
+        <entry>
+         <p>Counter Prorate Mode</p>
+        </entry>
+        <entry>
+         <p>Bundle fee on billing cycle date update</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> BD1 </entry>
+        <entry> 10 USD </entry>
+        <entry> 20 USD </entry>
+        <entry>
+         <p>Bucket1</p>
+         <p>Counter1</p>
+        </entry>
+        <entry>
+         <p>2 GB</p>
+         <p>5 GB</p>
+        </entry>
+        <entry> Both </entry>
+        <entry> Bundle fee/Overridden fee </entry>
+        <entry> Subscription Start </entry>
+        <entry> Subscription Start </entry>
+        <entry> None </entry>
+       </row>
+       <row>
+        <entry> BD2 </entry>
+        <entry> 20 USD </entry>
+        <entry> 30 USD </entry>
+        <entry> Bucket2 </entry>
+        <entry> 4 GB </entry>
+        <entry> Subscription Start </entry>
+        <entry> Charge Fee action </entry>
+        <entry> None </entry>
+        <entry> None </entry>
+        <entry> Prorate </entry>
+       </row>
+       <row>
+        <entry> BD3 </entry>
+        <entry> 10 USD </entry>
+        <entry> 30 USD </entry>
+        <entry> Bucket1 </entry>
+        <entry> 2 GB </entry>
+        <entry> Subscription End </entry>
+        <entry> Bundle fee/Overridden fee </entry>
+        <entry> Subscription Start </entry>
+        <entry> None </entry>
+        <entry> Force Prorate </entry>
+       </row>
+       <row>
+        <entry> BD4 </entry>
+        <entry> 10 USD </entry>
+        <entry> 30 USD </entry>
+        <entry> Bucket2 </entry>
+        <entry> 4 GB </entry>
+        <entry> Subscription Start </entry>
+        <entry> Charge Fee action </entry>
+        <entry> Subscription Start </entry>
+        <entry> None </entry>
+        <entry> Prorate </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+<p>
+<b>Result:</b>
+</p>
+<p>This example shows the case where the account has a billing lifecycle of one month and bundle does not have billing lifecycle. The account start date is 15th April and account end date is 15th May. A subscription is purchased on 29th April. The following table shows the prorated values.</p>
+<table pgwide="1" colsep="1" rowsep="1">
+     <tgroup cols="5">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <colspec colname="COLSPEC1"/>
+      <colspec colname="col3"/>
+      <colspec colname="col4"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Action</p>
+        </entry>
+        <entry>
+         <p>Fee</p>
+         <p>(Bundle fee)</p>
+        </entry>
+        <entry>
+         <p>Charge Fee</p>
+        </entry>
+        <entry>
+         <p>Bucket current value</p>
+        </entry>
+        <entry>
+         <p>Counter prorating cap</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> Device is attached to BD1 </entry>
+        <entry>
+         <p>5 USD </p>
+         <p>Fee = 10*(15/30)</p>
+        </entry>
+        <entry> 20 USD </entry>
+        <entry>
+         <p>Bucket 1 = 1 GB</p>
+         <p>Value = 2GB*(15/30)</p>
+        </entry>
+        <entry> 2.5 GB </entry>
+       </row>
+       <row>
+        <entry> Device is attached to BD2 </entry>
+        <entry> 20 USD </entry>
+        <entry>
+         <p>15 USD</p>
+         <p>Fee = 30*(15/30)</p>
+        </entry>
+        <entry> Bucket 2 = 4 GB </entry>
+        <entry> - </entry>
+       </row>
+       <row>
+        <entry> Device is attached to BD3 </entry>
+        <entry> 10 USD </entry>
+        <entry> 30 USD </entry>
+        <entry>
+         <p>Bucket 1 = 1 GB</p>
+         <p>Value = 2GB*(15/30)</p>
+        </entry>
+        <entry> - </entry>
+       </row>
+       <row>
+        <entry> Device is attached to BD4 </entry>
+        <entry> 10 USD </entry>
+        <entry>
+         <p>15 USD</p>
+         <p>Fee = 30*(15/30)</p>
+        </entry>
+        <entry> Bucket 2 = 2 GB = 4 GB*(15/30) </entry>
+        <entry> - </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+</sectiondiv>
+<sectiondiv>
+<p><b>Case 2: When a bundle attached to a device has a billing lifecycle</b></p>
+<p>
+<b>Provisioning:</b>
+</p>
+<p>The following table has details about the bundle with prorate field values:</p>
+<table pgwide="1" colsep="1" rowsep="1">
+     <tgroup cols="10">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <colspec colname="COLSPEC0"/>
+      <colspec colname="col3"/>
+      <colspec colname="col4"/>
+      <colspec colname="col5"/>
+      <colspec colname="col6"/>
+      <colspec colname="col7"/>
+      <colspec colname="col8"/>
+      <colspec colname="col9"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Bundle name</p>
+        </entry>
+        <entry>
+         <p>Fee</p>
+        </entry>
+        <entry>
+         <p>Charge Fee</p>
+        </entry>
+        <entry>
+         <p>Bucket/Counter</p>
+        </entry>
+        <entry>
+         <p>Initial value/Cap</p>
+        </entry>
+        <entry>
+         <p>Bundle fee / Overridden bundle fee</p>
+        </entry>
+        <entry>
+         <p>Fee reference for prorate</p>
+        </entry>
+        <entry>
+         <p>Bucket Prorate Mode</p>
+        </entry>
+        <entry>
+         <p>Counter Prorate Mode</p>
+        </entry>
+        <entry>
+         <p>Bundle fee on billing cycle date update</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> BD1 </entry>
+        <entry> 10 USD </entry>
+        <entry> 20 USD </entry>
+        <entry>
+         <p>Bucket1</p>
+         <p>Counter1</p>
+        </entry>
+        <entry>
+         <p>2 GB</p>
+         <p>5 GB</p>
+        </entry>
+        <entry> Both </entry>
+        <entry> Bundle fee/Overridden fee </entry>
+        <entry> Subscription Start </entry>
+        <entry> Subscription Start </entry>
+        <entry> None </entry>
+       </row>
+       <row>
+        <entry> BD2 </entry>
+        <entry> 20 USD </entry>
+        <entry> 30 USD </entry>
+        <entry> Bucket2 </entry>
+        <entry> 4 GB </entry>
+        <entry> Subscription Start </entry>
+        <entry> Charge Fee action </entry>
+        <entry> None </entry>
+        <entry> None </entry>
+        <entry> Prorate </entry>
+       </row>
+       <row>
+        <entry> BD3 </entry>
+        <entry> 10 USD </entry>
+        <entry> 30 USD </entry>
+        <entry> Bucket1 </entry>
+        <entry> 2 GB </entry>
+        <entry> Subscription End </entry>
+        <entry> Bundle fee/Overridden fee </entry>
+        <entry> Subscription Start </entry>
+        <entry> None </entry>
+        <entry> Force Prorate </entry>
+       </row>
+       <row>
+        <entry> BD4 </entry>
+        <entry> 10 USD </entry>
+        <entry> 30 USD </entry>
+        <entry> Bucket2 </entry>
+        <entry> 4 GB </entry>
+        <entry> Subscription Start </entry>
+        <entry> Charge Fee action </entry>
+        <entry> Subscription Start </entry>
+        <entry> None </entry>
+        <entry> Prorate </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+<p>
+<uicontrol>Result:</uicontrol>
+</p>
+<p>This example shows the case where the bundle has a monthly billing cycle. A subscription is purchased on 15th May and subscription end date is 15th June. The following table shows the prorated values.</p>
+<table pgwide="1" colsep="1" rowsep="1">
+     <tgroup cols="5">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <colspec colname="COLSPEC1"/>
+      <colspec colname="col3"/>
+      <colspec colname="col4"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Action</p>
+        </entry>
+        <entry>
+         <p>Fee</p>
+         <p>(Bundle fee)</p>
+        </entry>
+        <entry>
+         <p>Charge Fee</p>
+        </entry>
+        <entry>
+         <p>Bucket current value</p>
+        </entry>
+        <entry>
+         <p>Counter prorating cap</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> Device is attached to BD1 </entry>
+        <entry>
+         <p>5 USD </p>
+         <p>Fee = 10*(15/31)</p>
+        </entry>
+        <entry> 20 USD </entry>
+        <entry>
+         <p>Bucket 1 = 1 GB</p>
+         <p>Value = 2GB*(15/31)</p>
+        </entry>
+        <entry> 2.5 GB </entry>
+       </row>
+       <row>
+        <entry> Device is attached to BD2 </entry>
+        <entry> 20 USD </entry>
+        <entry>
+         <p>15 USD</p>
+         <p>Fee = 30*(15/31)</p>
+        </entry>
+        <entry> Bucket 2 = 4 GB </entry>
+        <entry> - </entry>
+       </row>
+       <row>
+        <entry> Device is attached to BD3 </entry>
+        <entry> 10 USD </entry>
+        <entry> 30 USD </entry>
+        <entry>
+         <p>Bucket 1 = 1 GB</p>
+         <p>Value = 2GB*(15/31)</p>
+        </entry>
+        <entry> - </entry>
+       </row>
+       <row>
+        <entry> Device is attached to BD4 </entry>
+        <entry> 10 USD </entry>
+        <entry>
+         <p>15 USD</p>
+         <p>Fee = 30*(15/31)</p>
+        </entry>
+        <entry> Bucket 2 = 2 GB = 4 GB*(15/31) </entry>
+        <entry> - </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+</sectiondiv>
+<sectiondiv>
+<p><b>Case 3: When a device purchases a subscription and fee reference is set to Bundle fee or overridden fee</b></p>
+<p>
+<b>Provisioning:</b>
+</p><ol>
+<li>
+<p>Subscribe an iPhone device to a subscription, which is prorated based on the end date of an account.</p>
+</li>
+<li>
+<p>Configure the account balance is 2000 United States dollars.</p>
+</li>
+<li><p>For this case, let us consider that the prorating is done based on the selections made as
+       shown in the following figure:</p>
+      <!--MMO resource relative URI: ../Graphics/Release_19.0/Prorating_case1_1_default.png-->
+      <image href="../images/img9yz-09126-ug01-pczza-sp1-prorating_case1_1_default.png" scale="55"/>
+     </li>
+<li><p>In the <i>Charging Service</i>, two buckets with 100 GB and 100 Money type are defined as
+       shown in the following figure:</p>
+      <!--MMO resource relative URI: ../Graphics/Release_19.0/Prorating_case1_2_default.png-->
+      <image href="../images/img9yz-09126-ug01-pczza-sp1-prorating_case1_2_default.png" scale="55"/>
+     </li>
+</ol>
+<p>
+<b>Result:</b>
+</p>
+<p>The following figure shows the value of buckets after prorating is applied.</p>
+<fig>
+     <!--MMO resource relative URI: ../Graphics/Release_19.0/Prorating_case_1_3_default.png-->
+     <image href="../images/img9yz-09126-ug01-pczza-sp1-prorating_case_1_3_default.png" scale="55"/>
+    </fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>Case 4: When a device purchases a subscription and fee reference is set to Charge fee action</b></p>
+<p>
+<b>Provisioning:</b>
+</p><ol>
+<li>
+<p>Subscribe an iPhone device to a subscription, which is prorated based on the end date of an account.</p>
+</li>
+<li>
+<p>Configure the account balance is 3000 United States dollars.</p>
+</li>
+<li><p>For this case, let us consider that the prorating is done based on the selections made as
+       shown in the following figure:</p>
+      <!--MMO resource relative URI: ../Graphics/Release_19.0/Prorating_case2_1_default.png-->
+      <image href="../images/img9yz-09126-ug01-pczza-sp1-prorating_case2_1_default.png" scale="55"/>
+     </li>
+<li><p>In the <i>Charging Service</i>, two buckets with 100 GB and 100 Money type are defined as
+       shown in the following figure:</p>
+      <!--MMO resource relative URI: ../Graphics/Release_19.0/Prorating_case2_3_default.png-->
+      <image href="../images/img9yz-09126-ug01-pczza-sp1-prorating_case2_3_default.png" scale="55"/>
+     </li>
+<li><p>In the lifecycle, a bundle subscription lifecycle is defined with <varname>Charge fee
+        action</varname> set to <varname>2000</varname> as shown in the following figure:</p>
+      <!--MMO resource relative URI: ../Graphics/Release_19.0/Prorating_case2_2_default.png-->
+      <image href="../images/img9yz-09126-ug01-pczza-sp1-prorating_case2_2_default.png" scale="55"/>
+     </li>
+</ol>
+<p>
+<b>Result:</b>
+</p>
+<p>The following figure shows the value of buckets after prorating is applied.</p>
+<fig>
+     <!--MMO resource relative URI: ../Graphics/Release_19.0/Prorating_case2_4_default.png-->
+     <image href="../images/img9yz-09126-ug01-pczza-sp1-prorating_case2_4_default.png" scale="55"/>
+    </fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>Case 5: Prorating threshold for notifications</b></p>
+<p>
+<b>Provisioning:</b>
+</p><ol>
+<li>
+<p>Configure a monthly data plan with a bundle of 1 GB and threshold notifications set at 50%, 75%, and 100% usage of the data bundle.</p>
+</li>
+<li>
+<p>Add a device in the midway of a billing cycle (15th day of bill cycle) of a 30 day month.</p>
+</li>
+</ol>
+<p>
+<b>Result:</b>
+</p>
+<p>For the first month, device is allotted a subscription of 500 MB and notifications are sent on consumption of 250 MB, 375 MB and 500 MB of data bundle. After the BCR, the subscription values are reset to the value of 1 GB bundle, and notifications are sent at 500 MB, 750 MB, and 1 GB of data usage.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_19.0/Prorating_example_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-prorating_example_default.png"/>
+</fig>
+</sectiondiv>
+</section>
+<section><title>Providing granularity to prorating</title>
+   <p>In addition to the existing prorating behavior wherein we consider the difference of exact
+    current time and end time to calculate prorating values for bundle, bucket, threshold, and caps.
+    The <uicontrol>Prorate Granularity</uicontrol> parameter provides flexibility to round-off the
+    prorate fees and other values to <varname>Days</varname> and <varname>Hours</varname>.</p>
+   <note>
+    <p>It is recommended to not select granularity less than a lifecycle timer unit. For example, if
+     granularity is <varname>DAYS</varname>, then the lifecycle unit must be set as
+      <varname>Days</varname> and not <varname>Hours</varname>.</p>
+   </note>
+   <p>The prorating values for bundle is calculated based on the following formula:</p>
+   <systemoutput>Prorating Bundle Fee = Bundle Fee * ((Next Renewal Time - Bundle Applicable Time) /
+    Current Bill Cycle Days)</systemoutput>
+   <systemoutput>Prorating Bucket Initial Value = Bucket Initial Value * ((Next Renewal Time -
+    Bundle Applicable Time) / Current Bill Cycle Days)</systemoutput>
+   <systemoutput>Prorating Bucket Current Value = Bucket Current Value * ((Next Renewal Time -
+    Bundle Applicable Time) / Current Bill Cycle Days)</systemoutput>
+   <p>where:</p><ul>
+    <li>
+     <p>
+      <i>Next Renewal Time:</i> This can be either subscription end time or in case, subscription
+      does not have its own periodic life cycle, then account end time is considered.</p>
+    </li>
+    <li>
+     <p>
+      <i>Bundle Applicable Time:</i> This value depends on bundle prorate granularity value as:</p>
+     <ul>
+      <li>
+       <p>
+        <varname>DEFAULT</varname>: Current time is considered as <i>Bundle Applicable Time</i>.</p>
+      </li>
+      <li>
+       <p>
+        <varname>HOURS</varname>: Rounded to current hour of the day. For example, if current time
+        is <systemoutput>06 March 2020 17:45:45:237</systemoutput> and prorate granularity is
+         <varname>HOUR</varname>, then <i>Bundle Applicable Time</i> becomes <systemoutput>06 March
+         2020 17:00:00:000</systemoutput>.</p>
+      </li>
+      <li>
+       <p>
+        <varname>DAYS</varname>: Rounded to current day start time or if life cycle is account and
+        “hour of the day” is present in billing information, then <i>Bundle Applicable Time</i> is
+        rounded to that “hour of the day” time of current or previous day. For example, if
+        subscription does not have its own periodic life cycle and account has periodic lifecycle
+        with below details:</p>
+       <p>Periodic lifecycle with <i>timer Units</i> set as <varname>Month</varname> and <i>timer
+         value</i> set as <varname>1</varname>.</p>
+      </li>
+     </ul>
+     <p>Assume that current time is <systemoutput>06 March 2020 17:45:45:000</systemoutput>.</p>
+     <ol>
+      <li>
+       <p>
+        <b>Case 1:</b> Billing information is set as:</p>
+       <p>
+        <i>hourOfDay</i> set as <varname>5</varname>
+       </p>
+       <p>
+        <i>DayOfMonth</i> set as <varname>18</varname>
+       </p>
+       <p>If end time is <systemoutput>18 March 2020 5:00:00:000</systemoutput> and prorate
+        granularity is <varname>DAYS</varname>, then <i>Bundle Applicable Time</i> becomes
+         <systemoutput>18 March 2020 05:00:00:000</systemoutput>.</p>
+      </li>
+      <li>
+       <p>
+        <b>Case 2:</b> Billing information is set as:</p>
+       <p>
+        <i>hourOfDay</i> set as <varname>19</varname>
+       </p>
+       <p>
+        <i>DayOfMonth</i> set as <varname>18</varname>
+       </p>
+       <p>If end time is <systemoutput>18 March 2020 19:00:00:000</systemoutput> and prorate
+        granularity is <varname>DAYS</varname>, then <i>Bundle Applicable Time</i> becomes
+         <systemoutput>05 March 2020 19:00:00:000</systemoutput>.</p>
+      </li>
+      <li>
+       <p>
+        <b>Case 3:</b> Billing information is set as:</p>
+       <p>
+        <i>DayOfMonth</i> set as <varname>18</varname>
+       </p>
+       <p>If end time is <systemoutput>18 March 2020 00:00:00:000</systemoutput> and prorate
+        granularity is <varname>DAYS</varname>, then <i>Bundle Applicable Time</i> becomes
+         <systemoutput>06 March 2020 00:00:00:000</systemoutput>.</p>
+      </li>
+     </ol>
+    </li>
+    <li>
+     <p>
+      <systemoutput>Current Bill Cycle Days = End time – Periodicity</systemoutput>
+     </p>
+     <p>wherein periodicity is lifecycle period length (timer value * timer units).</p>
+     <p>For example, if end time is set as <systemoutput>06 March 2020 00:00:00</systemoutput>,
+      timer value is <varname>1</varname>, and timer units is <varname>Month</varname>, then time
+      becomes <systemoutput>06 Feb 2020 00:00:00</systemoutput>. Therefore, current billing cycle is
+       <varname>28 days</varname> as it lies in February month.</p>
+    </li>
+   </ul>
+   <p>Similarly, if counter prorate mode is available with subscription start, then the formula
+    is:</p>
+   <systemoutput>Prorating Limit Value = Cap Value/Max Limit * ((Next Reset Time - Bundle Applicable
+    Time) / Current Bill Cycle Time)</systemoutput>
+   <p>If billing cycle information gets modified, then the formula is:</p>
+   <systemoutput>Prorated Value = original full value * (new bill cycle end time - old bill cycle
+    end time) / current bill cycle time</systemoutput>
+   <p>The following table shows the total duration when the bundle has bucket of type VOLUME and
+    initial value as 10000 and does not have its own billing cycle and is prorated based on account
+    billing cycle. The periodicity is 1 month, current time is 05:30 PM and rounding mode is
+     CEILING.<table pgwide="1" colsep="1" rowsep="1">
+     <tgroup cols="10">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <colspec colname="col3"/>
+      <colspec colname="col4"/>
+      <colspec colname="col5"/>
+      <colspec colname="col6"/>
+      <colspec colname="col7"/>
+      <colspec colname="col8"/>
+      <colspec colname="col9"/>
+      <colspec colname="col10"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Account Start Time</p>
+        </entry>
+        <entry>
+         <p>Hour of the day in Account Billing Info</p>
+        </entry>
+        <entry>
+         <p>Day of the Month in Account Billing Info</p>
+        </entry>
+        <entry>
+         <p>Account End Time</p>
+        </entry>
+        <entry>
+         <p>Subscription Purchased Date or Current Date</p>
+        </entry>
+        <entry>
+         <p>Current billing cycle days (Account end time - Periodicity)</p>
+        </entry>
+        <entry>
+         <p>Bundle Applicable Time when Prorate Granularity</p>
+         <p>(In DAYS)</p>
+        </entry>
+        <entry>
+         <p>Bundle Applicable Time when Prorate Granularity</p>
+         <p>(In HOURS)</p>
+        </entry>
+        <entry>
+         <p>Prorated Bucket initial value when prorate bucket multiplier factor is 0.</p>
+         <p>Granularity in HOUR/DAYS</p>
+        </entry>
+        <entry>
+         <p>Prorated Bucket initial value when prorate bucket multiplier factor is 2048.</p>
+         <p>Granularity in HOUR/DAYS</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> 29th Dec </entry>
+        <entry> NA </entry>
+        <entry> 29 </entry>
+        <entry> 29th Jan,00:00 </entry>
+        <entry> 20th Jan </entry>
+        <entry> 31 days </entry>
+        <entry> 20th Jan,00:00 </entry>
+        <entry> 20th Jan,17:00 </entry>
+        <entry> 2674/2903 </entry>
+        <entry> 4096/4096 </entry>
+       </row>
+       <row>
+        <entry> 15th Dec </entry>
+        <entry> 20 </entry>
+        <entry> 15 </entry>
+        <entry> 15th Jan,20:00 </entry>
+        <entry> 7th Jan </entry>
+        <entry> 31 days </entry>
+        <entry> 6th Jan,20:00 </entry>
+        <entry> 7th Jan,17:00 </entry>
+        <entry> 2620/2903 </entry>
+        <entry> 4096/4096 </entry>
+       </row>
+       <row>
+        <entry> 24th Feb </entry>
+        <entry> 15 </entry>
+        <entry> 24 </entry>
+        <entry> 24th Mar,15:00 </entry>
+        <entry> 12th Mar </entry>
+        <entry> 29 days </entry>
+        <entry> 12th Mar,15:00 </entry>
+        <entry> 12th Mar,17:00 </entry>
+        <entry> 4109/4137 </entry>
+        <entry> 4096/4096 </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table></p><p>The following table shows the total duration when the bundle has bucket of type
+    VOLUME and initial value as 10000 and is prorated based on its own billing cycle. The
+    periodicity is 1 month, current time is 05:30 PM and rounding mode is CEILING.<table pgwide="1"
+     colsep="1" rowsep="1">
+     <tgroup cols="10">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <colspec colname="col3"/>
+      <colspec colname="col4"/>
+      <colspec colname="col5"/>
+      <colspec colname="col6"/>
+      <colspec colname="col7"/>
+      <colspec colname="col8"/>
+      <colspec colname="col9"/>
+      <colspec colname="col10"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Subscription Start Time</p>
+        </entry>
+        <entry>
+         <p>Hour of the day in Subscription Billing Info</p>
+        </entry>
+        <entry>
+         <p>Day of the Month in Subscription Billing Info</p>
+        </entry>
+        <entry>
+         <p>Subscription End Time</p>
+        </entry>
+        <entry>
+         <p>Current Date</p>
+        </entry>
+        <entry>
+         <p>Current billing cycle days (Subscription end time - Periodicity)</p>
+        </entry>
+        <entry>
+         <p>Bundle Applicable Time when Prorate Granularity</p>
+         <p>(In DAYS)</p>
+        </entry>
+        <entry>
+         <p>Bundle Applicable Time when Prorate Granularity</p>
+         <p>(In HOURS)</p>
+        </entry>
+        <entry>
+         <p>Prorated Bucket initial value when prorate bucket multiplier factor is 0.</p>
+         <p>Granularity in HOUR/DAYS</p>
+        </entry>
+        <entry>
+         <p>Prorated Bucket initial value when prorate bucket multiplier factor is 1024.</p>
+         <p>Granularity in HOUR/DAYS</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> 29th Dec </entry>
+        <entry> NA </entry>
+        <entry> 29 </entry>
+        <entry> 29th Jan,00:00 </entry>
+        <entry> 20th Jan </entry>
+        <entry> 31 days </entry>
+        <entry> 20th Jan,00:00 </entry>
+        <entry> 20th Jan,17:00 </entry>
+        <entry> 2674/2903 </entry>
+        <entry> 3072/3072 </entry>
+       </row>
+       <row>
+        <entry> 15th Dec </entry>
+        <entry> 20 </entry>
+        <entry> 15 </entry>
+        <entry> 15th Jan,00:00 </entry>
+        <entry> 7th Jan </entry>
+        <entry> 31 days </entry>
+        <entry> 7th Jan,00:00 </entry>
+        <entry> 7th Jan,17:00 </entry>
+        <entry> 2352/2580 </entry>
+        <entry> 3072/3072 </entry>
+       </row>
+       <row>
+        <entry> 24th Feb </entry>
+        <entry> 15 </entry>
+        <entry> 24 </entry>
+        <entry> 24th Mar,00:00 </entry>
+        <entry> 12th Mar </entry>
+        <entry> 29 days </entry>
+        <entry> 12th Mar,00:00 </entry>
+        <entry> 12th Mar,17:00 </entry>
+        <entry> 3894/4138 </entry>
+        <entry> 4096/4096 </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table></p>
+   <note>
+    <ul>
+     <li>
+      <p>If bucket initial or current value is less than the bucket prorate factor, then the bucket
+       is assigned to initial or current value.</p>
+     </li>
+     <li>
+      <p>Prorated counter cap value is greater than what we have expected this is due to existing
+       implementation where it round-off the prorate factor.</p>
+      <p>For example, consider a scenario where account has monthly life cycle with hour of the day
+       as 8:00 PM and day of the month is 12. let us assume that today is 12th March and time is
+       6:40 PM and we subscribe bundle with prorate granularity as
+       <systemoutput>DAYS</systemoutput>, bucket volume as <varname>1000 bytes</varname> and counter
+       with cap value as <varname>500 bytes</varname>. The prorate factor obtained is
+        <varname>0.03449</varname>. Therefore, bucket initial or current value is approximately
+        <varname>35 bytes</varname>. For counter cap value, prorate factor
+        <varname>0.03449</varname> is rounded-off further to <varname>0.04</varname>. Therefore,
+       counter cap value obtained is <varname>20 bytes</varname>.</p>
+     </li>
+    </ul>
+   </note>
+  </section>
+</conbody></concept>

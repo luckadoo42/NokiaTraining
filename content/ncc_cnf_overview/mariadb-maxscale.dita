@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+		<concept id="id9YZ-09018-UG00-PCZZA-d1e10756"><title>MariaDB and MaxScale</title><conbody>
+
+<section><title>Overview</title>
+
+<p>The MariaDB Component with MaxScale provides tools and support for installing and managing MariaDB server database instances in an application environment. The MariaDB and MaxScale components are part of the regular Installation procedures available for the release; see the <i>SPS-Installation Guide</i> for more information.</p>
+<note>
+
+<p>Throughout the descriptions for the topics associated with MariaDB you will see names in brackets; for example, WebSSO (Keycloak) or MariaDB (CMBD). These are not abbreviations but rather refer to the names you may see in logs or output code.</p>
+</note>
+<p>MariaDB and MaxScale are two separate components used by Web SSO on the SPS. MariaDB and MaxScale are co-located on the IOHO node for SM and IG. The Web SSO component is also co-located with the MariaDB and MaxScale on the same node IOHO. MariaDB exists on an ME deployment; however, there is no MaxScale component on the ME.</p>
+<p>MariaDB is installed in a Replication Master - Replication slave (RM/RS) role on the IOHO nodes. At any point of time, if the MariaDB replication master fails for any reason (IOHO node goes down), it takes some time for the replication slave (RS) to be promoted to a replication master (RM). During this time, it is possible that the calls to Web SSO fail or are not processed.</p>
+<p>In geo-redundant deployments there are different datacenters for each deployed VNF and each VNF writes locally to its own datacenter. Data replication among datacenters takes place because each datacenter is ACTIVE. However, be aware that MariaDB does not resolve conflicts between datacenters. That is, if at the same point in time the same user data is modified/created at a different datacenter, there may be a loss in data because the data is written locally. Do not update the same SM user data at the same time from a different datacenter using the SM GUI or some other means like restapi etc. This is applicable for SM/IG setup. For ME it is not applicable. Likewise, do not create, modify, or remove users during an upgrade. If user modifications are performed during an upgrade, the changes will not be reflected in the system after the upgrade.</p>
+<p>Web SSO requires that its data is stored on a database storage system in SPS. The database storage system in SPS is MariaDB. Web SSO stores SM user authentication details comprised of usernames and encrypted passwords, as required for SSO. MariaDB is also used for storing the active alarms and historical alarms in the database. A maximum of 1000 historical alarms can be saved in the database. This value is not configurable and the Alarm data is not replicated across nodes in the Geo-replicated datacenters. </p>
+<p>The replication based cluster database server of MariaDB is used as backend storage in SPS for the Web SSO component. The SPS provides tools and installers for installing and managing the MariaDB server database instances in an application environment and supports Geo-redundancy in a dual data center HA configuration as shown in <!--xref URI: #GeoMariadb--><xref keyref="id9YZ-09018-UG00-PCZZA-d1e10756/GeoMariadb"/>. </p>
+<fig id="GeoMariadb">
+                <title>Geo-redundant MariaDB</title>
+                <!--MMO resource relative URI: ../Graphics/aMaxmaria_default.png-->
+                <image href="../images/amaxmaria_default.png"/>
+            </fig>
+<p>Each data center must contain a MaxScale node that provides the HA for a Master/Slave database cluster. The MaxScale component manages MariaDB on SM/IG deployments and is active on active nodes and passive on standby nodes. For an ME deployment, there is no MaxScale component. The MariaDB can exist without MaxScale but you must have a MaxScale component configured for DFSEC compliancy and Geo-redundant systems. </p>
+<p>MaxScale is licensed software and a license is charged per MaxScale node.</p>
+<sectiondiv>
+<p><b>DFSEC</b></p>
+<p>DFSEC (Design For Security) is a Nokia CREATE process for developing secure products and systems; it contains controls and deliverables to help the product lines create secure products. As part of our product creation process, DFSEC aims to proactively make our products secure from the start. DFSEC is optional on the SPS.</p>
+<p>SPS complies with the following security requirements specified thru the DFSEC compliance Tool:</p><ul>
+
+<li>
+<p>Aging of passwords shall be implemented to all login possibilities (all ways to login to the product) . The aging duration should be configurable  </p>
+</li>
+<li>
+<p>When changing password, recently used passwords shall be rejected. The specification of how old the password can be shall be configurable</p>
+</li>
+<li>
+<p>Password change can be enforced for all users on all login possibilities on the first login</p>
+</li>
+<li>
+<p>Password changing is possible on all login possibilities</p>
+</li>
+<li>
+<p>Account disabling or lockout features are implemented on all login possibilities</p>
+</li>
+<li>
+<p>Salting is used for the hashed password </p>
+</li>
+<li>
+<p>Network addresses and protocols are logged </p>
+</li>
+<li>
+<p>Configurable password parameters (length, characters, etc.) </p>
+</li>
+</ul>
+</sectiondiv>
+</section>
+</conbody></concept>

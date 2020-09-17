@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="deployment_options">
+    <title>Deployment options</title>
+    <conbody>
+        <p>Every NCC network deployment includes a pair of SMs. This pair runs in active/active mode
+            with real-time data replication between them. </p>
+        <note>Although the SMs are active/active, Nokia recommends that back-to-back transactions
+            for the same subscriber/device or set of devices within a particular group, are all sent
+            to the same SM to avoid race conditions with the data replication.</note>
+        <p>Data replication between SMs is provided by the database vendor’s native feature set. The
+            majority of SM data is in the Aerospike DB, which leverages XDR for data replication
+            between sites. The data used by Keycloak for authentication is stored in Maria DB and
+            replicated using Maria DB native capabilities.</p>
+        <section id="section_tbc_41x_nlb">
+            <title>Separate SM and ME</title>
+            <p>Some operators might prefer this model as providing more independence of scaling and
+                fault tolerance between the SM and ME functions. SMs and MEs could be deployed in
+                different cities and data centers or could be deployed independently into a common
+                data center. For example, if an operator has four regions of MEs, they might choose
+                to deploy an SM into two of those four regions, in the same data center as an ME in
+                that region. And potentially into the same Kubernetes cluster in that data center.
+                NCC CNF enables this option by supporting configurable namespaces and
+                non-conflicting port assignments.</p>
+        </section>
+        <section id="section_xj1_51x_nlb">
+            <title><b>Integrated SM and ME</b></title>
+            <p>Given that the SM and ME share much of the same software infrastructure and use many
+                common microservices, NCC supports an option to deploy a single CNF that includes
+                both the SM and ME services. This reduces the overall NCC network footprint by
+                leveraging common services, rather than duplicating them in separate SM and MEs. </p>
+            <p>From a functional call flow perspective, SMs are treated as separate entities
+                compared to MEs, regardless of whether they are deployed in separate CNFs or in an
+                integrated CNF.</p>
+        </section>
+    </conbody>
+</concept>

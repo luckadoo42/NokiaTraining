@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="db-list">
+    <title>db-list</title>
+    <conbody>
+        <section id="section_g5p_r3q_nlb">
+            <title>Description</title>
+            <p>The db-list tool lists the records in the Aerospike database and the listing is
+                written into compressed (.gz) files in a JSON format.</p>
+            <p>Following guidelines are applied for the usage of the tool:<ul id="ul_pzg_t3q_nlb">
+                    <li>This tool is relevant to the ME only. Any data that the tool is meant to
+                        dump is not present on the SM.</li>
+                    <li>
+                        <p>The db-list tool is installed only on the AdminCLI pod. Nokia recommends
+                            you to run the db-list tool only in low business or low traffic
+                            hours.</p>
+                    </li>
+                    <li>
+                        <p> Only one instance of the db-list tool can be executed at a given time.
+                            The tool cannot be executed in case a similar tool (for example,
+                            db-backup, db-restore, asbackup, or asrestore tool) is currently running
+                            on the AdminCLI pod.</p>
+                        <p>Nokia recommends to ensure that the db-list tool or any other similar
+                            tool is not concurrently running on other nodes.</p>
+                    </li>
+                    <li>
+                        <p>The data is spread over two Aerospike sets related by a
+                            <i>club-id</i>.</p>
+                        <p>Nokia recommends you to use the db-list tool when database updates in the
+                            system are minimum and the database updates happen due to activities
+                            like provisioning, on-call traffic, or audit are minimum. Once the
+                            db-list tool has been started for execution for a specific set and that
+                            set fetches objects from another set, the time elapsed between fetching
+                            information from these two sets might lead to inconsistent data.</p>
+                        <p>For instance, to dump all data related to a device, the device is read
+                            from one set and then its custom data, aggregate view instances, and
+                            bucket instances among others are read from different set. If it takes x
+                            amount of time (usually in milliseconds for each entity) to dump the
+                            same data then, for instance, if any provisioning activity or 4G or 5G
+                            call or audit are ongoing during the same time frame then data dumped
+                            might be inconsistent. The case may arise where subscription id is read
+                            from device data and by the time tool tries to read the subscription
+                            object, it may already have been deleted from the database due to any
+                            activity mentioned above.</p>
+                    </li>
+                    <li>The db-list tool always starts from the beginning and there is no option to
+                        pause or resume a previous tool invocation. This means that, if the db-list
+                        tool is interrupted due to any reason or exception, then when the tool is
+                        executed next time, it starts from the beginning. The data files created
+                        before interruption needs to be manually deleted from the system.</li>
+                    <li>Edigest is dumped with each &lt;entity> option.<note>Edigest is a primary
+                            key that uniquely identifies a record in the Aerospike database within a
+                            given namespace. Primary key is used in application, while the digest is
+                            used for addressing the record in the database.</note></li>
+                    <li> In order to dump all policy and charging sessions, run the db-list tool
+                        separately for all policy and charging
+                        sessions.<codeblock>./db-list -l policysessions
+./db-list -l chargingsessions</codeblock></li>
+                    <li>In case of dump taken from a system having a larger data size provisioned,
+                        for example millions of devices with all associated charging data, then the
+                        following options in db-list tool are helpful:<ul id="ul_xk1_hjq_nlb">
+                            <li><i>t</i> : number of threads</li>
+                            <li><i>q</i> : worker queue capacity (it is fixed to 100k records at
+                                present)</li>
+                            <li><i>r</i> : JVM heap size (it is 2G at present)</li>
+                        </ul>For more information, see the <i>Troubleshooting</i> appendix of this
+                        guide.</li>
+                </ul></p>
+        </section>
+        <section id="section_vzw_jjq_nlb">
+            <title>Syntax</title>
+            <p>Log into the standby AdminCLI pod as the <b>tpaadmin</b> user and type the db-list
+                command:<codeblock>db-list [-l &lt;entity>] [-s &lt;primary|all>] [-n &lt;namespace>] [-m &lt;max>] [-o
+&lt;dir>]</codeblock></p>
+            <p>None of the options mentioned in this command are mandatory.</p>
+            <p>The tool can be launched without any options. If this occurs, then it uses the
+                default value for each option.</p>
+            <table frame="all" rowsep="1" colsep="1" id="table_grl_rjq_nlb">
+                <tgroup cols="3">
+                    <colspec colname="c1" colnum="1" colwidth="1*"/>
+                    <colspec colname="c2" colnum="2" colwidth="1*"/>
+                    <colspec colname="c3" colnum="3" colwidth="1*"/>
+                    <thead>
+                        <row>
+                            <entry>Option</entry>
+                            <entry>Description</entry>
+                            <entry>Option arguments</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry><codeph>No arguments</codeph></entry>
+                            <entry>Displays usage or help information.</entry>
+                            <entry>—</entry>
+                        </row>
+                        <row>
+                            <entry><codeph>-h or -?</codeph></entry>
+                            <entry>Displays usage or help information.</entry>
+                            <entry>—</entry>
+                        </row>
+                        <row>
+                            <entry><codeph>-l &lt;entity></codeph></entry>
+                            <entry>Displays the type of entity for which you need records listed.
+                                Only one entity at a time can be added in this argument. For
+                                example, <codeph>-l &lt;devices></codeph></entry>
+                            <entry>
+                                <p>Default value of this option is <codeph>-l devices</codeph>.</p>
+                                <p>The <codeph>-l &lt;entity></codeph> option of the db-list tool
+                                    has the following output:<ul id="ul_tkx_2kq_nlb">
+                                        <li>
+                                            <p><codeph>-l devices</codeph>: Lists the devices in the
+                                                  <i>InfrequentlyChangingData</i> set along with the
+                                                custom data, device subscriptions, subscription
+                                                counter, associated bucket instances, threshold
+                                                instances, account balance data, cap instances,
+                                                device counters, Aggregate View (AV), and DPU
+                                                present in the <i>DynamicData</i> set.</p>
+                                            <p>Edigest is present for device, custom data,
+                                                subscription, subscription counter, device counter,
+                                                AV instance, DPU, account balance, and for bucket
+                                                instance at CS level.</p>
+                                        </li>
+                                        <li>
+                                            <p><codeph>-l accounts</codeph>: Lists the accounts
+                                                along with the account administrator present in
+                                                  <i>InfrequentlyChangingData</i> and custom data
+                                                attributes of the account present in the
+                                                  <i>DynamicData</i> set.</p>
+                                        </li>
+                                        <li>
+                                            <p><codeph>-l users</codeph>: Lists the users along with
+                                                the custom data attributes of the user present in
+                                                the <i>InfrequentlyChangingData</i> and
+                                                  <i>DynamicData</i> set respectively.</p>
+                                            <p>Edigest is present for user and custom data
+                                                associated with account.</p>
+                                        </li>
+                                        <li>
+                                            <p><codeph>-l groups</codeph>: Lists the groups in the
+                                                  <i>InfrequentlyChangingData</i> set along with the
+                                                custom data, group subscriptions, associated bucket
+                                                instances, subscription counter, threshold
+                                                instances, cap instances, group and device_group
+                                                counters, aggregate view, and account balance data
+                                                present in the <i>DynamicData</i> set.</p>
+                                            <p>Edigest is present for group, custom data,
+                                                subscription, subscription counter, group counter,
+                                                AV instance, device group counter, account balance,
+                                                and for bucket instance at CS level.</p>
+                                        </li>
+                                        <li>
+                                            <p><codeph>-l sysessions</codeph>: Lists only the
+                                                sessions of <i>Sy</i> type present in the
+                                                  <i>SessionContainer</i> set.</p>
+                                        </li>
+                                        <li>
+                                            <p><codeph>-l afsessions</codeph>: Lists only the
+                                                sessions of <i>Af</i> type present in the
+                                                  <i>SessionContainer</i> set.</p>
+                                        </li>
+                                        <li>
+                                            <p><codeph>-l ucs</codeph>: Lists all the records
+                                                present in the <i>UsageControlService</i> set.</p>
+                                        </li>
+                                        <li>
+                                            <p><codeph>-l allsubscriberdata</codeph>: Lists all the
+                                                subscriber entities data (which includes, devices,
+                                                groups, users, and accounts).</p>
+                                        </li>
+                                        <li>
+                                            <p><codeph>-l gysessions</codeph>: Lists all the
+                                                  <i>Gy</i> sessions present in the
+                                                  <i>DynamicData</i> set.</p>
+                                        </li>
+                                        <li>
+                                            <p><codeph>-l imssessions</codeph>: Lists all the IMS
+                                                sessions present in the <i>DynamicData</i> set.</p>
+                                        </li>
+                                        <li>
+                                            <p><codeph>-l ratingsessions</codeph>: Lists all the
+                                                rating sessions present in the <i>DynamicData</i>
+                                                set.</p>
+                                        </li>
+                                        <li>
+                                            <p><codeph>-l chargingsysessions</codeph>: Lists all the
+                                                  <i>Sy</i> sessions present in the
+                                                  <i>DynamicData</i> set.</p>
+                                        </li>
+                                        <li>
+                                            <p><codeph>-l chargingsessions</codeph>: Lists all the
+                                                charging sessions (Gy, rating, IMS, and Sy) present
+                                                in the <i>DynamicData</i> set.</p>
+                                        </li>
+                                    </ul></p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>-s &lt;primary|all></codeph></entry>
+                            <entry>
+                                <p>The <i>primary</i> option lists only the records that are primary
+                                    to this site and the all option lists <i>all</i> devices.</p>
+                                <p>This option is applicable only when the listed object is one of
+                                    devices, accounts, users, or groups. This option is ignored if
+                                    the value is not one of the values for devices, accounts, users,
+                                    or groups.</p>
+                            </entry>
+                            <entry>Default value is <i>primary</i>. Lists <i>primary</i> or
+                                    <i>all</i>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>-n &lt;namespace|all></codeph></entry>
+                            <entry>The Aerospike namespace to look in for the records.</entry>
+                            <entry>
+                                <p>Default value is <i>all</i>.</p>
+                                <p>The namespace should be a partitioned namespace. For example, the
+                                    namespaces starting with the <b>spspd</b> prefix.</p>
+                                <p>If <i>all</i> is specified, then the tool lists from all the
+                                    partitioned namespaces.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>-m &lt;max|all></codeph></entry>
+                            <entry>The maximum number of records to be listed.</entry>
+                            <entry>
+                                <p>Default value is <i>all</i>.</p>
+                                <p>If <i>all</i> is specified, then the tool does not stop until it
+                                    has processed all of the records.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>-o &lt;dir></codeph></entry>
+                            <entry>
+                                <!--Dray: this whole row is dubious too me. It seems to me that this would not be applicable for CNF, but perhaps it is with regards to the AdminCLI pod.-->
+                                <p>The output directory where the listed records are placed.</p>
+                                <p>In the specified directory, the tool creates a new directory
+                                    bearing the name of the selected object type and the current
+                                        timestamp.<ul id="ul_tqt_hnq_nlb">
+                                        <li>Ensure that you have sufficient disk space in the file
+                                            system mount where the output directory is located.</li>
+                                        <li>Ensure that the user used to execute the tool has write
+                                            permissions on the specified output directory.</li>
+                                    </ul></p>
+                            </entry>
+                            <entry>Default value is <i>/opt/tpa/logs/</i>.</entry>
+                        </row>
+                        <row>
+                            <entry><codeph>-t &lt;nThreads></codeph></entry>
+                            <entry>Displays the number of processing threads.</entry>
+                            <entry>
+                                <p>Default value is equal to half the number of CPUs or VCPUs on the
+                                    node.</p>
+                                <p>A high number of processing threads increase the CPU utilization
+                                    of the node. On the other hand, a lower processing thread count
+                                    may engage Aerospike query threads for longer durations.</p>
+                                <p>Nokia recommends you to select the number of processing threads
+                                    nearest to the number of CPUs.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>-f &lt;nFiles></codeph></entry>
+                            <entry>Displays the number of out files.</entry>
+                            <entry>
+                                <p>Default value is equal to the number of processing threads.</p>
+                                <p>Nokia recommends you to keep the number of out files the same as
+                                    the number of processing threads. </p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>-q &lt;nCapacity></codeph></entry>
+                            <entry>Displays the capacity of queue in thread pool.</entry>
+                            <entry>Default value is 100k.</entry>
+                        </row>
+                        <row>
+                            <entry><codeph>-r &lt;heap></codeph></entry>
+                            <entry>Displays the heap size (in MB) for database dump process.</entry>
+                            <entry>This option is set depending upon the available RAM.</entry>
+                        </row>
+                        <row>
+                            <entry><codeph>-F</codeph></entry>
+                            <entry>Forces the db-list tool to execute on the AdminCLI pod.</entry>
+                            <entry/>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_v15_bxq_nlb">
+            <title>Example</title>
+            <p>Output similar to the following screenshots appear when you run the db-list tool as a
+                root user with no arguments:</p>
+            <p><image href="../images/db-list-output.png" id="image_xgg_1yq_cmb" width="6in"/></p>
+            <p>The tool asks for a confirmation before proceeding with its task.</p>
+            <p><image href="../images/db-list-yn-output.png" id="image_b4m_fyq_cmb" width="6in"
+                /></p>
+            <p>The tool also prints progress in terms of the number of records processed after every
+                30 seconds.</p>
+            <p><image href="../images/db-list-progress-output.png" id="image_j2y_lyq_cmb"
+                    width="6in"/></p>
+        </section>
+    </conbody>
+</concept>

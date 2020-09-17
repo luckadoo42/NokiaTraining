@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="supported_logs">
+    <title>Supported logs</title>
+    <conbody>
+        <section id="section_m4z_rqm_tkb">
+            <title>Log aggregation</title>
+            <p>When the NCC Telemetry package is deployed, logs are processed by Fluentd and routed
+                to CLOG (Log Manager) for processing by Elasticsearch. They can then be viewed using
+                Kibana.</p>
+        </section>
+        <section id="section_lvs_pdd_vkb">
+            <title>Unified logging</title>
+            <p>The Unified API provides the logs in the same format for alarms and logs.</p>
+            <p>The Unified logging format for all logs is as follows:<ul id="ul_r5w_32d_vkb">
+                    <li>type: The type can be one of "log", "alarm", or "counter".</li>
+                    <li>level: The following logging levels are supported:<ul id="ul_x3v_k2d_vkb">
+                            <li>0=EMERG</li>
+                            <li>1=ALERT</li>
+                            <li>2=CRIT</li>
+                            <li>3=ERROR</li>
+                            <li>4=WARN</li>
+                            <li>5=NOTICE</li>
+                            <li>6=INFO</li>
+                            <li>7=DEBUG</li>
+                        </ul></li>
+                    <li>process: Name and/or ID of the process producing the event.</li>
+                    <li>service: Name of the service to which the event is related. For service in
+                        the NCC, this field is correlated with the existing TAG field that is used
+                        in the SYSLOG to differentiate logs coming from the different
+                        applications.</li>
+                    <li>system: System name of the system in which the event occurred.</li>
+                    <li>systemid: System identifier assigned to the system in which the event
+                        occurred.</li>
+                    <li>timezone: Timezone of the local host's time.</li>
+                    <li>message: The text of the log message.</li>
+                    <li>process: Name of the program language method where the log is issued.</li>
+                    <li>classname: Nome of the program language class where the log is issued.</li>
+                    <li>stacktrace: A report of the active stack frames at a certain point in time
+                        during the execution of a program.</li>
+                </ul></p>
+            <p>The following is an example of a log in the unified logging
+                format:<codeblock>{"host":"sps-ig-diameterapp-1","level":"INFO","log":{"classname":"com.
+alcatel.tpapps.pcrf.common.DiameterPeerManager:671","message":"Finished
+background OSI monitor.","stacktrace":"","threadname":
+"InactiveOSIMonitorMBean-1"},"process":"remoteOSIMonitor","service":
+"SPS","time":"2019-03-18T07:26:36.010Z","timezone":"America/Toronto",
+"type":"log","system":"SPS_IG_19_3_R1_I126","systemid":
+"CBAM-347708862db84371977879338f3a33c2"}</codeblock></p>
+        </section>
+        <section id="section_ofc_rdd_vkb"><title>Log rotation</title><p>To prevent Java application and database log files from becoming too large, rotation can be
+                configured for each log file. If a log's file size reaches the specified limit, it
+                will be rotated.<note>The configuration of log rotation can lead to an increase in
+                    disk usage. The logs are kept in the log volumes of a container. It must be
+                    taken care of that the dimensioning aspects of these files and provision the
+                    disk volumes accordingly. For more details about volume sizes and dimensioning
+                    aspects, refer to the section: "NCC cloud-platform resources and services" in
+                    the <i>NCC Installation Guide</i>.</note></p><b>Platform log rotation</b><p>Logs from
+                all NCC node components (for example, I/Os) are forwarded to the active AdminCLI,
+                and all of those logs are stored on each of the AdminCLI pods but accessible via the
+                active AdminCLI in the <codeph>/var/log/system/nokia_harmonized.log</codeph> files.
+                Log rotation for platform logs is configured at installation. See the "Log rotate"
+                section in the <i>NCC Installation Guide</i> for information about configuring log
+                rotation.</p><p><b>Application and Aerospike log rotation</b></p><p>The NCC
+                applications and the Aerospike database run as third-party applications with their
+                own runtime environment. Logs from all NCC applications and databases reside under
+                the <codeph>/opt/tpa/logs/</codeph> directory of any container that has either the
+                Application or the Aerospike processes running. NCC specific Application and
+                Aerospike log files found under <codeph>/opt/tpa/logs</codeph> directory on any
+                container and all of those log files that are aggregated on both the AdminCLI pods
+                are stored under the <codeph>/var/log/sps</codeph> directory on both the AdminCLI
+                pods. That is, Application logs are dumped at both AdminCLI pods.</p><p>Log rotation
+                for AdminCLI logs is configured at installation. See the "log rotate" section in the
+                    <i>NCC Installation Guide</i> for information about configuring log
+                rotation.</p></section>
+        <section id="section_b5k_rdd_vkb">
+            <title>Platform logs</title>
+            <p>The platform logs are placed into the <codeph>/var/log/</codeph> directory.</p>
+            <p>Log rotation is not applicable for the <codeph>/var/log/ha/ha.log</codeph>.</p>
+        </section>
+        <section id="section_cxt_rdd_vkb">
+            <title>NCC Application logs</title>
+            <p>NCC specific Application and Aeropsike log files found under
+                    <codeph>/opt/tpa/logs/</codeph> directory on any container and that are
+                aggregated on to both AdminCLI pods are stored under the
+                    <codeph>/var/log/sps/</codeph> directory on the AdminCLI pods. Each of the
+                containers stores a copy of their local logs in the <codeph>/opt/tpa/logs/</codeph>
+                directory and the same is consolidated on to both the AdminCLI pods in the
+                    <codeph>/var/log/sps</codeph> directory, as follows:<ul id="ul_dm5_vg2_vkb">
+                    <li><codeph>/var/log/sps/TPA_system.log</codeph><ul id="ul_rkl_xg2_vkb">
+                            <li>Includes NCC ASR logs, Diameter, SM app logs, etc.</li>
+                        </ul></li>
+                    <li><codeph>/var/log/sps/keycloak.log</codeph><ul id="ul_rdg_zg2_vkb">
+                            <li>For consolidation of keylcoak logs in harmonized format on both
+                                AdminCLIs</li>
+                        </ul></li>
+                    <li><codeph>/var/log/sps/SPSServer.log</codeph></li>
+                    <li><codeph>/var/log/sps/Server.log</codeph></li>
+                    <li><codeph>/var/log/sps/localization.log</codeph></li>
+                    <li><codeph>/var/log/sps/Spotlight.log</codeph></li>
+                    <li><codeph>/var/log/sps/ManagedElement.log</codeph></li>
+                    <li><codeph>/var/log/sps/Provisioning.log</codeph><ul id="ul_rq3_jh2_vkb">
+                            <li>The SM provisioning log</li>
+                        </ul></li>
+                    <li><codeph>/var/log/sps/SericeManager.log</codeph><ul id="ul_zkp_kh2_vkb">
+                            <li>SM logs</li>
+                        </ul></li>
+                    <li><codeph>/var/log/sps/UserAccess.log</codeph></li>
+                    <li><codeph>/var/log/sps/HLAPIServer.log</codeph></li>
+                    <li><codeph>/var/log/sps/LDAPSearch.log</codeph></li>
+                    <li><codeph>/var/log/sps/DiamaterInterceptor.log</codeph></li>
+                    <li><codeph>/var/log/sps/DSCSecurity.log</codeph></li>
+                    <li><codeph>/var/log/sps/aerospike_warning.log</codeph><ul id="ul_hrl_ph2_vkb">
+                            <li>Aerospike database-related logs</li>
+                        </ul></li>
+                    <li><codeph>/var/log/sps/Cdr.log</codeph><ul id="ul_yl2_qh2_vkb">
+                            <li>CDR logs</li>
+                        </ul></li>
+                    <li><codeph>/var/log/sps/watson.log</codeph><ul id="ul_dv5_qh2_vkb">
+                            <li>Watson shell logs</li>
+                        </ul></li>
+                </ul></p>
+            <p>The ER logs are configured in <codeph>tpaEventLogging.xml</codeph>. If EDR log does
+                not need to aggregate to the AdminCLI, the output log file can be confiugred to use
+                a directory other than <codeph>/opt/tpa/logs</codeph>.<note>Alarm logging is
+                    available in <codeph>/opt/tpa/logs/SPSServer.log</codeph> on the local node in
+                    Unified Format but is not consolidated in the AdminCLI pod. Alarm histroy is
+                    recorded in <codeph>/var/log/calm/history.log</codeph> and only shows the alarm
+                    history for clear alarms.</note><note>HA service specific alarms are only
+                    available in <codeph>/var/log/messages</codeph> on the local node. Traps that
+                    trigger these alarms will not be sent either.</note></p>
+        </section>
+        <section id="section_mn2_sdd_vkb">
+            <title>Operating or other system logs</title>
+            <p>The NCC occasionally writes messages to operating system log files or other
+                application log files. An aggregated view of logs from all nodes in each site can be
+                found within the <codeph>/var/log/system/</codeph> directory.</p>
+        </section>
+        <!--section id="section_jq5_sdd_vkb">
+            <title>Spotlight logging</title>
+            <p>FIXME</p>
+        </section-->
+    </conbody>
+</concept>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="chapter1">
+    <title>Autoscaling</title>
+    <conbody>
+        <p>Autoscaling is a Kubernetes operation that automatically increases or decreases the
+            number of pods based on the demands of your workloads. When demand is high, autoscaling
+            adds pods to the pods pool. When demand is low, autoscaling scales down the number of
+            pods giving back unused resources.</p>
+        <p>Autoscaling is handled by Horizontal Pod Autoscaler (HPA), a Kubernetes API resource and
+            controller, and works independently for each pod type. HPA monitors the workload and
+            utilization of resources in a cluster, and based on the current need as well as
+            specified utilization metrics and thresholds, dynamically adjusts the number of pods of
+            a particular pod type. By default the utilization metric is set to CPU utilization.</p>
+        <note>Scaling down occurs gradually, smoothing out the impact of rapidly fluctuating metric
+            values with a downscale stabilization timer of five minutes.</note>
+        <note>Although the software supports autoscaling, Nokia recommends that this feature not be
+            leveraged in release 20.9. Additional certification testing is underway to ensure its
+            flawless operation. To disable this, the <codeph>minReplicas</codeph> values are set the
+            same as the <codeph>maxReplicas</codeph> values.</note>
+        <p>For more information about Autoscaling and HPA, see Kubernetes documentation.</p>
+        <section id="section_mvq_rpz_tkb">
+            <title> HPA definition</title>
+            <p>The HPA for each pod type is defined in the <filepath>values.yaml</filepath> file as
+                follows: </p>
+            <p>
+                <pre>hpa:</pre>
+                <pre>    minReplicas: 1</pre>
+                <pre>    maxReplicas: 10</pre>
+                <pre>    averageCpuUtilization: 80</pre>
+            </p>
+            <p>where:</p>
+            <p>
+                <ul id="ul_ubb_xc1_5kb">
+                    <li><codeph>minReplicas</codeph> is the minimum number of pods running at any
+                        time.</li>
+                    <li><codeph>maxReplicas</codeph> is the maximum number of pods running at any
+                        time regardless of the utilization calculation.</li>
+                    <li><codeph>averageCpuUtilization</codeph> is the percentage of the target
+                        average used to determine whether a new pod should be instantiated or how
+                        many existing pods should be terminated.</li>
+                </ul>
+            </p>
+        </section>
+        <section id="section_ktd_c1q_zlb">
+            <title>Updating HPA configuration</title>
+            <p>The HPA configuration parameters <codeph>minReplicas</codeph>,
+                    <codeph>maxReplicas</codeph>, and <codeph>averageCpuUtilization</codeph> can be
+                updated at the time of installation and post-installation using the <codeph>helm
+                    upgrade</codeph> command.</p>
+            <p>Before you update <codeph>averageCpuUtilization</codeph>, find out the current CPU
+                utilization.</p>
+            <note>
+                <p>Do not use the Kubernetes GUI to find out whether or not the current CPU
+                    utilization exceeds the target CPU utilization. Use <codeph>kubectl -n
+                        &lt;namespace> get hpa</codeph> command for this purpose.</p>
+            </note>
+            <p>For information about <codeph>helm</codeph> and its options, see
+                    <codeph>helm</codeph> documentation. </p>
+        </section>
+        <section id="section_nm4_zsj_skb">
+            <title>Kubernetes GUI</title>
+            <p>The Kubernetes GUI allows you to see events related to scaling. These events are
+                visible in a number of microservices views such as <b>Deployment</b>,
+                    <b>StatefulSet</b> or <b>ReplicaSet</b>. For more information on the Kubernetes
+                GUI, see Kubernetes documentation.</p>
+        </section>
+    </conbody>
+</concept>

@@ -1,0 +1,430 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-d1e99631"><title>configure-security-parameters tool</title><conbody>
+<section><title>Description</title>
+<p>This tool is used to configure global password and login settings within the NCC. It overrides
+                certain settings inside the following files: </p><ul>
+<li>
+<p>
+<filepath>/etc/default/passwd</filepath>
+</p>
+</li>
+<li>
+<p>
+<filepath>/etc/login.defs</filepath>
+</p>
+</li>
+<li>
+<p>
+<filepath>/etc/issue.net</filepath>
+</p>
+</li>
+<li>
+<p>
+<filepath>/etc/motd</filepath>
+</p>
+</li>
+<li>
+<p>
+<filepath>/etc/security/kis.conf</filepath>
+</p>
+</li>
+</ul>
+<p>The following applies to configure-security-parameters tool:</p><ul>
+<li>
+<p>The tool applies the changes to all new passwords and user accounts. </p>
+</li>
+<li>
+<p>The root account can never expire or be locked out.</p>
+</li>
+<li>
+<p>When the tool is used by the root user, password rules that affect the current password or compare against the current or previous passwords are bypassed.</p>
+</li>
+</ul>
+<note>
+<p>The standard Linux SSH timeouts will apply when pushing the security configuration updates made
+                    using <codeph>configure-security-parameters</codeph> tool to the other NCC
+                    nodes.</p>
+</note>
+</section>
+<section><title>Syntax</title>
+<p>Log in to the OAME VM as <codeph>tpaadmin</codeph> and enter the following:</p>
+<p>
+<codeph>/opt/tpa/sbin/configure-security-parameters [-h] [-K &lt;KEY=VALUE&gt; [KEY=VALUE]...]</codeph>
+</p>
+<table>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+<p>Code</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+<codeph>-h</codeph>
+</entry>
+<entry>
+Displays usage/help information.
+</entry>
+</row>
+<row>
+<entry>
+<codeph>-K &lt;KEY=VALUE&gt;   </codeph>
+</entry>
+<entry>
+Specifies the key value pair of login or password options to be configured.
+</entry>
+</row>
+<row>
+<entry>
+Valid keys
+</entry>
+<entry/>
+</row>
+<row>
+<entry>
+<codeph>PASS_MAX_DAYS </codeph>
+</entry>
+<entry>
+<p>Specifies the maximum number of days a password may be used.</p>
+<p>(Values: Min=1, Max=120, Disable=0)</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeph>PASS_MIN_LEN</codeph>
+</entry>
+<entry>
+<p>Specifies the maximum number of days a password may be used.</p>
+<p>(Values: Min=1, Max=120, Disable=0)</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeph>HISTORYNUMBER</codeph>
+</entry>
+<entry>
+<p>Specifies the maximum passwords retained in history.</p>
+<p>(Values: Min=1, Max=10, Disable=0)</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeph>MAX_CHR_F_USERNAME</codeph>
+</entry>
+<entry>
+<p>Specifies the maximum consecutive characters allowed from username.</p>
+<p>(Values: Min=1, Max=MAX_PASS_LEN, Disable=0)</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeph>MAX_CHR_REPEATS</codeph>
+</entry>
+<entry>
+<p>Specifies the maximum characters allowed to repeat consecutively</p>
+<p>For example,. If MAX_CHR_REPEATS=2, 'a111bc' will fail to set.</p>
+<p> (Values: Min=1, Max=MAX_PASS_LEN, Disable=0)</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeph>MIN_SPECIAL</codeph>
+</entry>
+<entry>
+<p>Specifies the minimum required special class characters.</p>
+<p>(Values: Min=1, Max=MIN_PASS_LEN, Disable=0)</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeph>MAX_LOGIN_FAILURES  </codeph>
+</entry>
+<entry>
+<p>Specifies the maximum login failures before blocking login.</p>
+<p> (Values: Min=1, Max=10, Disable=0)</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeph>LOCKTIMEOUT</codeph>
+</entry>
+<entry>
+<p>Specifies the block duration in minutes</p>
+<p> (Values: Min=1, Max=300, Disable=0)</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeph>KIS_KILL</codeph>
+</entry>
+<entry>
+<p>Terminates idle sessions in minutes.</p>
+<p>(Values: Min=1 Max=INT_MAX)</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeph>Banner</codeph>
+</entry>
+<entry>
+<p>Specifies the login banner shows to user before log in.</p>
+<p>(Value: File name contains the banner)</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeph>MOTD</codeph>
+</entry>
+<entry>
+<p>Specifies the message of the day shown to users after log in.</p>
+<p>(Value: File name contains the Message Of The Day)</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeph>DICTION_CHECK_YN</codeph>   
+</entry>
+<entry>
+<p>Checks the new password against a word dictionary.</p>
+<p>(Values: yes/no)</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeph>HISTORYDAYS</codeph>        
+</entry>
+<entry>
+<p>Defines the maximum number of days, per user, that a password is retained in password history.</p>
+<p>(Values: Min=1, Max=180, Disable=0)</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeph>MAX_CHR_F_CUR_PW</codeph>   
+</entry>
+<entry>
+<p>Defines the maximum consecutive characters allowed from password.</p>
+<p>(Values: Min=1, Max=64, Disable=0)</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeph>MAX_CHR_REPEAT_SEQ </codeph>
+</entry>
+<entry>
+<p>Defines the maximum number of characters allowed in a repeating sequence.</p>
+<p>(Values: Min=1, Max=64, Disable=0)</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeph> MAX_CHR_SEQ </codeph>       
+</entry>
+<entry>
+<p>Defines the maximum characters allowed in ascending or descending sequences.</p>
+<p>(Values: Min=1, Max=64, Disable=0)</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeph>MID_NONALPHA_YN </codeph>   
+</entry>
+<entry>
+<p>Defines that at least one special or number character must occur in the middle of a password.</p>
+<p>(Values: yes/no)</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeph>MIN_ALPHA</codeph>          
+</entry>
+<entry>
+<p>Defines the minimum number of upper and/or lower case characters.</p>
+<p>(Values: Min=1, Max=8, Disable=0)</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeph>MIN_CLASSES</codeph>        
+</entry>
+<entry>
+<p>Defines the minimum number of character classes. The classes are uppercase, lowercase, digit, and special.</p>
+<p>(Values: Min=1, Max=4, Disable=0)</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeph>MIN_DIFF</codeph>
+</entry>
+<entry>
+<p>Defines the minimum number of character positions that must be different between the current and proposed password.</p>
+<p>(Values: Min=1, Max=8, Disable=0)</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeph>MIN_DIGIT</codeph>          
+</entry>
+<entry>
+<p>Defines the minimum number of digit class characters.</p>
+<p>(Values: Min=1, Max=8, Disable=0)</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeph>MIN_LOWER   </codeph>       
+</entry>
+<entry>
+<p>Defines the minimum number of lower case alphabet class characters.</p>
+<p>(Values: Min=1, Max=8, Disable=0)</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeph>MIN_NONALPHA </codeph>      
+</entry>
+<entry>
+<p>Defines the minimum number of non-alpha class characters.</p>
+<p>(Values: Min=1, Max=8, Disable=0)</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeph>MIN_SPECIAL </codeph>       
+</entry>
+<entry>
+<p>Defines the minimum number of special class characters.</p>
+<p>(Values: Min=1, Max=8, Disable=0)</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeph>MIN_UPPER</codeph>          
+</entry>
+<entry>
+<p>Defines the minimum number of upper case alphabet class characters.</p>
+<p>(Values: Min=1, Max=8, Disable=0)</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeph>NAMECHECK_YN </codeph>      
+</entry>
+<entry>
+<p>Checks the new password against the users login name.</p>
+<p>(Values: yes/no)</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeph>PWCHECK_YN</codeph>         
+</entry>
+<entry>
+<p>Verifies that the password does not contain the reverse of the current password.</p>
+<p>(Values: yes/no)</p>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section id="password-rules"><title>Default password complexity rules</title>
+<p>The following rules apply for passwords:</p><ul>
+<li>
+<p>Password length must be 8 to 64 characters.</p>
+</li>
+<li>
+<p>Password must not contain the following:</p><ul>
+<li>
+<p>user name or the reverse of the user name</p>
+</li>
+<li>
+<p>more than two consecutive characters from the user name</p>
+</li>
+<li>
+<p>more than two of the same character in consecutive positions</p>
+</li>
+<li>
+<p>multiple sequences of two or more characters</p>
+</li>
+<li>
+<p>more than two characters in an ascending or descending sequence</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Password must have at least the following:</p><ul>
+<li>
+<p>one lowercase character</p>
+</li>
+<li>
+<p>one uppercase character</p>
+</li>
+<li>
+<p>one digit character</p>
+</li>
+<li>
+<p>one special character</p>
+</li>
+<li>
+<p>the first and last must be alpha characters, and there must be at least one non-alpha character between them</p>
+</li>
+<li>
+<p>three character classes represented from uppercase, lowercase, digit and special</p>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+<section><title>Example</title>
+<p>The following example shows how to update the following:</p><ul>
+<li>
+<p>MIN_SPECIAL parameter in <filepath>/etc/default/passwd</filepath> file</p>
+</li>
+<li>
+<p>PASS_MIN_LEN in <filepath>/etc/login.defs</filepath> file</p>
+</li>
+<li>
+<p>lofin Banner in <filepath>cat /etc/issue.net</filepath> file</p>
+</li>
+<li>
+<p>MOTD message in <filepath>cat /etc/motd</filepath> file on all the NCC nodes</p>
+</li>
+</ul>
+<note>Bannerfile and MOTDfile have been created before running the tool.</note>
+<fig>
+<codeblock>[root@sps-oame-0 ~]# /opt/tpa/sbin/configure-security-parameters -K MIN_SPECIAL=2 -K PASS_MIN_LEN=8 -K Banner=Bannerfile -K MOTD=MOTDfile
+This will update login and/or password rules on all nodes of this site with the
+input settings. Continue? [y/n] y
+Distributing new settings to 'sps-me-1-auxiliary-0'.
+Distributing new settings to 'sps-me-1-auxiliary-1'.
+Distributing new settings to 'sps-me-1-auxiliary-2'.
+Distributing new settings to 'sps-me-1-cdr-0'.
+Distributing new settings to 'sps-me-1-cdr-1'.
+Distributing new settings to 'sps-me-1-comsvc-0'.
+Distributing new settings to 'sps-me-1-comsvc-1'.
+Distributing new settings to 'sps-me-1-db-0'.
+Distributing new settings to 'sps-me-1-db-1'.
+Distributing new settings to 'sps-me-1-db-2'.
+Distributing new settings to 'sps-me-1-db-3'.
+Distributing new settings to 'sps-me-1-diameterapp-0'.
+Distributing new settings to 'sps-me-1-diameterapp-1'.
+Distributing new settings to 'sps-me-1-iohd-0'.
+Distributing new settings to 'sps-me-1-iohd-1'.
+Distributing new settings to 'sps-me-1-ioho-0'.
+Distributing new settings to 'sps-me-1-ioho-1'.
+Distributing new settings to 'sps-me-1-oame-0'.
+Distributing new settings to 'sps-me-1-oame-1'.
+[root@sps-oame-0 ~]#</codeblock>
+</fig>
+</section>
+</conbody></concept>

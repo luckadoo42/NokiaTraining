@@ -1,0 +1,1289 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e221574"><title>Bundle On Use (BOU) functionality</title><conbody>
+<section><title>Overview</title>
+<p>The Bundle On Use (BOU) is defined as a bundle that is activated using a configurable event, such as voice call, data session, SMS, or any other similar events. The service providers use two application preferences <uicontrol>BOU Usage Priority</uicontrol> and <uicontrol>BOU Activation Priority</uicontrol> to determine whether BOU activation is required based on the default behaviour, reservation, or on-commit, and their priority order based on the Charging Service (CS) priority order or activation only when no other resource is available.</p>
+<p>The BOU bundle has an activation fee, which is charged from the subscription lifecycle, and a monthly renewal fee, which is charged from the account lifecycle.</p>
+<p>The discount is provided based on any criteria or condition defined in a rule. For example,
+                discount can be provided based on the number of times the BOU feature is activated.
+                The operators define a validity period for a BOU bundle.  </p>
+<p>A BOU bundle is subscribed by a device or group, and a notification is sent under the following scenarios:</p><ul>
+<li>
+<p>BOU activation</p>
+</li>
+<li>
+<p>BOU deactivation</p>
+</li>
+<li>
+<p>BOU suspension</p>
+</li>
+<li>
+<p>Renewal from subscription lifecycle</p>
+</li>
+</ul>
+<note>The activation of a BOU bundle depends on the device location for VoLTE, Gy, or 5G
+                calls.</note>
+<p>For information on CDR/EDRs, see the <i>NCC CDR/EDR Reference</i>.</p>
+</section>
+        <section id="section_trm_lw1_zmb">
+            <title>Configuring BOU to use billing information of linked account</title>
+            <p>If the BOU bundle has billing information, which means the BOU bundle is prorated as
+                per the billing information, then the BOU part is also prorated as per the proration
+                configuration within a bundle.</p>
+            <p>If the BOU bundle has no billing information, then it has an exact period as per the
+                periodic length defined in a lifecycle. However, BOU can be configured to refer
+                billing information of the linked account for end datetime calculation. The
+                    <varname>Align-With-Account-BC</varname> attribute in the
+                    <varname>BUNDLE</varname> result context is used for this configuration as
+                follows:</p>
+            <codeblock>BUNDLE.Align-With-Account-BC = BooleanEnum_TRUE</codeblock>
+            <fig id="fig_byl_dx1_zmb">
+                <title>Rule example in Bundle to align with account balance</title>
+                <image href="../images/align_with_ac_bc.jpg" id="image_kf5_wy1_zmb"/>
+            </fig>
+        </section>
+<section id="configbundle"><title>Configuring a BOU bundle</title><p>Follow the given steps:</p><ol>
+                <li>
+                    <p>Configure the BOU bundle by setting the <uicontrol>Bundle Activation
+                            Type</uicontrol> field value as <varname>On Session</varname> at the
+                        time of bundle creation.</p>
+                </li>
+                <li>
+                    <p>Activate the BOU bundle by defining a rule that specifies the criteria for
+                        BOU activation and actions, such as
+                            <systemoutput>Activation-Fee</systemoutput>.</p>
+                    <p>
+                        <b>Note:</b> The rules are mandatory for BOU-type bundle and atleast one
+                        rule must be present, and in the rule, atleast a single action must be
+                        present with the <systemoutput>Activation-Event</systemoutput> name. This
+                        event is configured in the periodic lifecycle, which further activates the
+                        BOU bundle.</p>
+                </li>
+                <li>
+                    <p>The service providers use two application preferences <uicontrol>BOU Usage
+                            Priority</uicontrol> and <uicontrol>BOU Activation Priority</uicontrol>
+                        to determine when the BOU bundle must be activated.</p>
+                    <p>Following are the supported values for the <uicontrol>BOU Usage
+                            Priority</uicontrol>:</p>
+                    <ul>
+                        <li>
+                            <p>
+                                <varname>DEFAULT_SORTING_ORDER</varname>, which implies that CS
+                                priority order is followed.</p>
+                        </li>
+                        <li>
+                            <p>
+                                <varname>LEAST_PRIORITY_ORDER</varname>, which implies that the BOU
+                                bundle is consumed only when no other resource is available.</p>
+                        </li>
+                    </ul>
+                    <p>Following are the supported values for the <uicontrol>BOU Activation
+                            Priority</uicontrol>:</p>
+                    <ul>
+                        <li>
+                            <p>
+                                <varname>DEFAULT</varname>
+                            </p>
+                        </li>
+                        <li>
+                            <p>
+                                <varname>ON_COMMIT</varname>, which implies that the BOU bundle is
+                                activated on-commit.</p>
+                        </li>
+                        <li>
+                            <p>
+                                <varname>ON_RESERVATION</varname>, which implies that the BOU bundle
+                                is activated on-reservation.</p>
+                        </li>
+                    </ul>
+                    <p>For information on application preferences, see the
+                            <!--xref URI: ../Topics/t-Application_preferences.xml#system_pref--><xref
+                            keyref="id9YZ-09126-UG01-PCZZA-SP1-system_pref"/> section.</p>
+                </li>
+                <li>
+                    <p>Follow the steps listed in the <!--xref URI: #aclc--><xref
+                            keyref="id9YZ-09126-UG01-PCZZA-SP1-d1e221574/aclc"/> section.</p>
+                </li>
+            </ol><p><b>Notes:</b></p>If a BOU bundle rule is applicable for a call, then the BOU
+            activation fee is charged from the account, irrespective of whether the actual
+            reservation is done from its resources. For example,<ul id="ul_aqh_jcn_smb">
+                <li>If a BOU bundle rule is applicable for a call whereas CS applicability is not,
+                    then the precedence is given to BOU bundle rule and BOU activation fee is
+                    charged from the account. </li>
+                <li>If the Initial Value of Bucket in BOU subscription is configured as 0 or Step
+                    Bucket with Step1 Size = 0, then BOU activation fee is charged, since BOU bundle
+                    rule is applicable.</li>
+            </ul><p>When the BOU Activation Priority = ON_COMMIT, then the following logic is
+                applied:</p><ul id="ul_kyz_4dn_smb">
+                <li>If all configurations are valid (Bundle, CS rules are applicable and bucket
+                    initial value is set to non-zero value), but Device (D2) is not able to reserve
+                    any quantity from bucket, for example, complete bucket quantity is reserved by
+                    another Device (D1) before BOU has been activated. In such case, BOU is
+                    activated when the the device (D1) that has reserved quantities commits its
+                    resources. </li>
+                <li>If a Device is not able to reserve any quantity from BOU bundle and any other
+                    resource, rating session will not be created. Hence, there will be no commit. In
+                    such case, BOU fee is charged and BOU is activated in the current call.</li>
+            </ul><sectiondiv>
+                <p><b>NCC behavior and BOU activation based on values of application
+                    preferences</b></p>
+                <p>The following table shows the NCC behavior when different values are used for the
+                    application preferences. It is recommended to select an appropriate value for
+                    the application preferences based on your requirement.<table pgwide="1"
+                        colsep="1" rowsep="1">
+                        <tgroup cols="3">
+                            <colspec colname="col1" colwidth="1.13*"/>
+                            <colspec colname="col2" colwidth="1*"/>
+                            <colspec colname="col3" colwidth="1.91*"/>
+                            <thead>
+                                <row>
+                                    <entry>
+                                        <p>BOU Usage Priority</p>
+                                    </entry>
+                                    <entry>
+                                        <p>BOU Activation Priority</p>
+                                    </entry>
+                                    <entry>
+                                        <p>NCC behavior and BOU activation</p>
+                                    </entry>
+                                </row>
+                            </thead>
+                            <tbody>
+                                <row>
+                                    <entry>
+                                        <varname>Not Applicable</varname>
+                                    </entry>
+                                    <entry>
+                                        <varname>DEFAULT</varname>
+                                    </entry>
+                                    <entry>
+                                        <p>The existing behavior is followed and all applicable BOU
+                                            bundles are activated during reservation, irrespective
+                                            of whether they are used in call or not.</p>
+                                        <p>
+                                            <b>Note:</b> The value of the <uicontrol>BOU Usage
+                                                Priority</uicontrol> is not considered when the
+                                                <uicontrol>BOU Activation Priority</uicontrol> value
+                                            is set as <varname>DEFAULT</varname>.</p>
+                                    </entry>
+                                </row>
+                                <row>
+                                    <entry>
+                                        <varname>DEFAULT_SORTING_ORDER</varname>
+                                    </entry>
+                                    <entry>
+                                        <varname>ON_RESERVATION</varname>
+                                    </entry>
+                                    <entry> BOU bundles are activated during reservation, as per
+                                        their <i>Sorting Order</i> only when required. </entry>
+                                </row>
+                                <row>
+                                    <entry>
+                                        <varname>LEAST_PRIORITY_ORDER</varname>
+                                    </entry>
+                                    <entry>
+                                        <varname>ON_RESERVATION</varname>
+                                    </entry>
+                                    <entry> All active resources are used, which is further followed
+                                        by BOU bundles that get activated during reservation only
+                                        when required. </entry>
+                                </row>
+                                <row>
+                                    <entry>
+                                        <varname>DEFAULT_SORTING_ORDER</varname>
+                                    </entry>
+                                    <entry>
+                                        <varname>ON_COMMIT</varname>
+                                    </entry>
+                                    <entry> BOU bundles are activated during commit as per their
+                                            <i>Sorting Order</i> only when required. </entry>
+                                </row>
+                                <row>
+                                    <entry>
+                                        <varname>LEAST_PRIORITY_ORDER</varname>
+                                    </entry>
+                                    <entry>
+                                        <varname>ON_COMMIT</varname>
+                                    </entry>
+                                    <entry> All active resources are used followed by BOU bundles
+                                        that get activated during commit only when required.
+                                    </entry>
+                                </row>
+                            </tbody>
+                        </tgroup>
+                    </table></p>
+            </sectiondiv></section>
+<section id="aclc"><title>Recommended lifecycle configuration for BOU bundle</title>
+<p>Follow the example listed in the given sub-sections in the similar order to configure the lifecycle for a BOU bundle:</p>
+<sectiondiv>
+<p><b>Account bill cycle</b></p>
+<p>Create an account bill cycle <varname>AccCycle1</varname>, which is further linked to the account to be used for the BOU subscription and has the following configuration:</p><ol>
+<li><p>The renewal period for this account bill cycle is set as <varname>1 month</varname> and this
+                            bill cycle has two sample states <uicontrol>Start</uicontrol> and
+                                <uicontrol>Suspended</uicontrol> as shown in the following
+                            figure:</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_19.3/BOU_ALC1_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-bou_alc1_default.png"
+                            scale="55"/>
+                    </li>
+<li>
+<p>In the <uicontrol>Start</uicontrol> state, the transition is based on the following events:</p><ol>
+<li><p>First, we want to reset the account period and to do so, the start date and end date must be
+                                    reset immediately after an account is created, when the
+                                    subscription fee is already charged while subscribing the bundle
+                                    on this account.</p><p>This is shown in the following
+                                    figure:</p>
+                                <!--MMO resource relative URI: ../Graphics/Release_19.3/BOU_transition1_default.png-->
+                                <image
+                                    href="../images/img9yz-09126-ug01-pczza-sp1-bou_transition1_default.png"
+                                />
+                            </li>
+<li><p>Next, a <varname>Repeat Cycle Event</varname> is triggered when the end time of the account
+                                    is reached. All subscriptions for normal or BOU bundles
+                                    associated with this account are renewed. Also, the start time
+                                    and end time gets reset to be triggered again in future. The
+                                    renewal of subscription is managed through the account bill
+                                    cycle for BOU type bundles.</p><p>This is shown in the following
+                                    figure:</p>
+                                <!--MMO resource relative URI: ../Graphics/Release_19.3/BOU_transition2_event1_default.png-->
+                                <image
+                                    href="../images/img9yz-09126-ug01-pczza-sp1-bou_transition2_event1_default.png"
+                                    scale="65"/>
+                            </li>
+<li><p>This renewed subscription charges the renewal fee and does not reset this subscription for
+                                    BOU. If the renewal fee is successfully charged, then the
+                                        <varname>Subscription Renewed Event</varname> is triggered,
+                                    which resets the start time and end time so that it can be
+                                    triggered again.</p>
+                                <!--MMO resource relative URI: ../Graphics/Release_19.3/BOU_transition2_event2_default.png-->
+                                <image
+                                    href="../images/img9yz-09126-ug01-pczza-sp1-bou_transition2_event2_default.png"/>
+                                <p>However, if there is any failure to charge renewal fee, then the
+                                        <varname>Not Enough Funds Event</varname> is triggered on
+                                    both account bill cycle and the subscription bill
+                                    cycle.</p><p>When the <varname>Not Enough Funds Event</varname>
+                                    is triggered on the account bill cycle in the
+                                        <uicontrol>Start</uicontrol> state, it transits to the
+                                        <uicontrol>Suspended</uicontrol> state as shown in the
+                                    following figure:</p>
+                                <!--MMO resource relative URI: ../Graphics/Release_19.3/BOU_transition2_event3_default.png-->
+                                <image
+                                    href="../images/img9yz-09126-ug01-pczza-sp1-bou_transition2_event3_default.png"
+                                />
+                            </li>
+</ol>
+</li>
+<li>
+<p>Configure the <uicontrol>Suspended</uicontrol> state to be normal and not barring.</p><ol>
+<li><p>The reason to configure this kind of state is that when <varname>Account Recharged
+                                        Event</varname> is triggered while being in the
+                                        <uicontrol>Suspended</uicontrol> state, the subscription
+                                    renewal must be retried. If the <systemoutput>Renew Subscription
+                                        Action</systemoutput> is successful, then it transits back
+                                    to the <uicontrol>Start</uicontrol> state again.</p><p>This
+                                    configuration is shown in the following figure:</p>
+                                <!--MMO resource relative URI: ../Graphics/Release_19.3/BOU_suspend1_default.png-->
+                                <image
+                                    href="../images/img9yz-09126-ug01-pczza-sp1-bou_suspend1_default.png"
+                                    scale="70"/>
+                                <p>The <varname>Account Recharged Event</varname> is triggered when
+                                    an account balance is credited in one of the following
+                                    scenarios:</p><p>
+                                    <b>-&gt;</b> Adjust the account balance with a positive value. </p><p>
+                                    <b>-&gt;</b> Set the account balance to a value greater than the
+                                    current account balance. </p><p>
+                                    <b>-&gt;</b> Reset the account balance to a value greater than
+                                    the current account balance.</p>
+                            </li>
+<li><p>Configure that when the <varname>Subscription Renewed Event</varname> is triggered, the
+                                    account period is reset. If the <systemoutput>Reset Period
+                                        Action</systemoutput> is successful, then the
+                                        <uicontrol>Suspended</uicontrol> state transits back to the
+                                        <uicontrol>Start</uicontrol> state again.</p><p>This
+                                    configuration is shown in the following figure:</p>
+                                <!--MMO resource relative URI: ../Graphics/Release_19.3/BOU_transition3_default.png-->
+                                <image
+                                    href="../images/img9yz-09126-ug01-pczza-sp1-bou_transition3_default.png"
+                                />
+                            </li>
+</ol>
+</li>
+</ol>
+</sectiondiv>
+<sectiondiv>
+<p><b>Subscription bill cycle</b></p>
+<p>After completing the account bill cycle configuration, create a subscription bill cycle <varname>SubscBillCycle</varname>, which is further linked to the BOU-type bundle and has the following configuration:</p><ol>
+<li><p>The subscription bill cycle period is set as <varname>1 day</varname>, which means that
+                            whenever a bundle (to which this lifecycle is attached) is activated, it
+                            remains active only for a day and deactivated soon after that.</p><p>
+                            <b>Note:</b> The renewal cycle is controlled by the account period
+                            lifecycle and the activation cycle is further controlled by the
+                            subscription periodic lifecycle.</p><p>Create the following sample
+                            states for the subscription bill cycle:</p><ul>
+                            <li>
+                                <p>
+                                    <uicontrol>Start</uicontrol>
+                                </p>
+                            </li>
+                            <li>
+                                <p>
+                                    <uicontrol>Pre-Active</uicontrol>
+                                </p>
+                            </li>
+                            <li>
+                                <p>
+                                    <uicontrol>Active</uicontrol>
+                                </p>
+                            </li>
+                            <li>
+                                <p>
+                                    <uicontrol>Suspended</uicontrol>
+                                </p>
+                            </li>
+                            <li>
+                                <p>
+                                    <uicontrol>Final</uicontrol>
+                                </p>
+                            </li>
+                        </ul><p>This configuration is shown in the following figure:</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_20.0/SubLC_BOU_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-sublc_bou_default.png"
+                            scale="70"/>
+                    </li>
+<li><p>The <uicontrol>Start</uicontrol> state has only one transition that initialized the lifecycle
+                            to its initial state as shown in the following figure:</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_20.0/BOU_start_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-bou_start_default.png"
+                            scale="70"/>
+                    </li>
+<li>
+<p>The <uicontrol>Pre-Active</uicontrol> state has the following transitions:</p>
+<p>
+<b>Note:</b> The event name must be same as action defined in the bundle rule.</p><ol>
+<li><p>In the first transition, we have configured for <varname>Activate By Voice</varname> event.
+                                    Similarly, you can define the activation by data, SMS, or MMS
+                                    events.</p><p>When the <varname>Activate By Voice</varname>
+                                    event is triggered, an activation fee is charged from the
+                                    account as per the <systemoutput>Charge Fee
+                                        Action</systemoutput> associated with the event. This
+                                    activation fee can either be specified here or it can be passed
+                                    from the rules configured in the bundle. Note that the
+                                    activation fee received from bundle rules has precedence over
+                                    the activation fee defined here.</p><p>This configuration is
+                                    shown in the following figure:</p>
+                                <!--MMO resource relative URI: ../Graphics/Release_20.0/BOU_Preactive_default.png-->
+                                <image
+                                    href="../images/img9yz-09126-ug01-pczza-sp1-bou_preactive_default.png"
+                                    scale="65"/>
+                                <p>The event to be triggered next is identified by the rules
+                                    configured in the bundle definition and the event gets executed
+                                    when the BOU bundle is in the <uicontrol>Pre-Active</uicontrol>
+                                    state.</p><p>The <systemoutput>Charge Fee Action</systemoutput>
+                                    generates the following events depending on given
+                                    configurations:</p><table pgwide="1" colsep="1" rowsep="1">
+                                    <tgroup cols="2">
+                                        <colspec colname="col1"/>
+                                        <colspec colname="col2"/>
+                                        <thead>
+                                            <row>
+                                                <entry>
+                                                  <p>BOU Activation Priority</p>
+                                                </entry>
+                                                <entry>
+                                                  <p>Events generated</p>
+                                                </entry>
+                                            </row>
+                                        </thead>
+                                        <tbody>
+                                            <row>
+                                                <entry>
+                                                  <varname>DEFAULT</varname> or
+                                                  <varname>ON_RESERVATION</varname>
+                                                </entry>
+                                                <entry>
+                                                  <p/>
+                                                  <ul>
+                                                  <li>
+                                                  <p>If the fee is successfully deducted then the
+                                                  <varname>Charge Fee Action Success Event</varname>
+                                                  is triggered.</p>
+                                                  </li>
+                                                  <li>
+                                                  <p>If the fee deduction fails, then the
+                                                  <varname>Charge Fee Action Failure Event</varname>
+                                                  is triggered.</p>
+                                                  </li>
+                                                  </ul>
+                                                </entry>
+                                            </row>
+                                            <row>
+                                                <entry>
+                                                  <varname>ON_COMMIT</varname>
+                                                </entry>
+                                                <entry>
+                                                  <p/>
+                                                  <ul>
+                                                  <li>
+                                                  <p>If the activation fee is successfully reserved
+                                                  from the account during a reservation call, then
+                                                  the <varname>Account Reservation Success
+                                                  Event</varname> is triggered.</p>
+                                                  </li>
+                                                  <li>
+                                                  <p>If the reservation of activation fee fails
+                                                  during a reservation call, then the
+                                                  <varname>Account Reservation Failure
+                                                  Event</varname> is triggered.</p>
+                                                  </li>
+                                                  <li>
+                                                  <p>If the reserved fee is successfully committed
+                                                  from account during a commit call, then the
+                                                  <varname>Account Commit Success Event</varname> is
+                                                  triggered.</p>
+                                                  </li>
+                                                  </ul>
+                                                </entry>
+                                            </row>
+                                        </tbody>
+                                    </tgroup>
+                                </table><p>
+                                    <b>-&gt;</b> If the <uicontrol>BOU Activation
+                                        Priority</uicontrol> is set as <varname>DEFAULT</varname> or
+                                        <varname>ON_RESERVATION</varname>, then the
+                                        <systemoutput>Charge Fee Action</systemoutput> deducts fee
+                                    from the account as shown in the following figure:</p>
+                                <!--MMO resource relative URI: ../Graphics/Release_20.0/BOU_CFA1_default.png-->
+                                <image
+                                    href="../images/img9yz-09126-ug01-pczza-sp1-bou_cfa1_default.png"
+                                    scale="65"/>
+                                <p>When the activation fee is charged successfully, the start time
+                                    (current time) and end time (calculated as per the configured
+                                    billing period in the lifecycle) is reset. The end time
+                                    determines the time to deactivate the BOU bundle. If the bundle
+                                    does not have the billing information, then the activation
+                                    period is exactly as per the periodic length specified in the
+                                    subscription lifecycle. It also increments number of activations
+                                    that have occurred on that subscription in the current renewal
+                                    cycle.</p><p>Next, the subscription is reset, followed by
+                                    resetting the buckets and counters in this subscription using
+                                    the <systemoutput>Reset Subscription Action</systemoutput> for
+                                    BOU bundles.</p><p>A successful notification is sent using the
+                                    notification variables configured in the rules of the
+                                    notification template for the <systemoutput>Send
+                                        Notification</systemoutput> action. In addition to existing
+                                    notification variables, the notification configuration can also
+                                    use the <i>Bundle-Id</i>, <i>Bundle-Activation-Type</i>, and
+                                        <i>Remaining-Renewals</i> variables.</p><p>A transition from
+                                    the <uicontrol>Pre-Active</uicontrol> state to the
+                                        <uicontrol>Active</uicontrol> state takes place.</p><p>
+                                    <b>-&gt;</b> If the <uicontrol>BOU Activation
+                                        Priority</uicontrol> is set as <varname>DEFAULT</varname> or
+                                        <varname>ON_RESERVATION</varname>, but the deduction of
+                                    activation fee fails, then the <varname>Charge Fee Action
+                                        Failure Event</varname> is triggered and a notification is
+                                    sent indicating a failure in payment using the notification
+                                    template (as configured) and the subscription continues to
+                                    remain in the <uicontrol>Pre-Active</uicontrol>
+                                    state.</p><p>This is shown in the following figure:</p>
+                                <!--MMO resource relative URI: ../Graphics/Release_20.0/BOU_CFA2_default.png-->
+                                <image
+                                    href="../images/img9yz-09126-ug01-pczza-sp1-bou_cfa2_default.png"
+                                    scale="65"/>
+                                <p>
+                                    <b>-&gt;</b> If the <uicontrol>BOU Activation
+                                        Priority</uicontrol> is set as <varname>ON_COMMIT</varname>
+                                    during a reservation call, then the BOU activation fee is
+                                    successfully reserved from the account as shown in the following
+                                    figure:</p>
+                                <!--MMO resource relative URI: ../Graphics/Release_20.0/BOU_CFA3_default.png-->
+                                <image
+                                    href="../images/img9yz-09126-ug01-pczza-sp1-bou_cfa3_default.png"
+                                    scale="70"/>
+                                <p>During this transition, the following actions are performed:</p><p>
+                                    <b>(i)</b> If the <i>Action</i> is set as <systemoutput>Reset
+                                        Subscription Action</systemoutput>: The activation fee is
+                                    successfully reserved, subscription is reset, followed by
+                                    resetting the buckets and counters in this subscription as per
+                                    the <systemoutput>Reset Subscription Action</systemoutput> for
+                                    BOU-type bundles. This is performed to ensure that the bucket
+                                    with full quantities (initial value) is available for
+                                    reservation and any previous thresholds are also reset.</p><p>
+                                    <b>(ii)</b> If the <i>Action</i> is set as <systemoutput>Reset
+                                        Period Action</systemoutput>: The activation fee is
+                                    successfully renewed, start time (current time) and end time
+                                    (calculated based on the configured billing period in the
+                                    lifecycle) is reset as per the <systemoutput>Reset Period
+                                        Action</systemoutput>. The end time determines the time to
+                                    deactivate the BOU bundle. If the bundle does not have a billing
+                                    information, then the activation period is similar to the
+                                    periodic length in the subscription lifecycle. The start time
+                                    and end time are calculated depending on the <i>Reservation
+                                        Time</i>. However, in case of under-commit scenarios, if the
+                                    BOU bundle is not activated, then the start time and end time is
+                                    set as null.</p><p>
+                                    <b>(iii)</b> The number of activations that have occurred on
+                                    that subscription in the current renewal cycle is not
+                                    incremented whereas, the activation count is incremented when
+                                    BOU is activated on actual usage.</p><p>
+                                    <b>(iv)</b> There is no change of state in this scenario.</p><p>
+                                    <b>-&gt;</b> If the <uicontrol>BOU Activation
+                                        Priority</uicontrol> is set as <varname>ON_COMMIT</varname>
+                                    during a reservation call but the activation fee cannot be
+                                    reserved successfully, then the following transition happens as
+                                    shown in the figure below:</p>
+                                <!--MMO resource relative URI: ../Graphics/Release_20.0/BOU_CFA4_default.png-->
+                                <image
+                                    href="../images/img9yz-09126-ug01-pczza-sp1-bou_cfa4_default.png"
+                                    scale="70"/>
+                                <p>If you wish to be notified with a failure notification during an
+                                    attempt of account reservation, then the <systemoutput>Send
+                                        Notification</systemoutput> action is applied in the
+                                    preceding transition.</p><p>
+                                    <b>-&gt;</b> If the <uicontrol>BOU Activation
+                                        Priority</uicontrol> is set as <varname>ON_COMMIT</varname>
+                                    during a reservation call and the activation fee is successfully
+                                    reserved from the account, then the following transition happens
+                                    as shown in the figure below:</p>
+                                <!--MMO resource relative URI: ../Graphics/Release_20.0/BOU_Success_default.png-->
+                                <image
+                                    href="../images/img9yz-09126-ug01-pczza-sp1-bou_success_default.png"
+                                    scale="70"/>
+                                <p>During this transition, the following actions are performed:</p><p>
+                                    <b>(i)</b> The <uicontrol>Pre-Active</uicontrol> (or barred)
+                                    state transits to <uicontrol>Active</uicontrol> (unbarred)
+                                    state.</p><p>
+                                    <b>(ii)</b> The number of activations that have occurred on that
+                                    subscription in the current renewal cycle is incremented.</p><p>
+                                    <b>(iii)</b> A successful notification is sent using the
+                                    notification variables configured in the rules for the
+                                        <systemoutput>Send Notification</systemoutput> action. In
+                                    addition to the existing variables, the notification template
+                                    may also use <i>Bundle-Id</i>, <i>Bundle-Activation-Type</i>,
+                                    and <i>Remaining-Renewals</i>.</p>
+                            </li>
+<li><p>Another transition in the <uicontrol>Pre-Active</uicontrol> state is as follows:</p>
+                                <!--MMO resource relative URI: ../Graphics/Release_20.0/BOU_CFA6_default.png-->
+                                <image
+                                    href="../images/img9yz-09126-ug01-pczza-sp1-bou_cfa6_default.png"/>
+                                <p>You can also configure to send notification in case the renewal
+                                    of subscription fails due to unavailability of funds. In this
+                                    case, there is a transition from the
+                                        <uicontrol>Pre-Active</uicontrol> to the
+                                        <uicontrol>Suspended</uicontrol> state.</p>
+                            </li>
+<li><p>Another transition in the <uicontrol>Pre-Active</uicontrol> state is as follows:</p>
+                                <!--MMO resource relative URI: ../Graphics/Release_20.0/BOU_CFA7_default.png-->
+                                <image
+                                    href="../images/img9yz-09126-ug01-pczza-sp1-bou_cfa7_default.png"/>
+                                <p>When the <varname>Max Renewals Reached Event</varname> is
+                                    triggered for the BOU bundle, the subscription moves from the
+                                        <uicontrol>Pre-Active</uicontrol> to the
+                                        <uicontrol>Final</uicontrol> state.</p>
+                            </li>
+</ol>
+</li>
+<li>
+<p>The <uicontrol>Active</uicontrol> state has the following transitions:</p><ol>
+<li><p>If the activation was successful before, then lifecycle is in the
+                                        <uicontrol>Active</uicontrol> state and deactivation is
+                                    handled in the following way:</p>
+                                <!--MMO resource relative URI: ../Graphics/Release_20.0/BOU_CFA8_default.png-->
+                                <image
+                                    href="../images/img9yz-09126-ug01-pczza-sp1-bou_cfa8_default.png"/>
+                                <p>When the end time is reached, the <varname>Deactivate</varname>
+                                    event is triggered. You can also configure to send notification
+                                    using the notification action. However, the mandatory transition
+                                    happens to the <uicontrol>Pre-Active</uicontrol> state.</p>
+                            </li>
+<li><p>Another transition in <uicontrol>Active</uicontrol> state is as follows:</p>
+                                <!--MMO resource relative URI: ../Graphics/Release_20.0/BOU_CFA9_default.png-->
+                                <image
+                                    href="../images/img9yz-09126-ug01-pczza-sp1-bou_cfa9_default.png"/>
+                                <p>
+                                    <b>Note:</b> The transition can happen from both
+                                        <uicontrol>Pre-Active</uicontrol> and
+                                        <uicontrol>Active</uicontrol> state to
+                                        <uicontrol>Suspended</uicontrol> state due to failure in
+                                    renew subscription.</p>
+                            </li>
+<li><p>Another transition in <uicontrol>Active</uicontrol> state is as follows. When the
+                                        <uicontrol>Max Renewals Reached Event</uicontrol> is
+                                    triggered for BOU, the subscription moves to
+                                        <uicontrol>Final</uicontrol> state.</p>
+                                <!--MMO resource relative URI: ../Graphics/Release_20.0/BOU_CFA10_default.png-->
+                                <image
+                                    href="../images/img9yz-09126-ug01-pczza-sp1-bou_cfa10_default.png"
+                                />
+                            </li>
+</ol>
+</li>
+<li>
+<p>The <uicontrol>Suspended</uicontrol> state has the following transitions:</p><ol>
+<li><p>In the first transition, if the renewal fee is successfully deducted, then the
+                                        <varname>Subscription Renewed Event</varname> is triggered
+                                    for which there is a transition to the
+                                        <uicontrol>Pre-Active</uicontrol> state as shown in the
+                                    following figure:</p>
+                                <!--MMO resource relative URI: ../Graphics/Release_20.0/BOU_CFA11_default.png-->
+                                <image
+                                    href="../images/img9yz-09126-ug01-pczza-sp1-bou_cfa11_default.png"
+                                />
+                            </li>
+<li><p>In the last transition, if the account credit is insufficient to charge the renewal fee, then
+                                    the subscription remains in the <uicontrol>Suspended</uicontrol>
+                                    state and you may configure the notification template to notify
+                                    the user. Only the periodic lifecycle is used in subscription to
+                                    periodically deactivate and activate a subscription and maintain
+                                    subscription states.</p><p>This configuration is shown in the
+                                    following figure:</p>
+                                <!--MMO resource relative URI: ../Graphics/Release_20.0/BOU_CFA12_default.png-->
+                                <image
+                                    href="../images/img9yz-09126-ug01-pczza-sp1-bou_cfa12_default.png"
+                                />
+                            </li>
+</ol>
+</li>
+<li><p>The <uicontrol>Final</uicontrol> state has no transitions. When the <varname>Max Renewals
+                                Reached Event</varname> is triggered for a BOU bundle, the state of
+                            the subscription moves to the <uicontrol>Final</uicontrol> state as
+                            shown in the following figure:</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_20.0/BOU_final_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-bou_final_default.png"/>
+                    </li>
+</ol>
+</sectiondiv>
+</section>
+<section><title>Lifecycle actions on BOU bundle</title>
+<p>This section explains the impact of different lifecycle actions on a BOU bundle. Assume the sample states (<uicontrol>Pre-Active</uicontrol>, <uicontrol>Suspended</uicontrol>, and others as mentioned in the <!--xref URI: #aclc--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-d1e221574/aclc"/> section) to understand the concept in this section.</p>
+<note>The BOU bundle is activated only when it is in the <uicontrol>Pre-Active</uicontrol>
+                state.</note>
+<sectiondiv>
+<p><b>Impact of renew subscription action on BOU bundle</b></p>
+<note>The BOU bundle can either have the <varname>BILLING_ONLY</varname> or
+                        <varname>RESET_ONLY</varname> renewal modes.</note>
+<p>If the account renewal fails, then the state of the account and subscription always moves to the <uicontrol>Suspended</uicontrol> state. However, if the subscription renewal fails, then it depends on the configuration whether the account state moves to <uicontrol>Suspended</uicontrol> state or not.</p>
+<p>When a positive top-up is done on an account using the REST API, the <varname>Account Recharged Event</varname> is triggered, which is broadcasted to the subscription and account lifecycle. The failed renewal or the <systemoutput>Charge Fee Action</systemoutput> is executed again. The account state moves to the <uicontrol>Active</uicontrol> state whereas the BOU subscription state moves to the <uicontrol>Pre-Active</uicontrol> (or barred) state.</p>
+<p>For a BOU bundle with <varname>BILLING_ONLY</varname> renewal mode, the subscription renewal is not skipped unlike other normal bundles. In case of the BOU bundle, the <i>bouActivationCount</i> is always reset to zero irrespective of whether there is sufficient balance in account to renew all of its associated subscriptions or not.</p>
+<note>The <i>bouActivationCount</i> for a BOU bundle is set to zero even the account is a Postpaid
+                    account and the <i>deductPostpaidFeeFlag</i> is set as
+                    <varname>False</varname>.</note>
+</sectiondiv>
+<sectiondiv>
+<p><b>Impact of charge fee action on BOU bundle</b></p>
+<p>The <systemoutput>Charge Fee Action</systemoutput> is configured in the BOU periodic lifecycle to support the BOU bundle activation on a configurable event.</p>
+<p>Following events impact the <i>bouActivationCount</i>:</p><ul>
+<li>
+<p>Triggering of the <varname>Charge Fee Action Success Event</varname>, which results in the BOU bundle activation and increment of the <i>bouActivationCount</i> for the subscription.</p>
+</li>
+<li>
+<p>Triggering of the <varname>Charge Fee Action Failure Event</varname>, which does not activate the BOU bundle and the <i>bouActivationCount</i> remains same for the subscription.</p>
+</li>
+<li>
+<p>Triggering of the <varname>Account Commit Success Event</varname> with the <uicontrol>BOU Activation Priority</uicontrol> set as <varname>ON_COMMIT</varname> results in incrementing the <i>bouActivationCount</i>.</p>
+</li>
+</ul>
+<p>To enable BOU functionality, the <systemoutput>Charge Fee Action</systemoutput> is configured only once in the bundle periodic lifecycle and must not be configured in the bundle entity lifecycle. The discount is configured in rules and applied on prorated fee (if applicable). The tax (if applicable) is calculated on the discounted fee.</p>
+<p>For the <uicontrol>BOU Activation Priority</uicontrol> set as <varname>ON_COMMIT</varname>, the <systemoutput>Charge Fee Action</systemoutput> generates the following events:</p><ul>
+<li>
+<p>
+<varname>Account Reservation Success Event</varname>: When the BOU activation fee is successfully reserved from account in reservation call.</p>
+</li>
+<li>
+<p>
+<varname>Account Reservation Failure Event</varname>: When the BOU Activation fee reservation from account fails during reservation mainly due to insufficient funds in account to pay for BOU activation fee.</p>
+</li>
+<li>
+<p>
+<varname>Account Commit Success Event</varname>: When the BOU activation fee reserved is successfully committed from account in commit call.</p>
+</li>
+</ul>
+<p>The <varname>Charge Fee Action Success Event</varname> and <varname>Charge Fee Action Failure Event</varname> are not generated for the <uicontrol>BOU Activation Priority</uicontrol> set as <varname>ON_COMMIT</varname>.</p>
+<p>For the <uicontrol>BOU Activation Priority</uicontrol> set as <varname>DEFAULT</varname> or <varname>ON_RESERVATION</varname>, the <systemoutput>Charge Fee Action</systemoutput> triggers the <varname>Charge Fee Action Success Event</varname> and <varname>Charge Fee Action Failure Event</varname>.</p>
+</sectiondiv>
+</section>
+<section><title>Future activation time for BOU bundle</title>
+<p>With this feature, you can configure the activation time of a BOU bundle in future using the recommended lifecycle configuration mentioned in this section:</p><ol>
+<li><p>Create a BOU bundle <varname>Bundle_BOU</varname> with the following configuration:</p>
+                    <!--MMO resource relative URI: ../Graphics/Release_20.6/BOU_Activation_Event_img1_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-bou_activation_event_img1_default.png"
+                        scale="55"/>
+                    <p>Here the <varname>BOU Activation Event</varname> is a user-defined activation
+                        event name.</p>
+                </li>
+<li><p>The subscription periodic lifecycle is configured as:</p>
+                    <!--MMO resource relative URI: ../Graphics/Release_20.6/Subscription_lifecycle_config_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-subscription_lifecycle_config_default.png"
+                        scale="65"/>
+                    <p/><ol>
+                        <li>
+                            <p>Create the following lifecycle states:</p>
+                            <p>
+                                <b>-&gt;</b>
+                                <uicontrol>Start</uicontrol> (as the initial state of the
+                                lifecycle).</p>
+                            <p>
+                                <b>-&gt;</b>
+                                <uicontrol>PreActive1</uicontrol> (as the lifecycle state when the
+                                    <i>ActivationTime</i> is defined).</p>
+                            <p>
+                                <b>-&gt;</b>
+                                <uicontrol>PreActive</uicontrol> (as the lifecycle state where we
+                                define the activation event in the BOU bundle rule.</p>
+                            <p>
+                                <b>-&gt;</b>
+                                <uicontrol>Active</uicontrol>
+                            </p>
+                        </li>
+                        <li><p>When a subscription is attached to a device or group, the
+                                subscription lifecycle state transits from the
+                                    <uicontrol>Start</uicontrol> state to the
+                                    <uicontrol>PreActive1</uicontrol> state. A <varname>Start Cycle
+                                    Event</varname> is configured with the
+                                    <uicontrol>Start</uicontrol> state as shown in the following
+                                figure:</p>
+                            <!--MMO resource relative URI: ../Graphics/Release_20.6/Start_Cycle_event_default.png-->
+                            <image
+                                href="../images/img9yz-09126-ug01-pczza-sp1-start_cycle_event_default.png"
+                                scale="65"/>
+                        </li>
+                        <li><p>At the <uicontrol>PreActive1</uicontrol> state, an
+                                    <i>ActivationTime</i> is defined while attaching the
+                                subscription to transition from the
+                                    <uicontrol>PreActive1</uicontrol> state to the
+                                    <uicontrol>PreActive</uicontrol> state once the configured
+                                    <i>ActivationTime</i> is reached as shown in the following
+                                figure:</p>
+                            <!--MMO resource relative URI: ../Graphics/Release_20.6/PreActive1_default.png-->
+                            <image
+                                href="../images/img9yz-09126-ug01-pczza-sp1-preactive1_default.png"
+                                scale="65"/>
+                        </li>
+                        <li><p>At the <uicontrol>PreActive</uicontrol> state, a BOU activation event
+                                is configured to be triggered from the BOU bundle rule. Therefore,
+                                once the bundle transits to the <uicontrol>PreActive</uicontrol>
+                                state and the BOU activation event triggers, the BOU bundle is
+                                activated for use.</p><p>This is shown in the following figure:</p>
+                            <!--MMO resource relative URI: ../Graphics/Release_20.6/PreActive_default.png-->
+                            <image
+                                href="../images/img9yz-09126-ug01-pczza-sp1-preactive_default.png"
+                                scale="65"/>
+                            <p>
+                                <b>Note:</b> If the subscription does not transits to the
+                                    <uicontrol>PreActive</uicontrol> state because of the
+                                    <i>ActivationTime</i> configured for future, then the
+                                subscription rule is triggered on call and the subscription is not
+                                activated for use.</p>
+                        </li>
+                    </ol>
+                </li>
+</ol>
+<p>Consider the following examples to understand configuring the future activation time of a BOU bundle in different ways:</p>
+<sectiondiv>
+<p><b>Example 1: BOU subscription with future activation time</b></p>
+<p>This example explains that when a BOU bundle is configured to be activated on making a voice call but the bundle activation takes place in future.</p>
+<p>
+<b>Preconditions:</b>
+</p><ul>
+<li><p>Create a subscription lifecycle on <varname>8 Apr 2020 16:02:10</varname> and define the
+                            subscription activation time on or after <varname>13 Apr 2020
+                                16:02:07</varname>.</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_20.6/Exp1_img1_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-exp1_img1_default.png"/>
+                    </li>
+<li>
+<p>Define the activation event for the bundle in the <uicontrol>PreActive</uicontrol> state of the subscription lifecycle.</p>
+</li>
+</ul>
+<p>
+<b>Post-conditions:</b>
+</p><ul>
+<li><p>Once the subscription is created, it is moved to the <uicontrol>PreActive1</uicontrol> state
+                            and once the activation time reaches, it moves to the next state, that
+                            is the <uicontrol>PreActive</uicontrol> state.</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_20.6/Exp1_img2_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-exp1_img2_default.png"/>
+                    </li>
+<li>
+<p>Therefore, if a bundle is in the <uicontrol>PreActive1</uicontrol> state and <varname>Bundle Activation</varname> event is triggered, then the bundle is not activated. However, once the activation time is reached and the bundle transits to the <uicontrol>PreActive</uicontrol> state, and the <varname>Bundle Activation</varname> event is triggered, the bundle is activated.</p>
+</li>
+</ul>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 2: BOU subscription with no defined activation time</b></p>
+<p>This example explains that while attaching a subscription to a device or group, if no activation time is provided, then it picks the current time as the activation time and subscription moves immediately to the <uicontrol>PreActive</uicontrol> state.</p>
+<p>
+<b>Preconditions:</b>
+</p>
+<p>Create a subscription for the BOU bundle and attach it to an account <varname>Account0500395</varname> with no activation time defined.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/Exp2_img1_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-exp2_img1_default.png"/>
+</fig>
+<p>
+<b>Post-conditions:</b>
+</p><ul>
+<li><p>As no activation time is provided, it picks the current time as the <i>Activation Time</i> as
+                            shown in the following figure:</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_20.6/Exp2_img3_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-exp2_img3_default.png"/>
+                    </li>
+<li><p>Following is the screenshot of the account overview after subscribing the BOU bundle:</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_20.6/Exp2_img2_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-exp2_img2_default.png"/>
+                    </li>
+<li><p>Now, once the bundle rule is triggered from a call, it activates the subscription for
+                            use.</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_20.6/Exp2_img4_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-exp2_img4_default.png"/>
+                    </li>
+</ul>
+</sectiondiv>
+</section>
+<section><title>BUNDLE rule sets</title>
+<p>Following are the source context and attributes used in BUNDLE rule set:<table pgwide="1"
+                    colsep="1" rowsep="1" frame="all">
+                    <tgroup cols="2">
+                        <colspec colname="col1"/>
+                        <colspec colname="col2"/>
+                        <thead>
+                            <row>
+                                <entry>
+                                    <p>Source context</p>
+                                </entry>
+                                <entry>
+                                    <p>Attributes</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry> BUNDLE </entry>
+                                <entry>
+                                    <p>
+                                        <i>No-Of-Activation</i>
+                                    </p>
+                                    <p>(Provides limit for number of activations)</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> CALL_COMMON </entry>
+                                <entry> All existing attributes </entry>
+                            </row>
+                            <row>
+                                <entry> IMS_SERVICE_INFO </entry>
+                                <entry> All existing attributes </entry>
+                            </row>
+                            <row>
+                                <entry> GY_MESSAGE </entry>
+                                <entry> All existing attributes </entry>
+                            </row>
+                            <row>
+                                <entry> SPR_DEVICE </entry>
+                                <entry> All existing attributes </entry>
+                            </row>
+                            <row>
+                                <entry> SPR_GROUP </entry>
+                                <entry> All existing attributes </entry>
+                            </row>
+                            <row>
+                                <entry> NCFH_CHARGING_MESSAGE </entry>
+                                <entry> All existing attributes </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table></p>
+<p>Following are the result context and attributes in BUNDLE rule set:<table pgwide="1" colsep="1"
+                    rowsep="1" frame="all">
+                    <tgroup cols="3">
+                        <colspec colname="col1"/>
+                        <colspec colname="col2"/>
+                        <colspec colname="COLSPEC0"/>
+                        <thead>
+                            <row>
+                                <entry>
+                                    <p>Result context</p>
+                                </entry>
+                                <entry>
+                                    <p>Attributes</p>
+                                </entry>
+                                <entry>
+                                    <p>Description</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry rowsep="1" morerows="3"> BUNDLE </entry>
+                                <entry>
+                                    <i>Activation-Fee</i>
+                                </entry>
+                                <entry> Defines the activation fee in the BUNDLE rule. </entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <i>Discount-Percentage</i>
+                                </entry>
+                                <entry> Provides the discount percentage. </entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <i>Activation-Event</i>
+                                </entry>
+                                <entry> Triggers an event, such as voice, data, or SMS for
+                                    activating a BOU bundle. </entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <i>Set-Activation-Count</i>
+                                </entry>
+                                <entry> Provides flexibility to set the activation count value
+                                    through rule. </entry>
+                            </row>
+                            <row>
+                                <entry rowsep="1" morerows="1"> SPR_DEVICE </entry>
+                                <entry>
+                                    <p>
+                                        <i>Custom-Data-Add</i>
+                                    </p>
+                                    <p>
+                                        <i>Custom-Data-Add-Immediate</i>
+                                    </p>
+                                </entry>
+                                <entry> Attaches the custom data, which is already defined in the
+                                    system to a device. If this custom data already exists in the
+                                    device, then the service updates the value of custom data in the
+                                    device. </entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <p>
+                                        <i>Custom-Data-Remove</i>
+                                    </p>
+                                    <p>
+                                        <i>Custom-Data-Remove-Immediate</i>
+                                    </p>
+                                </entry>
+                                <entry> Removes the custom data of a device. </entry>
+                            </row>
+                            <row>
+                                <entry rowsep="0" morerows="1"> SPR_GROUP</entry>
+                                <entry>
+                                    <p>
+                                        <i>Custom-Data-Add</i>
+                                    </p>
+                                    <p>
+                                        <i>Custom-Data-Add-Immediate</i>
+                                    </p>
+                                </entry>
+                                <entry> Attaches the custom data, which is already defined in the
+                                    system to a group. If this custom data already exists in the
+                                    group, then the service updates the value of custom data in the
+                                    group. </entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <p>
+                                        <i>Custom-Data-Remove</i>
+                                    </p>
+                                    <p>
+                                        <i>Custom-Data-Remove-Immediate</i>
+                                    </p>
+                                </entry>
+                                <entry> Removes the custom data of a group. </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table></p>
+</section>
+<section><title>Additional information</title>
+<p>Following are some additional notes regarding the BOU bundle:</p><ul>
+<li>
+<p>For a BOU bundle or future activation bundle, when you set the start time or end time of the bundle, the timezone ID of an account for the bundle is considered.</p>
+</li>
+<li>
+<p>At BOU bundle subscribe/renewal, fee is prorated as per the prorate configuration using the corresponding billing information and periodic length of account periodic lifecycle. The resources are not prorated.</p>
+</li>
+<li>
+<p>BOU bundle activation fee and resources are prorated at activation, if applicable, as per the configuration and as per the subscription lifecycle.</p>
+</li>
+<li>
+<p>When the prorate configuration has <uicontrol>Bundle Fee/Override Fee</uicontrol> selected and if BOU subscription is removed, then the renewal fee/subscription fee is prorated as per the account lifecycle.</p>
+</li>
+<li>
+<p>When the prorate configuration has <varname>Charge fee action</varname> selected and if BOU subscription is removed, then the activation fee is prorated as per the subscription lifecycle.</p>
+</li>
+<li>
+<p>It is recommended to use <varname>Reset Period Action</varname> at the success of <varname>Renew Subscription Action</varname> or <varname>Charge fee action</varname>.</p>
+</li>
+</ul>
+</section>
+<section><title>Examples</title>
+<sectiondiv>
+<p><b>Example 1: BOU bundle is activated on making a voice call </b></p>
+<p>Bob has a BOU bundle which has been configured to be activated on making a voice call. The BOU bundle is valid for one day. The configurations made are as follows:</p><ol>
+<li>
+<p>Create a charging service. To do this, navigate to <uicontrol>Policy &amp; Charging</uicontrol> and click the <uicontrol>Charging</uicontrol> tab. Browse to select <uicontrol>Charging Services</uicontrol> on the SM GUI. </p>
+</li>
+<li><p>Create a BOU bundle as shown in the following figure. To do this, navigate to
+                                <uicontrol>Policy &amp; Charging</uicontrol> and click the
+                                <uicontrol>Charging</uicontrol> tab. Browse to select
+                                <uicontrol>Bundles</uicontrol> on the SM GUI. </p>
+                        <!--MMO resource relative URI: ../Graphics/Release_19.3/BOU1_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-bou1_default.png"
+                            scale="65"/>
+                    </li>
+<li>
+<p>Create a subscription periodic lifecycle. To do this, navigate to <uicontrol>Policy &amp; Charging</uicontrol> and click the <uicontrol>Common</uicontrol> tab. Browse to select <uicontrol>Lifecycles</uicontrol> on the SM GUI. See <!--xref URI: #configbundle--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-d1e221574/configbundle"/> for subscription periodic lifecycle configuration.</p>
+</li>
+<li>
+<p>Create a notification profile and template using the options available in the <uicontrol>Notification Management</uicontrol>. In the current example, the notification template ID (<i>TCPIP_Notification_Template_Subsc_Renew</i>) is linked to the lifecycle event.</p>
+</li>
+</ol>
+<note>
+<p>The activation counter <userinput>bouActivationCount</userinput> gets incremented when the bundle is activated.</p>
+</note>
+<p>The following screens show the AV before and after the BOU bundle is activated.</p>
+<p>
+<uicontrol>AV before BOU is activated:</uicontrol>
+</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.3/BOU_D1_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-bou_d1_default.png"
+                        scale="65"/>
+                </fig>
+<p>
+<uicontrol>AV after BOU is activated: </uicontrol> 60 GByte of BOU bundle is added.</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.3/BOU_D2_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-bou_d2_default.png"
+                        scale="65"/>
+                </fig>
+<p>Once the subscription is deactivated, it gets excluded from the AV refresh as shown in the following figure:</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.3/BOU_AV_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-bou_av_default.png"
+                        scale="65"/>
+                </fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 2: BOU activation provides 100% discount for first N successful activations</b></p>
+<p>Bob has a BOU bundle which has been configured to be activated on making a voice call. Once the BOU bundle is activated, if the activation count is less than 2, then there is no charge for the activation. The activation fee is charged for first call, free for second call, and then again charged for subsequent calls.</p>
+<p>The configurations made are as follows:</p><ol>
+<li>
+<p>Create a charging service. To do this, navigate to <uicontrol>Policy &amp; Charging</uicontrol> and click the <uicontrol>Charging</uicontrol> tab. Browse to select <uicontrol>Charging Services</uicontrol> on the SM GUI. </p>
+</li>
+<li><p>Create a BOU bundle as shown in the following figure. To do this, navigate to
+                                <uicontrol>Policy &amp; Charging</uicontrol> and click the
+                                <uicontrol>Charging</uicontrol> tab. Browse to select
+                                <uicontrol>Bundles</uicontrol> on the SM GUI. Note that you select
+                                <uicontrol>On Session</uicontrol> for <uicontrol>Bundle Activation
+                                Type</uicontrol> and configure the following rule.</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_19.3/Ex2_BOU_CS_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-ex2_bou_cs_default.png"/>
+                    </li>
+<li><p>Create a complex map whose values get used in the rule defined in the BOU bundle. To do this,
+                            navigate to <uicontrol>Policy &amp; Charging</uicontrol> and click the
+                                <uicontrol>Common</uicontrol> tab. Browse to select
+                                <uicontrol>Mapping Tables</uicontrol> on the SM GUI.</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_19.3/Ex2_BOU_MT_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-ex2_bou_mt_default.png"
+                            scale="65"/>
+                    </li>
+</ol>
+</sectiondiv>
+<sectiondiv id="bouactivation">
+<p><b>Example 3: BOU activation at commit </b></p>
+<p>In the following example, the BOU Activation Priority is set to ON_COMMIT and BOU Usage Priority is set to LEAST_PRIORITY_ORDER. This means, the BOU bundle is activated on commit when there are no other resources available for the call. </p>
+<p>Consider that a Group has the following bundles.<table pgwide="1" colsep="1" rowsep="1">
+                        <tgroup cols="5">
+                            <colspec colname="col1"/>
+                            <colspec colname="col2"/>
+                            <colspec colname="col3"/>
+                            <colspec colname="col4"/>
+                            <colspec colname="COLSPEC2"/>
+                            <thead>
+                                <row>
+                                    <entry>
+                                        <p>Bundle Name</p>
+                                    </entry>
+                                    <entry>
+                                        <p>Bundle Type</p>
+                                    </entry>
+                                    <entry>
+                                        <p>Priority</p>
+                                    </entry>
+                                    <entry>
+                                        <p>Activation Fee</p>
+                                    </entry>
+                                    <entry>
+                                        <p>Activation status</p>
+                                    </entry>
+                                </row>
+                            </thead>
+                            <tbody>
+                                <row>
+                                    <entry> Normal bundle 1 </entry>
+                                    <entry> Non-BOU </entry>
+                                    <entry> 1 </entry>
+                                    <entry> NA </entry>
+                                    <entry> Always active </entry>
+                                </row>
+                                <row>
+                                    <entry> BOU monthly bundle </entry>
+                                    <entry> BOU </entry>
+                                    <entry> 2 </entry>
+                                    <entry> 15 </entry>
+                                    <entry>
+                                        <p>Inactive</p>
+                                        <p>(Gets activated at commit when no other resources are
+                                            available for the call.)</p>
+                                    </entry>
+                                </row>
+                                <row>
+                                    <entry> Normal bundle 2 </entry>
+                                    <entry> Non-BOU </entry>
+                                    <entry> 3 </entry>
+                                    <entry> NA </entry>
+                                    <entry> Always active </entry>
+                                </row>
+                                <row>
+                                    <entry> BOU daily bundle </entry>
+                                    <entry> BOU </entry>
+                                    <entry> 4 </entry>
+                                    <entry> 2 </entry>
+                                    <entry>
+                                        <p>Inactive</p>
+                                        <p>(Gets activated at commit when no other resources are
+                                            available for the call.)</p>
+                                    </entry>
+                                </row>
+                            </tbody>
+                        </tgroup>
+                    </table></p>
+<p>Consider that a centralized call is executed with empty RSU. The BOU bundle gets activated at
+                    commit and NCC deducts the data from non-BOU bundles followed by BOU bundles.
+                    The main account balance is 1000 units.</p>
+<table pgwide="1" colsep="1" rowsep="1">
+                    <tgroup cols="5">
+                        <colspec colname="col1"/>
+                        <colspec colname="col2"/>
+                        <colspec colname="col3"/>
+                        <colspec colname="col4"/>
+                        <colspec colname="col5"/>
+                        <thead>
+                            <row>
+                                <entry/>
+                                <entry>
+                                    <p>Normal bundle 1</p>
+                                </entry>
+                                <entry>
+                                    <p>BOU monthly bundle</p>
+                                </entry>
+                                <entry>
+                                    <p>Normal bundle 2</p>
+                                </entry>
+                                <entry>
+                                    <p>BOU daily bundle</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry/>
+                                <entry> Non-BOU </entry>
+                                <entry> BOU </entry>
+                                <entry> Non-BOU </entry>
+                                <entry> BOU </entry>
+                            </row>
+                            <row>
+                                <entry> Balance </entry>
+                                <entry> 5 MB </entry>
+                                <entry> 10 MB </entry>
+                                <entry> 5 MB </entry>
+                                <entry> 10 MB </entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <p>CCR-I</p>
+                                    <p>RSU=empty, GSU=8 MB</p>
+                                </entry>
+                                <entry> 0 MB </entry>
+                                <entry> 10 MB </entry>
+                                <entry> 2 MB </entry>
+                                <entry> 10 MB </entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <p>CCR-U1</p>
+                                    <p>USU=8 MB, GSU=5 MB</p>
+                                </entry>
+                                <entry> 0 MB </entry>
+                                <entry> 7 MB </entry>
+                                <entry> 0 MB </entry>
+                                <entry> 10 MB </entry>
+                            </row>
+                            <row>
+                                <entry nameend="col5" namest="col1"> Account balance = 985 since the
+                                    activation fee of 15 units is deducted for BOU monthly bundle.
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <p>CCR-U2</p>
+                                    <p>USU=5 MB, GSU=5 MB</p>
+                                </entry>
+                                <entry> 0 MB </entry>
+                                <entry> 2 MB </entry>
+                                <entry> 0 MB </entry>
+                                <entry> 10 MB </entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <p>CCR-T</p>
+                                    <p>USU=10 MB</p>
+                                    <p>(overcommit case)</p>
+                                </entry>
+                                <entry> 0 MB </entry>
+                                <entry> 0 MB </entry>
+                                <entry> 0 MB </entry>
+                                <entry> 7 MB </entry>
+                            </row>
+                            <row>
+                                <entry nameend="col5" namest="col1"> Account balance = 983 since the
+                                    activation fee of 2 units is deducted for BOU daily bundle.
+                                </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+</sectiondiv>
+            <sectiondiv>
+                <p><b>Example 4: BOU bundle activation scenarios</b></p>
+                <p>Consider that a group has two subscriptions as follows:</p>
+                <ul id="ul_ncv_z4n_smb">
+                    <li>
+                        <p>Bundle 1 is a non-BOU bundle with 10 as resource value and has high
+                            priority.</p>
+                    </li>
+                    <li>
+                        <p>Bundle 2 is a BOU bundle with 10 as resource value and 5 is the
+                            activation fee and is currently inactive.</p>
+                    </li>
+                </ul>
+                <p>Device 1 makes a call for which a GSU of 10 is allocated. Bundle 1 resources are
+                    reserved. </p>
+                <p>Device 2 makes a call for which a GSU of 5 is allocated. Bundle 2 resources are
+                    reserved. Bundle 2 is not active since the usage is not committed yet. </p>
+                <p>
+                    <uicontrol>Case 1</uicontrol>: Device 2 usage of 5 is committed. Bundle 2 is
+                    activated and consumed.</p>
+                <p>
+                    <uicontrol>Case 2</uicontrol>: Device 1 usage of 2 is committed. This is less
+                    than the granted units and is a under commit case. Bundle 1 resources are
+                    committed as per USU and remaining reservation is canceled. </p>
+                <p>Device 2 usage of 5 is committed. Bundle 2 is activated and consumed.</p>
+            </sectiondiv>
+</section>
+</conbody></concept>

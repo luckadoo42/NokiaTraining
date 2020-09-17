@@ -1,0 +1,938 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-bucket_entity"><title>Bucket</title><conbody>
+<section><title>Overview</title>
+<p>Buckets are entities defining an amount and unit of consumption. The bucket is defined with a name to be referenced by the tariff and charging service. It is a reusable entity and same bucket definition can be used by multiple charging service.</p>
+</section>
+<section id="bucket1"><title>Configuration</title>
+<p>Buckets can be created using one of the following methods:</p><ul>
+<li>
+<p>As a part of the <i>Charging Services</i> entity creation.</p>
+<p>
+<b>Note:</b> The buckets created within a charging service can only be referred by that specific charging service only.</p>
+<p>For more information, see the <!--xref URI: #cs--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-ChargingServiceentity/cs"/> section.</p>
+</li>
+<li>
+<p>As a global bucket outside the <i>Charging Services</i> entity.</p>
+<p>
+<b>Note:</b> The buckets created outside the <i>Charging Services</i> entity are considered as global buckets as they can be referred by any charging services.</p>
+<p>To do so, log into the SM GUI, navigate to <uicontrol>Policy &amp; Configuration</uicontrol> &gt;
+       <uicontrol>Charging</uicontrol> tab and select <uicontrol>Bucket</uicontrol> from the
+      hamburger menu ( <!--MMO resource relative URI: ../../Global_Configurations/Graphics/hamburgermenu_default.png-->
+      <image href="../images/img9yz-09126-ug01-pczza-sp1-hamburgermenu_default.png" scale="40"/> )
+      and click <uicontrol>+</uicontrol> to add a new bucket.</p>
+</li>
+</ul>
+<sectiondiv>
+<p><b>Bucket definition</b></p>
+<p>To define a new bucket, click to <uicontrol>+</uicontrol> or 
+<!--MMO resource relative URI: ../Graphics/Release_17.8/Edit_default.jpg-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-edit_default.jpg"/>
+ to add or modify the details as described in the following table:</p>
+<table frame="all" pgwide="1" colsep="1" rowsep="1">
+     <title>Parameters for bucket definition</title>
+     <tgroup cols="4">
+      <colspec colname="col1" colwidth="1*"/>
+      <colspec colname="COLSPEC10" colwidth="3*"/>
+      <colspec colname="col2" colwidth="1*"/>
+      <colspec colname="col4" colwidth="1*"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Parameter</p>
+</entry>
+        <entry>
+         <p>Description</p>
+</entry>
+        <entry>
+         <p>Data type</p>
+</entry>
+        <entry>
+         <p>Mandatory/Optional</p>
+</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry>Name</entry>
+        <entry>This field indicates the name of the bucket definition.</entry>
+        <entry>String</entry>
+        <entry>Mandatory</entry>
+       </row>
+       <row>
+        <entry>Initial Value</entry>
+        <entry>
+         <p>This field indicates the initial value of the bucket at the time of its creation.</p>
+         <p>
+          <uicontrol>Note</uicontrol>: The maximum value allowed for bucket initial/current is
+          922337203685477600.</p>
+</entry>
+        <entry>BigDecimal</entry>
+        <entry>Mandatory</entry>
+       </row>
+       <row>
+        <entry>Unit Type Name</entry>
+        <entry>This field indicates the name of the unit.</entry>
+        <entry>String</entry>
+        <entry>Mandatory</entry>
+       </row>
+       <row>
+        <entry>Threshold Profile GroupId List</entry>
+        <entry>This field indicates the list of thresholdprofilegroupids used in sending
+         notification and other thing like modification of final value and dates.</entry>
+        <entry>List of string</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>Security Domain</entry>
+        <entry>This parameter indicates the security domain associated with the bucket.</entry>
+        <entry>Select the required security domain from the predefined security domains in the
+         drop-down list.</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>Carry Over</entry>
+        <entry>
+         <p>This parameter indicates whether the bucket balance is carried over to the next period
+          or not.</p>
+         <p>By default, this check box is not checked.</p>
+</entry>
+        <entry>Select this check box to indicate whether carry-over is required.</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>Validity</entry>
+        <entry>
+         <p>
+          <b>NOTE:</b> This field is visible only when the <uicontrol>Carry Over</uicontrol> check
+          box is checked.</p>
+         <p>This field allows to select whether carry-over is to be applied for one billing cycle or
+          all billing cycles.</p>
+         <p>Supported values are:</p>
+         <ul>
+          <li>
+           <p>
+            <varname>ONE PERIOD</varname>
+           </p>
+          </li>
+          <li>
+           <p>
+            <varname>UNLIMITED</varname>
+           </p>
+          </li>
+         </ul>
+         <p>Default value is <varname>ONE PERIOD</varname>.</p>
+</entry>
+        <entry>ENUM</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>Bucket Transfer Limit</entry>
+        <entry>
+         <p>
+          <b>NOTE:</b> This field is visible only when the <uicontrol>Carry Over</uicontrol> check
+          box is checked.</p>
+         <p>This field value ranges from 1 to 100. The carry-over percentage is calculated on the
+          remaining balance of the main bucket at the time of renewal or reset (next billing
+          cycle).</p>
+</entry>
+        <entry>BigDecimal</entry>
+        <entry>
+         <p>Optional</p>
+         <p>(If not specified, carry-over feature is disabled)</p>
+</entry>
+       </row>
+       <row>
+        <entry>Carry Over Transfer Limit</entry>
+        <entry>
+         <p>
+          <b>NOTE:</b> This field is visible only when the <uicontrol>Carry Over</uicontrol> check
+          box is checked.</p>
+         <p>This field indicates the maximum balance that carry-over bucket can hold at next billing
+          cycle.</p>
+         <p>Default value is <varname>Unlimited</varname>.</p>
+</entry>
+        <entry>BigDecimal</entry>
+        <entry>
+         <p>Optional</p>
+         <p>(If it is null, there is no maximum limit)</p>
+</entry>
+       </row>
+       <row>
+        <entry>Consumption Order</entry>
+        <entry>
+         <p>
+          <b>NOTE:</b> This field is visible only when the <uicontrol>Carry Over</uicontrol> check
+          box is checked.</p>
+         <p>This field helps to decide which instance of the bucket, whether
+           <varname>Regular</varname> or <varname>Carry Over First</varname>, to be used first for
+          charging.</p>
+         <p>Supported values are:</p>
+         <ul>
+          <li>
+           <p>
+            <varname>Regular</varname>
+           </p>
+          </li>
+          <li>
+           <p>
+            <varname>Carry Over First</varname>
+           </p>
+          </li>
+         </ul>
+         <p>Default value is <varname>Carry Over First</varname>
+         </p>
+</entry>
+        <entry>ENUM</entry>
+        <entry>Optional</entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+</sectiondiv>
+<sectiondiv>
+<p><b>Bucket entity - instance</b></p>
+<note>
+<p>The bucket entity - instance cannot be modified through the SM GUI.</p>
+<p>Some of the parameters listed in the table are linked to the calculations performed by internal logic.</p>
+</note>
+<table frame="all" pgwide="1" colsep="1" rowsep="1">
+     <title>Parameters for bucket entity - instance</title>
+     <tgroup cols="4">
+      <colspec colname="col1" colwidth="1.12*"/>
+      <colspec colname="COLSPEC9" colwidth="3*"/>
+      <colspec colname="COLSPEC1" colwidth="0.8*"/>
+      <colspec colname="col2" colwidth="0.8*"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Parameter</p>
+</entry>
+        <entry>
+         <p>Description</p>
+</entry>
+        <entry>
+         <p>Data type</p>
+</entry>
+        <entry>
+         <p>Mandatory/Optional</p>
+</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry nameend="col2" namest="col1">
+         <uicontrol>BucketInstance</uicontrol>
+</entry>
+       </row>
+       <row>
+        <entry>Account</entry>
+        <entry>Account reference added for clubbing.</entry>
+        <entry>Account</entry>
+        <entry>Mandatory</entry>
+       </row>
+       <row>
+        <entry>ActivationTime</entry>
+        <entry>This field is reserved for future use.</entry>
+        <entry>Long</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>adjustAmountInitialValidity</entry>
+        <entry>
+         <p>This is the number of billing cycle reset after which the initial value is replaced by
+          original initial value in the Bucket Instance. </p>
+         <p>Supported values are as follows:</p>
+         <ul>
+          <li>
+           <p>0: Indicates that the current initial value remains for eternity, this is the default
+            value</p>
+          </li>
+          <li>
+           <p>Any positive (+ve) value: This is the number of billing cycles (including the current
+            bill cycle) for which the current initial value remains valid. For example, a value of 1
+            means that the current initial value is valid only for the ongoing bill cycle and is
+            replaced by original initial value at next BCR. Example: adjustAmountInitialValidity =
+            3, initialValue = 1000 and origInitialValue = 1200. This initial value is valid for
+            current bill cycle and 2 further bill cycles. After that, initialValue is equal to
+            1200.</p>
+          </li>
+         </ul>
+         <p>Default value is 0.</p>
+</entry>
+        <entry>Integer</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>BucketDefId</entry>
+        <entry>The value of this field is taken from the bucket definition at the time of bucket
+         creation. It is a read-only field.</entry>
+        <entry>String</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>carryOverValue</entry>
+        <entry>This field value ranges from 1 to 100. The carry-over percentage is calculated on
+         the remaining balance of the main bucket at the time of renewal or reset (next billing
+         cycle).</entry>
+        <entry>Big Decimal</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>CountCCR</entry>
+        <entry>The CCRu or CCRt number that is received after receiving CCRI.</entry>
+        <entry>Long</entry>
+        <entry>-</entry>
+       </row>
+       <row>
+        <entry>consumptionPriority</entry>
+        <entry>
+         <p>This field helps to decide which instance of the bucket, whether regular or carry-over,
+          to be used first for charging.</p>
+         <p>Supported values are as follows:</p>
+         <ul>
+          <li>
+           <p>
+            <varname>REGULAR_BUCKET</varname>
+           </p>
+          </li>
+          <li>
+           <p>
+            <varname>CARRY_OVER_BUCKET</varname>
+           </p>
+          </li>
+         </ul>
+</entry>
+        <entry>Enum</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>CreationTime</entry>
+        <entry>The value of this field is taken from the Linux time stamp at the time of bucket
+         creation. It is a read-only field.</entry>
+        <entry>Long</entry>
+        <entry>Mandatory</entry>
+       </row>
+       <row>
+        <entry>CurrentValue</entry>
+        <entry>
+         <p>This field is set as the same initial value at the time of bucket creation and can be
+          updated to any positive value. It is set as zero when no value is given in update
+          request.</p>
+         <p>
+          <uicontrol>Note</uicontrol>: The maximum value allowed for bucket initial/current is
+          922337203685477600.</p>
+</entry>
+        <entry>Big Decimal</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>currentChargingStep</entry>
+        <entry>The index/position of current charging step. It is reset during reset of the
+         subscription. Its value is null if ChargingStep is not associated to bucket.</entry>
+        <entry>Integer</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>currentChargingStepUpTime</entry>
+        <entry>The up/start timestamp of current charging step. During subscription reset, it
+         contains the time when reset is done. Its value is null when ChargingStep is not associated
+         to bucket.</entry>
+        <entry>Long</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>DormantLines</entry>
+        <entry>The field indicates the number of dormant lines.</entry>
+        <entry>Long</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>ExpirationTime</entry>
+        <entry>This field is reserved for future use.</entry>
+        <entry>Long</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>Id</entry>
+        <entry>This field identifies the bucket instance.</entry>
+        <entry>String</entry>
+        <entry>Mandatory</entry>
+       </row>
+       <row>
+        <entry>InitialValue</entry>
+        <entry>
+         <p>The value of this field is taken from the bucket definition at the time of bucket
+          creation. It is a read-only and non-modifiable field. </p>
+         <p>
+          <uicontrol>Note</uicontrol>: The maximum value allowed for bucket initial/current is
+          922337203685477600.</p>
+        </entry>
+        <entry>Decimal</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>initialValueAdjustMode</entry>
+        <entry>
+         <p>This value is used for internal purpose. If a user edits the initial value temporarily,
+          then it contains the current AdjustMode of initial value.</p>
+         <p>Default Value is <varname>AdjustMode.NONE</varname>.</p>
+</entry>
+        <entry>Enum</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>isCarryOver</entry>
+        <entry>This field is reserved for internal use only. The value of this field is set true
+         for carry-over bucket and false for regular bucket.</entry>
+        <entry>Boolean</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>DorLinSliceSize</entry>
+        <entry>
+         <p>This field indicates the sum of dormant line slice size.</p>
+         <p>This value is dynamic and is calculated by the dynamic slicing algorithm at runtime.</p>
+</entry>
+        <entry>Decimal</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>deltaValue</entry>
+        <entry>This value is used for internal purpose. If a user edits the initial value
+         temporarily, then it is the amount by which Initial value increased or decreased for
+         adjustAmountInitialValidity.</entry>
+        <entry>Big Decimal</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>maxNoOfLines</entry>
+        <entry>The maximum number of lines.</entry>
+        <entry>Long</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>maxCarryOverValueOption</entry>
+        <entry>
+         <p>The following options are available to calculate the maximum carry-over value:</p>
+         <ul>
+          <li>
+           <p>Percentage of remaining value</p>
+          </li>
+          <li>
+           <p>Absolute</p>
+          </li>
+         </ul>
+</entry>
+        <entry>Enum</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>maxCarryOverValue</entry>
+        <entry>This field indicates the maximum balance that carry-over bucket can hold at next
+         billing cycle.</entry>
+        <entry>Big Decimal</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>origInitialValue</entry>
+        <entry>
+         <p>This value is used for internal purpose. If required after the number of BCRs.</p>
+         <p>Default value is 0.</p>
+</entry>
+        <entry>Big Decimal</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>renewalPeriod</entry>
+        <entry>
+         <p>This field allows to select if the carry-over is to be applied for one billing cycle or
+          all billing cycles.</p>
+         <p>Supported values are as follows:</p>
+         <ul>
+          <li>
+           <p>
+            <varname>ONE_PERIOD</varname>
+           </p>
+          </li>
+          <li>
+           <p>
+            <varname>UNLIMITED</varname>
+           </p>
+          </li>
+         </ul>
+</entry>
+        <entry>Enum</entry>
+        <entry/>
+       </row>
+       <row>
+        <entry>SumSqrtActLin</entry>
+        <entry>This field indicates the sum of square root of active line per hour.</entry>
+        <entry>Decimal</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>SumSqrtAllLinPerHr</entry>
+        <entry>This filed indicates the value of sum of square root of all lines per hour.</entry>
+        <entry>Decimal</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>chargingServiceId</entry>
+        <entry>This attribute represents the charging service ID to which the bucket is attached.</entry>
+        <entry>String</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>isSyPolicyBucket</entry>
+        <entry>This flag decides whether this bucket works as a policy counter or not. TRUE, makes
+         this bucket qualified for policy when any threshold associated has
+          <varname>ocs-policy</varname> set to <varname>true</varname>.</entry>
+        <entry>Boolean</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>policyCounterName</entry>
+        <entry>
+         <p>Value is set if the user has configured a <varname>Send-SNR</varname> action on a
+          threshold associated with this counter. Then this attribute represents the Virtual Policy
+          Counter mentioned in the <varname>Send-SNR</varname> action. </p>
+         <p>Example: <varname>SY.Send-SNR = “VPC,HIGH”</varname>
+         </p>
+         <p>Here, VPC is virtual policy counter name.</p>
+</entry>
+        <entry>String</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>exhaustionTime</entry>
+        <entry>This attribute represents the time at which this bucket instance is exhausted.</entry>
+        <entry>Long</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>lastReportingState</entry>
+        <entry>This attribute represents the state when the last SLA is sent for Sy interface.</entry>
+        <entry>String</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>lastReportingTime</entry>
+        <entry>This attribute represents the time when the last SLA is sent for Sy interface.</entry>
+        <entry>Long</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>defaultState</entry>
+        <entry>This attribute represents the default state of BucketInstance</entry>
+        <entry>String</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>lastSNRReportingState</entry>
+        <entry>This attribute represents the state when the last SNR is sent.</entry>
+        <entry>String</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>lastSNRReportingTime</entry>
+        <entry>This attribute represents the timestamp when the last SNR is sent.</entry>
+        <entry>Long</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry nameend="col2" namest="col1">
+         <uicontrol>UnitType</uicontrol> Refer <!--xref URI: #REUnitType--><xref
+          keyref="id9YZ-09126-UG01-PCZZA-SP1-REUnitType"/> for more information.</entry>
+       </row>
+       <row>
+        <entry>UnusedValue</entry>
+        <entry>This field contains the value of unused units that is initially committed value.</entry>
+        <entry>Decimal</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>prevCurrentValue</entry>
+        <entry>This field is used for internal purposes. It stores the current value of the bucket
+         during the reset or renewal time of the bucket.</entry>
+        <entry>BigDecimal</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>prevUnusedValue</entry>
+        <entry>This field is used for internal purposes. It stores the unused value of the bucket
+         during the reset or renewal time of the bucket.</entry>
+        <entry>BigDecimal</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>thresholdProfileGrpInstList</entry>
+        <entry>The value of this field is taken from the bucket definition at the time of bucket
+         creation. If threshold is attached with bucket definition, its instance is created and
+         attached to the corresponding bucket instance. It is a read-only field.</entry>
+        <entry>List&lt;ThresholdProfileGroupInstance&gt;</entry>
+        <entry>Optional</entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+</sectiondiv>
+<sectiondiv>
+<p><b>Threshold Profile group instance list</b></p>
+<note>
+<p>The Threshold Profile group instance cannot be modified through the SM GUI.</p>
+<p>Some of the parameters listed in the table are linked to the calculations performed by internal logic.</p>
+</note>
+<table frame="all" pgwide="1" colsep="1" rowsep="1">
+     <title>Parameters for Threshold Profile group instance list</title>
+     <tgroup cols="4">
+      <colspec colname="col1"/>
+      <colspec colname="COLSPEC8"/>
+      <colspec colname="col2"/>
+      <colspec colname="col4"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Parameter</p>
+</entry>
+        <entry>
+         <p>Description</p>
+</entry>
+        <entry>
+         <p>Options</p>
+</entry>
+        <entry>
+         <p>Mandatory/Optional</p>
+</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry nameend="col4" namest="col1">
+         <uicontrol>ThresholdProfileGrpInstList</uicontrol>
+</entry>
+       </row>
+       <row>
+        <entry>DynamicMilestone</entry>
+        <entry>
+         <p>Milestone is a percentage type threshold when the DynamicMilestone flag is true with the
+          empty rule container. </p>
+         <p>The supported values are as follows:</p>
+         <ul>
+          <li>
+           <p>True: If the flag is true, then the threshold profile group is used as a
+            milestone.</p>
+          </li>
+          <li>
+           <p>False: If the flag is false, then the threshold profile group is not used as a
+            milestone.</p>
+          </li>
+         </ul>
+</entry>
+        <entry>Boolean</entry>
+        <entry>Mandatory</entry>
+       </row>
+       <row>
+        <entry>ThPrfGrpDfName</entry>
+        <entry>This field is the key parameter of the threshold profile group entity.</entry>
+        <entry>String</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry nameend="col4" namest="col1">
+         <uicontrol>ThrsPrfInsList</uicontrol>
+</entry>
+       </row>
+       <row>
+        <entry>Interval</entry>
+        <entry>This field is for internal use only. It is required for rule engine.</entry>
+        <entry>Integer</entry>
+        <entry>Mandatory</entry>
+       </row>
+       <row>
+        <entry nameend="col4" namest="col1">
+         <uicontrol>ThreshInstList</uicontrol>
+</entry>
+       </row>
+       <row>
+        <entry>ActionResult</entry>
+        <entry>
+         <p>The result of the threshold rule action.</p>
+         <p>The supported values are as follows:</p>
+         <ul>
+          <li>
+           <p>SEND_NOTIFICATION</p>
+          </li>
+          <li>
+           <p>SEND_RAR</p>
+          </li>
+         </ul>
+</entry>
+        <entry>thresholdRuleAction</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>Level</entry>
+        <entry>This field is for internal use only. It is required for rule engine.</entry>
+        <entry>Integer</entry>
+        <entry>Mandatory</entry>
+       </row>
+       <row>
+        <entry>RarSend</entry>
+        <entry>This field is a Flag to specify weather RAR is already send for this threshold or
+         not.</entry>
+        <entry>Boolean</entry>
+        <entry>Mandatory</entry>
+       </row>
+       <row>
+        <entry>ThreshDefName</entry>
+        <entry>This field is the key parameter of the threshold.</entry>
+        <entry>String</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>ThresholdCrossed</entry>
+        <entry>This field is for internal use only. It is required for rule engine.</entry>
+        <entry>Boolean</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>thrsPrfDefName</entry>
+        <entry>This field is the key parameter of the threshold profile entity.</entry>
+        <entry>String</entry>
+        <entry>Optional</entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+</sectiondiv>
+<sectiondiv>
+<p><b>Creation time and Last update time</b></p>
+<table frame="all" pgwide="1" colsep="1" rowsep="1">
+     <title>Parameters for Creation time and Last update time</title>
+     <tgroup cols="4">
+      <colspec colname="col1"/>
+      <colspec colname="COLSPEC10"/>
+      <colspec colname="col2"/>
+      <colspec colname="col4"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Parameter</p>
+</entry>
+        <entry>
+         <p>Description</p>
+</entry>
+        <entry>
+         <p>Data type</p>
+</entry>
+        <entry>
+         <p>Mandatory/Optional</p>
+</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry>CreationTime</entry>
+        <entry>The time when the bucket was created. This field is read-only and is filled by
+         system automatically.</entry>
+        <entry>Long</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>LastUpdateTime</entry>
+        <entry>The time when the last update occurred. This field is read-only and is filled by
+         system automatically.</entry>
+        <entry>Long</entry>
+        <entry>Optional</entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+</sectiondiv>
+</section>
+<section><title>Actions associated with a bucket</title>
+<table pgwide="1" colsep="1" rowsep="1">
+    <tgroup cols="2">
+     <colspec colname="col1" colwidth="1*"/>
+     <colspec colname="col2" colwidth="2.13*"/>
+     <thead>
+      <row>
+       <entry>
+        <p>Action</p>
+</entry>
+       <entry>
+        <p>Description</p>
+</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>Create</entry>
+       <entry>Used to create the bucket entity in database by providing the mandatory and optional
+        parameters.</entry>
+      </row>
+      <row>
+       <entry>Read</entry>
+       <entry>Used to display the bucket entity per the data retrieved from database.</entry>
+      </row>
+      <row>
+       <entry>Update</entry>
+       <entry>Used to update a particular bucket entity in database.</entry>
+      </row>
+      <row>
+       <entry>Delete</entry>
+       <entry>Used to delete a particular bucket entity from database.</entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+<note>
+<p>These actions are valid for internal purposes only and cannot be accessed using the SM GUI. </p>
+</note>
+<sectiondiv>
+<p><b>Actions associated with a bucket instance</b></p>
+<table pgwide="1" colsep="1" rowsep="1">
+     <tgroup cols="2">
+      <colspec colname="col1" colwidth="1*"/>
+      <colspec colname="col2" colwidth="1.38*"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Action</p>
+</entry>
+        <entry>
+         <p>Description</p>
+</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry>createBucketInstance</entry>
+        <entry>Used to create BucketInstance. Newly created BucketInstance is returned by API and
+         used in subscription creation logic.</entry>
+       </row>
+       <row>
+        <entry>createBucketAndCarryOverInstance</entry>
+        <entry>Used to create regular and carry-over bucket instances and return their objects in a
+         list.</entry>
+       </row>
+       <row>
+        <entry>readBucketInstance</entry>
+        <entry>Used to read BucketInstance through its Id. Returned object provides
+         Initial/Current/Unused value in specified REUnitType. For example, bucket values are shown
+         in GB, if bucket definition is specified in GB.</entry>
+       </row>
+       <row>
+        <entry>readBucketInstanceInBaseUnits</entry>
+        <entry>Used to Read BucketInstance through its Id. Returned object provides
+         Initial/Current/Unused value in specified base REUnitType. For example, bucket values are
+         shown in Byte, even if bucket definition is specified in GB.</entry>
+       </row>
+       <row>
+        <entry>updateBucketInstanceInBaseUnits</entry>
+        <entry>Used to Update BucketInstance through its Id. It can take values in the base units
+         and update the DB object without any unit conversion.</entry>
+       </row>
+       <row>
+        <entry>updateBucketThreshold</entry>
+        <entry>Used to update the bucket threshold.</entry>
+       </row>
+       <row>
+        <entry>updateBucketInstanceForDPUDeletion</entry>
+        <entry>Used to update the Dynamic slice parameters in the specified Bucket Instance for the
+         input DynamicPastUsage object.</entry>
+       </row>
+       <row>
+        <entry>adjustBalance</entry>
+        <entry>Used to add or subtract given units (in bigdecimal) from bucket instances remaining
+         units (currentValue and unused value) in base units. If input units are +ve, then they get
+         added and if -ve then subtracted.</entry>
+       </row>
+       <row>
+        <entry>cancelReservation</entry>
+        <entry>Used to cancel the reservation for the given session id. The reservation gets
+         deleted from reservation map and the reserved units are added back to the remaining units
+         (currentValue). TTL is ignored.</entry>
+       </row>
+       <row>
+        <entry>cancelReservationAndAdjustCOBucket</entry>
+        <entry>Used to cancel the reservation for the given session id. The reservation gets
+         deleted from reservation map and the reserved units are added back to the remaining units
+         (prevCurrentValue). TTL is ignored. If remaining units are valid for adjustment in
+         carryOverBucket, unit values get adjusted.</entry>
+       </row>
+       <row>
+        <entry>commitReservation</entry>
+        <entry>Used to partially commit the reserved units. Remaining reserved units are added back
+         to bucket instance. It also clears that reservation from bucket instance for session id.
+</entry>
+       </row>
+       <row>
+        <entry>commitReservationInPrevValues</entry>
+        <entry>Used to partially commit the reserved units with previous current and unused values
+         of bucketInstance. Remaining reserved units are added back to bucket instance. It also
+         clears that reservation from bucket instance for session id.</entry>
+       </row>
+       <row>
+        <entry>getRemainingUnits</entry>
+        <entry>Used to return the remaining units in the bucket instance.</entry>
+       </row>
+       <row>
+        <entry>getTotalUnits</entry>
+        <entry>Used to add all the reserved units for the given bucket instance to remaining units
+         (currentValue) and returns the sum. TTL is ignored.</entry>
+       </row>
+       <row>
+        <entry>getReservationDetails</entry>
+        <entry>Used to expose the reservation details for the given bucket Instance.</entry>
+       </row>
+       <row>
+        <entry>isValid (bucketinstanceId)</entry>
+        <entry>Returns true if current time is between activation and expiration time.</entry>
+       </row>
+       <row>
+        <entry>isValid (bucketinstanceId, Long-ReferenceTime)</entry>
+        <entry>Returns true if the reference time is between activation and expiration time.
+</entry>
+       </row>
+       <row>
+        <entry>reserveUnits</entry>
+        <entry>Used to reserve the given number of units (BigDecimal) from bucket instance. It
+         deducts them from remaining units (currentValue) and adds them to the reservation map. This
+         map is indexed with the calls sessionId.</entry>
+       </row>
+       <row>
+        <entry>resetBucketAndItsThresholds</entry>
+        <entry>Responsible for fetching the bucket instance using the id. Resets the current value
+         of bucket instances to match the provided resetValue (BigDecimal). If resetValue is null,
+         then it is reset to the initial value. Fetches all the threshold profile group (including
+         its threshold profile and threshold) instances associated with the bucket and resets them.
+</entry>
+       </row>
+       <row>
+        <entry>updateBucketInstance</entry>
+        <entry>
+         <p>You can update these parameters in BucketInstance: initialValue, currentValue
+          (unusedvalue), carryOverValue, maxCarryOverValue, renewal Period, Consumption Priority,
+          Enable/Disable Carryover bucket. </p>
+         <p>After updating initial/current value/ adding carry-over bucket, corresponding aggregate
+          view of the subscription is also updated.</p>
+</entry>
+       </row>
+       <row>
+        <entry>Update</entry>
+        <entry>Used to update a particular bucket instance in database. Current value, activation,
+         expiration time parameters can be updated only if they have positive value. If they do not
+         have any value, they are set to 0. BucketDefId, creation time, initial value,
+         thresholdlist, unittype fields cannot be updated.</entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+<note>
+<p>These actions are valid for internal purposes only and cannot be accessed using the SM GUI. </p>
+</note>
+</sectiondiv>
+</section>
+</conbody></concept>

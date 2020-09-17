@@ -1,0 +1,808 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-sps-patchingtool"><title>SPS-patching tool</title><conbody>
+<section><title>Description</title>
+<p>This tool supports an LCM friendly mechanism for delivering cumulative urgent file-replacement patches. These patches provide file replacement in emergency patch situations and critical updates to custom plugins. The patch can include files that may be file-replaced and that are not localized, such as XML files, tools, scripts, etc, but also jar files. This type of patch is cumulative and includes the content of all previous patches since the base version. The base version in this case is the most recent version deployed via the standard software update procedure. </p>
+<p>Any update that involves the following are delivered by the In-Service-Upgrade (ISU) procedures. This tool cannot be considered for updates that include: </p><ul>
+<li>
+<p>DB schema updates</p>
+</li>
+<li>
+<p>CE Docker images on Common Services nodes</p>
+</li>
+<li>
+<p>BVNF version updates</p>
+</li>
+<li>
+<p>Ansible scripts (which are outside of the VNF)</p>
+</li>
+<li>
+<p>Anything that impacts inter-VNF communication</p>
+</li>
+<li>
+<p>OS patches</p>
+</li>
+<li>
+<p>CSF/3rd party patches that cannot be file-replaced  (e.g. if they require RPM updates)</p>
+</li>
+<li>
+<p>any incompatible updates where new software cannot run at the same time as the old software</p>
+</li>
+</ul>
+<p>This type of patch is run on the SM and then the ME and is applied to only those nodes that are impacted by the most recent changes. VMs that already have the latest software and patch applicable to them are skipped in this operation. For example, if Patch 1 includes a fix for VMs of type A, and Patch 2 includes a fix for VMs of type B (but also for type A, since the patch is cumulative), then Patch 2 needs to be applied to VM types A and B if Patch 1 hasn't been applied, and only to type B if patch 1 is already present. </p>
+<note>The tool automatically knows what nodes require patching. You have nothing to configure for
+                the above functionality.<p/></note>
+<note>If a new RSV is being activated during the patch installation maintenance window and a
+                rollback of the patch is necessary due to any issues, activate the previous RSV
+                before starting the patch rollback.<p/></note>
+<p>The patching tool allows you to perform an in-service patching operation. The patching operation
+                is done while the NCC VNF remains in-service without traffic being diverted to
+                another NCC VNF. The tool allows you to choose up to half of the VMs within an
+                applicable VM type group to patch at once; however, options are available to allow
+                you control over the number of nodes to patch. For example, with a patch that is
+                applied during the day, you may want to apply the patch to one node at a time to
+                minimize traffic impact (although it may have a longer patch duration). On the other
+                hand, for an in-service update that is applied during a maintenance window, you
+                could do up to half the nodes, within each VM type and shorten the patch duration
+                significantly. NCC automatically detects when a set of VMs are patched and back in
+                an IS state, prior to starting the next set of VMs.</p>
+<p>This tool can be accessed from the /opt/tpa/sbin directory on the OAME as the root user. Log in to the static IP address of either the active or standby OAME node—the tool knows which node it is to run on. The following sequence provides the workflow:</p><ol>
+<li>
+<p>Download the single patch from Nokia. </p>
+</li>
+<li>
+<p>Drop the patch on the SM OAME and run the tool. </p>
+</li>
+<li>
+<p>Drop the patch on the ME OAME and run the tool.</p>
+</li>
+</ol>
+<p>Logs for this type of patching are aggregated on the OAME in:</p>
+<p>
+<filepath> /var/log/sps/InstallPatchLocal.log</filepath>
+</p>
+<p>The aggregated logs go to the Active OAME only.</p>
+<p>A patch of this kind runs uncommitted and is only committed with the installation of a new patch. This uncommitted phase is to facilitate rollback of the patch at anytime after it is applied. That is, the previous installation of a patch will be committed when a new patch is applied. The previously installed patch, once committed, cannot be rolled back after it is committed. As long as the patch is not committed, it can be rolled back.</p>
+<p>The SPS-Patching tool also contains an option to roll back the patch that you have delivered using this tool. Rollbacks are a manual operation that allow you to roll back one version. For more information about using this tool to perform a rollback, see <!--xref URI: #patchrollback--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-sps-patchingtool/patchrollback"/>.</p>
+<note>Depending on the node, a re-start may or may not be required at the end of the patch
+                installation. If a re-start is required, it will occur automatically as it has been
+                previously configured in the patch.config file for the patch that you are
+                installing. <p/></note>
+<note>Before copying any files to any NCC VMs, the user must execute the df and du Linux commands
+                from each VM to determine the storage available and whether or not the copying of
+                new files can proceed. Usage of the Linux commands df (abbreviation for disk free)
+                and du (abbreviated from disk usage) can be found on every VM via the Linux manual
+                page by using “man df” and “man du” as root user. There are two storage directories
+                that can be used on any VM as follows:<p/><ul>
+                    <li>
+                        <p> First choice, is under the /appdata directory which is created and
+                            mounted to the cinder volume (OpenStack)/independent disk (VMware) on
+                            every VM.</p>
+                    </li>
+                    <li>
+                        <p>Second choice, is under the /var/log directory which is created and
+                            mounted to the cinder volume (OpenStack)/independent disk (VMware) on
+                            every VM.</p>
+                    </li>
+                </ul><p>If there is enough storage available, proceed.</p><p>When you have completed
+                    the task, clean-up the files that are no longer needed.</p><p>If there is not
+                    enough space, either do some clean-up or contact Nokia Support.</p></note>
+</section>
+<section><title>Syntax and usage</title>
+<p>
+<b>To install a patch:</b>
+</p>
+<p>
+<userinput>install-patch &lt;-i&gt;[-d][-s &lt;speed&gt;][-n &lt;nodes&gt;|-t &lt;types&gt;][-f &lt;file&gt; | -u &lt;url&gt;</userinput>
+</p>
+<p>
+<b>To backout of patching:</b>
+</p>
+<p>
+<userinput>install-patch &lt;-b&gt;[-d][-s &lt;speed&gt;][-n &lt;nodes&gt;|-t &lt;types&gt;]</userinput>
+</p>
+<p>
+<b>To list the patched nodes or types:</b>
+</p>
+<p>
+<userinput>install-patch &lt;-l&gt;[-n &lt;nodes&gt;|-t &lt;types&gt;]</userinput>
+</p>
+<p>
+<!--xref URI: #patoptions-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-sps-patchingtool/patoptions"/> describes the options that can be used in the command.</p>
+<table id="patoptions" colsep="1" rowsep="1">
+                <title>Options </title>
+                <tgroup cols="2">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>
+                                    <b>Code</b>
+                                </p>
+                            </entry>
+                            <entry>
+                                <p>
+                                    <b>Description</b>
+                                </p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>
+                                <codeblock>-h </codeblock>
+                            </entry>
+                            <entry> Displays usage/help information. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeblock>-b </codeblock>
+                            </entry>
+                            <entry>
+                                <p>Backout of the patch. The backout is always run manually. It
+                                    brings the VNF back to the original state before the patch was
+                                    applied.</p>
+                                <p>The -f and -u options are not applicable when this option is
+                                    used.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeblock>-i </codeblock>
+                            </entry>
+                            <entry> Install the patch </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeblock>-l</codeblock>
+                            </entry>
+                            <entry>
+                                <p>Lists the patching status for each node as the tool is
+                                    running.</p>
+                                <p>The -f, -s &lt;speed&gt;, and -u options are not applicable when
+                                    this option is used.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeblock>-d </codeblock>
+                            </entry>
+                            <entry> Enable debug logging </entry>
+                        </row>
+                        <row>
+                            <entry> -n&lt;nodes&gt; </entry>
+                            <entry> This option allows you to specify individual nodes in a
+                                comma-separated list (optional). The nodes can be represented by
+                                either the IP addresses or host names. </entry>
+                        </row>
+                        <row>
+                            <entry> -t&lt;types&gt; </entry>
+                            <entry>
+                                <p>A comma-separated list of node types (optional) to which the
+                                    patch is applied. The valid types for the ME are:</p>
+                                <ul>
+                                    <li>
+                                        <p>oame </p>
+                                    </li>
+                                    <li>
+                                        <p>diameterapp</p>
+                                    </li>
+                                    <li>
+                                        <p>ioho</p>
+                                    </li>
+                                    <li>
+                                        <p>iohd</p>
+                                    </li>
+                                    <li>
+                                        <p>auxiliary</p>
+                                    </li>
+                                    <li>
+                                        <p>db</p>
+                                    </li>
+                                    <li>
+                                        <p>comsvc</p>
+                                    </li>
+                                    <li>
+                                        <p>cdr</p>
+                                    </li>
+                                </ul>
+                                <p>The valid types for the SM are</p>
+                                <ul>
+                                    <li>
+                                        <p>oame </p>
+                                    </li>
+                                    <li>
+                                        <p>smapp</p>
+                                    </li>
+                                    <li>
+                                        <p>ioho</p>
+                                    </li>
+                                    <li>
+                                        <p>auxiliary</p>
+                                    </li>
+                                    <li>
+                                        <p>db</p>
+                                    </li>
+                                </ul>
+                                <p>Inapplicable types will be logged as a warning message. </p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> -s&lt;speed&gt; </entry>
+                            <entry>
+                                <p>A positive integer that specifies the speed of patching, meaning
+                                    how many nodes in parallel that the patch can be applied to at a
+                                    time for each node type. When using in-service mode, you can do
+                                    from one to up to half of the number of (specified) nodes at a
+                                    time. </p>
+                                <p>Half of the number of (specified) nodes at a time is the default
+                                    if you do not enter an integer for speed.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> -u&lt;url&gt; </entry>
+                            <entry>
+                                <p>The url from which to grab the tar file; required by “-i”. For
+                                    example, </p>
+                                <p>
+                                    <userinput>install-patch -i -u
+                                        http://1.1.1.1/patches/SPS_19_3_R1_2.tgz </userinput>
+                                </p>
+                                <p>The supported URL types are http and ftp.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> -f&lt;file&gt; </entry>
+                            <entry>
+                                <p>The patch tar file name. The corresponding tar file must exist at
+                                    /appdata/sps/patches. It is required by “-i”.</p>
+                                <p>The patch file's name is in the format of
+                                    &lt;base_version&gt;_&lt;patch_version&gt;.tgz. They make the
+                                    patch file unique and there could be multiple patch files on a
+                                    VNF. A patch is always associated with a base version, typically
+                                    on any given VNF, there could be patch files that has the same
+                                    base version but different patch version. It consists of two
+                                    parts:</p>
+                                <ul>
+                                    <li>
+                                        <p>the base version</p>
+                                    </li>
+                                    <li>
+                                        <p>the patch version</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+</section>
+<section><title>Examples of the Patching tool in use</title>
+<p>See the following for example usages of the tool:</p><ul>
+<li>
+<p>
+<!--xref URI: #examppatch-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-sps-patchingtool/examppatch"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #Examppatchsystem-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-sps-patchingtool/Examppatchsystem"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #examplist-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-sps-patchingtool/examplist"/>
+</p>
+</li>
+</ul></section>
+    <section id="Examppatchsystem"><title>Example for patching operation on a system with Debug enabled</title>
+<p>In this example, a system is patched showing the output, with debug (-d) messages enabled and the debug log displayed in the console.</p>
+<codeblock>install-patch -i -d -f SPS_20_0_R1_SP1_PP4.tar.gz</codeblock>
+<p>Output similar to the following can be expected. Notice that you are prompted to answer if you want to proceed with the installation.</p>
+<fig>
+<codeblock>[root@igvl95s1-oame-0 sbin]# ./install-patch -i -d -f SPS_20_0_R1_SP1_PP4.tar.gz
+WARNING: This tool may require a significant amount of time to run and may affect traffic and/or cause the entire site to go down. It's recommended that it be used during a maintenance window.
+Would you like to proceed? [y/n]: y
+INFO: Processing the patch file 'SPS_20_0_R1_SP1_PP4.tar.gz'.
+DEBUG: Patch versions = ['SP1_PP1', 'SP1_PP2', 'SP1_PP3', 'SP1_PP4']
+DEBUG: Installed versions = ['']
+DEBUG: Previous candidates = ['']
+DEBUG: Setting last executed nodes to 'igvl95s1-auxiliary-0', 'igvl95s1-auxiliary-1', 'igvl95s1-auxiliary-2', 'igvl95s1-cdr-0', 'igvl95s1-cdr-1', 'igvl95s1-comsvc-0', 'igvl95s1-comsvc-1', 'igvl95s1-db-0', 'igvl95s1-db-1', 'igvl95s1-db-2', 'igvl95s1-db-3', 'igvl95s1-diameterapp-0', 'igvl95s1-diameterapp-1', 'igvl95s1-iohd-0', 'igvl95s1-iohd-1', 'igvl95s1-ioho-0', 'igvl95s1-ioho-1', 'igvl95s1-oame-0', 'igvl95s1-oame-1', 'igvl95s1-smapp-0', 'igvl95s1-smapp-1'
+DEBUG: Changing global status to 'install_started'
+DEBUG: Setting applicable nodes to 'igvl95s1-auxiliary-0', 'igvl95s1-auxiliary-1', 'igvl95s1-auxiliary-2', 'igvl95s1-cdr-0', 'igvl95s1-cdr-1', 'igvl95s1-comsvc-0', 'igvl95s1-comsvc-1', 'igvl95s1-db-0', 'igvl95s1-db-1', 'igvl95s1-db-2', 'igvl95s1-db-3', 'igvl95s1-diameterapp-0', 'igvl95s1-diameterapp-1', 'igvl95s1-iohd-0', 'igvl95s1-iohd-1', 'igvl95s1-ioho-0', 'igvl95s1-ioho-1', 'igvl95s1-oame-0', 'igvl95s1-oame-1', 'igvl95s1-smapp-0', 'igvl95s1-smapp-1'
+DEBUG: Setting global patch version to 'SPS_20_0_R1_SP1_PP4'
+DEBUG: Setting global candidates to 'SP1_PP1', 'SP1_PP2', 'SP1_PP3', 'SP1_PP4'
+INFO: Installing patches 'SP1_PP1 SP1_PP2 SP1_PP3 SP1_PP4' in online mode.
+INFO: The speed for 'auxiliary' is set to '1'.
+INFO: The speed for 'cdr' is set to '1'.
+INFO: The speed for 'comsvc' is set to '1'.
+INFO: The speed for 'db' is set to '2'.
+INFO: The speed for 'diameterapp' is set to '1'.
+INFO: The speed for 'iohd' is set to '1'.
+INFO: The speed for 'ioho' is set to '1'.
+INFO: The speed for 'oame' is set to '1'.
+INFO: The speed for 'smapp' is set to '1'.
+INFO: Running execution number '1'...
+INFO: Running execution number '2'...
+INFO: Running execution number '3'...
+INFO: Installing patches 'SP1_PP1 SP1_PP2 SP1_PP3 SP1_PP4' in online mode in 'igvl95s1-oame-1'.
+DEBUG: statusByPatchAndNode map:
+SP1_PP1/igvl95s1-auxiliary-0 install_succeeded
+SP1_PP1/igvl95s1-auxiliary-1 install_succeeded
+SP1_PP1/igvl95s1-auxiliary-2 install_succeeded
+SP1_PP1/igvl95s1-cdr-0 install_succeeded
+SP1_PP1/igvl95s1-cdr-1 install_succeeded
+SP1_PP1/igvl95s1-comsvc-0 install_succeeded
+SP1_PP1/igvl95s1-comsvc-1 install_succeeded
+SP1_PP1/igvl95s1-db-0 install_succeeded
+SP1_PP1/igvl95s1-db-1 install_succeeded
+SP1_PP1/igvl95s1-db-2 install_succeeded
+SP1_PP1/igvl95s1-db-3 install_succeeded
+SP1_PP1/igvl95s1-diameterapp-0 install_succeeded
+SP1_PP1/igvl95s1-diameterapp-1 install_succeeded
+SP1_PP1/igvl95s1-iohd-0 install_succeeded
+SP1_PP1/igvl95s1-iohd-1 install_succeeded
+SP1_PP1/igvl95s1-ioho-0 install_succeeded
+SP1_PP1/igvl95s1-ioho-1 install_succeeded
+SP1_PP1/igvl95s1-oame-0 install_succeeded
+SP1_PP1/igvl95s1-oame-1 install_succeeded
+SP1_PP1/igvl95s1-smapp-0 install_succeeded
+SP1_PP1/igvl95s1-smapp-1 install_succeeded
+SP1_PP2/igvl95s1-auxiliary-0 install_succeeded
+SP1_PP2/igvl95s1-auxiliary-1 install_succeeded
+SP1_PP2/igvl95s1-auxiliary-2 install_succeeded
+SP1_PP2/igvl95s1-cdr-0 install_succeeded
+SP1_PP2/igvl95s1-cdr-1 install_succeeded
+SP1_PP2/igvl95s1-comsvc-0 install_succeeded
+SP1_PP2/igvl95s1-comsvc-1 install_succeeded
+SP1_PP2/igvl95s1-db-0 install_succeeded
+SP1_PP2/igvl95s1-db-1 install_succeeded
+SP1_PP2/igvl95s1-db-2 install_succeeded
+SP1_PP2/igvl95s1-db-3 install_succeeded
+SP1_PP2/igvl95s1-diameterapp-0 install_succeeded
+SP1_PP2/igvl95s1-diameterapp-1 install_succeeded
+SP1_PP2/igvl95s1-iohd-0 install_succeeded
+SP1_PP2/igvl95s1-iohd-1 install_succeeded
+SP1_PP2/igvl95s1-ioho-0 install_succeeded
+SP1_PP2/igvl95s1-ioho-1 install_succeeded
+SP1_PP2/igvl95s1-oame-0 install_succeeded
+SP1_PP2/igvl95s1-oame-1 install_succeeded
+SP1_PP2/igvl95s1-smapp-0 install_succeeded
+SP1_PP2/igvl95s1-smapp-1 install_succeeded
+SP1_PP3/igvl95s1-auxiliary-0 install_succeeded
+SP1_PP3/igvl95s1-auxiliary-1 install_succeeded
+SP1_PP3/igvl95s1-auxiliary-2 install_succeeded
+SP1_PP3/igvl95s1-cdr-0 install_succeeded
+SP1_PP3/igvl95s1-cdr-1 install_succeeded
+SP1_PP3/igvl95s1-comsvc-0 install_succeeded
+SP1_PP3/igvl95s1-comsvc-1 install_succeeded
+SP1_PP3/igvl95s1-db-0 install_succeeded
+SP1_PP3/igvl95s1-db-1 install_succeeded
+SP1_PP3/igvl95s1-db-2 install_succeeded
+SP1_PP3/igvl95s1-db-3 install_succeeded
+SP1_PP3/igvl95s1-diameterapp-0 install_succeeded
+SP1_PP3/igvl95s1-diameterapp-1 install_succeeded
+SP1_PP3/igvl95s1-iohd-0 install_succeeded
+SP1_PP3/igvl95s1-iohd-1 install_succeeded
+SP1_PP3/igvl95s1-ioho-0 install_succeeded
+SP1_PP3/igvl95s1-ioho-1 install_succeeded
+SP1_PP3/igvl95s1-oame-0 install_succeeded
+SP1_PP3/igvl95s1-oame-1 install_succeeded
+SP1_PP3/igvl95s1-smapp-0 install_succeeded
+SP1_PP3/igvl95s1-smapp-1 install_succeeded
+SP1_PP4/igvl95s1-auxiliary-0 install_succeeded
+SP1_PP4/igvl95s1-auxiliary-1 install_succeeded
+SP1_PP4/igvl95s1-auxiliary-2 install_succeeded
+SP1_PP4/igvl95s1-comsvc-0 install_succeeded
+SP1_PP4/igvl95s1-comsvc-1 install_succeeded
+SP1_PP4/igvl95s1-diameterapp-0 install_succeeded
+SP1_PP4/igvl95s1-diameterapp-1 install_succeeded
+SP1_PP4/igvl95s1-iohd-0 install_succeeded
+SP1_PP4/igvl95s1-iohd-1 install_succeeded
+SP1_PP4/igvl95s1-ioho-0 install_succeeded
+SP1_PP4/igvl95s1-ioho-1 install_succeeded
+SP1_PP4/igvl95s1-oame-0 install_succeeded
+SP1_PP4/igvl95s1-oame-1 install_succeeded
+SP1_PP4/igvl95s1-smapp-0 install_succeeded
+SP1_PP4/igvl95s1-smapp-1 install_succeeded
+
+DEBUG: nodeTypesByPatch map:
+SP1_PP1  smapp
+SP1_PP2  smapp
+SP1_PP3  smapp
+SP1_PP4  smapp
+DEBUG: 'SP1_PP1' is in status 'install_succeeded' in all applicable nodes
+DEBUG: 'SP1_PP2' is in status 'install_succeeded' in all applicable nodes
+DEBUG: 'SP1_PP3' is in status 'install_succeeded' in all applicable nodes
+DEBUG: 'SP1_PP4' is in status 'install_succeeded' in all applicable nodes
+DEBUG: Changing global status to 'install_succeeded'
+INFO: Done.
+</codeblock>
+</fig>
+</section>
+    <section id="examppatch"><title>Example for a second patching operation on an IOHD</title>
+<p>In this example, an IOHD is patched a second time showing the output, with debug messages disabled.</p>
+<codeblock>install-patch -i -f SPS_20_0_R1_SP2.tar.gz -t iohd</codeblock>
+<p>Output similar to the following can be expected. If this is not the first patch that you have applied, you are prompted twice to answer if you want to proceed with the installation and in the second prompt that if you do proceed, the previous installation will be committed.</p>
+<fig>
+<codeblock>[root@sps-me-oame-1 ~]# /opt/tpa/sbin/install-patch -i -f SPS_20_0_R1_SP2.tar.gz -t iohd
+WARNING: This tool may require a significant amount of time to run and may affect traffic and/or cause the entire site to go down. It's recommended that it be used during a maintenance window.
+Would you like to proceed? [y/n]:  y
+INFO: Processing the patch file 'SPS_20_0_R1_SP1_PP4.tar.gz'.
+DEBUG: Patch versions = ['SP1_PP1', 'SP1_PP2', 'SP1_PP3', 'SP1_PP4']
+DEBUG: Installed versions = ['']
+DEBUG: Previous candidates = ['SP1_PP1', 'SP1_PP2']
+WARNING: If you proceed with this installation, the previous installation will be committed and cannot be backed out afterwards.
+Would you like to proceed? [y/n]:
+INFO: Committing previous installation ('SP1')...
+INFO: Installing patches 'SP2' in online mode.
+INFO: The speed for 'iohd' is set to '1'.
+INFO: Running installation round number '1'...
+INFO: Running installation round number '2'...
+INFO: Done.
+</codeblock>
+</fig>
+<p>If by chance there is an error while patching, you will receive output that indicates an error similar to the following:</p>
+<fig>
+<codeblock>[root@sps-me-oame-1 ~]# /opt/tpa/sbin/install-patch -i -f SPS_20_0_R1_SP4.tar.gz -t iohd                            
+INFO: Processing the patch file 'SPS_20_0_R1_SP4.tar.gz'.
+INFO: Downloading file '/appdata/sps/patches/SPS_20_0_R1_SP4.tar.gz' from 'sps-me-oame-0'...
+ERROR: Previous installation did not succeed or was partially applied. For a new installation to take place, the first installation must be manually backed out.</codeblock>
+</fig>
+</section>
+    <section id="examplist"><title>Example of running the listing command</title>
+<p>The  output of “-l” lists all VMs in the VNF, whether or not they are applicable to the target patch version. The ‘Status’ at the top is an overall status, aggregated from individual VMs.</p>
+<p>The status can be one of: </p><ul>
+<li>
+<p>initial: The state of the system when you begin the install operation. The patching tool is running but has not started on a particular node.</p>
+</li>
+<li>
+<p>install_started: The install operation has started. </p>
+</li>
+<li>
+<p>install_failed: The install operation has not succeeded.</p>
+</li>
+<li>
+<p>install_succeeded: The install operation has succeeded.</p>
+</li>
+<li>
+<p>install_partial: The install operation has succeeded. The patching tool has been run but some specific nodes did not finish patching and may require that the tool is run again.</p>
+</li>
+<li>
+<p>backout_started: The backout operation has started.</p>
+</li>
+<li>
+<p>backout_succeeded: The backout operation has succeeded.</p>
+</li>
+</ul>
+<p>The status transitions are explained further in the following figures:</p><ul>
+<li>
+<p>
+<!--xref URI: #Overallstatus1-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-sps-patchingtool/overallstatus1"/> provides a high-level example of all the patching statuses during a patching operation.</p>
+</li>
+<li>
+<p>
+<!--xref URI: #status2-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-sps-patchingtool/status2"/> shows that in some scenarios not all of the above states need to occur during a patching operation.</p>
+</li>
+<li>
+<p>
+                            <!--xref URI: #status3-->
+                            <xref keyref="id9YZ-09126-MT00-REZZA-SP2-sps-patchingtool/status3"/>
+                            shows the state transitions that can occur from a rollback or a partial
+                            install of the patch during a patching operation.</p>
+</li>
+</ul>
+<fig id="overallstatus1">
+<title>Overall status transition example</title>
+<!--MMO resource relative URI: ../Graphics/Patchflow123listing_default.png-->
+    <image href="../images/patchflow123listing_default.png"/>
+</fig>
+<fig id="status2">
+<title>Status transition with a patch failure example</title>
+<!--MMO resource relative URI: ../Graphics/Patchflow13Listing_default.png-->
+    <image href="../images/patchflow13listing_default.png"/>
+</fig>
+<fig id="status3">
+<title>Status transition with a rollback example</title>
+<!--MMO resource relative URI: ../Graphics/Patchflow14Listing_default.png-->
+    <image href="../images/pathflow14listing_default.png"/>
+</fig>
+<p>The following is an example of the results from the listing command as it is used on a progression of steps from a fresh installation, through a patching failure, and onto a successful patch.</p>
+<p>On a fresh system install:</p>
+<codeblock>sbin/install-patch -l</codeblock>
+<fig>
+<codeblock>Status: initial
+Base Version: SPS_19_9_R1
+Current Patch: None
+Target Patch: None
+Timestamp: Wed Nov 20 21:21:24 UTC 2019
+
+-------------------------------------------------------
+HOST                    IP             STATUS   VERSION
+-------------------------------------------------------
+igvl95s1-auxiliary-0    192.168.3.20   initial  None
+igvl95s1-auxiliary-1    192.168.3.21   initial  None
+igvl95s1-auxiliary-2    192.168.3.22   initial  None
+igvl95s1-cdr-0          192.168.3.202  initial  None
+igvl95s1-cdr-1          192.168.3.203  initial  None
+igvl95s1-comsvc-0       192.168.3.182  initial  None
+igvl95s1-comsvc-1       192.168.3.183  initial  None
+igvl95s1-db-0           192.168.3.102  initial  None
+igvl95s1-db-1           192.168.3.103  initial  None
+igvl95s1-db-2           192.168.3.104  initial  None
+igvl95s1-db-3           192.168.3.105  initial  None
+igvl95s1-diameterapp-0  192.168.3.62   initial  None
+igvl95s1-diameterapp-1  192.168.3.63   initial  None
+igvl95s1-iohd-0         192.168.3.234  initial  None
+igvl95s1-iohd-1         192.168.3.235  initial  None
+igvl95s1-ioho-0         192.168.3.232  initial  None
+igvl95s1-ioho-1         192.168.3.233  initial  None
+igvl95s1-oame-0         192.168.3.10   initial  None
+igvl95s1-oame-1         192.168.3.11   initial  None
+igvl95s1-smapp-0        192.168.3.12   initial  None
+igvl95s1-smapp-1        192.168.3.13   initial  None
+-------------------------------------------------------
+
+</codeblock>
+</fig>
+<p>On a system that had a failure during patch install:</p>
+<codeblock>sbin/install-patch -l</codeblock>
+<fig>
+<codeblock>Status: install_failed
+Base Version: SPS_19_9_R1
+Current Patch: None
+Target Patch: SP1_PP4
+Timestamp: Thu Nov 21 17:07:16 UTC 2019
+
+----------------------------------------------------------------------
+HOST                    IP             STATUS                  VERSION
+----------------------------------------------------------------------
+igvl95s1-auxiliary-0    192.168.3.20   post_install_succeeded  SP1_PP4
+igvl95s1-auxiliary-1    192.168.3.21   post_install_succeeded  SP1_PP4
+igvl95s1-auxiliary-2    192.168.3.22   rollback_succeeded      None
+igvl95s1-cdr-0          192.168.3.202  post_install_succeeded  SP1_PP3
+igvl95s1-cdr-1          192.168.3.203  post_install_succeeded  SP1_PP3
+igvl95s1-comsvc-0       192.168.3.182  post_install_succeeded  SP1_PP4
+igvl95s1-comsvc-1       192.168.3.183  post_install_succeeded  SP1_PP4
+igvl95s1-db-0           192.168.3.102  post_install_succeeded  SP1_PP3
+igvl95s1-db-1           192.168.3.103  post_install_succeeded  SP1_PP3
+igvl95s1-db-2           192.168.3.104  post_install_succeeded  SP1_PP3
+igvl95s1-db-3           192.168.3.105  post_install_succeeded  SP1_PP3
+igvl95s1-diameterapp-0  192.168.3.62   post_install_succeeded  SP1_PP4
+igvl95s1-diameterapp-1  192.168.3.63   post_install_succeeded  SP1_PP4
+igvl95s1-iohd-0         192.168.3.234  post_install_succeeded  SP1_PP4
+igvl95s1-iohd-1         192.168.3.235  post_install_succeeded  SP1_PP4
+igvl95s1-ioho-0         192.168.3.232  pre_install_failed      SP1_PP4
+igvl95s1-ioho-1         192.168.3.233  post_install_succeeded  SP1_PP4
+igvl95s1-oame-0         192.168.3.10   rollback_succeeded      None
+igvl95s1-oame-1         192.168.3.11   post_install_succeeded  SP1_PP4
+igvl95s1-smapp-0        192.168.3.12   post_install_succeeded  SP1_PP4
+igvl95s1-smapp-1        192.168.3.13   post_install_succeeded  SP1_PP4
+----------------------------------------------------------------------
+
+</codeblock>
+</fig>
+<p>On a system that was patched, rolledback, and now the patch is reapplied:</p>
+<codeblock>sbin/install-patch -l</codeblock>
+<fig>
+<codeblock>Status: install_started
+Base Version: SPS_19_9_R1
+Current Patch: None
+Target Patch: SP1_PP4
+Timestamp: Thu Nov 21 20:51:07 UTC 2019
+
+----------------------------------------------------------------------
+HOST                    IP             STATUS                  VERSION
+----------------------------------------------------------------------
+igvl95s1-auxiliary-0    192.168.3.20   post_install_succeeded  SP1_PP4
+igvl95s1-auxiliary-1    192.168.3.21   rollback_succeeded      None
+igvl95s1-auxiliary-2    192.168.3.22   rollback_succeeded      None
+igvl95s1-cdr-0          192.168.3.202  post_install_succeeded  SP1_PP3
+igvl95s1-cdr-1          192.168.3.203  rollback_succeeded      None
+igvl95s1-comsvc-0       192.168.3.182  post_install_started    SP1_PP4
+igvl95s1-comsvc-1       192.168.3.183  rollback_succeeded      None
+igvl95s1-db-0           192.168.3.102  post_install_succeeded  SP1_PP3
+igvl95s1-db-1           192.168.3.103  rollback_succeeded      None
+igvl95s1-db-2           192.168.3.104  post_install_succeeded  SP1_PP3
+igvl95s1-db-3           192.168.3.105  rollback_succeeded      None
+igvl95s1-diameterapp-0  192.168.3.62   post_install_started    SP1_PP4
+igvl95s1-diameterapp-1  192.168.3.63   rollback_succeeded      None
+igvl95s1-iohd-0         192.168.3.234  rollback_succeeded      None
+igvl95s1-iohd-1         192.168.3.235  post_install_succeeded  SP1_PP4
+igvl95s1-ioho-0         192.168.3.232  rollback_succeeded      None
+igvl95s1-ioho-1         192.168.3.233  post_install_succeeded  SP1_PP4
+igvl95s1-oame-0         192.168.3.10   post_install_succeeded  SP1_PP4
+igvl95s1-oame-1         192.168.3.11   rollback_succeeded      None
+igvl95s1-smapp-0        192.168.3.12   post_install_succeeded  SP1_PP4
+igvl95s1-smapp-1        192.168.3.13   rollback_succeeded      None
+----------------------------------------------------------------------
+
+</codeblock>
+</fig>
+<p>On a system that is patched successfully:</p>
+<codeblock>sbin/install-patch -l</codeblock>
+<fig>
+<codeblock>Status: install_succeeded
+Base Version: SPS_19_9_R1
+Previous Patch: None
+Current Patch: SP1_PP4 
+Timestamp: Fri Nov 22 20:20:37 UTC 2019
+
+----------------------------------------------------------------------
+HOST                    IP             STATUS                  VERSION
+----------------------------------------------------------------------
+igvl95s1-auxiliary-0    192.168.3.20   post_install_succeeded  SP1_PP4
+igvl95s1-auxiliary-1    192.168.3.21   post_install_succeeded  SP1_PP4
+igvl95s1-auxiliary-2    192.168.3.22   post_install_succeeded  SP1_PP4
+igvl95s1-cdr-0          192.168.3.202  post_install_succeeded  SP1_PP4
+igvl95s1-cdr-1          192.168.3.203  post_install_succeeded  SP1_PP4
+igvl95s1-comsvc-0       192.168.3.182  post_install_succeeded  SP1_PP4
+igvl95s1-comsvc-1       192.168.3.183  post_install_succeeded  SP1_PP4
+igvl95s1-db-0           192.168.3.102  post_install_succeeded  SP1_PP4
+igvl95s1-db-1           192.168.3.103  post_install_succeeded  SP1_PP4
+igvl95s1-db-2           192.168.3.104  post_install_succeeded  SP1_PP4
+igvl95s1-db-3           192.168.3.105  post_install_succeeded  SP1_PP4
+igvl95s1-diameterapp-0  192.168.3.62   post_install_succeeded  SP1_PP4
+igvl95s1-diameterapp-1  192.168.3.63   post_install_succeeded  SP1_PP4
+igvl95s1-iohd-0         192.168.3.234  post_install_succeeded  SP1_PP4
+igvl95s1-iohd-1         192.168.3.235  post_install_succeeded  SP1_PP4
+igvl95s1-ioho-0         192.168.3.232  post_install_succeeded  SP1_PP4
+igvl95s1-ioho-1         192.168.3.233  post_install_succeeded  SP1_PP4
+igvl95s1-oame-0         192.168.3.10   post_install_succeeded  SP1_PP4
+igvl95s1-oame-1         192.168.3.11   post_install_succeeded  SP1_PP4
+igvl95s1-smapp-0        192.168.3.12   post_install_succeeded  SP1_PP4
+igvl95s1-smapp-1        192.168.3.13   post_install_succeeded  SP1_PP4
+----------------------------------------------------------------------
+</codeblock>
+</fig>
+</section>
+<section id="patchrollback"><title>Roll back of a patch</title>
+<p>For this type of software update (patch) to be rolled back, you must perform the rollback operation manually. The patching operation can be rolled back manually to the previously applied patch or base version if this is only the first patch applied. For example, if the system is on version 20.3 and the latest patch is Patch 2 (i.e., SPS_20_3_R1_SP1_PP2) and a patch is started to 20.6 (i.e., SPS_20_6_R1_SP1_PP1), but fails and must be rolled back, that system is rolled back to 20.3 with Patch 2 re-applied.</p>
+<p>See the following for example usages of the tool:</p><ul>
+<li>
+<p>
+<!--xref URI: #rollback1-->
+    <xref href="#id9yz-09126-mt00-rezza-sp2-sps-patchingtool/rollback1" format="dita"/>
+</p>
+</li>
+</ul>
+<p> The tool requires that you enter the following to perform the rollback:</p>
+<codeblock>./install-patch -b </codeblock></section>
+    <section id="rollback1"><title>Example of a rollback using listing option</title>
+<p>After a roll back, output similar to the following should be available using the “-l” option:</p>
+<fig>
+<codeblock>[root@igvl95s1-oame-0 sbin]# ./install-patch -l
+Status: backout_succeeded
+Base Version: SPS_19_9_R1
+Current Patch: None
+Target Patch: None
+Timestamp: Fri Nov 22 20:03:58 UTC 2019
+
+------------------------------------------------------------------
+HOST                    IP             STATUS              VERSION
+------------------------------------------------------------------
+igvl95s1-auxiliary-0    192.168.3.20   rollback_succeeded  None
+igvl95s1-auxiliary-1    192.168.3.21   rollback_succeeded  None
+igvl95s1-auxiliary-2    192.168.3.22   rollback_succeeded  None
+igvl95s1-cdr-0          192.168.3.202  rollback_succeeded  None
+igvl95s1-cdr-1          192.168.3.203  rollback_succeeded  None
+igvl95s1-comsvc-0       192.168.3.182  rollback_succeeded  None
+igvl95s1-comsvc-1       192.168.3.183  rollback_succeeded  None
+igvl95s1-db-0           192.168.3.102  rollback_succeeded  None
+igvl95s1-db-1           192.168.3.103  rollback_succeeded  None
+igvl95s1-db-2           192.168.3.104  rollback_succeeded  None
+igvl95s1-db-3           192.168.3.105  rollback_succeeded  None
+igvl95s1-diameterapp-0  192.168.3.62   rollback_succeeded  None
+igvl95s1-diameterapp-1  192.168.3.63   rollback_succeeded  None
+igvl95s1-iohd-0         192.168.3.234  rollback_succeeded  None
+igvl95s1-iohd-1         192.168.3.235  rollback_succeeded  None
+igvl95s1-ioho-0         192.168.3.232  rollback_succeeded  None
+igvl95s1-ioho-1         192.168.3.233  rollback_succeeded  None
+igvl95s1-oame-0         192.168.3.10   rollback_succeeded  None
+igvl95s1-oame-1         192.168.3.11   rollback_succeeded  None
+igvl95s1-smapp-0        192.168.3.12   rollback_succeeded  None
+igvl95s1-smapp-1        192.168.3.13   rollback_succeeded  None
+------------------------------------------------------------------</codeblock>
+</fig>
+</section>
+<section><title>Logging examples</title>
+<p>The following is an example of the logs produced from a patching operation:</p>
+<fig>
+<codeblock>2019.11.21 20:48:38 +0000 igvl95s1-db-0  INFO: Downloading file '/appdata/sps/patches/SPS_20_0_R1_SP1_PP4/patch_config.json' from 'igvl95s1-oame-0'...
+2019.11.21 20:48:38 +0000 igvl95s1-cdr-0  INFO: Downloading file '/appdata/sps/patches/SPS_20_0_R1_SP1_PP4/patch_config.json' from 'igvl95s1-oame-0'...
+2019.11.21 20:48:38 +0000 igvl95s1-auxiliary-0  INFO: Downloading file '/appdata/sps/patches/SPS_20_0_R1_SP1_PP4/patch_config.json' from 'igvl95s1-oame-0'...
+2019.11.21 20:48:38 +0000 igvl95s1-db-2  INFO: Downloading file '/appdata/sps/patches/SPS_20_0_R1_SP1_PP4/patch_config.json' from 'igvl95s1-oame-0'...
+2019.11.21 20:48:38 +0000 igvl95s1-iohd-1  INFO: Downloading file '/appdata/sps/patches/SPS_20_0_R1_SP1_PP4/patch_config.json' from 'igvl95s1-oame-0'...
+2019.11.21 20:48:38 +0000 igvl95s1-ioho-1  INFO: Downloading file '/appdata/sps/patches/SPS_20_0_R1_SP1_PP4/patch_config.json' from 'igvl95s1-oame-0'...
+2019.11.21 20:48:38 +0000 igvl95s1-diameterapp-0  INFO: Downloading file '/appdata/sps/patches/SPS_20_0_R1_SP1_PP4/patch_config.json' from 'igvl95s1-oame-0'...
+2019.11.21 20:48:38 +0000 igvl95s1-comsvc-0  INFO: Downloading file '/appdata/sps/patches/SPS_20_0_R1_SP1_PP4/patch_config.json' from 'igvl95s1-oame-0'...
+2019.11.21 20:48:38 +0000 igvl95s1-smapp-0  INFO: Downloading file '/appdata/sps/patches/SPS_20_0_R1_SP1_PP4/patch_config.json' from 'igvl95s1-oame-0'...
+2019.11.21 20:48:39 +0000 igvl95s1-db-0  INFO: Handling previous installation...
+2019.11.21 20:48:39 +0000 igvl95s1-db-2  INFO: Handling previous installation...
+2019.11.21 20:48:39 +0000 igvl95s1-db-0  INFO: Cleaning up work directory...
+2019.11.21 20:48:39 +0000 igvl95s1-db-2  INFO: Cleaning up work directory...
+2019.11.21 20:48:39 +0000 igvl95s1-cdr-0  INFO: Handling previous installation...
+2019.11.21 20:48:39 +0000 igvl95s1-ioho-1  INFO: Handling previous installation...
+2019.11.21 20:48:39 +0000 igvl95s1-db-0  INFO: Installing patch file 'SPS_20_0_R1_SP1_PP4.tar.gz'...
+2019.11.21 20:48:39 +0000 igvl95s1-smapp-0  INFO: Handling previous installation...
+2019.11.21 20:48:39 +0000 igvl95s1-cdr-0  INFO: Cleaning up work directory...
+2019.11.21 20:48:39 +0000 igvl95s1-ioho-1  INFO: Cleaning up work directory...
+2019.11.21 20:48:39 +0000 igvl95s1-db-2  INFO: Installing patch file 'SPS_20_0_R1_SP1_PP4.tar.gz'...
+2019.11.21 20:48:39 +0000 igvl95s1-smapp-0  INFO: Cleaning up work directory...
+2019.11.21 20:48:39 +0000 igvl95s1-cdr-0  INFO: Installing patch file 'SPS_20_0_R1_SP1_PP4.tar.gz'...
+2019.11.21 20:48:39 +0000 igvl95s1-iohd-1  INFO: Handling previous installation...
+2019.11.21 20:48:39 +0000 igvl95s1-ioho-1  INFO: Installing patch file 'SPS_20_0_R1_SP1_PP4.tar.gz'...
+...
+...
+2019.11.21 20:48:39 +0000 igvl95s1-iohd-1  INFO: Downloading file '/appdata/sps/patches/SPS_20_0_R1_SP1_PP4.tar.gz' from 'igvl95s1-oame-0'...
+2019.11.21 20:48:39 +0000 igvl95s1-auxiliary-0  INFO: Downloading file '/appdata/sps/patches/SPS_20_0_R1_SP1_PP4.tar.gz' from 'igvl95s1-oame-0'...
+2019.11.21 20:48:39 +0000 igvl95s1-diameterapp-0  INFO: Downloading file '/appdata/sps/patches/SPS_20_0_R1_SP1_PP4.tar.gz' from 'igvl95s1-oame-0'...
+2019.11.21 20:48:39 +0000 igvl95s1-comsvc-0  INFO: Downloading file '/appdata/sps/patches/SPS_20_0_R1_SP1_PP4.tar.gz' from 'igvl95s1-oame-0'...
+2019.11.21 20:48:40 +0000 igvl95s1-db-0  INFO: Exploding patch file '/tmp/tpautils.31013/SPS_20_0_R1_SP1_PP4.tar.gz'...
+2019.11.21 20:48:40 +0000 igvl95s1-db-2  INFO: Exploding patch file '/tmp/tpautils.829/SPS_20_0_R1_SP1_PP4.tar.gz'...
+2019.11.21 20:48:40 +0000 igvl95s1-cdr-0  INFO: Exploding patch file '/tmp/tpautils.16633/SPS_20_0_R1_SP1_PP4.tar.gz'...
+2019.11.21 20:48:40 +0000 igvl95s1-comsvc-0  INFO: Exploding patch file '/tmp/tpautils.7973/SPS_20_0_R1_SP1_PP4.tar.gz'...
+2019.11.21 20:48:40 +0000 igvl95s1-db-0  INFO: Backing up original files...
+2019.11.21 20:48:40 +0000 igvl95s1-smapp-0  INFO: Exploding patch file '/tmp/tpautils.9603/SPS_20_0_R1_SP1_PP4.tar.gz'...
+2019.11.21 20:48:40 +0000 igvl95s1-ioho-1  INFO: Exploding patch file '/tmp/tpautils.28622/SPS_20_0_R1_SP1_PP4.tar.gz'...
+2019.11.21 20:48:40 +0000 igvl95s1-iohd-1  INFO: Exploding patch file '/tmp/tpautils.2208/SPS_20_0_R1_SP1_PP4.tar.gz'...
+2019.11.21 20:48:40 +0000 igvl95s1-auxiliary-0  INFO: Exploding patch file '/tmp/tpautils.9925/SPS_20_0_R1_SP1_PP4.tar.gz'...
+2019.11.21 20:48:40 +0000 igvl95s1-db-2  INFO: Backing up original files...
+2019.11.21 20:48:40 +0000 igvl95s1-cdr-0  INFO: Backing up original files...
+2019.11.21 20:48:40 +0000 igvl95s1-comsvc-0  INFO: Backing up original files...
+2019.11.21 20:48:40 +0000 igvl95s1-smapp-0  INFO: Backing up original files...
+2019.11.21 20:48:40 +0000 igvl95s1-ioho-1  INFO: Backing up original files...
+2019.11.21 20:48:40 +0000 igvl95s1-iohd-1  INFO: Backing up original files...
+2019.11.21 20:48:40 +0000 igvl95s1-db-0  INFO: Applying patches...
+2019.11.21 20:48:40 +0000 igvl95s1-auxiliary-0  INFO: Backing up original files...
+2019.11.21 20:48:40 +0000 igvl95s1-db-0  INFO: Installing patch 'SP1_PP1'...
+2019.11.21 20:48:40 +0000 igvl95s1-smapp-0  INFO: Stop application server requested in online mode
+2019.11.21 20:48:40 +0000 igvl95s1-cdr-0  INFO: Applying patches...
+2019.11.21 20:48:40 +0000 igvl95s1-comsvc-0  INFO: Stop application server requested in online mode
+2019.11.21 20:48:40 +0000 igvl95s1-iohd-1  INFO: Stop application server requested in online mode
+2019.11.21 20:48:41 +0000 igvl95s1-ioho-1  INFO: Stop application server requested in online mode
+2019.11.21 20:48:41 +0000 igvl95s1-db-2  INFO: Applying patches...
+2019.11.21 20:48:41 +0000 igvl95s1-cdr-0  INFO: Installing patch 'SP1_PP1'...
+2019.11.21 20:48:41 +0000 igvl95s1-db-0  INFO: Installing patch 'SP1_PP2'...
+2019.11.21 20:48:41 +0000 igvl95s1-smapp-0  INFO: Stopping application server...
+2019.11.21 20:48:41 +0000 igvl95s1-db-2  INFO: Installing patch 'SP1_PP1'...
+2019.11.21 20:48:41 +0000 igvl95s1-iohd-1  INFO: Stopping application server...
+2019.11.21 20:48:41 +0000 igvl95s1-comsvc-0  INFO: Stopping application server...
+...
+...
+2019.11.21 20:49:02 +0000 igvl95s1-iohd-1  Starting Asr Server...
+2019.11.21 20:49:04 +0000 igvl95s1-diameterapp-0  INFO: Applying patches...
+2019.11.21 20:49:04 +0000 igvl95s1-diameterapp-0  INFO: Installing patch 'SP1_PP1'...
+2019.11.21 20:49:04 +0000 igvl95s1-diameterapp-0  INFO: Installing patch 'SP1_PP2'...
+2019.11.21 20:49:04 +0000 igvl95s1-diameterapp-0  INFO: Installing patch 'SP1_PP3'...
+2019.11.21 20:49:04 +0000 igvl95s1-diameterapp-0  INFO: Installing patch 'SP1_PP4'...
+2019.11.21 20:49:05 +0000 igvl95s1-diameterapp-0  INFO: Start application server requested in online mode
+2019.11.21 20:49:05 +0000 igvl95s1-diameterapp-0  INFO: Starting application server...
+2019.11.21 20:49:05 +0000 igvl95s1-diameterapp-0  Starting Watch Dog...
+2019.11.21 20:49:05 +0000 igvl95s1-diameterapp-0  Starting Asr Server...
+2019.11.21 20:49:11 +0000 igvl95s1-ioho-1  INFO: Waiting for all services to be up...
+2019.11.21 20:49:12 +0000 igvl95s1-smapp-0  INFO: Waiting for all services to be up...
+2019.11.21 20:49:24 +0000 igvl95s1-comsvc-0  Waiting for app server to stop...
+2019.11.21 20:49:24 +0000 igvl95s1-comsvc-0  App server is stopped
+2019.11.21 20:49:24 +0000 igvl95s1-comsvc-0  Stopping Watch Dog...
+2019.11.21 20:49:24 +0000 igvl95s1-comsvc-0  INFO: Applying patches...
+2019.11.21 20:49:24 +0000 igvl95s1-comsvc-0  INFO: Installing patch 'SP1_PP1'...
+2019.11.21 20:49:25 +0000 igvl95s1-comsvc-0  INFO: Installing patch 'SP1_PP2'...
+2019.11.21 20:49:25 +0000 igvl95s1-comsvc-0  INFO: Installing patch 'SP1_PP3'...
+2019.11.21 20:49:25 +0000 igvl95s1-comsvc-0  INFO: Installing patch 'SP1_PP4'...
+2019.11.21 20:49:25 +0000 igvl95s1-comsvc-0  INFO: Start application server requested in online mode
+2019.11.21 20:49:25 +0000 igvl95s1-comsvc-0  INFO: Starting application server...
+2019.11.21 20:49:25 +0000 igvl95s1-comsvc-0  Starting Watch Dog...
+2019.11.21 20:49:26 +0000 igvl95s1-iohd-1  INFO: Waiting for all services to be up...
+2019.11.21 20:49:26 +0000 igvl95s1-comsvc-0  Starting Asr Server...
+2019.11.21 20:49:33 +0000 igvl95s1-ioho-1  INFO: Done.</codeblock>
+</fig>
+</section>
+</conbody></concept>

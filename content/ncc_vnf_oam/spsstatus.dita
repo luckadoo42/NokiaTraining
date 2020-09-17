@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-spsstatus"><title>sps-status tool</title><conbody>
+<section><title>Description</title>
+<p>This tool displays composite status information for an NCC system. Information includes the site
+                name and the status of all installed components (SM/ME). For each component, each
+                type of service that makes up the component is then listed, indicating how many
+                instances are configured, and of those, which ones have a status of UP or DOWN.</p>
+<note>For NCC-SM nodes, it is the intended behavior that if the NCC-SM status is down, the
+                Provisioning port remains up and ready to process incoming REST requests. For NCC-ME
+                nodes, it is the intended behavior that if the NCC-ME status is down, the Diameter
+                port remains up and ready to process call.<p/></note>
+<p>This tool may be run on an NCC that has only the SM or ME component installed, or on an NCC that
+                has an integrated SM/ME system (IG). Output will differ based on the installed
+                components. </p>
+<note>
+<p>This tool will query the system monitoring service running on the active OAME node. At least one OAME node must be up and running along with the SDC/ETCD component. This tool should be run on the active OAME node.</p>
+</note>
+</section>
+<section><title>Syntax</title>
+<codeblock>sps-status [-h][-j]</codeblock>
+<p>Where:</p>
+<note>
+<p>If this tool is used without any options, status is displayed in human-readable form.</p>
+</note>
+<table>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+<p>
+<b>Code</b>
+</p>
+</entry>
+<entry>
+<p>
+<b>Description</b>
+</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+<codeblock>No arguments</codeblock>
+</entry>
+<entry>
+Displays usage/help information
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-h </codeblock>
+</entry>
+<entry>
+Displays usage/help information.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-j </codeblock>
+</entry>
+<entry>
+This option outputs status in JSON form. 
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section><title>Output Description </title>
+<p>Output similar to the following is expected for an ME:</p>
+<fig>
+<title>NCC-status output ME</title>
+<!--MMO resource relative URI: ../Graphics/statusblme7_default.png-->
+    <image href="../images/statusblme7_default.png"/>
+</fig>
+<p>The following terms may be seen in the output:</p><ul>
+<li>
+<p>Site Name: This displays the name for this NCC system site. </p>
+</li>
+<li>
+<p>Component ME State: This displays the component for which the status is collected.</p>
+</li>
+<li>
+<p>State: This displays the composite state for this NCC component. This is the state that is used
+                        by the heartbeat mechanism for communicating status with others in the
+                        network. Possible values are UP or DOWN.</p>
+</li>
+<li>
+<p>Active SM: This displays the name of the active SM serving this ME.</p>
+</li>
+<li>
+<p>Service: The type of service. A service may have multiple instances in the site, configured as STANDALONE, ONEPLUSONE, or NPLUSK. The summary table shows the composite state for each service, as well as the total configured instances, and the number that are UP and DOWN.</p><ul>
+<li>
+<p>AEROSPIKE_CLUSTER: The Aerospike cluster is the NCC database.</p>
+</li>
+<li>
+<p>CDR: The Charging Data Report node for Charging Data Reports and Call Detail Reports.</p>
+</li>
+<li>
+<p>CHARGING: Charging application.</p>
+</li>
+<li>
+<p>DIAMETERIO: Input/output on the IOHD for Diameter traffic.</p>
+</li>
+<li>
+<p>ETCD_CLUSTER: The distributed key-value store.</p>
+</li>
+<li>
+<p>HTTPIO: Input/output on the IOHD for http/2 traffic.</p>
+</li>
+<li>
+<p>KAFKA: A distributed messaging platform, for handling various real-time events. The Kafka health monitor runs on the active OAME. At a high level, It periodically produces and receives messages from Kafka. If multiple attempts are unsuccessful, the monitoring system will mark the service as down.</p>
+</li>
+<li>
+<p>LOADBALANCER: The loadbalancer on the IOHO of the ME.</p>
+</li>
+<li>
+<p>LTM: Lock and Transaction Manager, which secures locks for database access and provides transaction management for data integrity.</p>
+</li>
+<li>
+<p>NOTIFICATION: The Notification server is a non-vital service that is part of the Common Services
+                                node. It sends smart notifications to end users based on predefined
+                                notification templates selected after ART rule evaluation. It
+                                receives triggers from NCC applications (Charging, Policy) and other
+                                applications (for example, SurePay, external PCRF) for sending
+                                notifications. </p>
+</li>
+<li>
+<p>POLICY: Policy application. </p>
+</li>
+<li>
+<p>PROVISIONING: Part of the Common Services node, responsible for carrying out all the provisioning
+                                work of NCC.</p>
+</li>
+<li>
+<p>ROLLBACK: Rollback manager is part of transaction manager, responsible for rolling back database transactions in case of failures.</p>
+</li>
+<li>
+<p>TEM: Timed Event Manager, which manages events that must occur on given time intervals, such as audits. </p>
+</li>
+<li>
+<p>TRSCHEDULER: As part of DB Layer it is used to control the DB background I/O intensive activities to minimize I/O spikes and optimize database performance.</p>
+</li>
+<li>
+<p>XDR: The cross-data-replication (XDR) from the database.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>State: Displays the state for this service. Possible values are UP or DOWN.</p>
+</li>
+<li>
+<p>Vital: States whether or not the service is required; each service is described as vital or not, 'vital' meaning a problem with the service can put the site out-of-service.</p>
+</li>
+<li>
+<p>Mode: States whether the node is configured as STANDALONE, 1+1, or N+K.</p>
+</li>
+<li>
+<p>Instance: Identifies the instance, whether it is up or down, and for 1+1 configurations, displays whether it is the Active or Standby. The ACTIVE/ACTIVE and STANDBY/STANDBY instance for SM NPLUSK configuration shows whether the SM is acting as the Primary or Secondary SM. This information is used by Ud plugins for processing various types of Ud distributions.</p>
+</li>
+<li>
+<p> Composing States: Composing states are taken from multiple monitoring jobs to detect some soft
+                        failure scenarios at the VM level. These soft failure scenarios impact the
+                        ability to provide adequate service. If there are any VM-based composite
+                        statuses in the monitored items that are DOWN, then the instance status will
+                        also be DOWN. These composite states provide insight as to what actions are
+                        required to recover the VM and allow the NCC to provide adequate service.
+                        These composing states can include:</p><ul>
+<li>
+<p>whether the service is UP or DOWN</p>
+</li>
+<li>
+<p>whether the aerospike client is UP or DOWN</p>
+</li>
+<li>
+<p>whether the ltm client is UP or DOWN</p>
+</li>
+<li>
+<p>whether the traffic to nodes is UP or DOWN</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Admin Down Nodes: Lists the nodes that are administratively down; for example,</p>
+<p>
+<systemoutput>Admin Down Nodes: </systemoutput>
+</p>
+<p>
+<systemoutput>sps-me-2-diameterapp-2</systemoutput>
+</p>
+<p>
+<systemoutput>Node registry queried from '127.0.0.1'.</systemoutput>
+</p>
+</li>
+<li>
+<p>Traffic Disabled Nodes: Lists the traffic disabled nodes; for example,</p>
+<p>
+<systemoutput>Traffic Disabled Nodes:</systemoutput>
+</p>
+<p>
+<systemoutput>sps-me-2-diameterapp-1</systemoutput>
+</p>
+<p>
+<systemoutput>Traffic control queried from '192.168.3.231'.</systemoutput>
+</p>
+<p>Traffic to these nodes may have been disabled manually or automatically.</p>
+</li>
+</ul>
+<note>
+<p>Whether the service instance status is UP or DOWN does not have a bearing on whether the component is In-service; however, if there are enough instances that are DOWN, the component status will eventually be DOWN or Out-of-service as well.</p>
+</note>
+<p>Output similar to the following is expected for an SM:</p>
+<fig>
+<title>NCC-status output from primary (Active) SM</title>
+<!--MMO resource relative URI: ../Graphics/statusBLSM5_default.png-->
+    <image href="../images/statusblsm5_default.png"/>
+</fig>
+<p>The following terms may be seen in the output:</p><ul>
+<li>
+<p>Site Name: This displays the name for this NCC system site. </p>
+</li>
+<li>
+<p>Component SM: This displays the NCC component type. </p>
+</li>
+<li>
+<p>State: This displays the composite state for this NCC component in the site. This is the state
+                        that is used by the heartbeat mechanism for communicating status with others
+                        in the network. Possible values are UP or DOWN.</p>
+</li>
+<li>
+<p>GeoRole: This displays whether or not this NCC component is ACTIVE. </p>
+</li>
+<li>
+<p>Service: The type of service. A service may have multiple instances in the site, configured as STANDALONE, ONEPLUSONE, or NPLUSK. The summary table shows the composite state for each service, as well as the total configured instances, and the number that are UP and DOWN.</p><ul>
+<li>
+<p>AEROSPIKE_CLUSTER: The Aerospike cluster is the NCC database.</p>
+</li>
+<li>
+<p>CKEY_CLUSTER: The CKEY monitoring service status. CKEY service running on IOHO nodes is a service monitored from the OAME node at specified intervals with the default interval being every 5 seconds. CKEY is available on the SM components list only. CKEY is not available for ME deployments where SM is not available.</p>
+</li>
+<li>
+<p>CMDB_CLUSTER: The MariaDB (CMDB) monitoring service status. CMDB instances running on IOHO nodes are monitored from the OAME node at specified intervals with the default interval being every 5 seconds.</p>
+</li>
+<li>
+<p>ETCD_CLUSTER: The distributed key-value store.</p>
+</li>
+<li>
+<p>KAFKA: A distributed messaging platform, for handling various real-time events. The Kafka health monitor runs on the active OAME. At a high level, It periodically produces and receives messages from Kafka. If multiple attempts are unsuccessful, the monitoring system will mark the service as down.</p>
+</li>
+<li>
+<p>LOADBALANCER: The loadbalancer on the IOHO of the SM.</p>
+</li>
+<li>
+<p>LTM: Lock and Transaction Manager, which secures locks for database access and provides transaction management for data integrity.</p>
+</li>
+<li>
+<p>SM: The Service Manager server.</p>
+</li>
+<li>
+<p>TRSCHEDULER: As part of DB Layer it is used to control the DB background I/O intensive activities to minimize I/O spikes and optimize database performance.</p>
+</li>
+<li>
+<p>XDR: The cross-data-replication (XDR) from the database.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>State: Displays the state for this service. Possible values are UP or DOWN.</p>
+</li>
+<li>
+<p>Vital: states whether or not the service is required; each service is described as vital (true) or not (false), 'vital' meaning a problem with the service can put the site out-of-service.</p>
+</li>
+<li>
+<p>Mode: states whether the node is configured as STANDALONE, ONEPLUSONE, or NPLUSK.</p>
+</li>
+<li>
+<p>Instance: Identifies the instance, whether it is up or down, for NPLUSK displays Active/Active, or Standby/Standby, and for 1+1 configurations, displays whether it is the Active or Standby.</p>
+</li>
+<li>
+<p> Composing States: Composing states are taken from multiple monitoring jobs to detect some soft
+                        failure scenarios at the VM level. These soft failure scenarios impact the
+                        ability to provide adequate service. If there are any VM-based composite
+                        statuses in the monitored items that are DOWN, then the instance status will
+                        also be DOWN. These composite states provide insight as to what actions are
+                        required to recover the VM and allow the NCC to provide adequate service.
+                        These composing states can include:</p><ul>
+<li>
+<p>whether the service is UP or DOWN</p>
+</li>
+<li>
+<p>whether the aerospike client is UP or DOWN</p>
+</li>
+<li>
+<p>whether the ltm client is UP or DOWN</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Admin Down Nodes: Lists the nodes that are administratively down; for example,</p>
+<p>
+<systemoutput>Admin Down Nodes: </systemoutput>
+</p>
+<p>
+<systemoutput>sps-me-2-diameterapp-2</systemoutput>
+</p>
+<p>
+<systemoutput>Node registry queried from '127.0.0.1'.</systemoutput>
+</p>
+</li>
+<li>
+<p>Traffic Disabled Nodes: Lists the traffic disabled nodes; for example,</p>
+<p>
+<systemoutput>Traffic Disabled Nodes:</systemoutput>
+</p>
+<p>
+<systemoutput>sps-me-2-diameterapp-1</systemoutput>
+</p>
+<p>
+<systemoutput>Traffic control queried from '192.168.3.231'.</systemoutput>
+</p>
+<p>Traffic to these nodes may have been disabled manually or automatically.</p>
+<p>See <!--xref URI: #iohdTraficControl--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-iohdTraficControl"/> for more information about the traffic disabled nodes.</p>
+</li>
+</ul>
+</section>
+</conbody></concept>

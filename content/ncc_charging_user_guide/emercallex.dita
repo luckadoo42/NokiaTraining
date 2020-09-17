@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-emercallex"><title>Emergency call scenarios</title><conbody>
+<section><title>Allowing emergency call even in barred state</title>
+<p>When NCC receives the following AVPs (along with other AVPs), the call is processed without
+                rating, charging, or monitoring. The call is processed even when the device is in
+                    <varname>barred</varname> state.</p><ul>
+<li>
+<p>
+<varname>CCR-Event</varname> with the following <varname>IMS-Information/Service-Specific-Info</varname> group AVP:</p><ul>
+<li>
+<p>Service-Specific-Info/Service-Specific-Type = 1007 (Service Type) </p>
+</li>
+<li>
+<p>Service-Specific-Info/Service-Specific-Data =   255 (Emergency Starts)</p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<varname>CCR-Event</varname> with the following <varname>Service-Specific-Info</varname> group AVP</p><ul>
+<li>
+<p>Service-Specific-Info/Service-Specific-Type = 1007 (Service Type)</p>
+</li>
+<li>
+<p>Service-Specific-Info/Service-Specific-Data = 256 (Emergency Ends)</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>A result code <varname>4011 - DIAMETER_CREDIT_CONTROL_NOT_APPLICABLE</varname> is returned and a CDR is generated for such calls.</p>
+<sectiondiv>
+<p><b>Rule example</b></p>
+<p>The following figure presents the sample rule for the emergency calls for this scenario.</p>
+<fig>
+<title>Sample rule for handling emergency calls</title>
+<!--MMO resource relative URI: ../Graphics/Release_19.0/f-emergencyCustom_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-f-emergencycustom_default.png"/>
+</fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>CDR example</b></p>
+<p>The following figure presents the CDR for IMS emergency call start and end. The call was
+                    successful in this example even when the device was in
+                        <varname>Inactive</varname> state. </p>
+<fig>
+<title>Sample CDR for IMS emergency call</title>
+<!--MMO resource relative URI: ../Graphics/Release_20.3/IMSemergencyCDR_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-imsemergencycdr_default.png"/>
+</fig>
+</sectiondiv>
+</section>
+<section><title>Option to lift data restrictions for emergency call and send notification</title>
+<p>The service provider can lift usage control (UC) restriction for data call when subscriber makes
+                an emergency call. This allows the subscriber to use data service in emergency case,
+                such as IM, video, along with voice call and SMS. This also includes “Emergency
+                Call” notification to include the UC lift options, which indicates what call types
+                are allowed to ignore UC restriction checks.</p>
+<p>A call is treated as emergency call in the following scenarios:</p><ul>
+<li>
+<p>for emergency event (CCR-E), if it is an emergency start/stop request.</p>
+</li>
+<li>
+<p>for CCR-I request for session call, if the called party address is in device data <varname>EmergencyNumbers</varname> list.</p>
+</li>
+</ul>
+<note>
+<p>Before loading the rule logic, create device custom data <varname>EmergencyNumbers</varname> with all the emergency numbers defined in it.</p>
+</note>
+<fig>
+                <title>Rule example: To identify an emergency call</title>
+                <!--MMO resource relative URI: ../Graphics/Release_20.6/f_var_emerg_indicator_default.png-->
+                <image
+                    href="../images/img9yz-09126-ug01-pczza-sp1-f_var_emerg_indicator_default.png"
+                    scale="50"/>
+            </fig>
+<fig>
+                <title>Rule example: Logic for emergency start/stop</title>
+                <!--MMO resource relative URI: ../Graphics/Release_20.6/f_logic_emer_startstop_default.png-->
+                <image
+                    href="../images/img9yz-09126-ug01-pczza-sp1-f_logic_emer_startstop_default.png"
+                    scale="50"/>
+            </fig>
+<p>The rule action <i>NOTIFICATION.Send-Notification</i> is used to send the notification for emergency call.</p>
+<p>The emergency call notification needs to include variables <varname>$[liftoption]</varname> in
+                the notification variable. The global IMS emergency lift option is defined as a rule
+                variable. This is compared with the device-level emergency lift option. The one with
+                lesser value is used as the final lift option using the source context
+                    <i>SPR_DEVICE.Compared-Emergency-Level ( &lt;input Level&gt; )</i>. The global
+                variable for IMS emergency lift option (for example,
+                    <varname>globalLiftOptionIMS</varname>) is used as the <varname>&lt;input
+                    Level&gt;</varname> parameter.</p>
+<p>The notification variables <varname>$[liftoption]</varname> takes the following values:</p><ul>
+<li>
+<p>ALL (lifting all call types)</p>
+</li>
+<li>
+<p>DATA, VOICE, VIDEO, and ECOM</p>
+</li>
+<li>
+<p>DATA, VOICE, and VIDEO</p>
+</li>
+<li>
+<p>VOICE and VIDEO</p>
+</li>
+<li>
+<p>SMS and MMS</p>
+</li>
+<li>
+<p>NONE (lifting no call)</p>
+</li>
+</ul>
+<p>The following figure provides example of configuring rule for notification after emergency call.
+                It provides two lift options, for example, <varname>ALL</varname> and
+                    <varname>DATA_VOICE_VIDEO_ECOM</varname>. More options can be configured in a
+                similar way.</p>
+<fig>
+                <title>Rule example: TCP/IP notification after emergency call</title>
+                <!--MMO resource relative URI: ../Graphics/Release_20.6/f_tcpip_notif_emercall_default.png-->
+                <image
+                    href="../images/img9yz-09126-ug01-pczza-sp1-f_tcpip_notif_emercall_default.png"
+                    scale="50"/>
+            </fig>
+<p>If the lift option includes data call, and if device custom data <varname>sendRARForEmergencyCall</varname> is <varname>true</varname>, or variable <varname>globalSendRARForEmergencyCall</varname> is <varname>true</varname>, then the rule result includes <systemoutput>NOTIFICATION.Send-RAR = "SendRAR"</systemoutput>. This action results in sending RAR to all current ongoing Gy and 5G sessions.</p>
+<note>
+<p>Before loading the rule logic, the device custom data <varname>sendRARForEmergencyCall</varname> (Boolean type) must be defined.</p>
+</note>
+<fig>
+                <title>Rule example: Logic for sending emergency call RAR</title>
+                <!--MMO resource relative URI: ../Graphics/Release_20.6/f_logic_emer_rar_default.png-->
+                <image href="../images/img9yz-09126-ug01-pczza-sp1-f_logic_emer_rar_default.png"
+                    scale="55"/>
+            </fig>
+</section>
+</conbody></concept>

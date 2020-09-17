@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="SPS_CDR_Streams_Stream_Overview_parsing_of_kafka_messages">
+<title>Parsing of Kafka messages</title>
+<body>
+                
+                <p>CG Kafka Node performs different decoding, conversion and validation of the input
+                    records, depending on the input stream type.</p>
+    <section id="section_klv_qc5_cmb">
+      <title>Kafka input stream</title>
+      <p>Three levels of decoding and validation of Kafka messages is performed in the Kafka input
+        stream when receiving CDRs and EDRs from NCC.</p>
+      <p><b>Google Protocol Buffer message decoding</b></p>
+      <p>Protocol buffers are Google's language-neutral, platform-neutral, extensible mechanism for
+        serializing structured data. They are mainly used for documenting the messages that are
+        transferred over Apache Kafka, providing information about the number of records in a given
+        message and version. The first validation makes sure that correctly formatted protocol
+        buffer messages with proper data payload are received. Validation errors at this stage cause
+        the record to be filtered out from Apache Kafka, so it will not be reprocessed by another
+        consumer. A warning is raised to indicate this.</p>
+      <p><b>ASN.1 BER message decoding</b></p>
+      <p>Once the protocol buffer message is decoded, the payload is an ASN.1 encoded message.
+        Communication protocols describe the sequence, content, and encoding of messages exchanged
+        between computers communicating with each other. ASN.1 is a language for describing the
+        content and the encoding of such messages. The ASN.1 description defines the content (i.e.
+        fields, data type, mandatory/optional) that a message can contain. The selected encoding
+        rule is used for converting the message to a format that will be transferred over the
+        network. In this case, Basic Encoding Rule (BER) is used. The second validation makes sure
+        that a correctly formatted ASN.1 payload is received. Validation errors at this stage cause
+        the record to be filtered out from Apache Kafka, so that it will not be reprocessed by
+        another consumer. A warning is raised to indicate this.</p>
+      <p><b>Conversion to Data Refinery internal event record (ASCII) format</b></p>
+      <p>Once the ASN.1 message has been decoded, it is converted into Data Refinery internal event
+        record format (ASCII). Although the NCC ASN.1 definition specifies all fields as
+        OctetString, all the field names and values are essentially strings. To make the data human
+        readable throughout the processing, the data is converted from hexadecimal format to
+        standard UTF8 string. The converted record is stored as such to the database.</p>
+      <p>CDRs are identified using the recordType field. The different record types that should be
+        handled as CDRs are configurable via node parameter
+        <codeph>ChargingRecordTypes</codeph>.</p>
+      <p>When saving a CDR into the database, CG Kafka Node extracts all the fields that it finds
+        that have been configured in the <codeph>SessionIdFields</codeph> node parameter,
+        concatenates the values and uses the concatenated value as Session-Id when saving to the
+        database. If the result of the concatenation is empty or none of the fields are found, CG
+        Kafka Node handles the CDR as an EDR and generates a Session-Id.</p>
+      <p>CG Kafka Node also extracts the record number for the record within the session from the
+        fields configured with node parameter <codeph>SequenceNumberFields</codeph>. The first one
+        found is used, and if no field is found, default value 0 is used.</p>
+      <p>EDRs do not have any session ID fields. For such events, CG Kafka Node generates an MD5
+        hash value out of the record to be used as an identifier when storing the record into the
+        database. Record number value 0 is used.</p>
+      <p>If some errors occur during the conversion or hash generation, the record is filtered out
+        from Apache Kafka, so that it is not reprocessed by another consumer. A warning is raised to
+        indicate this.</p>
+    </section>
+            </body>
+</topic>

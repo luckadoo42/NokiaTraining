@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-cn01-tczza-d1e18036"><title>CCR authorization in the NCC Gy interface</title><conbody>
+<section><title>Overview</title>
+<p>No MSCC in CCR-I is considered as CCR authorization. If device is eligible (not in barred state) for call, then 2001 is sent in CCA. Otherwise, an appropriate error result code is sent and session is not created.</p>
+<table colsep="1" rowsep="1">
+<tgroup cols="4">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<colspec colname="col3"/>
+<colspec colname="COLSPEC0"/>
+<thead>
+<row>
+<entry>
+<p>Application preference</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+<entry>
+<p>Data type</p>
+</entry>
+<entry>
+<p>Default value</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry> Gy Session Authorization Validity (seconds) </entry>
+<entry rowsep="1">
+<p>If it is set to 0, then CCR Authorization feature is considered
+                                    as disabled; otherwise CCR Authorization feature is enabled.</p>
+<p>Its value specifies the time in seconds after which the Gy
+                                    session created due to CCR Authorization is closed if no further
+                                    request is received for that session.</p>
+</entry>
+<entry rowsep="1"> integer </entry>
+<entry> 0 </entry>
+</row>
+<row>
+<entry morerows="2"> Clear session if no RG active </entry>
+<entry rowsep="0">
+<p>Currently, the result code at command level in CCA is always set
+                                    to 2001 irrespective of the result code values at MSCC level.
+                                    Therefore, a new configurable boolean parameter named clear
+                                    session if no RG active has been introduced in charging and its
+                                    applicable only for CCA-I.</p>
+<p>If this flag is false, then the current behavior where CCA is
+                                    always 2001 is followed.</p>
+</entry>
+<entry rowsep="0"> Boolen </entry>
+<entry rowsep="0"> false </entry>
+</row>
+<row>
+<entry rowsep="0">
+<p>If this flag is true and an active MSCC or RG does not exist for
+                                    a given session, then perform the following task:</p>
+<ul>
+<li>
+<p>Set the MSCC level result code at command level, if only
+                                            one MSCC is returned in CCA-I. </p>
+</li>
+<li>
+<p>Set the same error result code at command level and
+                                            session is not created, if there are multiple MSCCs
+                                            returned in the CCA-I with the same Error Result
+                                            code.</p>
+</li>
+<li>
+<p>Set the result code to 2001 at command level and session
+                                            is created, if there are multiple MSCCs returned in
+                                            CCA-I with different Error Result code.</p>
+</li>
+</ul>
+</entry>
+<entry rowsep="0"/>
+<entry rowsep="0"/>
+</row>
+<row>
+<entry rowsep="1">
+<p>There is no change in behavior for following cases (where CCA =
+                                    2001) irrespective of the value set for Clear session if no RG
+                                    active parameter:</p>
+<ul>
+<li>
+<p>Event call behavior</p>
+</li>
+<li>
+<p>CCR-T behavior where the root level result code is set to
+                                            2001 irrespective of the MSCC result code and always
+                                            terminate the session</p>
+</li>
+</ul>
+</entry>
+<entry rowsep="1"/>
+<entry rowsep="1"/>
+</row>
+<row>
+<entry morerows="1"> New Call Start in Update or Terminate </entry>
+<entry rowsep="0"> During migration from existing charging system to
+                                NCC, CCR-U or CCR-T for ongoing session on existing charging system
+                                arrives on NCC. As Gy sessions for these CCR-U/T do not exist on
+                                NCC, these CCRU/T are rejected. To handle this case, the
+                                    <varname>New Call Start in Update or Terminate</varname>
+                                attribute is introduced. </entry>
+<entry rowsep="0"> Boolean </entry>
+<entry rowsep="0"> false </entry>
+</row>
+<row>
+<entry rowsep="0">
+<p>If this flag is set to true, then NCC performs the following
+                                    tasks:</p>
+<ol>
+<li>
+<p>Accepts the CCR-U/T which are active on the existing
+                                            charging system and treats them as CCR-I/T.</p>
+</li>
+<li>
+<p>Commits the used quantities which are reported in such
+                                            CCR-U/T.</p>
+</li>
+</ol>
+<p>Valid values are true and false and the default value is
+                                    false.</p>
+<p>
+<uicontrol>Note:</uicontrol> Subscription-ID AVP is a mandatory
+                                    parameter to be sent in CCRU/T request from the existing
+                                    charging system to NCC. Otherwise, NCC rejects the call.</p>
+</entry>
+<entry rowsep="0"/>
+<entry rowsep="0"/>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>This authorization feature is controlled by configuration as mentioned in <i>Charging application preferences</i> section in the <i>Managing application preferences</i> chapter of the <i>Global Configuration Guide</i>.</p>
+</section>
+</conbody></concept>

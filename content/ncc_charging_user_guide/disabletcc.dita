@@ -1,0 +1,847 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e24011"><title>Disable TTC for prepaid accounts and alignment of TTC and VT for postpaid accounts</title><conbody>
+<section><title>Overview</title>
+            <p>This feature describes a new mechanism of computing VT and TTC in Diameter CCA-I or
+                CCA-U requests, and Nchf_ConvergedCharging create or update responses when the
+                validity time interval of a data session exceeds the activation time, renewal time,
+                or expiration time for an in-use subscription.</p>
+<p>It handles prepaid and postpaid accounts differently:</p>
+            <ul id="ul_p5z_cg5_smb">
+                <li>
+                    <p>For <b>prepaid</b> accounts: Irrespective of the account balance, the TTC
+                        value is not set and only VT is computed considering the nearest BCR or
+                        other event and a configurable parameter <i>VTAFprepaid</i> so that a device
+                        does not continue to consume data post the current billing cycle.</p>
+                </li>
+                <li>
+                    <p>For <b>postpaid</b> accounts: In case of BCR or any other similar event, when
+                        the policy counter status changes, the data usage done before and after
+                        those events should be counted in its respective billing cycle. The TTC and
+                        VT values are computed as per the policy counter status change:</p>
+                    <ul id="ul_rds_pcd_ymb">
+                        <li>
+                            <p>In case, the policy counter status does not change, the usage does
+                                not change from unthrottled to throttled at the TTC time. Therefore,
+                                NCC allows a larger spread of VT to spread out the traffic.</p>
+                        </li>
+                        <li>
+                            <p>In case, the policy counter status change is expected, for example at
+                                    <i>T1</i>, then it refers that the device is being throttled at
+                                    <i>T1</i>. Therefore, to avoid the data usage or to minimize the
+                                data usage in the new billing cycle without being throttled, the
+                                values of TTC and VT are set close to each other.</p>
+                            <p>
+                                <note>For information on <i>T1</i>, please refer <xref
+                                        href="#id9yz-09126-ug01-pczza-sp1-d1e24011/parametervalues"
+                                        format="dita"/>.</note>
+                            </p>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+<note><ul>
+<li>
+<p>Before this feature, only the next BCR time was considered as TTC entry from the entities where reservation was done but with this feature, the next to upcoming BCR time (which means, the second renewal time) is also considered as the TTC entry for subscriptions whose time is nearest in the sorted entry list. For example, if two subscriptions are getting renewal at the same time, then the first subscription event (<i>T1</i>) is the BCR time and the second subscription event (<i>T2</i>) is minimum of the next to next BCR time of amongst the two subscriptions. Next to next BCR time can be different due to reasons like change in account or bundle billing information.</p>
+</li>
+<li>
+<p>To consider the second renewal time (<i>T2</i>) as TTC entry, in case of subscriptions from where reservation is done, the number of remaining renewals is set to at least 1.</p>
+</li>
+<li>
+<p>If the <i>ELC-VT</i> of a subscription is less than the BCR time, then two renewal times of the same subscription are not considered as TTC entries.</p>
+</li>
+<li>
+<p>For accounts, only the upcoming BCR time is fetched as generally, the periodicity of an account is not in days and due to which, the second renewal time (<i>T2</i>) is very far away and not required in calculation.</p>
+</li>
+<li>
+<p>If the UC time of day is approaching and it is before any of the tariff change event times, then VT is set as the approaching time of day and no TTC is sent. The UC time of day can be the <i>T2</i> value (if found minimum than other TTC entries).</p>
+</li>
+</ul>
+</note>
+</section>
+<section id="parametervalues">
+            <title>Parameters used in feature configuration</title>
+            <p>Following parameters are used in formulas mentioned in this feature to compute VT and
+                    TTC:<table pgwide="1" colsep="1" rowsep="1">
+                    <tgroup cols="2">
+                        <colspec colname="col1" colwidth="1*"/>
+                        <colspec colname="col2" colwidth="2.87*"/>
+                        <thead>
+                            <row>
+                                <entry>
+                                    <p>Parameter</p>
+                                </entry>
+                                <entry>
+                                    <p>Description</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry> T1 </entry>
+                                <entry>This refers to the upcoming subscription (activation,
+                                    renewal, or expiration) event, which is either triggered by an
+                                    account BCR or subscription period lifecycle. </entry>
+                            </row>
+                            <row>
+                                <entry> T2 </entry>
+                                <entry>
+                                    <p>This refers to the next subscription (activation, renewal, or
+                                        expiration) event after <i>T1</i>, which is either triggered
+                                        by an account billing cycle or subscription period
+                                        lifecycle.</p>
+                                    <p>
+                                        <i>T2</i> can also be a Time-Of-Day (TOD) event.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> VTAF </entry>
+                                <entry>
+                                    <p>This refers to the VT adjustment factor to randomize VT
+                                        intervals.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> TTCAF </entry>
+                                <entry>
+                                    <p>This refers to the TTC adjustment factor to randomize TTC
+                                        intervals.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> VTAFprepaid </entry>
+                                <entry>
+                                    <p>This refers to the shortened VT adjustment factor, which is
+                                        used when TTC is not send for prepaid accounts.</p>
+                                    <p>
+                                        <b>Note:</b> This parameter is only applicable to prepaid
+                                        accounts.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> TTCAFlarge </entry>
+                                <entry>
+                                    <p>This refers to the upper bound or higher TTC adjustment
+                                        factor when VT is set to (<i>TTC</i> + <i>MINspread</i>) as
+                                        per the computation.</p>
+                                    <p>Therefore, <i>TTCAFlarge</i> can be referred to as the
+                                        maximum or higher limit of <i>TTCAF</i>.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> MINspread </entry>
+                                <entry>
+                                    <p>This refers to the minimum interval between the VT and TTC.
+                                    </p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> VTs </entry>
+                                <entry>
+                                    <p>This refers to the validity time, which is configurable as
+                                        per the rule groups or as per static configuration in
+                                        slicing profile.</p>
+                                </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table></p>
+        </section>
+<section><title>Computing TTC and VT</title>
+<sectiondiv>
+<p><b>Prepaid accounts behavior</b></p>
+<p>For prepaid accounts, the computation depends on the following factors:<table pgwide="1"
+                        colsep="1" rowsep="1">
+                        <tgroup cols="2">
+                            <colspec colname="col1" colwidth="1*"/>
+                            <colspec colname="col2" colwidth="1.3*"/>
+                            <thead>
+                                <row>
+                                    <entry>
+                                        <p>If...</p>
+                                    </entry>
+                                    <entry>
+                                        <p>Then...</p>
+                                    </entry>
+                                </row>
+                            </thead>
+                            <tbody>
+                                <row>
+                                    <entry> The <uicontrol>Disable TTC</uicontrol> parameter
+                                        configured in a bundle is enabled, </entry>
+                                    <entry>
+                                        <p>Irrespective of the type of device or account and whether
+                                            the policy counter status is changed or not, the TTC
+                                            value is not returned and VT is computed as per the time
+                                            to <i>T1</i> parameter.</p>
+                                        <p>For example, if a subscription event takes place at
+                                                <i>T1</i>, then VT is reduced to <i>T1</i> and TTC
+                                            is not returned.</p>
+                                    </entry>
+                                </row>
+                                <row>
+                                    <entry>
+                                        <ol>
+                                            <li>
+                                                <p>The <uicontrol>Disable TTC</uicontrol> parameter
+                                                  configured in a bundle is disabled, and</p>
+                                            </li>
+                                            <li>
+                                                <p>The account is of prepaid type,</p>
+                                            </li>
+                                        </ol>
+                                    </entry>
+                                    <entry>
+                                        <p>Irrespective of whether the policy counter status is
+                                            changed or not, the TTC value is not returned and VT is
+                                            calculated as per the following formula:</p>
+                                        <ul>
+                                            <li>
+                                                <p>If there is no <i>T2</i> or no next subscription
+                                                  event takes place before (<i>T1</i> +
+                                                  <i>VTAFprepaid</i>), then <systemoutput>VT = T1 +
+                                                  random value between 1 second and
+                                                  VTAFprepaid</systemoutput>.</p>
+                                            </li>
+                                            <li>
+                                                <p>If there are two subscription events happening,
+                                                  which means both <i>T1</i> and <i>T2</i> take
+                                                  place, then <systemoutput>VT = time to T1 + random
+                                                  value between 1 second and (T2-T1)</systemoutput>
+                                                </p>
+                                            </li>
+                                        </ul>
+                                    </entry>
+                                </row>
+                            </tbody>
+                        </tgroup>
+                    </table></p>
+<note>
+<p>If <i>T1</i> has at least one subscription with validity time from entity lifecycle or the subscription for prepaid account type has reached the maximum renewal attempts, then VT is sent as per the calculation mentioned in the above table.</p>
+</note>
+</sectiondiv>
+<sectiondiv>
+                <p/>
+<p><b>Postpaid accounts behavior</b></p>
+<p>For postpaid accounts, the computation depends on the following factors:<table pgwide="1"
+                        colsep="1" rowsep="1">
+                        <tgroup cols="2">
+                            <colspec colname="col1" colwidth="1*"/>
+                            <colspec colname="col2" colwidth="1.08*"/>
+                            <thead>
+                                <row>
+                                    <entry>
+                                        <p>If...</p>
+                                    </entry>
+                                    <entry>
+                                        <p>Then...</p>
+                                    </entry>
+                                </row>
+                            </thead>
+                            <tbody>
+                                <row>
+                                    <entry rowsep="0">
+                                        <ol>
+                                            <li>
+                                                <p>The <uicontrol>Disable TTC</uicontrol> parameter
+                                                  configured in a bundle is disabled,</p>
+                                            </li>
+                                            <li>
+                                                <p>The account is of postpaid type, and</p>
+                                            </li>
+                                            <li>
+                                                <p>The policy counter status or virtual policy
+                                                  counter (VPC) status does not change, which means
+                                                  the usage does not change from throttled to
+                                                  unthrottled at the TTC time,</p>
+                                            </li>
+                                        </ol>
+                                    </entry>
+                                    <entry rowsep="0">
+                                        <p>First, the TTC (<i>TTC_PostPaid_PC_No_Change</i>) is
+                                            calculated and the TTC value is further used in
+                                            computing the VT value.</p>
+                                        <p>
+                                            <b>1.</b> TTC is calculated as per the following
+                                            conditions:</p>
+                                        <ul>
+                                            <li>
+                                                <p>If there is no <i>T2</i> or no next subscription
+                                                  event takes place before (<i>T1</i> +
+                                                  <i>TTCAF</i>), then <systemoutput>TTC = T1 +
+                                                  random value between 1 second and
+                                                  TTCAF</systemoutput>.</p>
+                                            </li>
+                                            <li>
+                                                <p>If the value of (<i>T1</i> + <i>MINspread</i>) is
+                                                  greater than <i>T2</i> or next subscription event,
+                                                  then <systemoutput>TTC = T1</systemoutput>.</p>
+                                            </li>
+                                            <li>
+                                                <p>If there are two subscription events happening,
+                                                  which means both <i>T1</i> and <i>T2</i> take
+                                                  place, then <systemoutput>TTC = T1 + random value
+                                                  between 1 second and
+                                                  (T2-T1-MINspread)</systemoutput>.</p>
+                                            </li>
+                                        </ul>
+                                    </entry>
+                                </row>
+                                <row>
+                                    <entry/>
+                                    <entry>
+                                        <p>
+                                            <b>2.</b> And, VT is calculated as per the following
+                                            conditions:</p>
+                                        <ul>
+                                            <li>
+                                                <p>If there is no <i>T2</i> or no next subscription
+                                                  event takes place before (<i>T1</i> +
+                                                  <i>VTAF</i>), then <systemoutput>VT = time to T1 +
+                                                  random value between (Calculated TTC - T1 +
+                                                  MINspread) and minimum value between VTAF and (VTs
+                                                  - Time to T1)</systemoutput>.</p>
+                                            </li>
+                                            <li>
+                                                <p>If the value of (calculated TTC +
+                                                  <i>MINspread</i>) is greater than or equal to
+                                                  <i>T2</i> or next subscription event, then
+                                                  <systemoutput>VT = time to T2</systemoutput>.</p>
+                                            </li>
+                                            <li>
+                                                <p>If (current time + VTs) is less than or equal to
+                                                  ( calculated TTC + <i>MINspread</i>), then
+                                                  <systemoutput>VT = time to calculated TTC +
+                                                  MINspread</systemoutput>.</p>
+                                            </li>
+                                            <li>
+                                                <p>If there are two subscription events happening,
+                                                  which means both <i>T1</i> and <i>T2</i> take
+                                                  place, then <systemoutput>VT = time to T1 + random
+                                                  value between (calculated TTC - T1 + MINspread)
+                                                  and minimum value between (VTs - time to T1) and
+                                                  (T2 -T1)</systemoutput>.</p>
+                                            </li>
+                                        </ul>
+                                        <p>Therefore, this computation allows a larger spread of VT
+                                            to spread out the traffic using <i>VTAF</i> and
+                                                <i>MINspread</i>.</p>
+                                    </entry>
+                                </row>
+                                <row>
+                                    <entry>
+                                        <ol>
+                                            <li>
+                                                <p>The <uicontrol>Disable TTC</uicontrol> parameter
+                                                  configured in a bundle is disabled,</p>
+                                            </li>
+                                            <li>
+                                                <p>The account is of postpaid type, and</p>
+                                            </li>
+                                            <li>
+                                                <p>The policy counter status or VPC status changes,
+                                                  which means the usage is computed as QoS changes
+                                                  from unthrottled to throttled at the TTC time,</p>
+                                            </li>
+                                        </ol>
+                                    </entry>
+                                    <entry>
+                                        <p>First, the TTC (<i>TTC_PostPaid_PC_Change</i>) is
+                                            calculated and the TTC value is further used in
+                                            computing the VT value.</p>
+                                        <ol>
+                                            <li>
+                                                <p>TTC is computed as per the following
+                                                  conditions:</p>
+                                                <p/>
+                                                <ul>
+                                                  <li>
+                                                  <p>If there is no <i>T2</i> or no next
+                                                  subscription event takes place before (<i>T1</i> +
+                                                  <i>TTCAFlarge</i> + <i>MINspread</i>), then
+                                                  <systemoutput>TTC = T1 + random value between 1
+                                                  second and TTCAFlarge</systemoutput>.</p>
+                                                  </li>
+                                                  <li>
+                                                  <p>If there are two subscription events happening,
+                                                  which means both <i>T1</i> and <i>T2</i> take
+                                                  place, then <systemoutput>TTC = T1 + random value
+                                                  between 1 second and
+                                                  (T2-T1-MINspread)</systemoutput>.</p>
+                                                  </li>
+                                                </ul>
+                                            </li>
+                                            <li>
+                                                <p>And, VT is computed as per the formula:</p>
+                                                <p>
+                                                  <systemoutput>VT = Time to calculated TTC +
+                                                  MINspread</systemoutput>.</p>
+                                            </li>
+                                        </ol>
+                                    </entry>
+                                </row>
+                            </tbody>
+                        </tgroup>
+                    </table></p>
+</sectiondiv>
+            <sectiondiv>
+                <p/>
+                <p><b>Postpaid policy counter change</b></p>
+                <table frame="all" rowsep="1" colsep="1" id="table_dpw_tp5_smb">
+                    <tgroup cols="2">
+                        <colspec colname="c1" colnum="1" colwidth="1*"/>
+                        <colspec colname="c2" colnum="2" colwidth="1*"/>
+                        <thead>
+                            <row>
+                                <entry>
+                                    <p>If...</p>
+                                </entry>
+                                <entry>
+                                    <p>Then...</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry>
+                                    <p>The postpaid policy counter status does not change,</p>
+                                </entry>
+                                <entry>
+                                    <p>The usage does not change from throttled to unthrottled at
+                                        the TTC time.</p>
+                                    <p>NCC allows a larger spread of VT to spread out the traffic.
+                                        Therefore, VTAF value is used to spread out the traffic for
+                                        a longer time.</p>
+                                    <p>VTAF value is set as larger, for example <varname>4
+                                            hours</varname>.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <p>The postpaid policy counter status changes,</p>
+                                </entry>
+                                <entry>
+                                    <p>The usage is computed as QoS changes from unthrottled to
+                                        throttled at the TTC time.</p>
+                                    <p>To avoid usage to go beyond the TTC time, the values of TTC
+                                        and VT should be close instead of using <i>TTCAF</i>.
+                                        However, a larger adjustment factor for TTC, which is
+                                            <i>TTCAFlarge</i> to assure that all throttled sessions
+                                        do not return in too short of an interval.</p>
+                                </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+                <note>
+                    <p>If nearest TTC subscriber has at least one subscription with validity time
+                        from entity lifecycle or the subscription has maximum renewal reached, then
+                        TTC is computed as:</p>
+                    <ul id="ul_upk_n55_smb">
+                        <li>For subscription taken from prepaid type account, only VT value is sent
+                            and that calculation is same as mentioned in the <i>Prepaid accounts
+                                behavior</i> section.</li>
+                        <li>For subscription taken from postpaid type account, TTC and VT values are
+                            computed assuming policy counter change.</li>
+                    </ul>
+                </note>
+            </sectiondiv>
+</section>
+<section><title>Additional information</title>
+<p>Following assumptions are applied to this feature:</p><ul>
+<li>
+<p>The device considered has a bundle subscription from a single prepaid or postpaid account.</p>
+</li>
+<li>
+<p>A BOU bundle has the <uicontrol>TTC Disabled Flag</uicontrol> parameter set as <varname>true</varname> or enabled.</p>
+</li>
+                <li>
+                    <p>The TOD start time needs less time than stop time. However, TOD across days
+                        is not supported, which means TOD does not go beyond midnight.</p>
+                </li>
+<li>
+<p>In the <i>Tariff-Time-Usage</i> AVP, the TTC intermediate scenario does not work for NCHF.</p>
+</li>
+                <li>
+                    <p>This feature is applicable only to the following entities and under the given
+                        condition:</p>
+                    <ul id="ul_kbb_xv5_smb">
+                        <li>
+                            <p>Centralized charging with static slice configured in slicing profile
+                                rule. However, it is not applicable to the dynamic slicing
+                                mechanism.</p>
+                        </li>
+                        <li>
+                            <p>Subscription and multi-bundle counters</p>
+                        </li>
+                        <li>
+                            <p>Buckets and counters</p>
+                        </li>
+                        <li>
+                            <p>When there is no TOD event, which occurs prior to the <i>T1</i>
+                                associated with the first subscription event. Also, the <i>T2</i> is
+                                set to the nearest subscription event or TOD event after the
+                                    <i>T1</i> event.</p>
+                        </li>
+                    </ul>
+                </li>
+<li>
+<p>This feature is not applicable to following entities:</p><ul>
+<li>
+<p>Groups</p>
+</li>
+<li>
+<p>Account main balance or aggregate view (AV)</p>
+</li>
+</ul>
+</li>
+                <li>
+                    <p>According to the
+                            <!--xref URI: ../Chapters/c-Rating_and_Charging.xml#UsageControl--><xref
+                            keyref="id9YZ-09126-UG01-PCZZA-SP1-UsageControl"/> feature, the
+                        self-counter cannot be throttled, which means they cannot be a policy
+                        counter. Therefore, this feature related to TTC on postpaid account with
+                        policy counter or VPC being throttled is not applicable to UC
+                        self-counter.</p>
+                </li>
+</ul>
+<note>
+<p>It is recommended to enable the <uicontrol>Disable TTC</uicontrol> flag in a bundle configuration for short subscription lifecycle scenarios, such as hourly and the VT in slicing profile is recommended to be set to a value less than 24 hours, such as 8 or 12 hours.</p>
+</note>
+</section>
+<section><title>Examples</title>
+<p>Consider the following examples to understand this feature in a better way:</p>
+<sectiondiv>
+                <p/>
+<p><b>Example 1: Set the Disable TTC flag as true</b></p>
+<p>This example considers that the <uicontrol>Disable TTC</uicontrol> flag in a bundle is set as <varname>true</varname> or enabled. The subscription does not have its own periodic lifecycle and is renewed during the funding of BCR processing for a prepaid account.</p>
+<p>
+<b>Preconditions:</b>
+</p><ol>
+<li>
+<p>Configure the following ME application preferences:</p><ul>
+<li>
+<p>Set <uicontrol>Min Spread (seconds)</uicontrol> as <varname>60</varname>.</p>
+</li>
+<li>
+<p>Set <uicontrol>VT Adjustment Factor Prepaid (seconds)</uicontrol> as <varname>1800</varname>.</p>
+</li>
+<li>
+<p>Set <uicontrol>VT Adjustment Factor (seconds)</uicontrol> as <varname>14400</varname>.</p>
+</li>
+<li>
+<p>Set <uicontrol>TTC Adjustment Factor (seconds)</uicontrol> as <varname>300</varname>.</p>
+</li>
+<li>
+<p>Set <uicontrol>TTC Adjustment Factor Large (seconds)</uicontrol> as <varname>3000</varname>.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Set the <i>Validity Time</i> in slicing profile as <varname>43200 seconds</varname>.</p>
+</li>
+<li>
+<p>Enable the TTC RSV in Gy pre-processing.</p>
+</li>
+<li>
+<p>The charging service has no charge with a subscription counter.</p>
+</li>
+<li>
+<p>Enable the <uicontrol>Disable TTC</uicontrol> flag in the bundle.</p>
+</li>
+<li>
+<p>Bundle does not have any periodic lifecycle.</p>
+</li>
+<li>
+<p>Create a prepaid account with a daily periodic lifecycle.</p>
+</li>
+<li>
+<p>Set the renewal time as 12 midnight.</p>
+</li>
+<li>
+<p>The device subscribes to the bundle using the prepaid account.</p>
+</li>
+</ol>
+<p>
+<b>Post-conditions:</b>
+</p><ul>
+<li>
+<p>Execute a session-based call, such that VT spans the renewal of account.</p>
+</li>
+<li>
+<p>This example verifies that the TTC is not set and VT is not randomized and set as time to <i>T1</i> (Time to BCR).</p>
+</li>
+</ul>
+</sectiondiv>
+<sectiondiv>
+                <p/>
+<p><b>Example 2: Device with prepaid account</b></p>
+<p>This example considers that the <uicontrol>Disable TTC</uicontrol> flag in a bundle is set as <varname>false</varname> or disabled. There are two subscriptions <varname>S1</varname> and <varname>S2</varname>, each having its own periodic lifecycle and are subscribed using the same prepaid account. Currently, <varname>S1</varname> is active and <varname>S2</varname> would get activated in future.</p>
+<p>
+<b>Preconditions:</b>
+</p><ol>
+<li>
+<p>Configure the following ME application preferences:</p><ul>
+<li>
+<p>Set <uicontrol>Min Spread (seconds)</uicontrol> as <varname>60</varname>.</p>
+</li>
+<li>
+<p>Set <uicontrol>VT Adjustment Factor Prepaid (seconds)</uicontrol> as <varname>1800</varname>.</p>
+</li>
+<li>
+<p>Set <uicontrol>VT Adjustment Factor (seconds)</uicontrol> as <varname>14400</varname>.</p>
+</li>
+<li>
+<p>Set <uicontrol>TTC Adjustment Factor (seconds)</uicontrol> as <varname>300</varname>.</p>
+</li>
+<li>
+<p>Set <uicontrol>TTC Adjustment Factor Large (seconds)</uicontrol> as <varname>3000</varname>.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Set the <i>Validity Time</i> in slicing profile as <varname>43200 seconds</varname>.</p>
+</li>
+<li>
+<p>Enable the TTC RSV in Gy pre-processing.</p>
+</li>
+<li>
+<p>For <varname>Bundle1</varname>, there is a charging service having no charge with a multi-bundle counter.</p>
+<p>Disable the <uicontrol>Disable TTC</uicontrol> flag in the bundle and the bundle has a daily periodic lifecycle.</p>
+</li>
+<li>
+<p>For <varname>Bundle2</varname>, there is a charging service having no charge with a subscription counter.</p>
+<p>Disable the <uicontrol>Disable TTC</uicontrol> flag in the bundle and the bundle has a different daily periodic lifecycle.</p>
+</li>
+<li>
+<p>Create a prepaid account with a monthly periodic lifecycle.</p>
+</li>
+<li>
+<p>The device subscribes to <varname>Bundle1</varname> using the prepaid account, and also subscribes to <varname>Bundle2</varname> with a future activation date.</p>
+</li>
+</ol>
+<p>
+<b>Post-conditions:</b>
+</p><ul>
+<li>
+<p>Execute a session-based call, such that VT spans the renewal of <varname>Bundle1</varname> and the activation time of <varname>Bundle2</varname> is also approaching.</p>
+</li>
+<li>
+<p>This example verifies that TTC is not set and VT is set as time to <systemoutput>T1 + random value between 1 second and (T2-T1)</systemoutput>.</p>
+</li>
+</ul>
+</sectiondiv>
+<sectiondiv>
+                <p/>
+<p><b>Example 3: Device with postpaid account and without policy counter status change</b></p>
+<p>This example considers that the subscription does not have its own periodic lifecycle and is renewed during the funding of BCR processing for a postpaid account.</p>
+<p>
+<b>Preconditions:</b>
+</p><ol>
+<li>
+<p>Configure the following ME application preferences:</p><ul>
+<li>
+<p>Set <uicontrol>Min Spread (seconds)</uicontrol> as <varname>60</varname>.</p>
+</li>
+<li>
+<p>Set <uicontrol>VT Adjustment Factor Prepaid (seconds)</uicontrol> as <varname>1800</varname>.</p>
+</li>
+<li>
+<p>Set <uicontrol>VT Adjustment Factor (seconds)</uicontrol> as <varname>14400</varname>.</p>
+</li>
+<li>
+<p>Set <uicontrol>TTC Adjustment Factor (seconds)</uicontrol> as <varname>300</varname>.</p>
+</li>
+<li>
+<p>Set <uicontrol>TTC Adjustment Factor Large (seconds)</uicontrol> as <varname>3000</varname>.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Set the <i>Validity Time</i> in slicing profile as <varname>43200 seconds</varname>.</p>
+</li>
+<li>
+<p>Enable the TTC RSV in Gy pre-processing.</p>
+</li>
+<li>
+<p>The charging service has no charge with a subscription counter.</p>
+<p>The counter has a threshold attached, which is <varname>0</varname> for unthrottled and <varname>20MB</varname> for throttled.</p>
+</li>
+<li>
+<p>The bundle does not have any periodic lifecycle.</p>
+</li>
+<li>
+<p>Create a postpaid account with a daily periodic lifecycle.</p>
+</li>
+<li>
+<p>Set the renewal time as 12 midnight.</p>
+</li>
+<li>
+<p>The device subscribes to bundle using the postpaid account.</p>
+</li>
+</ol>
+<p>
+<b>Post-conditions:</b>
+</p><ul>
+<li>
+<p>Execute a session-based call, such that VT spans the renewal of postpaid account and there is no policy counter status change expected at the renewal of account.</p>
+</li>
+<li>
+<p>This example verifies that TTC is set to <systemoutput>T1 + random value between 1 second and TTCAF</systemoutput>, and VT is set to <systemoutput>Time to T1 + random value between (calculated TTC - T1 + MINspread) and the minimum value between VTAF and (VT - Time to T1)</systemoutput>.</p>
+</li>
+</ul>
+</sectiondiv>
+<sectiondiv>
+                <p/>
+<p><b>Example 4: Device with postpaid account and policy counter status change</b></p>
+<p>This example considers that the subscription does not have its own periodic lifecycle and is renewed during the funding of BCR processing for a postpaid account.</p>
+<p>
+<b>Preconditions:</b>
+</p><ol>
+<li>
+<p>Configure the following ME application preferences:</p><ul>
+<li>
+<p>Set <uicontrol>Min Spread (seconds)</uicontrol> as <varname>60</varname>.</p>
+</li>
+<li>
+<p>Set <uicontrol>VT Adjustment Factor Prepaid (seconds)</uicontrol> as <varname>1800</varname>.</p>
+</li>
+<li>
+<p>Set <uicontrol>VT Adjustment Factor (seconds)</uicontrol> as <varname>14400</varname>.</p>
+</li>
+<li>
+<p>Set <uicontrol>TTC Adjustment Factor (seconds)</uicontrol> as <varname>300</varname>.</p>
+</li>
+<li>
+<p>Set <uicontrol>TTC Adjustment Factor Large (seconds)</uicontrol> as <varname>3000</varname>.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Set the <i>Validity Time</i> in slicing profile as <varname>43200 seconds</varname>.</p>
+</li>
+<li>
+<p>Enable the TTC RSV in Gy pre-processing.</p>
+</li>
+<li>
+<p>The charging service has no charge with a subscription counter.</p>
+</li>
+<li>
+<p>The bundle does not have any periodic lifecycle.</p>
+</li>
+<li>
+<p>Create a postpaid account with a daily periodic lifecycle and the renewal time as 12 midnight.</p>
+</li>
+<li>
+<p>The device subscribes to bundle using the postpaid account.</p>
+</li>
+</ol>
+<p>
+<b>Post-conditions:</b>
+</p><ul>
+<li>
+<p>Execute a session-based call, such that VT spans the renewal of postpaid account, and there is a policy counter status change expected at the renewal of account.</p>
+</li>
+<li>
+<p>This example verifies that TTC is set to <systemoutput>T1 + random value between 1 second and TTCAFlarge</systemoutput>, and VT is set to <systemoutput>time to calculated TTC + MINspread</systemoutput>.</p>
+</li>
+</ul>
+</sectiondiv>
+<sectiondiv>
+                <p/>
+<p><b>Example 5: Travel-pass feature BOU activation</b></p>
+<p>This example considers that the BOU bundle travel-pass subscription has its own periodic lifecycle with the <uicontrol>Disable TTC</uicontrol> flag set as <varname>true</varname>. Both base bundle and travel-pass bundle are subscribed through the same account.</p>
+<p>
+                    <b>Preconditions:</b></p><ol>
+<li>
+<p>Configure the following ME application preferences:</p><ul>
+<li>
+<p>Set <uicontrol>Min Spread (seconds)</uicontrol> as <varname>60</varname>.</p>
+</li>
+<li>
+<p>Set <uicontrol>VT Adjustment Factor Prepaid (seconds)</uicontrol> as <varname>1800</varname>.</p>
+</li>
+<li>
+<p>Set <uicontrol>VT Adjustment Factor (seconds)</uicontrol> as <varname>14400</varname>.</p>
+</li>
+<li>
+<p>Set <uicontrol>TTC Adjustment Factor (seconds)</uicontrol> as <varname>300</varname>.</p>
+</li>
+<li>
+<p>Set <uicontrol>TTC Adjustment Factor Large (seconds)</uicontrol> as <varname>3000</varname>.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Set the <i>Validity Time</i> in slicing profile as <varname>43200 seconds</varname>.</p>
+</li>
+<li>
+<p>Enable the TTC RSV in Gy pre-processing.</p>
+</li>
+<li>
+<p>The base bundle has charging service with no charge and a subscription counter. The base bundle does not have any periodic lifecycle.</p>
+</li>
+<li>
+<p>Enable the <uicontrol>Disable TTC</uicontrol> flag for the BOU travel-pass bundle and its own periodic lifecycle, which is going to expire in 12 hours.</p>
+</li>
+<li>
+<p>Create a prepaid account with a weekly periodic lifecycle and the renewal time is after a week.</p>
+</li>
+<li>
+<p>A device subscribes to base bundle and BOU travel-pass bundle using this prepaid account.</p>
+</li>
+<li>
+<p>The BOU travel-pass bundle is activated during the roaming usage.</p>
+</li>
+</ol>
+<p><b>Post-conditions:</b></p><ul>
+<li>
+<p>Execute a session-based call, such that VT spans the expiry of BOU travel-pass bundle.</p>
+</li>
+<li>
+<p>This example verifies that no TTC is returned and VT is set to time to expiry of BOU travel-pass bundle.</p>
+</li>
+</ul>
+</sectiondiv>
+            <sectiondiv>
+                <p/>
+                <p><b>Example 6: TTC with UC TOD</b></p>
+                <p>This example verifies that TTC is not set and VT is adjusted with TOD when call
+                    is sent before TOD and BCR is after TOD.</p>
+                <p><b>Preconditions:</b></p>
+                <ol id="ol_zjs_hx5_smb">
+                    <li>
+                        <p>Create UC with TOD set as <varname>8 to 12 PM</varname> on all days and a
+                            charging service with no charge.</p>
+                    </li>
+                    <li>
+                        <p>Create a bundle with <b>Disable TTC</b> parameter set as
+                                <varname>false</varname> or disabled.</p>
+                    </li>
+                    <li>
+                        <p>Create a postpaid account with default lifecycle.</p>
+                    </li>
+                    <li>
+                        <p>Subscribe the device to the above create bundle with the postpaid
+                            account.</p>
+                    </li>
+                </ol>
+                <p><b>Post-conditions:</b></p>
+                <ol id="ol_rj5_rx5_smb">
+                    <li>
+                        <p>Execute an SCUR initial call at <varname>06:59:30 PM</varname> and update
+                            at <varname>08:00:30 PM</varname>.</p>
+                    </li>
+                    <li>
+                        <p>This example verifies that TTC is not set and VT is reduced to TOD in
+                            initial and in update as call falls within TOD, and GSU is set to
+                                <varname>0</varname>.</p>
+                    </li>
+                </ol>
+                <note>
+                    <p>Start time need to less than stop time always . TOD across days is not
+                        supported, which means TOD does not go beyond midnight. </p>
+                </note>
+            </sectiondiv>
+</section>
+</conbody></concept>

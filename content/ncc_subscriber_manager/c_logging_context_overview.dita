@@ -1,0 +1,667 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id ="id9YZ-08540-UG05-PCZZA-logcon2"><title>Logging context overview</title><conbody>
+<section>
+
+<p>The NCC contains a Logging context that enables access to the logging facilities of the NCC.
+    Applicability conditions for these actions are configured using the Diameter Message and
+    Computational contexts. See the sections about Diameter Message and Computational contexts in
+    this chapter for more information.</p>
+<p>The Logging context includes the following actions to modify the loggers for the duration of the processing of the current message, after which the logger levels are reset. The impact to the system is as shown in the Impact column if the trace is focusing on one IMSI. </p>
+<note>
+
+<p>Be careful when setting loggers to Trace or Debug, as they can negatively impact performance if they are triggered often. The impact will be medium to high.</p>
+</note>
+<table colsep="1" pgwide="1" rowsep="1">
+<tgroup cols="4">
+<colspec colname="col1" />
+<colspec colname="col2" />
+<colspec colname="col3" />
+<colspec colname="COLSPEC3" />
+<thead>
+<row>
+<entry>
+<p>Action</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+<entry>
+<p>Options</p>
+</entry>
+<entry>
+<p>Impact</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+Logging.Logger-Level.Set
+</entry>
+<entry>
+This sets the logging level of the given loggers to a specific level.
+</entry>
+<entry>
+("logger1,...,loggerN", "level")
+</entry>
+<entry>
+<p>Low</p>
+<p>Medium to high if triggered often.</p>
+</entry>
+</row>
+<row>
+<entry>
+Logging.Logger-Level.Reset
+</entry>
+<entry>
+Resets the logging level of the given loggers to the initial level of the logger before it was altered by the context.
+</entry>
+<entry>
+("logger1,...,loggerN")
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Logging.Logger-Level.Get
+</entry>
+<entry>
+Gets the logging level of the given logger.
+</entry>
+<entry>
+("logger")
+</entry>
+<entry>
+Low
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>The Logging context includes the following actions to modify the loggers on a global scope; that is, the levels are not reset automatically after message processing but are reset using a rule action:</p>
+<table colsep="1" pgwide="1" rowsep="1">
+<tgroup cols="4">
+<colspec colname="col1" />
+<colspec colname="col2" />
+<colspec colname="col3" />
+<colspec colname="COLSPEC5" />
+<thead>
+<row>
+<entry>
+<p>Action</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+<entry>
+<p>Options</p>
+</entry>
+<entry>
+<p>Impact</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+Logging.Global.Logger-Level.Set
+</entry>
+<entry>
+This sets the logging level of the given loggers to a specific level in the global scope.
+</entry>
+<entry>
+("logger1,...,loggerN", "level")
+</entry>
+<entry>
+<p>Low</p>
+<p>Medium to high if triggered often.</p>
+</entry>
+</row>
+<row>
+<entry>
+Logging.Global.Logger-Level.Reset
+</entry>
+<entry>
+Resets the logging level of the given loggers to the initial level of the logger before it was altered by the context in the global scope.
+</entry>
+<entry>
+("logger1,...,loggerN")
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Logging.Global.Logger-Level.Get
+</entry>
+<entry>
+Gets the logging level of the given logger in the global scope..
+</entry>
+<entry>
+("logger")
+</entry>
+<entry>
+Low
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>The Logging context provides the following actions to log literal text:</p>
+<table colsep="1" pgwide="1" rowsep="1">
+<tgroup cols="4">
+<colspec colname="col1" />
+<colspec colname="col2" />
+<colspec colname="col3" />
+<colspec colname="COLSPEC6" />
+<thead>
+<row>
+<entry>
+<p>Action</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+<entry>
+<p>Options</p>
+</entry>
+<entry>
+<p>Impact</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+Logging.Log
+</entry>
+<entry>
+This action allows you to log text in the given logger at the specified level. This is used in addition to specific level actions to allow a user to set a 'global logging level' that could then be passed in to the rule engine. The "loggers" are supported as a comma separated list of logger names.
+</entry>
+<entry>
+("logger", "level", "text")
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Logging.Trace/Debug/Info/Warning/Error/Fatal 
+</entry>
+<entry>
+Logs text in the given logger at the level of the action.
+</entry>
+<entry>
+("logger", "text")
+</entry>
+<entry>
+Low
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<note>
+
+<p>For the Rule Engine, "logger", "level", and "text" could come from any rule constant (Level-Name and Logger-Name), action or attribute that returns a string (For example: Global Variables, GxCCR.Calling-Station-ID, and other AVP methods).</p>
+</note>
+<sectiondiv>
+<p><b>Additional rule constants in the Logging context</b></p>
+<p>The Logging context provides a number of Rule Constants. Rule Constants are rule attributes whose value never changes. They can be used as a value for other Rule attributes or actions.</p>
+<table colsep="1" pgwide="1" rowsep="1">
+<tgroup cols="2">
+<colspec colname="col1" />
+<colspec colname="col2" />
+<thead>
+<row>
+<entry>
+<p>Constant</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry nameend="col2" namest="col1">
+
+<b>Logging Level Name</b>
+
+</entry>
+</row>
+<row>
+<entry> Level-Name.Trace <p>Level-Name.Debug</p><p>Level-Name.Info </p><p>Level-Name.Warning
+          </p><p>Level-Name.Error </p><p>Level-Name.Fatal </p></entry>
+<entry> Each returns the name of the level for use in other rule attributes and actions. </entry>
+</row>
+<row>
+<entry nameend="col2" namest="col1">
+
+<b>Names of common Loggers</b>
+
+</entry>
+</row>
+<row>
+<entry>
+Logger-Name.Alcatel
+</entry>
+<entry>
+Returns the top level alcatel logger name 'com.alcatel.tpapps'
+</entry>
+</row>
+<row>
+<entry>
+Logger-Name.Nokia
+</entry>
+<entry>
+Returns the top level nokia logger name 'com.nokia.tpapps'
+</entry>
+</row>
+<row>
+<entry>
+ Logger-Name.Policy
+</entry>
+<entry>
+Returns the policy logger name 'com.alcatel.tpapps.policy'
+</entry>
+</row>
+<row>
+<entry>
+Logger-Name.Policy-Decision
+</entry>
+<entry>
+Returns the policy decision logger name 'POLICYDECISION'
+</entry>
+</row>
+<row>
+<entry>
+Logger-Name.Security
+</entry>
+<entry>
+Returns the security logger name 'security'
+</entry>
+</row>
+<row>
+<entry>
+Logger-Name.Spotlight
+</entry>
+<entry>
+Returns the spotlight logger name 'spotlight'
+</entry>
+</row>
+<row>
+<entry>
+Logger-Name.Diameter
+</entry>
+<entry>
+Returns the diameter logger name 'com.alcatel.tpapps.diameter'
+</entry>
+</row>
+<row>
+<entry>
+Logger-Name.Diameter-Stack
+</entry>
+<entry>
+Returns the diameter stack logger name 'agent.diameter'
+</entry>
+</row>
+<row>
+<entry>
+Logger-Name.Radius-Stack
+</entry>
+<entry>
+Returns the radius stack logger name 'agent.radius'
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+<sectiondiv>
+<p><b>Instance logger</b></p>
+<p>An instance logger with simplified but restricted actions exists to modify the loggers for the duration of the processing of the current message. Applicability conditions for these actions are configured using the Diameter Message and Computational contexts. (See the sections about Diameter Message and Computational contexts in this chapter for more information.) After processing that message, the logger levels are reset. The Instance logging actions take a single parameter and build a Logging Instance from which values are retrieved to support further actions. That is, the final Log message actions require a text value only; the remaining configuration would have been set by previous actions. The actions follow, and the correct order is Logger.Set(logger), then Logging-Level(level), then Log(message).</p>
+<table colsep="1" pgwide="1" rowsep="1">
+<tgroup cols="4">
+<colspec colname="col1" />
+<colspec colname="col2" />
+<colspec colname="col3" />
+<colspec colname="COLSPEC7" />
+<thead>
+<row>
+<entry>
+<p>Action</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+<entry>
+<p>Options</p>
+</entry>
+<entry>
+<p>Impact</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+Logging.Instance.Logger.Set
+</entry>
+<entry>
+Sets the logger(s) for the Instance logger to the given value.
+</entry>
+<entry>
+("logger1,...,loggerN")
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Logging.Instance.Logger.Contains
+</entry>
+<entry>
+Returns 1 for true and 0 for false when the Instance.Logger set contains the given logger.
+</entry>
+<entry>
+("logger")
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Logging.Instance.Logger.Get()
+</entry>
+<entry>
+Returns the set of loggers in use by the Instance logger
+</entry>
+<entry>
+&#8212;
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Logging.Instance.Logger-Level.Set
+</entry>
+<entry>
+Sets the level (Trace/Debug/Info/Warning/Error/Fatal) of the Instance logger&#8217;s set of loggers to the given value.
+</entry>
+<entry>
+("level")
+</entry>
+<entry>
+<p>Low</p>
+<p>Medium to high if triggered often.</p>
+</entry>
+</row>
+<row>
+<entry>
+Logging.Instance.Logger-Level.Reset()
+</entry>
+<entry>
+Resets the levels (Trace/Debug/Info/Warning/Error/Fatal) of the logger(s), that were set via Instance.Logger.Set, to the initial value of the logger before it was altered
+</entry>
+<entry>
+&#8212;
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Logging.Instance.Logger-Level.Get()
+</entry>
+<entry>
+Gets the level of the Instance loggers' set of loggers (Trace/Debug/Info/Warning/Error/Fatal).
+</entry>
+<entry>
+&#8212;
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Logging.Instance.Logging-Level.Set
+</entry>
+<entry>
+Sets the level to use for logging a message by the Instance.Log action to the given value.
+</entry>
+<entry>
+("level")
+</entry>
+<entry>
+<p>Low</p>
+<p>Medium to high if triggered often.</p>
+</entry>
+</row>
+<row>
+<entry>
+Logging.Instance.Logging-Level.Get()
+</entry>
+<entry>
+Gets the level in use for logging messages in the Instance.Log action.
+</entry>
+<entry>
+&#8212;
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Logging.Instance.Log
+</entry>
+<entry>
+Logs the given message in the loggers, set via Instance.Logger.Set, at the level set via Instance.Logging-Level.Set
+</entry>
+<entry>
+ ("text")
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Logging.Instance.Trace/Debug/Info/Warning/Error/Fatal
+</entry>
+<entry>
+Logs the given message in the loggers set, via a single Logger.Set, at the level of the action.
+</entry>
+<entry>
+ ("text")
+</entry>
+<entry>
+Low
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>The Logging context includes the following actions to modify Instance loggers on a global scope; that is, the levels are not reset automatically after message processing but are reset using a rule action:</p>
+<table colsep="1" pgwide="1" rowsep="1">
+<tgroup cols="4">
+<colspec colname="col1" />
+<colspec colname="col2" />
+<colspec colname="col3" />
+<colspec colname="COLSPEC8" />
+<thead>
+<row>
+<entry>
+<p>Action</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+<entry>
+<p>Options</p>
+</entry>
+<entry>
+<p>Impact</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+Logging.Global.Instance.Logger.Set
+</entry>
+<entry>
+Sets the logger(s) for the Instance logger to the given value.
+</entry>
+<entry>
+("logger1,...,loggerN")
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Logging.Global.Instance.Logger.Contains
+</entry>
+<entry>
+Returns 1 for true and 0 for false when the Instance.Logger set contains the given logger.
+</entry>
+<entry>
+("logger")
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Logging.Global.Instance.Logger.Get()
+</entry>
+<entry>
+Returns the set of loggers in use by the Instance logger
+</entry>
+<entry>
+&#8212;
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Logging.Global.Instance.Logger-Level.Set
+</entry>
+<entry>
+Sets the level (Trace/Debug/Info/Warning/Error/Fatal) of the Instance logger&#8217;s set of loggers to the given value.
+</entry>
+<entry>
+("level")
+</entry>
+<entry>
+<p>Low</p>
+<p>Medium to high if triggered often.</p>
+</entry>
+</row>
+<row>
+<entry>
+Logging.Global.Instance.Logger-Level.Reset()
+</entry>
+<entry>
+Resets the levels (Trace/Debug/Info/Warning/Error/Fatal) of the logger(s), that were set via Instance.Logger.Set, to the initial value of the logger before it was altered
+</entry>
+<entry>
+&#8212;
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Logging.Global.Instance.Logger-Level.Get()
+</entry>
+<entry>
+Gets the level of the Instance loggers' set of loggers (Trace/Debug/Info/Warning/Error/Fatal).
+</entry>
+<entry>
+&#8212;
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Logging.Global.Instance.Logging-Level.Set
+</entry>
+<entry>
+Sets the level to use for logging a message by the Instance.Log action to the given value.
+</entry>
+<entry>
+("level")
+</entry>
+<entry>
+<p>Low</p>
+<p>Medium to high if triggered often.</p>
+</entry>
+</row>
+<row>
+<entry>
+Logging.Global.Instance.Logging-Level.Get()
+</entry>
+<entry>
+Gets the level in use for logging messages in the Instance.Log action.
+</entry>
+<entry>
+&#8212;
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Logging.Global.Instance.Log
+</entry>
+<entry>
+Logs the given message in the loggers, set via Instance.Logger.Set, at the level set via Instance.Logging-Level.Set
+</entry>
+<entry>
+ ("text")
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Logging.Global.Instance.Trace/Debug/Info/Warning/Error/Fatal
+</entry>
+<entry>
+Logs the given message in the loggers set, via a single Logger.Set, at the level of the action.
+</entry>
+<entry>
+ ("text")
+</entry>
+<entry>
+Low
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+</section>
+</conbody></concept>

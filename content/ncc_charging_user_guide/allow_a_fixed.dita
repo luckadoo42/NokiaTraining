@@ -1,0 +1,1092 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e228808"><title>Allow a fixed VolumeQuotaThreshold for Diameter Gy quota allocation</title><conbody>
+<section><title>Overview</title>
+<p>With this feature, a fixed VolumeQuotaThreshold (VQT) is added to a quota allocated, which is
+                sent back to the network when a soft-stop limit is reached irrespective of whether
+                the system is not configured to ignore the reservation quota. For information on
+                soft-stop scenarios, refer to <xref
+                    href="#id9yz-09126-ug01-pczza-sp1-d1e228808/softstop" format="dita"/>
+                section.</p>
+<p>This feature supports the configuration in the system to define separate filter-ID values on a per rating group basis. It also returns the Granted Service Unit (GSU) value as zero, and triggers a Final Unit Action (FUA) set as <varname>Restrict-Access</varname> under the following conditions:</p><ul>
+<li>
+<p>Within UC Time of day (TOD) restricted interval.</p>
+</li>
+<li>
+<p>Access is barred for a device, subscription, or account.</p>
+</li>
+<li>
+<p>A hard-stop limit is reached. For information on hard-stop scenarios, refer to
+                            <!--xref URI: #hardstop--><xref
+                            href="#id9yz-09126-ug01-pczza-sp1-d1e228808/hardstop" format="dita"/>
+                        section.</p>
+</li>
+</ul>
+<p>While applying the slice reduction functionality to align the latest allocated GSU to an upcoming counter threshold, this feature excludes the allocated (in-flight) quota and provides parallel reservation or allocation of quota to different rating groups as per the minimum distance to the threshold limit applied.</p></section>
+    <section id="hardstop"><title>Hard-stop scenarios</title>
+<p>The hard-stop refers to the ability to stop using the resource and return GSU value as zero with a successful result-code and an FUA set as <varname>Restrict-Access</varname> for different hard-stop triggers, such as TOD restricted interval, barred access for a device, subscription, or account, and hard-stop reached scenarios as explained in the following table:</p>
+<table pgwide="1" colsep="1" rowsep="1">
+                    <title>Hard-stop: Stop using resource or bundle</title>
+                    <tgroup cols="4">
+                        <colspec colname="col1"/>
+                        <colspec colname="col2"/>
+                        <colspec colname="col3"/>
+                        <colspec colname="col4"/>
+                        <thead>
+                            <row>
+                                <entry>
+                                    <p>Scenario</p>
+                                </entry>
+                                <entry>
+                                    <p>Stoppage Type</p>
+                                </entry>
+                                <entry>
+                                    <p>Behavior</p>
+                                </entry>
+                                <entry>
+                                    <p>Result</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry> UC bundle on base plan </entry>
+                                <entry> Reject </entry>
+                                <entry> Hard-stop is met as UC is applied to provide no further
+                                    usage even when a resource is available. </entry>
+                                <entry morerows="4">
+                                    <p>Performs the following actions:</p>
+                                    <ul>
+                                        <li>
+                                            <p>Sends the GSU value as zero with a successful result
+                                                code <systemoutput>2001</systemoutput>.</p>
+                                        </li>
+                                        <li>
+                                            <p>Sends an FUA set as
+                                                  <varname>Restrict-Access</varname> with
+                                                  <i>Filter-Id</i> as configured for a particular
+                                                rating group in global configuration.</p>
+                                        </li>
+                                        <li>
+                                            <p>Opens an active session.</p>
+                                        </li>
+                                    </ul>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry morerows="1"> Normal bundle on base plan </entry>
+                                <entry> Reject </entry>
+                                <entry> Hard-stop is met when <varname>x</varname> limit applied by
+                                    the bundle even when a resource is available. </entry>
+                            </row>
+                            <row>
+                                <entry> Stop </entry>
+                                <entry>
+                                    <p>Hard-stop is met when <varname>x</varname> limit of the
+                                        bundle has applied a soft-stoppage but the resources are
+                                        exhausted.</p>
+                                    <p>OR</p>
+                                    <p>No other next resource, such as bucket, counter, or bundle is
+                                        available.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> Barring a device, account, or subscription </entry>
+                                <entry> NA </entry>
+                                <entry> A device, account, or subscription gets barred in any
+                                    initial or update requests. </entry>
+                            </row>
+                            <row>
+                                <entry> TOD applied by UC bundle </entry>
+                                <entry> NA </entry>
+                                <entry> TOD restrictions applied by UC bundle. </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+<note>
+<p>For all hard-stop scenarios, the threshold action is only set as <systemoutput>Notification-Reject</systemoutput> or <systemoutput>Reject</systemoutput> actions.</p>
+</note>
+</section>
+    <section id="softstop"><title>Soft-stop scenarios</title>
+<p>The soft-stop refers to the ability to identify the soft-stop scenarios (as explained in the following table) and addition of fixed VQT in quota allocated to network.</p>
+<table pgwide="1" colsep="1" rowsep="1">
+                    <title>Soft-stop: Adding of fixed VQT as defined in slicing profile in GSU
+                        (Quota Granted)</title>
+                    <tgroup cols="4">
+                        <colspec colname="col1"/>
+                        <colspec colname="col2"/>
+                        <colspec colname="col3"/>
+                        <colspec colname="col4"/>
+                        <thead>
+                            <row>
+                                <entry>
+                                    <p>Scenario</p>
+                                </entry>
+                                <entry>
+                                    <p>Stoppage Type</p>
+                                </entry>
+                                <entry>
+                                    <p>Behavior</p>
+                                </entry>
+                                <entry>
+                                    <p>Result</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry morerows="1"> Soft-stop by UC bundle on base plan </entry>
+                                <entry> Continue </entry>
+                                <entry> UC has been notified as soft-stop stoppage. </entry>
+                                <entry morerows="3">
+                                    <p>Performs the following actions:</p>
+                                    <ul>
+                                        <li>
+                                            <p>Adds a fixed VQT in GSU quota allocation.</p>
+                                        </li>
+                                        <li>
+                                            <p>No FUA is sent.</p>
+                                        </li>
+                                        <li>
+                                            <p>No check is required irrespective of whether another
+                                                resource is available or not.</p>
+                                        </li>
+                                    </ul>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> Stop </entry>
+                                <entry>
+                                    <varname>x</varname> limit is applied by UC to be notified as
+                                    soft-stop stoppage even when other resources are available, like
+                                    buckets or counters without their limits being reached. </entry>
+                            </row>
+                            <row>
+                                <entry morerows="1"> Soft-stop by bundle on base plan </entry>
+                                <entry> Continue </entry>
+                                <entry> Bundle has applied <varname>x</varname> limit as a soft-stop
+                                    to itself. </entry>
+                            </row>
+                            <row>
+                                <entry> Notification-Stop </entry>
+                                <entry>
+                                    <varname>x</varname> limit is applied by bundle to be notified
+                                    as soft-stop stoppage even when resources are available.
+                                </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+</section>
+<section><title>Configuring the functionality</title>
+<p>The following settings can be configured for this feature:</p><ul>
+<li>
+<p>Configure the <uicontrol>Volume-Quota-Threshold-Algo</uicontrol> parameter in slicing profile rule under <i>Dynamic_Slice</i> and can have one of the following values:</p><ul>
+<li><p>
+                                <varname>FIXED_ADD_IN_GSU</varname>: When configured as
+                                    <varname>FIXED_ADD_IN_GSU</varname>, then the
+                                    <uicontrol>Volume-Quota-Threshold</uicontrol> parameter in
+                                slicing profile rule specifies the absolute value used to set AVP in
+                                CCA message sent back to the network. It is added to the derived
+                                quota amount to determine the GSU value when GSU is not a final
+                                slice.</p>
+                            <!--MMO resource relative URI: ../Graphics/Release_20.6/VQT_fixed_default.png-->
+                            <image
+                                href="../images/img9yz-09126-ug01-pczza-sp1-vqt_fixed_default.png"/>
+                        </li>
+<li><p>
+                                <varname>PERCENTAGE</varname>: When configured as
+                                    <varname>PERCENTAGE</varname>, the
+                                    <uicontrol>Volume-Quota-Threshold</uicontrol> parameter value in
+                                slicing profile rule is configured in <i>%</i> and calculated on the
+                                granted volume quota sent in CCA message.</p>
+                            <!--MMO resource relative URI: ../Graphics/Release_20.6/VQT_percentage_default.png-->
+                            <image
+                                href="../images/img9yz-09126-ug01-pczza-sp1-vqt_percentage_default.png"
+                            />
+                        </li>
+</ul>
+<p>By default, the value of this action attribute is set as <varname>PERCENTAGE</varname> to achieve the existing slice reduction functionality.</p>
+<p>This parameter is also defined per MSCC or rating group. Depending on the type of algorithm used, the<uicontrol> Volume-Quota-Threshold</uicontrol> parameter is calculated and sent back to the network in CCA message.</p>
+</li>
+<li>
+<p>Configure separate filter ID values for any of the triggering events (hard-stop, TOD, or <i>Device-Barred</i>) and also enable specific rating groups to use a different value. This functionality is further used by UC to send a configurable <i>Filter-ID</i> with <varname>Restrict-Access</varname>.</p>
+</li>
+<li>
+<p>Configure the <uicontrol>Ignore Reserved Quota</uicontrol> parameter to determine whether reservation quota needs to be considered in slice reduction logic or not. This parameter can have one of the following values:</p><ul>
+<li>
+<p>
+<varname>No:</varname> When the parameter value is set as <varname>No</varname>, it means reserved quota is not ignored during slice allocation or reduction mechanism.</p>
+</li>
+<li>
+<p>
+<varname>Counter</varname>: When the parameter value is set as <varname>Counter</varname>, it means that in case of <i>No-Charge</i>, the reserved quota is ignored and during slice allocation or reduction mechanism, the current value is considered.</p>
+</li>
+</ul>
+<p>By default, this parameter is set as <varname>No</varname>.</p>
+<p>
+<b>Note:</b> Counter value is only applicable for <i>No-Charge</i>. This logic is not applicable when quota is allocated from bucket or main balance charging as they are not generally allowed to go negative.</p>
+</li>
+<li><p>Check the value of the <i>Is-Gsu-Zero</i> attribute.</p><p>Following figure shows an example
+                        snapshot of the <i>CALL_COMMON.Is-Gsu-Zero</i> attribute with the
+                            <i>RATING_POST_PROCESSING</i> rule set.</p>
+                    <!--MMO resource relative URI: ../Graphics/Release_20.6/Is-GSU-Zero_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-is-gsu-zero_default.png"
+                        scale="55"/>
+                    <p>In the above figure:</p><ul>
+                        <li>
+                            <p>
+                                <i>RATING.GSU-Value</i>: For Set GSU in AVP with
+                                    <systemoutput>2001</systemoutput>
+                            </p>
+                        </li>
+                        <li>
+                            <p>
+                                <i>CALL_COMMON.Is-Gsu-Zero</i>: To check whether anything is
+                                allocated</p>
+                        </li>
+                        <li>
+                            <p>
+                                <i>CALL_COMMON.Call-Trigger-Type</i>: Refers to the current
+                                    <i>Trigger-Type</i> for MSCC</p>
+                        </li>
+                    </ul>
+                    <p>The value of the <i>Is-Gsu-Zero</i> attribute is required when rating does
+                        not allocate any units from resources for a current MSCC.</p>
+                    <p>
+                        <userinput>If CALL_COMMON.Is-Gsu-Zero = BooleanEnum_TRUE and</userinput>
+                        (check whether GSU 0 is allocated by rating)</p>
+                    <p>
+                        <userinput>CALL_COMMON.Call-Trigger-Type present and</userinput>
+                    </p>
+                    <p>
+                        <userinput>CALL_COMMON.Call-Trigger-Type != "SOFT_STOP"</userinput>
+                    </p>
+                    <p>
+                        <userinput>Then RATING.GSU-Value = 0</userinput> (Set Provided GSU in CCA
+                        AVP of MSCC)</p>
+                </li>
+</ul>
+<p>Supported trigger types which are only supported to add in complex map:</p><ul>
+<li>
+<p>
+<i>ACCOUNT_BARRED</i>
+</p>
+</li>
+<li>
+<p>
+<i>DEVICE_BARRED</i>
+</p>
+</li>
+<li>
+<p>
+<i>HARD_STOP</i>
+</p>
+</li>
+<li>
+<p>
+<i>SOFT_STOP</i>
+</p>
+</li>
+<li>
+<p>
+<i>TIME_OF_DAY</i>
+</p>
+</li>
+<li>
+<p>
+<i>SUBSCRIPTION_BARRED</i>
+</p>
+</li>
+</ul>
+<p>This feature exhibits the following behaviour based on the values of given parameters:<table
+                    pgwide="1" colsep="1" rowsep="1">
+                    <tgroup cols="2">
+                        <colspec colname="col1"/>
+                        <colspec colname="col2"/>
+                        <thead>
+                            <row>
+                                <entry>
+                                    <p>If...</p>
+                                </entry>
+                                <entry>
+                                    <p>Then...</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry>
+                                    <p>The <uicontrol>Volume-Quota-Threshold-Algo</uicontrol> per
+                                        rating group is set as
+                                            <varname>VQTType_FIXED_ADD_IN_GSU</varname>, and</p>
+                                    <p>The <uicontrol>Ignore Reserved Quota</uicontrol> parameter is
+                                        set as <varname>No</varname>,</p>
+                                </entry>
+                                <entry> The quota allocation is considered while determining the new
+                                    quota allocation, and either hard-stop behavior or soft-stop
+                                    behavior is followed based on the configuration. </entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <p>The <uicontrol>Volume-Quota-Threshold-Algo</uicontrol> per
+                                        rating group is set as
+                                            <varname>VQTType_FIXED_ADD_IN_GSU</varname>, and</p>
+                                    <p>The <uicontrol>Ignore Reserved Quota</uicontrol> parameter is
+                                        set as <varname>Counter</varname>,</p>
+                                </entry>
+                                <entry> The quota allocation is not considered while determining the
+                                    new quota allocation in case of <i>No-Charge</i> counter, and
+                                    either hard-stop behavior or soft-stop behavior is followed
+                                    based on the configuration. </entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <p>The <uicontrol>Volume-Quota-Threshold-Algo</uicontrol> per
+                                        rating group is set as
+                                        <varname>VQTType_PERCENTAGE</varname>, and</p>
+                                    <p>The <uicontrol>Ignore Reserved Quota</uicontrol> parameter is
+                                        set as <varname>No</varname>,</p>
+                                </entry>
+                                <entry> The quota allocation is considered while determining the new
+                                    quota allocation. Also, VQT is not added to GSU. </entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <p>The <uicontrol>Volume-Quota-Threshold-Algo</uicontrol> per
+                                        rating group is set as
+                                        <varname>VQTType_PERCENTAGE</varname>, and</p>
+                                    <p>The <uicontrol>Ignore Reserved Quota</uicontrol> parameter is
+                                        set as <varname>Counter</varname>,</p>
+                                </entry>
+                                <entry> The quota allocation is not considered while determining the
+                                    new quota allocation in case of <i>No-Charge</i> counter.
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <p>The <uicontrol>Volume-Quota-Threshold-Algo</uicontrol> per
+                                        rating group is not defined, and</p>
+                                    <p>The <uicontrol>Ignore Reserved Quota</uicontrol> parameter is
+                                        set as <varname>No</varname>,</p>
+                                </entry>
+                                <entry> This feature is disabled. </entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <p>The <uicontrol>Volume-Quota-Threshold-Algo</uicontrol> per
+                                        rating group is not defined, and</p>
+                                    <p>The <uicontrol>Ignore Reserved Quota</uicontrol> parameter is
+                                        set as <varname>Counter</varname>,</p>
+                                </entry>
+                                <entry> This feature is disabled. </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table></p>
+<sectiondiv>
+<p><b>AVP handling</b></p>
+<p>The <i>FUA</i> AVP is configured with the <uicontrol>Filter-ID</uicontrol> parameter to handle 4G Gy and 5G Nchf requests:</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/FUA_AVP_img_1_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-fua_avp_img_1_default.png"/>
+</fig>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/FUA_AVP_img_2_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-fua_avp_img_2_default.png"/>
+</fig>
+<note>
+<p>This FUA AVP is already handled. However, with <uicontrol>Filter-ID</uicontrol> parameter, its implementation is done for restrict-access or redirect options for both 4G Gy and NCHF requests. The <i>RATING_POST_PROCESSING </i> is the rule set in which the FUA with <uicontrol>Filter-ID</uicontrol> option is exposed.</p>
+</note>
+</sectiondiv>
+</section>
+<section><title>Additional information</title>
+<p>Consider the following points for this feature:</p><ul>
+<li>
+<p>For this feature, centralized based charging is applied with static slicing. However, no dynamic slicing algorithm is applied.</p>
+</li>
+<li>
+<p>The <uicontrol>Volume-Quota-Threshold-Algo</uicontrol> parameter does not impact the quota allocated from a bucket or buckets allocated to other data session, or flows are considered while determining new quota allocation using the slice reduction logic.</p>
+</li>
+<li>
+<p>This feature is only applicable to multi-bundle counters or subscription counters.</p>
+</li>
+<li>
+<p>When a hard-stop limit is reached, it implies that the associated data flow does not have a rating group configured as <varname>Always Allowed but Countable</varname>.</p>
+<p>
+<b>Note:</b> The hard-stop limit specified as a requirement in this feature only considers the threshold being applied as <systemoutput>Notification-Reject</systemoutput> or <systemoutput>Reject</systemoutput> action.</p>
+</li>
+<li>
+<p>This feature is not applicable to the following charging entities/scenarios:</p>
+<p/><ul>
+<li>
+<p>Device, group, or device-group counter</p>
+</li>
+<li>
+<p>Aggregate view scenarios</p>
+</li>
+<li>
+<p>Group CAP scenarios</p>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+<section><title>Examples</title>
+<p>Consider the following examples for a better understanding of this functionality:</p>
+<sectiondiv>
+<p><b>Example 1: Slice reduction functionality applied on unused counter value for parallel calls when configured to ignore the quota allocated to other data sessions</b></p>
+<p>This example shows that slice reduction functionality works on the unused counter value in case of parallel calls when the <i>Ignore Reserved Quota</i> is set as <varname>Counter</varname>, VQT is added in GSU if it is not the last slice and hard-stop is false.</p>
+<p>
+<b>Preconditions:</b>
+</p><ul>
+<li>
+<p>Create a <varname>Do more Unlimited bundle</varname> having two charging services; one for tethered data and one for non-tethered data with <i>No-Charge</i> configuration for both the charging services.</p>
+</li>
+<li>
+<p>Create two counters for the <varname>Do more Unlimited bundle</varname>, which are multi-bundle counter <varname>ABY</varname> that accumulates both domestic and tethered data consumption, and a subscription counter <varname>TBY</varname> that accumulates only tethered data consumption (charging service with applicability criteria of <userinput>RG = 3303</userinput>).</p>
+</li>
+<li>
+<p>Define a threshold for <varname>TBY</varname> counter to throttle (<userinput>SNR=low</userinput>) speed after 15k MB of data usage.</p>
+</li>
+<li>
+<p>Define a threshold for <varname>ABY</varname> counter to throttle (<userinput>SNR=low</userinput>) speed after 22k MB of data usage. Also, configure a notification for the <varname>ABY</varname> counter has a usage limit set as <varname>20000</varname> and usage limits for <systemoutput>Notification-Continue</systemoutput> at 50%, 75%, 90%, and 100%. The overage limit is set as <varname>5000</varname> with 90% near overage limit.</p>
+</li>
+<li>
+<p>Create a slicing profile with following parameters:</p>
+<p/><ul>
+<li>
+<p>
+<i>Slice Allocation Factor</i> = <varname>100</varname>
+</p>
+</li>
+<li>
+<p>
+<i>MIN Slice Size</i> = <varname>0 byte</varname>
+</p>
+</li>
+<li>
+<p>
+<i>Slice Size</i> = <varname>4000 MB</varname>
+</p>
+</li>
+<li>
+<p>
+<i>Fixed VQT</i> = <varname>200 MB</varname>
+</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Set the <i>Ignore Reserved Amount</i> to <varname>Counter</varname>.</p>
+</li>
+<li>
+<p>Set the hard-stop to false.</p>
+</li>
+<li>
+<p>Configure notification template.</p>
+</li>
+</ul>
+<p>
+<b>Post-conditions:</b>
+</p>
+<p>Execute a centralized SCUR with domestic call (<userinput>RG = 3300</userinput>) as mentioned below:</p>
+<p/><ol>
+<li>
+<p>CCR-I:</p>
+<p>
+<userinput>RSU=empty, GSU=4200 MB</userinput>
+</p>
+</li>
+<li>
+<p>CCR-U1:</p>
+<p>
+<userinput>USU=4000 MB, GSU=4200 MB, RSU=empty</userinput>
+</p>
+</li>
+<li>
+<p>CCR-U2:</p>
+<p>
+<userinput>USU=4000 MB, GSU=2200 MB, RSU=empty</userinput>
+</p>
+</li>
+<li>
+<p>CCR-U3:</p>
+<p>
+<userinput>USU=2000 MB, GSU=4200 MB, RSU=empty</userinput>
+</p>
+</li>
+<li>
+<p>CCR-U4:</p>
+<p>
+<userinput>USU=4000 MB, GSU=1200 MB, RSU=empty</userinput>
+</p>
+</li>
+<li>
+<p>CCR-U5:</p>
+<p>
+<userinput>USU=1000 MB, GSU=3200 MB, RSU=empty</userinput>
+</p>
+</li>
+<li>
+<p>CCR-U6:</p>
+<p>
+<userinput>USU=3000 MB, GSU=2200 MB, RSU=empty</userinput>
+</p>
+</li>
+<li>
+<p>CCR-U7:</p>
+<p>
+<userinput>USU=2000 MB, GSU=2200 MB, RSU=empty</userinput>
+</p>
+</li>
+<li>
+<p>CCR-U8:</p>
+<p>
+<userinput>USU=2000 MB, GSU=2700 MB, RSU=empty</userinput>
+</p>
+</li>
+<li>
+<p>CCR-U9:</p>
+<p>
+<userinput>USU=2500 MB, GSU=700 MB, RSU=empty</userinput>
+</p>
+</li>
+<li>
+<p>CCR-U10:</p>
+<p>
+<userinput>USU= 500 MB, GSU=4200 MB, RSU=empty</userinput>
+</p>
+</li>
+<li>
+<p>CCR-T:</p>
+<p>
+<userinput>USU= 4000 MB</userinput>
+</p>
+</li>
+</ol>
+<p>
+<b>Result:</b>
+</p>
+<p>After executing the preceding calls, this example verifies the following:</p><ul>
+<li>
+<p>When the data usage is from the <varname>Do more Unlimited bundle</varname> for tethered data usage, <varname>ABY</varname> and <varname>TBY</varname> counters are incremented. Also, when <varname>TBY</varname> counter value becomes 15 GB, SNR is triggered to throttle the speed.</p>
+</li>
+<li>
+<p>Once, the subscriber subscribes to first data booster, charging begins from the data booster bundle for new reservation. The old reservation in update is charged from the <varname>Do more Unlimited bundle</varname> only. In this case, only the <varname>ABY</varname> counter is updated.</p>
+</li>
+<li>
+<p>If the first data booster bucket is exhausted, charging is done from the second data booster. Once, both the data boosters are exhausted, charging starts from the <varname>Do more Unlimited bundle</varname>.</p>
+</li>
+<li>
+<p>If the <varname>ABY</varname> data counter value reaches 50 GB, an SNR is triggered and throttling is done.</p>
+</li>
+</ul>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 2: Slice reduction functionality when GSU with VQT as final GSU reaches quota limit</b></p>
+<p>This example shows that in slice reduction functionality, when VQT is added in GSU as final GSU reaches quota limit, the total quota is allocated.</p>
+<p>
+<b>Preconditions:</b>
+</p><ul>
+<li>
+<p>Create a <varname>Do more Unlimited bundle</varname> having two charging services; one for tethered data and one for non-tethered data with <i>No-Charge</i> configuration for both the charging services.</p>
+</li>
+<li>
+<p>Create two counters for the <varname>Do more Unlimited bundle</varname>, which are multi-bundle counter <varname>ABY</varname> that accumulates both domestic and tethered data consumption, and a subscription counter <varname>TBY</varname> that accumulates only tethered data consumption (charging service with applicability criteria of <userinput>RG = 3303</userinput>).</p>
+</li>
+<li>
+<p>Define a threshold for <varname>TBY</varname> counter to throttle (<userinput>SNR=low</userinput>) speed after 15k MB of data usage.</p>
+</li>
+<li>
+<p>Define a threshold for <varname>ABY</varname> counter to throttle (<userinput>SNR=low</userinput>) speed after 22k MB of data usage. Also, configure a notification for the <varname>ABY</varname> counter has a <systemoutput>Notification-Reject</systemoutput> at 20k MB.</p>
+</li>
+<li>
+<p>Create a slicing profile with following parameters:</p>
+<p/><ul>
+<li>
+<p>
+<i>Slice Allocation Factor</i> = <varname>100</varname>
+</p>
+</li>
+<li>
+<p>
+<i>MIN Slice Size</i> = <varname>200 MB</varname>
+</p>
+</li>
+<li>
+<p>
+<i>Slice Size</i> = <varname>4000 MB</varname>
+</p>
+</li>
+<li>
+<p>
+<i>Fixed VQT</i> = <varname>200 MB</varname>
+</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Set the <i>Ignore Reserved Amount</i> to <varname>Counter</varname>.</p>
+</li>
+<li>
+<p>Set the hard-stop to true.</p>
+</li>
+<li>
+<p>Configure notification template.</p>
+</li>
+</ul>
+<p>
+<b>Post-conditions:</b>
+</p>
+<p>Execute a centralized SCUR with domestic call (<userinput>RG = 3300</userinput>) as mentioned below:</p>
+<p/><ol>
+<li>
+<p>CCR-I:</p>
+<p>
+<userinput>RSU=empty, GSU=4200 MB</userinput>
+</p>
+</li>
+<li>
+<p>CCR-U1:</p>
+<p>
+<userinput>USU=15900 MB, GSU=4100 MB, FUA with restrict access</userinput>
+</p>
+</li>
+<li>
+<p>CCR-U2:</p>
+<p>
+<userinput>USU=4100 MB, GSU=0 MB, RSU=empty, FUA with restrict access</userinput>
+</p>
+</li>
+<li>
+<p>CCR-T:</p>
+<p>
+<userinput>USU= 0 MB</userinput>
+</p>
+</li>
+</ol>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 3: GSU returned as zero with success result code for a multi-MSCC call with different rating group and device barred condition</b></p>
+<p>This example shows that for a multi-MSCC call with different rating group and device barred condition, GSU is set as <varname>0</varname> with success code <systemoutput>2001</systemoutput> and an FUA is sent with <i>filter-id</i> as per the mapping in complex map for INITIAL and UPDATE requests.</p>
+<p>
+<b>Preconditions:</b>
+</p><ul>
+<li>
+<p>Create a charging service, bundle, device, and account.</p>
+</li>
+<li>
+<p>Create a device entity lifecycle with timer set as 10 seconds, which changes the state from <varname>Active</varname> to <varname>Barred</varname> and again, back to <varname>Active</varname>. And, after 90 seconds, it changes the state from <varname>Barred</varname> to <varname>Active</varname>.</p>
+</li>
+<li>
+<p>Create an SCUR-I call with <userinput>RG=8</userinput> and <userinput>RG=3300</userinput>.</p>
+</li>
+<li>
+<p>Create a device entity lifecycle with <varname>Barred</varname> state and the device is also in the <varname>Barred</varname> state.</p>
+</li>
+<li>
+<p>Create a complex map with proper entries of rating group and trigger type as follows:</p>
+<p/><ul>
+<li>
+<p>For initial request:</p>
+<p>
+<userinput>rating group = * , trigger type = is-barred , filter-id = INITIAL_DeviceBarred</userinput>
+</p>
+</li>
+<li>
+<p>For update request (RG=8):</p>
+<p>
+<userinput>rating group = *,trigger type = DEVICE_BARRED,filter-id = all_device_barred</userinput>
+</p>
+</li>
+<li>
+<p>For update request (RG=3300):</p>
+<p>
+<userinput>rating group = 3300 ,trigger type = DEVICE_BARRED ,filter-id = Test1</userinput>
+</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>
+<b>Post-conditions:</b>
+</p><ul>
+<li>
+<p>Execute an SCUR call when a device is <varname>Barred</varname> state, then in INITIAL request</p>
+<p>CCR-I1:</p>
+<p>
+<userinput>RSU= 10, GSU=10 MB , RG = 8, RSU= 15, GSU=15 MB , RG = 3300</userinput>
+</p>
+</li>
+<li>
+<p>Execute an SCUR call when a device is <varname>Barred</varname> state, then in UPDATE request</p>
+<p>CCR-I1:</p>
+<p>
+<userinput>RSU= 10, GSU=10 MB , RG = 8, RSU= 15, GSU=15 MB , RG = 3300</userinput>
+</p>
+<p>CCR-U1:</p>
+<p>
+<userinput>USU= 15, GSU=15 MB, RG = 8, USU= 20, GSU=20 MB , RG = 3300</userinput>
+</p>
+</li>
+</ul>
+<p>
+<b>Result:</b>
+</p>
+<p>After executing the preceding calls, this example verifies the following:</p><ul>
+<li>
+<p>The output for an SCUR call when device is in <varname>Barred</varname> state in INITIAL request:</p>
+<p/><ol>
+<li>
+<p>Result code is <systemoutput>2001</systemoutput>.</p>
+</li>
+<li>
+<p>GSU is set as <varname>0</varname>.</p>
+</li>
+<li>
+<p>
+<i>filter-id</i> is <varname>INITIAL_DeviceBarred</varname>.</p>
+</li>
+</ol>
+<p>When a device gets unbarred in an UPDATE request.</p>
+<p>Execute an SCUR call with:</p>
+<p>
+<userinput>USU= 10, RSU= 20 MB , RG = 8, RSU= 15, USU= 20 MB , RG = 3300</userinput>
+</p>
+<p>
+<b>The output is:</b>
+</p>
+<p>USU is granted as direct debit and for RSU, reservation is done.</p>
+</li>
+<li>
+<p>The output for an SCUR call when device is in <varname>Barred</varname> state in UPDATE request:</p>
+<p>For <userinput>RG=8</userinput>:</p><ol>
+<li>
+<p>Result code is <systemoutput>2001</systemoutput>.</p>
+</li>
+<li>
+<p>GSU is set as <varname>0</varname>.</p>
+</li>
+<li>
+<p>
+<i>filter-id</i> is <varname>all_device_barred</varname>.</p>
+</li>
+</ol>
+<p>For <userinput>RG=3300</userinput>:</p><ol>
+<li>
+<p>Result code is <systemoutput>2001</systemoutput>.</p>
+</li>
+<li>
+<p>GSU is set as <varname>0</varname>.</p>
+</li>
+<li>
+<p>
+<i>filter-id</i> is <varname>Test1</varname>.</p>
+</li>
+</ol>
+<p>When device gets unbarred in a TERMINATE request.</p>
+<p>Execute an SCUR call with:</p>
+<p>
+<userinput>USU= 10 MB, RG = 8,  USU= 20 MB , RG = 3300</userinput>
+</p>
+<p>
+<b>The output is:</b>
+</p>
+<p>USU is granted as direct debit.</p>
+</li>
+</ul>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 4: GSU returned as zero with success result code for a multi-MSCC call with different rating group and subscription barred condition</b></p>
+<p>This example shows that for a multi-MSCC call with different rating group and subscription barred condition, GSU is set as <varname>0</varname> with success code <systemoutput>2001</systemoutput> and an FUA is sent with <i>filter-id</i> as per the mapping in complex map for UPDATE request.</p>
+<p>
+<b>Preconditions:</b>
+</p><ul>
+<li>
+<p>Create a charging service, bundle, device, and account.</p>
+</li>
+<li>
+<p>Create a subscription entity lifecycle with timer set as 10 seconds, which changes the state from <varname>Active</varname> to <varname>Barred</varname>. And, after 90 seconds, it changes the state from <varname>Barred</varname> to <varname>Active</varname>.</p>
+</li>
+<li>
+<p>Create an SCUR-I call with <userinput>RG=3300</userinput> and <userinput>RG=3310</userinput>.</p>
+</li>
+<li>
+<p>Create a subscription entity lifecycle with <varname>Barred</varname> state.</p>
+</li>
+<li>
+<p>Create a complex map with proper entries of rating group and trigger type as follows:</p>
+<p/><ul>
+<li>
+<p>For update request (RG=3300):</p>
+<p>
+<userinput>rating group = *,trigger type = SUBSCRIPTION_BARRED,filter-id = SUB_BARRED</userinput>
+</p>
+</li>
+<li>
+<p>For update request (RG=3310):</p>
+<p>
+<userinput>rating group = 3310 ,trigger type = SUBSCRIPTION_BARRED ,filter-id = All_SubBarred</userinput>
+</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>
+<b>Post-conditions:</b>
+</p><ul>
+<li>
+<p>Execute an SCUR call when a subscription is in <varname>Barred</varname> state, then in INITIAL request</p>
+<p>CCR-I1:</p>
+<p>
+<userinput>RSU= 10, GSU= 10 MB , RG = 3300</userinput>
+</p>
+<p>CCR-I1:</p>
+<p>
+<userinput>RSU= 10, GSU= 10 MB , RG = 3310</userinput>
+</p>
+</li>
+<li>
+<p>Execute an SCUR call when a subscription is in <varname>Barred</varname> state, then in UPDATE request</p>
+<p>CCR-I1:</p>
+<p>
+<userinput>RSU= 10, GSU=10 MB , RG = 3300, RSU= 10, GSU=10 MB , RG = 3310</userinput>
+</p>
+<p>CCR-U1:</p>
+<p>
+<userinput>USU= 10, GSU=10 MB , RG = 3300, USU= 10, GSU=10 MB , RG = 3310</userinput>
+</p>
+</li>
+</ul>
+<p>
+<b>Result:</b>
+</p>
+<p>After executing the preceding calls, this example verifies the following:</p><ul>
+<li>
+<p>The output for an SCUR call when subscription is in <varname>Barred</varname> state in INITIAL request:</p>
+<p>For <userinput>RG=3300</userinput>:</p><ol>
+<li>
+<p>Result code is <systemoutput>2001</systemoutput>.</p>
+</li>
+<li>
+<p>GSU is set as <varname>0</varname>.</p>
+</li>
+<li>
+<p>
+<i>filter-id</i> is <varname>SUB_BARRED</varname>.</p>
+</li>
+</ol>
+<p>For <userinput>RG=3310</userinput>:</p><ol>
+<li>
+<p>Result code is <systemoutput>2001</systemoutput>.</p>
+</li>
+<li>
+<p>GSU is set as <varname>0</varname>.</p>
+</li>
+<li>
+<p>
+<i>filter-id</i> is <varname>All_SubBarred</varname>.</p>
+</li>
+</ol>
+<p>When subscription gets unbarred in an UPDATE request.</p>
+<p>Execute an SCUR call with:</p>
+<p>CCR-U1:</p>
+<p>
+<userinput>USU= 15, RSU= 20, RG = 3300</userinput>
+</p>
+<p>CCR-U1:</p>
+<p>
+<userinput>USU= 15, RSU= 30, RG = 3310</userinput>
+</p>
+<p>
+<b>The output is:</b>
+</p>
+<p>USU is granted as direct debit and for RSU, reservation is done for both MSCC (RG = 3300 and RG = 3310).</p>
+</li>
+<li>
+<p>The output for an SCUR call when subscription is in <varname>Barred</varname> state in UPDATE request:</p>
+<p>For <userinput>RG=3300</userinput>:</p><ol>
+<li>
+<p>Result code is <systemoutput>2001</systemoutput>.</p>
+</li>
+<li>
+<p>GSU is set as <varname>0</varname>.</p>
+</li>
+<li>
+<p>
+<i>filter-id</i> is <varname>SUB_BARRED</varname>.</p>
+</li>
+</ol>
+<p>For <userinput>RG=3310</userinput>:</p><ol>
+<li>
+<p>Result code is <systemoutput>2001</systemoutput>.</p>
+</li>
+<li>
+<p>GSU is set as <varname>0</varname>.</p>
+</li>
+<li>
+<p>
+<i>filter-id</i> is <varname>All_SubBarred</varname>.</p>
+</li>
+</ol>
+</li>
+<li>
+<p>When subscription gets unbarred in a TERMINATE request.</p>
+<p>Execute an SCUR call with:</p>
+<p>
+<userinput>USU= 10 MB, RG = 3310,  USU= 20 MB , RG = 3300</userinput>
+</p>
+<p>
+<b>The output is:</b>
+</p>
+<p>USU is granted as direct debit.</p>
+</li>
+</ul>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 5: GSU returned as zero with success result code for a multi-MSCC call with different rating group and account barred condition</b></p>
+<p>This example shows that for a multi-MSCC call with different rating group and account barred condition, GSU is set as <varname>0</varname> with success code <systemoutput>2001</systemoutput> and an FUA is sent with <i>filter-id</i> as per the mapping in complex map for UPDATE request.</p>
+<p>
+<b>Preconditions:</b>
+</p><ul>
+<li>
+<p>Create a charging service, bundle, device, and account.</p>
+</li>
+<li>
+<p>Create an account entity lifecycle with timer set as 10 seconds, which changes the state from <varname>Active</varname> to <varname>Barred</varname>. And, after 90 seconds, it changes the state from <varname>Barred</varname> to <varname>Active</varname>.</p>
+</li>
+<li>
+<p>Create an SCUR-I call with <userinput>RG=3300</userinput> and <userinput>RG=3310</userinput>.</p>
+</li>
+<li>
+<p>Create an account entity lifecycle with <varname>Barred</varname> state.</p>
+</li>
+<li>
+<p>Create a complex map with proper entries of rating group and trigger type as follows:</p>
+<p/><ul>
+<li>
+<p>For update request (RG=3300):</p>
+<p>
+<userinput>rating group = *,trigger type = ACCOUNT_BARRED,filter-id = AccountBarred</userinput>
+</p>
+</li>
+<li>
+<p>For update request (RG=3310):</p>
+<p>
+<userinput>rating group = 3310 ,trigger type = ACCOUNT_BARRED ,filter-id = All_AccountBarred</userinput>
+</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>
+<b>Post-conditions:</b>
+</p><ul>
+<li>
+<p>Execute an SCUR call when an account is in <varname>Barred</varname> state, then in INITIAL request</p>
+<p>CCR-I1:</p>
+<p>
+<userinput>RSU= 10, GSU= 10 MB , RG = 3300</userinput>
+</p>
+<p>CCR-I1:</p>
+<p>
+<userinput>RSU= 10, GSU= 10 MB , RG = 3310</userinput>
+</p>
+</li>
+<li>
+<p>Execute an SCUR call when an account is in <varname>Barred</varname> state, then in UPDATE request</p>
+<p>CCR-I1:</p>
+<p>
+<userinput>RSU= 10, GSU=10 MB , RG = 3300, RSU= 10, GSU=10 MB , RG = 3310</userinput>
+</p>
+<p>CCR-U1:</p>
+<p>
+<userinput>USU= 10, GSU=10 MB , RG = 3300, USU= 10, GSU=10 MB , RG = 3310</userinput>
+</p>
+</li>
+</ul>
+<p>
+<b>Result:</b>
+</p>
+<p>After executing the preceding calls, this example verifies the following:</p><ul>
+<li>
+<p>The output for an SCUR call when account is in <varname>Barred</varname> state in INITIAL request:</p>
+<p>For <userinput>RG=3300</userinput>:</p><ol>
+<li>
+<p>Result code is <systemoutput>2001</systemoutput>.</p>
+</li>
+<li>
+<p>GSU is set as <varname>0</varname>.</p>
+</li>
+<li>
+<p>
+<i>filter-id</i> is <varname>AccountBarred</varname>.</p>
+</li>
+</ol>
+<p>For <userinput>RG=3310</userinput>:</p><ol>
+<li>
+<p>Result code is <systemoutput>2001</systemoutput>.</p>
+</li>
+<li>
+<p>GSU is set as <varname>0</varname>.</p>
+</li>
+<li>
+<p>
+<i>filter-id</i> is <varname>All_AccountBarred</varname>.</p>
+</li>
+</ol>
+<p>When account gets unbarred in an UPDATE request.</p>
+<p>Execute an SCUR call with:</p>
+<p>
+<userinput>USU= 15, RSU= 20, RG = 3300</userinput>
+</p>
+<p>
+<userinput>USU= 15, RSU= 30, RG = 3310</userinput>
+</p>
+<p>
+<b>The output is:</b>
+</p>
+<p>USU is granted as direct debit and for RSU, reservation is done for both MSCC (RG = 3300 and RG = 3310).</p>
+</li>
+<li>
+<p>The output for an SCUR call when account is in <varname>Barred</varname> state in UPDATE request:</p>
+<p>For <userinput>RG=3300</userinput>:</p><ol>
+<li>
+<p>Result code is <systemoutput>2001</systemoutput>.</p>
+</li>
+<li>
+<p>GSU is set as <varname>0</varname>.</p>
+</li>
+<li>
+<p>
+<i>filter-id</i> is <varname>AccountBarred</varname>.</p>
+</li>
+</ol>
+<p>For <userinput>RG=3310</userinput>:</p><ol>
+<li>
+<p>Result code is <systemoutput>2001</systemoutput>.</p>
+</li>
+<li>
+<p>GSU is set as <varname>0</varname>.</p>
+</li>
+<li>
+<p>
+<i>filter-id</i> is <varname>All_AccountBarred</varname>.</p>
+</li>
+</ol>
+<p>When account gets unbarred in a TERMINATE request.</p>
+<p>Execute an SCUR call with:</p>
+<p>
+<userinput>USU= 10 MB, RG = 8,  USU= 20 MB , RG = 3300</userinput>
+</p>
+<p>
+<b>The output is:</b>
+</p>
+<p>USU is granted as direct debit.</p>
+</li>
+</ul>
+</sectiondiv>
+</section>
+</conbody></concept>

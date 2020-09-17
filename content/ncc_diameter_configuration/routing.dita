@@ -1,0 +1,469 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-cn01-tczza-d1e2823"><title>Routing</title><conbody>
+<section id="section_s2w_vc5_wmb">
+            <title>Diameter Route configuration</title>
+            <p>NCC route configuration specifies which peer to use to reach a given host or realm.
+                You can also specify which peer to use for a list of applications, for example, Gx,
+                Gy, and Rx, to reach a specified host or realm. By default all applications are
+                valid for a route. </p>
+            <p>The routing tables that the NCC uses to forward messages to the proper destination
+                contain a large number of potential destinations and can therefore become difficult
+                to manage. The tables are also frequently updated with new Diameter destinations and
+                the removal of older ones. Routing based on patterns in destination names can be
+                used to help manage the large number of destinations.</p>
+            <sectiondiv>
+                <p><b>Pattern-based routing</b></p>
+                <p>You can use pattern-based server naming to associate multiple destination
+                    servers, for example by server type or server region. This use of pattern can be
+                    used in routing tables to shrink the size of routing tables.</p>
+                <p>The NCC:</p>
+                <ul id="ul_t2w_vc5_wmb">
+                    <li>
+                        <p>uses patterns for Destination-Realm and/or Destination-Host values in the
+                            route specification</p>
+                    </li>
+                    <li>
+                        <p>does pattern matching on all the routes</p>
+                    </li>
+                    <li>
+                        <p>uses the highest priority available route for routing the message</p>
+                    </li>
+                </ul>
+                <p>Pattern matching is supported for both realm and host routes. </p>
+                <p>Patterns are configured using the asterisk character as a wildcard in the
+                    destination host or destination realm fields in the Service Manager.</p>
+                <p>For example, for a realm route, any of the following would match the MyRealm
+                    route:</p>
+                <ul id="ul_u2w_vc5_wmb">
+                    <li>
+                        <p>*</p>
+                    </li>
+                    <li>
+                        <p>M*</p>
+                    </li>
+                    <li>
+                        <p>M*lm</p>
+                    </li>
+                    <li>
+                        <p>*m</p>
+                    </li>
+                    <li>
+                        <p>*Rea*</p>
+                    </li>
+                </ul>
+                <p>For example, for host route, any of the following would match the
+                    homepcrf1.myrealm route:</p>
+                <ul id="ul_v2w_vc5_wmb">
+                    <li>
+                        <p>*</p>
+                    </li>
+                    <li>
+                        <p>home*</p>
+                    </li>
+                    <li>
+                        <p>home*lm</p>
+                    </li>
+                    <li>
+                        <p>*m</p>
+                    </li>
+                    <li>
+                        <p>*pcrf1*</p>
+                    </li>
+                </ul>
+            </sectiondiv>
+        </section>
+        <section id="section_ftw_nc2_pmb"><title>Realm based routes</title><p>To provision realm
+                based routes from SM for last used Drouter and alternate Drouters for routing
+                Diameter outbound messages (RAR, ASR, SNR), log in to SM GUI and click
+                    <b>Diameter/HTTP Configuration</b> > <b>ROUTING</b> tab. Following figure has
+                sample values: </p><fig id="fig_s44_122_pmb">
+                <title>Realm based route</title>
+                <image placement="break" href="../images/realm_based_routes.png"
+                    id="image_t44_122_pmb" scale="50"/>
+            </fig>Here, the <b>Next Hop</b> field value is the FQDN of Drouter. <b>Destination
+                Realm</b> is the realm of p-gateway. <p>All routes for alternate Drouters must be of
+                the same priority as that of primary route (route for last used Drouter saved in the
+                corresponding session).</p><p>The realm based route shown in the preceding figure is
+                applicable for RAR and ASR over Gy interface. It is possible to use the same route
+                for SNR over Sy interface or you can have a different route for SNR messages if
+                Drouter used is different for Sy session.</p><p>You must configure the Diameter peer
+                for Drouters to use Diameter routes for primary and alternate Drouters. Diameter
+                peers can be static or dynamic.</p></section>
+        <section id="section_w2w_vc5_wmb">
+            <title>Diameter routing parameters</title>
+            <p>Use the Realm Based Routes or Host Based Routes menu items in the Routing tab to
+                provision a list of Diameter Destination Routes and Host Destination Routes.</p>
+            <p>All Diameter-related configuration areas can also be configured using APIs.</p>
+            <p>See the <!--xref URI: #hostbased--><xref
+                    keyref="id9YZ-09126-CN01-TCZZA-d1e2823/hostbased"/> or the
+                    <!--xref URI: #realmbased--><xref
+                    keyref="id9YZ-09126-CN01-TCZZA-d1e2823/realmbased"/> depending on your
+                configuration needs.</p>
+            <p>The following table describes the Host Based routing parameters.</p>
+            <table id="hostbased" colsep="1" rowsep="1">
+                <title>Host Based Routing parameters</title>
+                <tgroup cols="3">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <colspec colname="col3"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Parameter</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                            <entry>
+                                <p>Mandatory or Optional</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> Route Id </entry>
+                            <entry>
+                                <p>Specify a unique identifier for the route that can be used to
+                                    distinguish between multiple routes with the same destination
+                                    identity name but different priorities.</p>
+                                <p>NCC can create this id automatically if no id is provided.
+                                    However, if multiple MEs are registered at the SM, the SM sends
+                                    this data with id created at the SM side to track the
+                                    provisioning status on each ME.</p>
+                                <p>If the route name is not specified, it is auto-generated as a
+                                    concatenation of the values in <uicontrol>Next Hop</uicontrol>,
+                                        <uicontrol>Destination Identity</uicontrol>, and
+                                        <uicontrol>Application</uicontrol>. </p>
+                            </entry>
+                            <entry> Mandatory </entry>
+                        </row>
+                        <row>
+                            <entry> Next Hop </entry>
+                            <entry>
+                                <p>Specify the hostname of the server to which NCC has to forward
+                                    the incoming message.</p>
+                                <p>The valid values are <i>host-name</i>, <i>diameter-peer</i>, or
+                                        <i>FQDN</i>.</p>
+                            </entry>
+                            <entry> Mandatory </entry>
+                        </row>
+                        <row>
+                            <entry> Destination Identity </entry>
+                            <entry>
+                                <p>For Diameter Destination Routes, specify the value which is
+                                    received in the destination host AVP of the incoming message. If
+                                    NCC is not directly connected to this peer (to the peer
+                                    mentioned in <i>Destination Identity</i>), then NCC forwards the
+                                    message to the peer specified in <i>Next Hop</i>.</p>
+                                <p>The asterisk * can be used as a wildcard to match multiple routes
+                                    for patterns. The NCC uses the highest priority route that
+                                    matches the pattern.</p>
+                            </entry>
+                            <entry> Mandatory </entry>
+                        </row>
+                        <row>
+                            <entry> Application </entry>
+                            <entry>
+                                <p>Specify a list of one or more application types to reach a
+                                    specified host or realm. Select an application type from the
+                                    drop-down to add it to the list.</p>
+                                <p>By default all applications are valid for a route. Keep the field
+                                    blank to enable all applications.</p>
+                            </entry>
+                            <entry> Mandatory </entry>
+                        </row>
+                        <row>
+                            <entry> Administrative State </entry>
+                            <entry>
+                                <p>Select the state of the route.</p>
+                                <p>
+                                    <uicontrol>Active</uicontrol> or
+                                    <uicontrol>Inactive</uicontrol>.</p>
+                            </entry>
+                            <entry> Mandatory </entry>
+                        </row>
+                        <row>
+                            <entry> Priority </entry>
+                            <entry> Specify the diameter route priority. </entry>
+                            <entry> Mandatory </entry>
+                        </row>
+                        <row>
+                            <entry> Description </entry>
+                            <entry> Specify a description for the diameter route. </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> Security Domain </entry>
+                            <entry>
+                                <p>Specify the user types that can see the peer records.</p>
+                                <p>If no value is specified, the records are public.</p>
+                            </entry>
+                            <entry> Optional </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <p>The following table describes the Realm Based routing parameters.</p>
+            <table id="realmbased" colsep="1" rowsep="1">
+                <title>Realm Based Routing parameters</title>
+                <tgroup cols="3">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <colspec colname="col3"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Parameter</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                            <entry>
+                                <p>Mandatory or Optional</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> Route Id </entry>
+                            <entry>
+                                <p>Specify a unique identifier for the route that can be used to
+                                    distinguish between multiple routes with the same destination
+                                    identity name but different priorities.</p>
+                                <p>NCC can create this id automatically if no id is provided.
+                                    However, if multiple MEs are registered at the SM, the SM sends
+                                    this data with id created at the SM side to track the
+                                    provisioning status on each ME.</p>
+                                <p>If the route name is not specified, it is auto-generated as a
+                                    concatenation of the values in <uicontrol>Next Hop</uicontrol>,
+                                        <uicontrol>Realm Based Routes</uicontrol>, and
+                                        <uicontrol>Application</uicontrol>. </p>
+                            </entry>
+                            <entry> Mandatory </entry>
+                        </row>
+                        <row>
+                            <entry> Next Hop </entry>
+                            <entry>
+                                <p>Specify the hostname of the server to which NCC has to forward
+                                    the incoming message.</p>
+                                <p>The server has to be present in the realm configured in the
+                                        <i>Realm Based Routes</i>. </p>
+                            </entry>
+                            <entry> Mandatory </entry>
+                        </row>
+                        <row>
+                            <entry> Destination Realm </entry>
+                            <entry>
+                                <p>For Diameter Destination Routes, specify the destination realm
+                                    which has the network entity where the NCC has to forward the
+                                    incoming requests from the particular peer origin host.</p>
+                                <p>The asterisk * can be used as a wildcard to use for matching
+                                    multiple routes for patterns. The NCC uses the highest priority
+                                    route that matches the pattern.</p>
+                            </entry>
+                            <entry> Mandatory </entry>
+                        </row>
+                        <row>
+                            <entry> Application </entry>
+                            <entry>
+                                <p>Specify a list of one or more application types to reach a
+                                    specified host or realm. Select an application type from the
+                                    drop-down to add it to the list.</p>
+                                <p>By default all applications are valid for a route. Keep the field
+                                    blank to enable all applications.</p>
+                            </entry>
+                            <entry> Mandatory </entry>
+                        </row>
+                        <row>
+                            <entry> Administrative State </entry>
+                            <entry>
+                                <p>Select the state of the route.</p>
+                                <p>
+                                    <uicontrol>Active</uicontrol> or
+                                    <uicontrol>Inactive</uicontrol>.</p>
+                            </entry>
+                            <entry> Mandatory </entry>
+                        </row>
+                        <row>
+                            <entry> Priority </entry>
+                            <entry> Specify the diameter route priority. </entry>
+                            <entry> Mandatory </entry>
+                        </row>
+                        <row>
+                            <entry> Description </entry>
+                            <entry> Specify a description for the diameter route. </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> Security Domain </entry>
+                            <entry>
+                                <p>Specify the user types that can see the peer records.</p>
+                                <p>If no value is specified, the records are public.</p>
+                            </entry>
+                            <entry> Optional </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+<section><title>Routing profile</title>
+<p>A Diameter routing profile captures message filters that customize the routing logic of the
+                network. Based on the order of message filters in the profile, the NCC determines
+                routing method for requests. The routing plugin works through the configured routing
+                methods and selects the first method that matches a request. </p>
+<note>Routing profiles are evaluated by the routing plugin instance from the request portion of the
+                plugin sequence, not the routing plugin instance in the response sequence. The
+                profile is only used while processing a request, not the corresponding response. The
+                sequence of the features in the Diameter routing plugin is configurable using the
+                method routing table (Host Based/Realm Based/Pattern Based).<p/></note>
+<sectiondiv>
+<p><b>Routing profile parameters</b></p>
+<p>In the Routing Profiles menu item on the Routing tab, enter a profile name and filter group name. You must tap the Add Message Filter button to enter the message filter name and then create Criteria and Actions to build the associated set of routing message filters. See the section “Message filters” for more information in the Administration Guide for information about message filters.</p>
+</sectiondiv>
+</section>
+<section><title>Routing configuration</title>
+<p>The Routing configuration menu item on the Routing tab allows you to apply your routing profiles on specific routes. Give the routing configuration a name and select the routing profiles that need to be applied.</p>
+</section>
+        <section id="section_r3c_qg5_wmb">
+            <title>Retry configuration</title>
+            <p>The Retry configuration menu item on the Routing tab allows you perform the following
+                tasks:</p>
+            <p>
+                <ul id="ul_bgb_lh5_wmb">
+                    <li>To store the Drouter information (FQDN) in session (Gy, IMS, Sy) used for
+                        routing Diameter inbound messages (CCR-I/U on Gy and
+                        SLR-Initial/Intermediate on Sy interface) from p-gateway over OCS</li>
+                    <li>To send the Diameter outbound messages (RAR, ASR, SNR) from OCS to same
+                        Drouter</li>
+                    <li>To retry on alternate Drouters in failure or timeout cases</li>
+                </ul>
+            </p>
+            <sectiondiv><b>Retry configuration parameters</b><p>
+                    <table frame="all" rowsep="1" colsep="1" id="table_jwm_yh5_wmb">
+                        <title>Retry configuration</title>
+                        <tgroup cols="3">
+                            <colspec colname="c1" colnum="1" colwidth="1.15*"/>
+                            <colspec colname="c2" colnum="2" colwidth="2.91*"/>
+                            <colspec colname="newCol3" colnum="3" colwidth="1*"/>
+                            <thead>
+                                <row>
+                                    <entry>Parameter</entry>
+                                    <entry>Description</entry>
+                                    <entry>Mandatory/Optional</entry>
+                                </row>
+                            </thead>
+                            <tbody>
+                                <row>
+                                    <entry>SNR Retry Count</entry>
+                                    <entry>The number of times SNR message to be retried on
+                                        alternate Drouters on getting SNA failure or
+                                        timeout.</entry>
+                                    <entry>Optional</entry>
+                                </row>
+                                <row>
+                                    <entry>RAR Retry Count</entry>
+                                    <entry>The number of times RAR message to be retried on
+                                        alternate Drouters on getting RAA failure or
+                                        timeout.</entry>
+                                    <entry>Optional</entry>
+                                </row>
+                                <row>
+                                    <entry>ASR Retry Count</entry>
+                                    <entry>The number of times ASR message to be retried on
+                                        alternate Drouters on getting ASA failure or
+                                        timeout.</entry>
+                                    <entry>Optional</entry>
+                                </row>
+                                <row>
+                                    <entry>Response Time for Notify Terminate (ms)</entry>
+                                    <entry>The time to wait (in milliseconds) for response for 5G
+                                        Nchf_CC_Notify_Terminate call.<p>Default: 0</p>For 5G, if
+                                        this value is not provided or set to 0 or the <i>Retry
+                                            Configuration</i> entity is not provisioned on ME, then
+                                        the value provided in the application preference <i>Default
+                                            Response Time for ASA</i> is used.</entry>
+                                    <entry>Optional</entry>
+                                </row>
+                                <row>
+                                    <entry>Response Time for Notify Reauthorization (ms)</entry>
+                                    <entry>The time to wait (in milliseconds) for response for 5G
+                                        Nchf_CC_Notify_Reauthorization call.<p>Default: 0</p>For 5G,
+                                        if this value is not provided or set to 0 or the <i>Retry
+                                            Configuration</i> entity is not provisioned on ME, then
+                                        the value provided in the application preference <i>Default
+                                            Response Time for RAA</i> is used.</entry>
+                                    <entry>Optional</entry>
+                                </row>
+                                <row>
+                                    <entry>Response Time for Spending Limit (ms)</entry>
+                                    <entry>The time to wait (in milliseconds) for response for 5G
+                                            Nchf_SpendingLimitControl_Notify.<p>Default: 0</p>For
+                                        5G, if this value is not provided or set to 0 or the
+                                            <i>Retry Configuration</i> entity is not provisioned on
+                                        ME, then the value provided in the application preference
+                                            <i>Default Response Time for SNA</i> is used.</entry>
+                                    <entry>Optional</entry>
+                                </row>
+                                <row>
+                                    <entry>Response Time for ASA (ms)</entry>
+                                    <entry>The time to wait (in milliseconds) for response for 4G
+                                        ASA call.<p>Default: 0</p>For 4G, if this value is not
+                                        provided or set to 0 or the <i>Retry Configuration</i>
+                                        entity is not provisioned on ME, then the value provided in
+                                        the application preference <i>Default Response Time for
+                                            ASA</i> is used.</entry>
+                                    <entry>Optional</entry>
+                                </row>
+                                <row>
+                                    <entry>Response Time for RAA (ms)</entry>
+                                    <entry>The time to wait (in milliseconds) for response for 4G
+                                        RAA call.<p>Default: 0</p>For 4G, if this value is not
+                                        provided or set to 0 or the <i>Retry Configuration</i>
+                                        entity is not provisioned on ME, then the value provided in
+                                        the application preference <i>Default Response Time for
+                                            RAA</i> is used.</entry>
+                                    <entry>Optional</entry>
+                                </row>
+                                <row>
+                                    <entry>Response Time for SNA (ms)</entry>
+                                    <entry>The time to wait (in milliseconds) for response for 4G
+                                        SNA call.<p>Default: 0</p>For 4G, if this value is not
+                                        provided or set to 0 or the <i>Retry Configuration</i>
+                                        entity is not provisioned on ME, then the value provided in
+                                        the application preference <i>Default Response Time for
+                                            SNA</i> is used.</entry>
+                                    <entry>Optional</entry>
+                                </row>
+                                <row>
+                                    <entry>Store Diameter Router Identity</entry>
+                                    <entry>If checked, Drouter FQDN is saved in session (Gy, IMS,
+                                        and Sy) on receiving Diameter message on OCS (CCR-I/U on Gy
+                                        and SLR initial/intermediate on Sy interface).<p>Diameter
+                                            outbound message can now be sent to Drouter that is
+                                            saved in session and to alternate Drouters on
+                                            failure/timeout. </p></entry>
+                                    <entry>Optional</entry>
+                                </row>
+                                <row>
+                                    <entry>No Retry Error Code List</entry>
+                                    <entry>By default the Diameter outbound message should be
+                                        retried on alternate Drouter if we get failure or timeout
+                                        from first Drouter. User can configure not to retry message
+                                        on alternate Drouter using this parameter. User need to
+                                        select diameter result codes from the drop down list of
+                                        predefined result codes. There is no limit on the number of
+                                        diameter result codes that can be configured.<p>Diameter
+                                            message is never retried on alternate Drouters on
+                                            getting result as DIAMETER_SUCCESS and
+                                            DIAMETER_UNKNOWN_SESSION_ID in RAA/ASA/SNA. No need to
+                                            configure these diameter result codes in retry
+                                            configuration entity.</p></entry>
+                                    <entry>Optional</entry>
+                                </row>
+                            </tbody>
+                        </tgroup>
+                    </table>
+                </p></sectiondiv>
+        </section>
+</conbody></concept>

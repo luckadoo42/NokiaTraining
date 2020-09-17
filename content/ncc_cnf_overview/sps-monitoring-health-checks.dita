@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+		<concept id="id9YZ-09018-UG00-PCZZA-d1e10384">
+    <title>Network heartbeat and system monitoring</title>
+    <conbody>
+        <p>The NCC SMs and MEs in the network engage in network heartbeats to ascertain the most
+            accurate network view of which MEs are in-service or out-of-service. This ensures
+            appropriate differentiation between local network issues and actual failures of an ME in
+            the network and helps avoid split-brain scenarios where both MEs in a pair could
+            mistakenly assume they need to be the active home. It also ensures consistent
+            network-wide site routing based on a shared network view.</p>
+        <p>To achieve the most accurate view possible, the network heartbeats are exchanged over
+            multiple networks, including the core (Diameter/5G) WAN and the OAM WAN, preferably
+            between at least three geo-diverse locations. The mate ME takes over traffic for the OOS
+            ME only when heartbeats determine that an ME is OOS. For example, when either the ME
+            itself communicates that it is OOS or when geo-diverse systems agree that no heartbeat
+            has been received from that ME. If the primary ME for a device is OOS and the mate takes
+            over the updates to the database queue for replication on the mate ME, it automatically
+            resynchronizes when the primary ME recovers. </p>
+        <p>If core WAN communication between mated MEs is down while the primary ME is in-service,
+            the updates to the database for a device queues for replication on the primary ME and
+            automatically replicates to the mate ME when WAN communication recovers. While core WAN
+            communication between some MEs is down and the primary ME is in-service, any requests
+            that arrive at the primary ME or arrive at another ME that can reach the primary ME are
+            processed normally. Requests that arrive at the mate ME or any ME that cannot reach the
+            primary ME is given an error response.</p>
+        <p>If the GGSM/PGW/SMF/AF retries to the primary ME or to another ME that can reach the
+            primary ME, the retry succeeds. An ME that is not the primary or secondary ME forwards
+            requests to the secondary ME if it cannot reach the primary ME. That gives the secondary
+            ME the chance to forward requests to the primary ME or if the heartbeats indicate the
+            primary ME has transitioned to OOS then the secondary ME processes the transaction. </p>
+        <p>It would be extremely rare for the dual WAN heartbeat mechanism to determine that an ME
+            is OOS if it is actually in-service and handling traffic. In nearly all cases, this
+            mechanism avoids split-brain operation where multiple MEs update the data for the same
+            device. If two MEs did update the same record, when the sites synchronize again, then
+            one version of the record overwrites the other version.</p>
+        <section>
+            <title>Geo-community configured for network heartbeats</title>
+        </section>
+        <section>
+            <p>The following figure shows a geo-redundant NCC system of four MEs with two SMs,
+                making up a geo-community. A geo-community is a group of NCC servers (SMs and MEs)
+                and each is considered a member. Members of the geo-community in the context of the
+                heartbeat include SMs and MEs and each is considered a “site”.</p>
+            <fig id="fig_ez5_5t5_cmb">
+                <title>Geo-community configured for network heartbeats</title>
+                <image placement="break"
+                    href="../images/cnf_overview_geo-community-configured-for-network-heartbeats.GIF"
+                    scale="30" align="center" id="image_fz5_5t5_cmb"/>
+            </fig>
+            <p>The geo-community is configured as part of an NCC site installation. Within the
+                community, the MEs can share partitions that define replication partners and specify
+                which sites are going to take over for a specific site in the case of a failure. The
+                partitions are added at installation time and can be configured such that equal
+                parts of the subscriber, device, and service data are replicated and shared with one
+                other site in the deployment. Topology data must be configured on each NCC SM and ME
+                in the network to identify the location of all NCC systems with which the SM or ME
+                exchanges heartbeats. Topology data is used in the determination of whether or not a
+                site is in-service. </p>
+        </section>
+    </conbody>
+</concept>

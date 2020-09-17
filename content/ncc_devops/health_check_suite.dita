@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//NSN//DTD DITA Concept//EN" "nsnconcept.dtd">
+<concept id="id9yz-09126-mt02-rezza-d1e11351"><title>NCC health check suite</title><conbody>
+        <p>The NCC health check suite is a collection of command line tools that allows to check the
+            performance of the NCC and its components. The health check suite supports the following
+            NCC configurations:</p>
+        <ul id="ul_mxj_nzc_ymb">
+            <li>
+                <p>distributed (one SM and one ME)</p>
+            </li>
+            <li>
+                <p>IG</p>
+            </li>
+            <li>
+                <p>single SM</p>
+            </li>
+            <li>
+                <p>single ME</p>
+            </li>
+        </ul>
+        <p>The health check is performed before the spstests automation tests. The following table
+            lists all the health checks that are used to check the performance of the NCC.</p>
+        <table colsep="1" rowsep="1" scale="80" id="table_nxj_nzc_ymb">
+            <title>Health check suite</title>
+            <tgroup cols="5">
+                <colspec colname="col1" colsep="1" rowsep="1"/>
+                <colspec colname="col2" colsep="1" rowsep="1"/>
+                <colspec colname="col3" colsep="1" rowsep="1"/>
+                <colspec colname="col4" colsep="1" rowsep="1"/>
+                <colspec colname="col5" colsep="1"/>
+                <thead>
+                    <row>
+                        <entry>
+                            <p>Health check</p>
+                        </entry>
+                        <entry>
+                            <p>Command</p>
+                        </entry>
+                        <entry>
+                            <p>VM used</p>
+                        </entry>
+                        <entry>
+                            <p>NCC configuration</p>
+                        </entry>
+                        <entry>
+                            <p>Health check acceptance criteria</p>
+                        </entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry> NCC status </entry>
+                        <entry><codeph>sps-status</codeph></entry>
+                        <entry> OAME </entry>
+                        <entry> single SM, single ME </entry>
+                        <entry>
+                            <ul id="ul_oxj_nzc_ymb">
+                                <li>
+                                    <p>All VMs are UP. </p>
+                                </li>
+                                <li>
+                                    <p>All services are UP. </p>
+                                </li>
+                                <li>
+                                    <p>All HA VMs are Active/Standby.</p>
+                                </li>
+                            </ul>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry> NCC alarm </entry>
+                        <entry><codeph>alalarm list</codeph></entry>
+                        <entry> OAME </entry>
+                        <entry> single SM, single ME </entry>
+                        <entry> No alarm. </entry>
+                    </row>
+                    <row>
+                        <entry> DB state </entry>
+                        <entry><codeph>db-stats -c -s all</codeph></entry>
+                        <entry> OAME </entry>
+                        <entry> single SM, single ME </entry>
+                        <entry> All DB VMs configured are Active. </entry>
+                    </row>
+                    <row>
+                        <entry> ETCD state </entry>
+                        <entry><codeph>etcdctl endpoint</codeph></entry>
+                        <entry> OAME </entry>
+                        <entry> single SM, single ME </entry>
+                        <entry> All ETCD endpoint configured on the Auxiliary VMs are healthy.
+                        </entry>
+                    </row>
+                    <row>
+                        <entry> Heartbeat check </entry>
+                        <entry><codeph>TPA_heartbeatStatus</codeph></entry>
+                        <entry> OAME </entry>
+                        <entry> single SM, single ME </entry>
+                        <entry>
+                            <ul id="ul_fmm_5zy_rmb">
+                                <li>
+                                    <p>Local component service status is IN_SERVICE. </p>
+                                </li>
+                                <li>
+                                    <p>Peer component service status is IN_SERVICE. </p>
+                                </li>
+                                <li>
+                                    <p>No missed OAM beats. </p>
+                                </li>
+                                <li>
+                                    <p>No or N/A missed traffic beats.</p>
+                                </li>
+                            </ul>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry> HA check </entry>
+                        <entry><codeph>ha check</codeph></entry>
+                        <entry> OAME, IOHO, IOHD (ME)</entry>
+                        <entry> single SM, single ME </entry>
+                        <entry>
+                            <ul id="ul_nt2_b1z_rmb">
+                                <li>
+                                    <p>All plugins are OK.</p>
+                                </li>
+                                <li>
+                                    <p>All plugins on the Active VMs are Active. </p>
+                                </li>
+                                <li>
+                                    <p>All plugins on the Standby VMs are Standby.</p>
+                                </li>
+                            </ul>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry> XDR replication status </entry>
+                        <entry><codeph>xdr-status</codeph></entry>
+                        <entry> OAME </entry>
+                        <entry> single SM, single ME </entry>
+                        <entry> Service status is UP. </entry>
+                    </row>
+                    <row>
+                        <entry> Kafka Zookeeper status </entry>
+                        <entry><codeph>kafka-zookeeper status</codeph></entry>
+                        <entry> All Auxiliary VMs </entry>
+                        <entry> single SM, single ME </entry>
+                        <entry> kafka-zookeeper systemctl status is Active. </entry>
+                    </row>
+                    <row>
+                        <entry> Kafka status </entry>
+                        <entry><codeph>systemctl status kafka</codeph></entry>
+                        <entry> SM App </entry>
+                        <entry> single SM </entry>
+                        <entry> Kafka systemctl status is Active. </entry>
+                    </row>
+                    <row>
+                        <entry> JPM status </entry>
+                        <entry><codeph>systemctl status jpm</codeph></entry>
+                        <entry> OAME, IOHO, IOHD (ME) </entry>
+                        <entry> single SM, single ME </entry>
+                        <entry> jpm systemctl status is Active. </entry>
+                    </row>
+                    <row>
+                        <entry> NTP status </entry>
+                        <entry><codeph>ntp status</codeph></entry>
+                        <entry> All VMs </entry>
+                        <entry> single SM, single ME </entry>
+                        <entry>
+                            <ul id="ul_pxj_nzc_ymb">
+                                <li>
+                                    <p>All OAME VMs are synchronised with the external NTP server.
+                                    </p>
+                                </li>
+                                <li>
+                                    <p>All non-OAME VMs are synchronised with the internal NTP
+                                        server on OAME.</p>
+                                </li>
+                            </ul>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry> ComSvc Docker status </entry>
+                        <entry><codeph>docker status</codeph></entry>
+                        <entry> ComSvc </entry>
+                        <entry> single ME </entry>
+                        <entry>
+                            <ul id="ul_lww_l1z_rmb">
+                                <li>
+                                    <p>Docker selfcare_without_local_db is running.</p>
+                                </li>
+                                <li>
+                                    <p>Docker cenotificationservice_no_db is running. </p>
+                                </li>
+                                <li>
+                                    <p>Docker recommendationserver_without_local_db is running.</p>
+                                </li>
+                            </ul>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry> IOHD Diameter local and remote </entry>
+                        <entry><codeph>list-diameter-peers -s</codeph></entry>
+                        <entry> Diameter App </entry>
+                        <entry> single ME </entry>
+                        <entry>
+                            <ul id="ul_evf_r1z_rmb">
+                                <li>
+                                    <p>All local peers have the correct Origin-Host and name based
+                                        on the Diameter protocol.</p>
+                                </li>
+                                <li>
+                                    <p>Remote peer can be setup. </p>
+                                </li>
+                                <li>
+                                    <p>Remote peers have the correct Origin-Host and name.</p>
+                                </li>
+                            </ul>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry> CDR status </entry>
+                        <entry><codeph>systemctl status cdr</codeph></entry>
+                        <entry> CDR </entry>
+                        <entry> single ME </entry>
+                        <entry>
+                            <ul id="ul_qxj_nzc_ymb">
+                                <li>
+                                    <p>CDR systemctl status is Active.</p>
+                                </li>
+                                <li>
+                                    <p>CDR data folder is available on all CDR VMs.</p>
+                                </li>
+                            </ul>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry> ME status on SM GUI </entry>
+                        <entry><codeph>RobotSPS REST API</codeph></entry>
+                        <entry> SM GUI </entry>
+                        <entry> IG, distributed </entry>
+                        <entry> ME is ONLINE. </entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </conbody></concept>

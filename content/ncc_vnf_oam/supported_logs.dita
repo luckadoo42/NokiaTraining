@@ -1,0 +1,583 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-d1e31126"><title>Supported logs</title><conbody>
+<section><title>About NCC logs</title>
+<p>A generic centralized logging mechanism is used on the NCC that consists of a logging server and
+                logging client. The logging server is installed on OAM Endpoint VMs. The logging
+                client is installed on both OAM Endpoint and Application VMs. </p>
+<p>The NCC uses the Unified Logging format for the logging output. There are two types of logs: NCC
+                application logs and system logs. All the NCC application logs are consolidated in
+                the /var/log/sps directory while system logs are consolidated in the /var/log/system
+                directory. </p>
+<p>The system logs have the "/var/log/system/nokia_harmonized.log" into which all logs are collected. All the logs that are collected in the Unified logging format will go into nokia_harmonized.log file. See <!--xref URI: #logaggreg--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-d1e31126/logaggreg"/> for more information about log aggregation.</p>
+<p>Within the "/var/log/system/nokia_harmonized.log" files, the NCC supports logs for:</p><ul>
+<li>
+<p>
+<!--xref URI: #Platformlog-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-d1e31126/Platformlog"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #Oplog-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-d1e31126/Oplog"/>
+</p>
+</li>
+</ul>
+<p>See <!--xref URI: #applogs--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-d1e31126/applogs"/> for more information about application and data base logs, (application server, and database nodes). These logs are available under the /var/log/sps directory.</p>
+<p>See <!--xref URI: #rotate--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-d1e31126/rotate"/> for information about the configuration of log rotation, which is specific to the logs collected. </p>
+</section>
+<section id="logaggreg"><title>Log aggregation</title>
+<p>Log aggregation is done by the Fluentd (for both SM and ME separately) to aggregate logs (for all
+                files in /var/log/sps and /var/log/system directories) on the OAME nodes. Fluentd is
+                an open source data collector that allows the NCC to decouple data sources from
+                backend systems using the unified logging layer. Fluentd listens on two ports: TCP
+                8514 and UDP 5140 (syslog).</p>
+<p>The following other logs are aggregated by rsyslog:</p><ul>
+<li>
+<p>TPA_system, aerospike_warning.log</p>
+</li>
+<li>
+<p>watson.log</p>
+</li>
+<li>
+<p>localization.log</p>
+</li>
+</ul>
+<p>Buffer size for all logs inside the td-agent (/etc/td-agent/td-agent.conf) has been set to 20MB except for the SPSServer log and Server log which are set to 200MB. Events arriving on port 8514 of any node will be listened by Worker#0 of the td-agent, whereas events on other ports will be shared among multiple workers.</p>
+<sectiondiv>
+<p><b>Brevity control</b></p>
+<p>Brevity control is introduced at both the Application and OAME nodes inside the /etc/td-agent/td-agent.conf file. Brevity control applies to logs and only allows a specific number of the same logs to pass, dropping the rest of the logs created within the particular interval.</p>
+<p>The logs are filtered on the parameter keys: log.message, service, and process. See the <i>NCC
+                        Installation and Upgrade Guide</i> for more information about the keys.</p>
+<p>Two variables are introduced at both the OAME and the APP node mappings in the sdc_conf file for brevity control that define how within the "brevity_timeframe" only a specified number (brevity_num) of the same logs can be passed, while the rest of the alarms will be dropped, as follows:</p><ul>
+<li>
+<p>
+<b>brevity_timeframe</b>: This allows you to configure timeframe for brevity control. The value should be greater than zero. The default value is set to 10 seconds.</p>
+</li>
+<li>
+<p>
+<b>brevity_num</b>: This allows you to configure how many re-occurring logs can be displayed or allowed within the interval of the “brevity_timeframe”. The value should be greater than zero. The default value is set to 2.</p>
+</li>
+</ul>
+<note>
+<p>Use of the above configuration at only the OAME node will configure its brevity control on the OAME node with its value(s), whereas the Application node will continue using the default value for its brevity control and vice-versa. That is in this example, Brevity control will block the logs and alarms from the event generating nodes so that they do not reach the OAME node. Logs will continue to flood on other nodes, but not the OAME node.</p>
+</note>
+<p>The Brevity control message for dropped logs will be displayed when the second brevity control occurs on the same logs. Logs related with Brevity control will be seen in logs in the */var/log/sps/* directories. For example, suppose flooding of logs occurred in /opt/tpa/logs/SPSServer.log of a particular node, its brevity control logs will be displayed on the OAME node in the:<i> /var/log/sps/SPSServer.log</i>.</p>
+</sectiondiv>
+</section>
+<section><title>Unified logging</title>
+<p>The Unified API provides the logs in the same format for alarms and logs.</p>
+<note>The Unified logging APIs no longer allows the consolidation of alarm messages in the OAME
+                node's log file (SPSServer). However, SPSServer on every node logs alarm events into
+                their own respective log files in a unified format.<p/></note>
+<note>The "log-fmt" script is available on each node that converts the data to a form that is easier
+                to view if logs in unified logging format are to be viewed directly. The script
+                takes one or more file name arguments that are unified-log-format files, and outputs
+                to standard out, the re-formatted form. The output can be piped to sort to
+                time-correlate the combination of the logs. Examples:<p/><ul>
+                    <li>
+                        <p>/opt/tpa/bin/log-fmt SPSServer.log &gt; /tmp/SPSServer_tmp.log</p>
+                    </li>
+                    <li>
+                        <p>/opt/tpa/bin/log-fmt SPSServer.log Provisioning.log | sort &gt;
+                            /tmp/serv.prov.tmp.log</p>
+                    </li>
+                </ul></note>
+<p>The Unified Logging format for all logs is as follows:</p><ul>
+<li>
+<p>type: The type can be one of "log", "alarm", or "counter".</p>
+</li>
+<li>
+<p>level: The following logging levels are supported:</p><ul>
+<li>
+<p>0=EMERG</p>
+</li>
+<li>
+<p>1=ALERT</p>
+</li>
+<li>
+<p>2=CRIT</p>
+</li>
+<li>
+<p>3=ERROR</p>
+</li>
+<li>
+<p>4=WARN</p>
+</li>
+<li>
+<p>5=NOTICE</p>
+</li>
+<li>
+<p>6=INFO</p>
+</li>
+<li>
+<p>7=DEBUG</p>
+</li>
+</ul>
+</li>
+<li>
+<p>process: Name and/or ID of the process producing the event.</p>
+</li>
+<li>
+<p>service: Name of the service to which the event is related. For service in the NCC, this field is
+                        correlated with the existing TAG field that is used in the existing SYSLOG
+                        to differentiate logs coming from the different applications.</p>
+</li>
+<li>
+<p>system: System name of the system in which the event occurred.</p>
+</li>
+<li>
+<p>systemid: System identifier assigned to the system in which the event occurred.</p>
+</li>
+<li>
+<p>timezone: Timezone of local hosts's time.</p>
+</li>
+<li>
+<p>message: The text of the log message.</p>
+</li>
+<li>
+<p>process: Name of the program language method where the log is issued</p>
+</li>
+<li>
+<p>classname: Name of the program language class where the log is issued</p>
+</li>
+<li>
+<p>stacktrace: A report of the active stack frames at a certain point in time during the execution of a program.</p>
+</li>
+<li>
+<p>time: The timestamp is either the UTC format or the System Time of when the event occurred. The timestamp is configurable using the <i>configure-log-timestamp</i> tool. For information about using the <i>configure-log-timestamp</i> tool see the <i>Tools </i> chapter in this guide.</p>
+</li>
+</ul>
+<p>The following is an example of a log in the unified logging format:</p>
+<fig>
+<codeblock>{"host":"sps-ig-diameterapp-1","level":"INFO","log":{"classname":"com.alcatel.tpapps.pcrf.common.DiameterPeerManager:671","message":"Finished background OSI monitor.","stacktrace":"","threadname":"InactiveOSIMonitorMBean-1"},"process":"remoteOSIMonitor","service":"SPS","time":"2019-03-18T07:26:36.010Z","timezone":"America/Toronto","type":"log","system":"SPS_IG_19_3_R1_I126","systemid":"CBAM-347708862db84371977879338f3a33c2"}</codeblock>
+</fig>
+</section>
+<section id="rotate"><title>Log rotation</title>
+<p>To prevent Java application and database log files from becoming too large, rotation can be configured for each log file. If a log's file size reaches the specified limit, it will be rotated. There is no log rotation for the CDR logs.  </p>
+<note>The configuration of Logrotation can lead to an increase in disk usage. The logs are kept in
+                the log volumes of a VM. You must take care of the Dimensioning aspects of these
+                files and provision the disk volumes accordingly. For more details about volume
+                sizes and dimensioning aspects, refer to the section: ”NCC cloud-platform resources
+                and services” in the <i>NCC Installation and Upgrade Guide</i>.<p/></note>
+<sectiondiv>
+<p><b>Platform log rotation</b></p>
+<p>Logs from all NCC node components (for example, I/Os) are forwarded to the active OAME, and all
+                    of those logs are stored on each of the OAME VMs but accessible via the active
+                    OAME in the /var/log/system/nokia_harmonized.log files. Log rotation for
+                    platform logs is configured at installation. See the <i>“logrotate section”</i>
+                    in the <i>NCC Installation and Upgrade Guide </i> for information about
+                    configuring log rotation.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Application and Aerospike log rotation</b></p>
+<p>The NCC applications and the Aerospike database run as third-party applications with their own
+                    runtime environment. Logs from all NCC applications and databases reside under
+                    the /opt/tpa/logs/ directory of any VM that has either the Application or the
+                    Aerospike processes running. NCC specific Application and Aerospike log files
+                    found under /opt/tpa/logs/ directory on any VM and all of those log files that
+                    are aggregated on both the OAME VMs are stored under the /var/log/sps directory
+                    on both the OAME VMs. That is, Application logs are dumped at both OAME VMs. </p>
+<p>Log rotation for OAME logs is configured at installation. See the <i>“logrotate section”</i> in
+                    the <i>NCC Installation and Upgrade Guide</i> for information about configuring
+                    log rotation.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>WebSSO (CKEY) log rotation restrictions</b></p>
+<p>The CKEY logs are rotated on the basis of time and on the basis of size when configured. You must manually modify<i> /etc/logrotate.d/maxscale_logrotate </i>to make the logs compress and rotate on the basis of size. </p>
+<p>CKEY logs are not in complete harmonized format.</p>
+<p>The following is an example of the CKEY logs generated on the OAME in harmonized format:</p>
+<fig>
+<codeblock>{
+"log":
+
+{ "message": "2019-09-16 07:55:53,375 DEBUG [org.jboss.as.config] (MSC service thread 1-2) Configured system properties:" }
+,
+"type": "log",
+"service": "CKEY",
+"host": "sps-sm-2-ioho-0",
+"timezone": "America/Toronto",
+"system": "SPS_SM2_19_9_R1_I97",
+"systemid": "CBAM-dbc07e021baa489d9189c03b23513f33"
+}
+
+Following are the tags found:
+type -ok
+level -ok
+time - foudn inside message tag -&gt; is it correct?
+timezone ok
+system ok
+systemid ok
+host ok
+message ok
+classname nok
+threadname nok
+service ok
+system ok
+process nok</codeblock>
+</fig>
+</sectiondiv>
+</section>
+<section id="Platformlog"><title>Platform logs</title>
+<p>The platform logs are placed into the /var/log/ directory on the active OAME. </p>
+<p>The following Platform log is supported:</p><ul>
+<li>
+<p> /var/log/ha/ha.log (Roles (ACTIVE/STANDBY) are logged for each of the HA node types (IOHO, IOHD, OAME). </p>
+</li>
+</ul>
+<p>Log rotation is not applicable for the /var/log/ha/ha.log. </p>
+</section>
+<section id="applogs"><title>NCC Application Logs</title>
+<p>On OAME VMs, site log aggregation is done under the /var/log/sps directory on the OAME. For
+                application logs, the NCC sends INFO level and higher logs to the OAME. </p>
+<p>NCC specific Application and Aerospike log files found under /opt/tpa/logs/ directory on any VM
+                and that are aggregated on to both OAME VMs are stored under the /var/log/sps/
+                directory on the OAME VMs. Each of the VMs stores a copy of their local logs in the
+                /opt/tpa/logs/ directory and the same is consolidated on to both the OAME nodes in
+                the /var/log/sps directory, as follows:</p><ul>
+<li>
+<p>/var/log/sps/TPA_system.log (includes NCC ASR logs, Diameter, SM app logs, etc.) </p>
+</li>
+<li>
+<p>/var/log/sps/keycloak.log (for consolidation of keycloak logs from both IOHO nodes in harmonized format on both OAMEs)</p>
+</li>
+<li>
+<p>/var/log/sps/SPSServer.log</p>
+</li>
+<li>
+<p>/var/log/sps/Server.log</p>
+</li>
+<li>
+<p>/var/log/sps/localization.log</p>
+</li>
+<li>
+<p>/var/log/sps/Spotlight.log</p>
+</li>
+<li>
+<p>/var/log/sps/ManagedElement.log</p>
+</li>
+<li>
+<p>/var/log/sps/Provisioning.log (the SM provisioning log) </p>
+</li>
+<li>
+<p>/var/log/sps/ServiceManager.log (SM logs)</p>
+</li>
+<li>
+<p>/var/log/sps/UserAccess.log</p>
+</li>
+<li>
+<p>/var/log/sps/HLAPIServer.log </p>
+</li>
+<li>
+<p>/var/log/sps/LDAPSearch.log (LDAP logs)</p>
+</li>
+<li>
+<p>/var/log/sps/DiameterInterceptor.log </p>
+</li>
+<li>
+<p>/var/log/sps/DSCSecurity.log</p>
+</li>
+<li>
+<p>/var/log/sps/aerospike_warning.log (Aerospike database-related logs) </p>
+</li>
+<li>
+<p>/var/log/sps/Cdr.log (CDR logs)</p>
+</li>
+<li>
+<p>/var/log/sps/watson.log (Watson shell logs)</p>
+</li>
+</ul>
+<p>The EDR logs are configured in tpaEventLogging.xml. If EDR log does not need to aggregate to the OAME, the output log file can be configured to use a directory other than /opt/tpa/logs.</p>
+<note>Alarm logging is available in /opt/tpa/logs/SPSServer.log on the local node in Unified Format
+                but is not consolidated in the OAME node. Alarm history is recorded in
+                /var/log/calm/history.log and only shows the alarm history for clear
+                alarms.<p/></note>
+<note>HA service specific alarms are only available in /var/log/messages on the local node. Traps
+                that trigger these alarms will not be sent either.<p/></note>
+</section>
+<section id="Oplog"><title>Operating or other system logs</title>
+<p>The NCC occasionally writes messages to Operating system log files or other application log
+                files. An aggregated view of logs from all nodes in each site can be found within
+                the /var/log/system/ directory on both the OAMEs. </p>
+<p>The log rotation of Operation system and other system logs is not only done on OAME nodes but on
+                all nodes. See the <i>“logrotate section”</i> in the <i>NCC Installation and Upgrade
+                    Guide</i> for information about configuring log rotation.</p>
+<p>The following are common Linux log files that are created and stored:</p><ul>
+<li>
+<p>/var/log/cron (Crond logs (cron job))</p>
+</li>
+<li>
+<p>/var/log/maillog (Mail server logs)</p>
+</li>
+<li>
+<p>/var/log/messages (General message and system related; any VRRP related issue (Keepalived) can be traced using /var/log/messages) </p>
+</li>
+<li>
+<p>/var/log/secure (Authentication log)</p>
+</li>
+<li>
+<p>/var/log/spooler (All printer and printing related log messages.)</p>
+</li>
+</ul>
+<p>Also, see the operating System or other application documentation for more information about Operating or other system logs.</p>
+</section>
+<section><title>Spotlight logging</title>
+<p>Spotlight logging allows you to log all available messages down to the trace level for the specified device, regardless of the logging level currently set for the system.</p>
+<p>When a device is put into spotlight, it will log everything pertaining to that device into the Spotlight.log. </p>
+<p>Devices should ideally not be in spotlight for an extended amount of time since spotlight adds significant overhead, but for just that one device. The Spotlight window should be relative to the expected time to troubleshoot the issue with the customer. As well, too many devices in spotlight will have a significant overhead.</p>
+<sectiondiv>
+<p><b>Enabling Spotlight logging on a device</b></p>
+<p>To configure the device for Spotlight logging, you need to add a custom data attribute to the custom data dictionary, which makes the attribute available for selection in the GUI. "SpotlightLoggingEnabled" is the custom data name, and it takes the value type Date&amp;Time. Then that attribite must be added to a device's Custom Data, which is used to enable or disable spotlight on a device. You must provision "SpotlightLoggingEnabled" custom data to each device on which you want to enable Spotlight logging. To add the custom data:</p><ol>
+<li>
+<p>Add the following custom data to the custom data dictionary as shown in the “Custom data
+                            dictionary configuration” section of the <i>NCC-Subscriber Manager
+                                Guide</i>.</p>
+<table colsep="1" rowsep="1">
+                            <tgroup cols="3">
+                                <colspec colname="col1"/>
+                                <colspec colname="col2"/>
+                                <colspec colname="col3"/>
+                                <thead>
+                                    <row>
+                                        <entry>
+                                            <p>Parameter</p>
+                                        </entry>
+                                        <entry>
+                                            <p>Description</p>
+                                        </entry>
+                                        <entry>
+                                            <p>Options</p>
+                                        </entry>
+                                    </row>
+                                </thead>
+                                <tbody>
+                                    <row>
+                                        <entry> Name </entry>
+                                        <entry> Add SpotlightLoggingEnabled as the name for the
+                                            custom data. </entry>
+                                        <entry> String type </entry>
+                                    </row>
+                                    <row>
+                                        <entry> Context Type </entry>
+                                        <entry> DEVICE </entry>
+                                        <entry> Enum Type </entry>
+                                    </row>
+                                    <row>
+                                        <entry> Value Type </entry>
+                                        <entry> DATE_TIME </entry>
+                                        <entry>
+                                            <p>Enum type</p>
+                                            <p>Entered as epoch time in milliseconds.</p>
+                                            <p>The value for this parameter is entered as a future
+                                                date+time converted to Unix Epoch format with 3
+                                                zeros (000) appended at the end because NCC needs
+                                                the time in milliseconds. For example, if the future
+                                                date+time is 2019 June 1st 10:00:00, you must
+                                                convert this to Unix Epoch time, which is
+                                                1559383200. Further, because NCC requires the value
+                                                in milliseconds, you must include “000” and enter
+                                                the value as: 1559383200000.</p>
+                                        </entry>
+                                    </row>
+                                </tbody>
+                            </tgroup>
+                        </table>
+<p>
+<b>Note: </b>This step only needs to be done once, so the custom data becomes available as an option in the Device's custom data list.</p>
+</li>
+<li>
+<p>Push the custom data to all the MEs with the Distribute button.</p>
+</li>
+<li>
+<p>Add this custom data to the device. Here you configure the device from the Device menu under the Subscriber Manager GUI in SM, continuing the configuration until you get to the Custom Data panel, where you select SpotlightLoggingEnabled. The value type will be added automatically.</p>
+</li>
+<li>
+<p>In the same panel, set the value to be some time in the future using UTC time since Epoch. Use an Epoch converter to calculate the value date time since epoch, then enter that number (for example, the converted number for March 27, 2019 1:44:00 is 1553651040). The spotlight will end at the date and time you specify. Do not configure the time to be too far into the future, and do not keep spotlighting on permanently.</p>
+</li>
+</ol>
+<p>The logs are stored on each OAME VM in the /var/log/sps/Spotlight.log directory.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Disabling Spotlight logging on a device</b></p>
+<p>Spotlight logging will end naturally at the date and time specified when you enabled spotlight via the custom data "SpotlightLoggingEnabled". However, to disable Spotlight on a device at anytime, you can perform one of the following:</p><ol>
+<li>
+<p>Remove the "SpotlightLoggingEnabled" attribute from the device's custom data.</p>
+</li>
+<li>
+<p>Set the "SpotlightLoggingEnabled" attribute to null.</p>
+</li>
+</ol>
+</sectiondiv>
+</section>
+<section><title>User activity logs</title>
+<p>The logging of user actions is enabled with Watson shell. Watson shell is a specialized login shell that is provisioned for any user. This shell is transparent to a user and automatically records to a log file all the command-line input and output of a user. Watson shell is the default for all users. Accounts can be configured to use or not to use Watson shell. This configuration is done on the Active OAME node with <codeph>modify -user</codeph> tool and propagated to all the other nodes. Only <codeph>root</codeph> users are allowed to disable Watson shell.</p>
+<p>For information on <codeph>modify -user</codeph> tool, see section <!--xref URI: t-oam-security-modify-user.xml#modify-user-tool--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-modify-user-tool"/>.</p>
+<p>The output log file is stored in the <filepath>/var/log/watson</filepath> directory and is available on every VM. The format of the log file name is &lt;username&gt;.&lt;pid&gt;.&lt;count&gt;</p>
+<p>where:</p><ul>
+<li>
+<p>&lt;username&gt; is a user-defined string. If the value is not assigned, then it is unknown.</p>
+</li>
+<li>
+<p>&lt;pid&gt; is the <codeph>watsond</codeph> Process ID (PID) for the Parent PID (PPID) of the <codeph>watsond</codeph> PPID (which matches the PID reported in <codeph>who - u</codeph> command).</p>
+</li>
+<li>
+<p>&lt;count&gt; represents the log file’s numerical position in the sequence of multiple segments of the log for an individual session.</p>
+</li>
+</ul>
+<note>
+<p>If more than one file with the same name exists, a distinguishing numeric suffix is added to the file name.</p>
+<p>When a process with a given &lt;pid&gt; exits, the next <codeph>watson</codeph> daemon will append the <filepath>.done</filepath> suffix to the name of the log file.</p>
+</note>
+<p>The key characteristics of the Watson shell log are the following:</p><ul>
+<li>
+<p>A designated log is maintained for each user provisioned with Watson shell.</p>
+</li>
+<li>
+<p>The log contains host, date, and time information.</p>
+</li>
+<li>
+<p>The log does not store a user password in any form.</p>
+</li>
+<li>
+<p>The log identifies a user and all the commands entered by the user.</p>
+</li>
+<li>
+<p>The log rotation is defined by the file size and is done automatically.</p>
+</li>
+<li>
+<p>Only <codeph>root</codeph> users have access to the Watson shell log files.</p>
+</li>
+</ul>
+<p>The Watson shell logs from all the NCC nodes are aggregated on the Active OAME node in
+                    <filepath>/var/log/sps/watson.log</filepath> file.</p>
+<sectiondiv>
+<p><b>Configuration of Watson shell logging</b></p>
+<p>Watson shell logging can be configured with a configuration file. The configuration file allows a user to enable or disable logging on the system. If logging is enabled, logging reports can then be customized. The changes are accepted upon the start of a new <codeph>watsond</codeph> daemon or the restart of an existing <codeph>watsond</codeph> daemon (a user session). The following applies to Watson shell logging:</p><ul>
+<li>
+<p>The configuration parameters are stored in <filepath>via /etc/userlog.conf</filepath> file.</p>
+</li>
+<li>
+<p>Use <codeph>vi /etc/userlog.conf</codeph> command to modify <filepath>via /etc/userlog.conf</filepath> file.</p>
+</li>
+<li>
+<p>To customize logging reports, logging must be enabled.</p>
+</li>
+</ul>
+<p>The following table describes the configuration parameters of Watson shell logs.</p>
+<table>
+<tgroup cols="4">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<colspec colname="col3"/>
+<colspec colname="col4"/>
+<thead>
+<row>
+<entry>
+<p>Parameter</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+<entry>
+<p>Values</p>
+</entry>
+<entry>
+<p>Notes</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+ENABLED
+</entry>
+<entry>
+This parameter controls whether or not to perform logging of subsequent user sessions.
+</entry>
+<entry>
+Y or N
+</entry>
+<entry>
+Default: Y
+</entry>
+</row>
+<row>
+<entry>
+TOTAL_MAXIMUM_SIZE
+</entry>
+<entry>
+This parameter defines the maximum space occupied by all the files in <filepath>/var/log/watson</filepath> directory.
+</entry>
+<entry>
+1000000-2000000000 bytes
+</entry>
+<entry>
+Default: 10000000 bytes
+</entry>
+</row>
+<row>
+<entry>
+FILE_MAXIMUM_SIZE
+</entry>
+<entry>
+This parameter defines the maximum size of a single log file.
+</entry>
+<entry>
+100000-1000000 bytes per file
+</entry>
+<entry>
+Default: 200000 bytes
+</entry>
+</row>
+<row>
+<entry>
+RESPONSE_MAXIMUM_SIZE
+</entry>
+<entry>
+This parameter defines the maximum response logged following each user input.
+</entry>
+<entry>
+0-10000 bytes logged per keystroke
+</entry>
+<entry>
+<p>0 = no limit</p>
+<p>Default: 250 bytes</p>
+</entry>
+</row>
+<row>
+<entry>
+USERS_TO_LOG
+</entry>
+<entry>
+This parameter is a comma-separated list of user names that require logging.
+</entry>
+<entry>
+Variable characters
+</entry>
+<entry>
+<p>Default: all</p>
+<p>By default this applies to all users.</p>
+</entry>
+</row>
+<row>
+<entry>
+USERS_NOT_TO_LOG
+</entry>
+<entry>
+This parameter is a  comma-separated list of user names that do not require logging.
+</entry>
+<entry>
+Variable characters
+</entry>
+<entry>
+<p>By default the list is empty.</p>
+<p>This selection overrides USERS_TO_LOG.</p>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+</section>
+</conbody></concept>

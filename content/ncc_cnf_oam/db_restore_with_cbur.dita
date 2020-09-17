@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="db_restore_with_cbur">
+    <title>NCC restore</title>
+    <body>
+        <p>The DB restore is not a recurring automated activity, but it is performed only when
+            needed. DB restore has to be performed during a maintenance window, when all the traffic
+            has been diverted from the site where the DB restore is needed. This is necessary as the
+            containers have to be stopped before the DB restore and restarted once the DB restore is
+            complete. If the traffic is not stopped then errors would occur when the containers go
+            down.</p>
+        <p>A DB restore can be launched by calling the Rest API provided by Backup and Restore. </p>
+        <p>Because the containers have to be stopped, the db-restore script cannot be executed as
+            part of a Backup and Restore policy, but it has to be performed manually after the
+            containers are stopped. What the Backup and Restore policy does during the restore is to
+            transfer the backed up files from Backup and Restore master to the centralmanagement
+            container.</p>
+        <p><b>To restore NCC</b><ol id="ol_umx_hjp_wmb">
+                <li>For OpenShift, the app namspace must be the same as cbur-master namespace, or
+                    backup and       restore will
+                        fail.<codeblock>CBUR_MASTER_NAMESPACE=ncms
+RELEASENAME=sps</codeblock><note>The
+                        variables <codeph>NAMESPACE</codeph> and <codeph>POD_NAME_PREFIX</codeph>,
+                        which defines the app namespace and pod name prefix respectively, are set in
+                        the <codeph>site.conf</codeph> file.</note></li>
+                <li>Copy the latest backup from the CBUR master to the <codeph>/db-backup</codeph>
+                    directory (volume mount) of the $POD_NAME_PREFIX$RELEASENAME-centralmanagement pod with
+                    the following
+                    command.<codeblock>curl -vkL --header 'Content-Type: multipart/form-data' --header 'Accept: application/json' -X POST --header 'Content-Type: application/x-www-form-urlencoded' -d 'backup_id=&amp;volume=&amp;object_type=&amp;object_name=' http://cbur-master-cbur.$CBUR_MASTER_NAMESPACE.svc.cluster.local:80/v2/helm/release/restore/$NAMESPACE/$RELEASENAME?helm_version=3</codeblock></li>
+                <li>Check the latest backup has been restored on centralmanagement
+                    pod:<codeblock>kubectl -n $NAMESPACE exec $POD_NAME_PREFIX$RELEASENAME-centralmanagement-85545bc679-xx4ql -- ls -lRh /db-backup</codeblock></li>
+                <li>Stop the containers with the following Kubernetes command to scale the replicas
+                    count down to
+                    0.<codeblock>kubectl scale --replicas=0 deployment -l scaleForDbRestore=true -n $NAMESPACE</codeblock></li>
+                <li>For containers not using the Horizontal Pod Autoscaler, determine the number of
+                    replicas before scaling down so that they may be correctly scaled up once the DB
+                    restore is
+                    complete.<codeblock>CM_REPLICAS=$( kubectl get statefulset $POD_NAME_PREFIX$RELEASENAME-centralmanagement -n $NAMESPACE -o jsonpath="{.status.replicas}")</codeblock></li>
+                <li>For installations which are not SM-only, run the following command to obtain the
+                    number of IOHD replica stateful
+                    sets.<!--Dray: FIXME; what does this actually do?--><codeblock>IOHD_REPLICAS=$( kubectl get statefulset $POD_NAME_PREFIX$RELEASENAME-iohd -n $NAMESPACE -o jsonpath="{.status.replicas}")</codeblock></li>
+                <li>Check that the following values have been set
+                    correctly.<codeblock>echo $CM_REPLICAS
+echo $IOHD_REPLICAS</codeblock></li>
+                <li>Scale down the
+                    containers.<codeblock>kubectl scale --replicas=0 statefulset -l scaleForDbRestore=true -n $NAMESPACE</codeblock></li>
+                <li>Manually launch db-restore on the centralmanagement pod.<ol id="ol_ojy_kkp_wmb">
+                        <li>Access the centralmanagement pod using the correct pod
+                            name.<codeblock>kubectl exec -it -n $NAMESPACE $POD_NAME_PREFIX$RELEASENAME-centralmanagement-85545bc679-xx4ql  -- /bin/bash</codeblock></li>
+                        <li>Once in the centralmanagement pod, launch
+                            db-restore.<codeblock>/opt/tpa/bin/db-restore -f -d /db-backup</codeblock></li>
+                    </ol></li>
+                <li>After db-restore has completed, exit the centralmanagement pod and scale up the
+                    containers that were scaled
+                    down.<codeblock>kubectl scale --replicas=1 deployment -l scaleForDbRestore=true -n $NAMESPACE
+kubectl scale --replicas=$CM_REPLICAS statefulset  $POD_NAME_PREFIX$RELEASENAME-centralmanagement -n $NAMESPACE</codeblock></li>
+                <li>For installations which are not SM-only, run the following command to scale up
+                    ME
+                    pods.<codeblock>kubectl scale --replicas=$IOHD_REPLICAS statefulset  $POD_NAME_PREFIX$RELEASENAME-iohd -n $NAMESPACE</codeblock></li>
+            </ol></p>
+    </body>
+</topic>

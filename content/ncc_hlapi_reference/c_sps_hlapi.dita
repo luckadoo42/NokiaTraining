@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09018-cn06-pezza-d1e807"><title>NCC HLAPI</title><conbody>
+<section><title>Overview</title>
+<p>The Nokia Converged Charging (NCC) High-Level Application Programming Interface (HLAPI) is a SOAP
+                service layer for subscriber provisioning that exposes high-level tasks, as opposed
+                to the object-oriented APIs in the SM REST API set.  </p>
+<p>These APIs support a variety of users, including operator IT systems for configuring,
+                provisioning, and querying data in NCC:</p>
+<p>The SOAP layer is built on top of the REST layer, invoking REST operations to perform its work.
+                The HLAPI exposes a SOAP WSDL for ease of migration to NCC.  This interface defines
+                two generic task formats: submit and retrieve.  Within this framework, various task
+                modules can be deployed, which can be tailored to a specific customer or
+                application.</p>
+<p>The High-Level API is an abstraction layer which overlays the mostly discrete REST APIs of SM. </p>
+<p>The advantages that an HLAPI provide are:</p><ul>
+<li>
+<p>The NCC subscriber model consists of a set of loosely connected entities which provides
+                        flexibility, but can lead to complicated provisioning scenarios. Simpler
+                        APIs are desired.</p>
+</li>
+<li>
+<p>The HLAPIs can be customized to provide a compatible API on NCC for existing IT systems that
+                        already interface to other Nokia legacy systems. </p>
+</li>
+</ul>
+<p>The NCC HLAPI abstracts common provisioning scenarios and presents a simpler upstream set of
+                APIs, which internally uses the SM REST APIs. It is implemented as a runtime
+                infrastructure in SM, with the ability to plug in API modules that can be
+                customized. </p>
+<p>An important aspect of this design is that it supports HLAPI layers that are:</p><ul>
+<li>
+<p>customized for an application or customer</p>
+</li>
+<li>
+<p>installed separately</p>
+</li>
+</ul>
+<p>The target run-time environment is the SM application server.  This provides for high-availability scaling with performance, logging, etc. </p>
+</section>
+<section><title>How it Works</title>
+<p>In order for an upstream client to establish login session with NCC, a user id with sufficient
+                permissions to do subscriber provisioning and data retrieval must be configured for
+                the client via the NCC GUI. The administrator who creates this NCC user must log in
+                once as this user via the NCC web GUI and change the user's initial password so that
+                the upstream client is not required to change it. </p>
+<p>An upstream client initiates a user session by sending a LoginRequest to NCC with the upstream
+                user and password created by the administrator. If the login succeeds, NCC returns a
+                LoginResponse with a sessionId. The upstream client must then include this sessionId
+                in all of the submit and retrieve requests it sends to NCC. For performance reasons,
+                it is best for an upstream client to send one login request for each NCC user
+                session and then keep sending submit and retrieve requests using this same session
+                until the upstream client has nothing further to send. This is preferable to sending
+                a new login request and establishing a new user session for each submit or retrieve
+                request. </p>
+<p>The number of simultaneous user sessions initiated by the upstream client to NCC should be
+                sufficient to achieve the maximum required provisioning rate on NCC, as the
+                interface is synchronous. A test cycle should be planned to determine the
+                provisioning rate achieved via a single connection to NCC and then increase the
+                number of connections to reach the maximum provisioning rate required. Increasing
+                the number of connections beyond this limit will not increase the provisioning rate
+                but it will make the response times longer for each connection to NCC. Note that the
+                login sessions from upstream clients (where the user type is 'Upstream') do not
+                count towards the licensed maximum simultaneous user session limit on NCC.</p>
+</section>
+<section><title>Runtime Environment</title>
+<p>HLAPI consists of two software modules: a common infrastructure module and an application-specific task module.  Both are written in Java, and are installed in SM.  The common module is included in the standard deployment of SM, whereas the task modules are loaded separately as needed for a particular customer or application.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/HLAPI_high-level_architecture_default.png-->
+<image href="../images/hlapi_high-level_architecture_default.png"/>
+</fig>
+<sectiondiv>
+<p><b>Infrastructure Module</b></p>
+<p>This component includes the SOAP service, which exposes the WSDL including implementations of its 5 methods: login, logout, submit, retrieve, ping.  Three of the methods: login, logout, ping, are handled by the infrastructure.  </p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Task Module</b></p>
+<p>A task module consists of a collection of java classes, one per API method, plus supporting code.  Each method mediates between its input and output parameters, and the SM REST interfaces it invokes to perform its actions.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Manually setting port 8080</b></p>
+<p>When HLAPI is installed using the '"custom/packagekey": "hlapisurepay"' record in the SM_SDC_CONFIG.json, then additional manual intervention is required. You need to add port 8080 to the firewall rules on IOHO nodes using the “firewall-cmd --permanent --add-port=8080/tcp” command.</p>
+</sectiondiv>
+</section>
+<section><title>Supported HLAPIs</title>
+<p>The following interfaces and classes are provided by the NCC.</p><ul>
+<li>
+<p>AddSubscriberToGroup.java</p>
+</li>
+<li>
+<p>AdjustBalance.java </p>
+</li>
+<li>
+<p>AdjustBucket.java</p>
+</li>
+<li>
+<p>ChangeSubscriberID.java </p>
+</li>
+<li>
+<p>CreateGroupAccount.java</p>
+</li>
+<li>
+<p>CreateSubscriberAccount.java</p>
+</li>
+<li>
+<p>InsertGroupAccountIntoHierarchy.java </p>
+</li>
+<li>
+<p>ProvisionSharedBucketSpendingLimit.java</p>
+</li>
+<li>
+<p>QueryBucket.java </p>
+</li>
+<li>
+<p>SubscribeBundle.java</p>
+</li>
+</ul>
+</section>
+</conbody></concept>

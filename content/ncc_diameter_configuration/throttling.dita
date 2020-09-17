@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-cn01-tczza-d1e5024"><title>Throttling</title><conbody>
+<section><title>Diameter Message throttling</title>
+<p>Diameter message throttling can be used to limit the rate at which Diameter requests flow through the system.  Throttling is implemented as a plugin-based feature which appears twice in the plugin sequence. The ingress plugin is in the request plugin sequence, and the egress plugin and is deployed at the end of the request plugin sequence.</p>
+<p>The throttling plugin uses message filters to define scenarios for which message rates  need to be limited and the actions to take to when the message rated exceeds a threshold.</p>
+<p>Throttling profiles are used to encapsulate throttling configuration.  There are four types of throttling profiles defined for the feature.  Depending on the profile type, it can be invoked by either the ingress throttling plugin or egress throttling plugin.</p>
+<note>Diameter peer connections are the only supported throttling monitoring points in this release;
+                i.e.: throttling profiles can be directly associated to peers. To monitor other
+                sources and destinations, a throttling profile must use source or destination
+                hosts/realms explicitly in filter criteria. Note that, in this release, throttling
+                on an egress realm is not supported.<p/></note>
+<sectiondiv>
+<p><b>Diameter throttling profile</b></p>
+<p>The NCC supports limiting the rate at which requests can ingress and egress the NCC. The
+                    throttling parameters are configured through profiles.</p>
+<p>There are 4 types of throttling profiles, in order of execution:</p><ul>
+<li>
+<p>Inbound, for example used to throttle requests that originate from a particular client origin host or realm or from a Diameter application and command combination. This is used at system level.</p>
+</li>
+<li>
+<p>Ingress Peer, for example used to throttle requests arriving via a particular directly connected peer.</p>
+</li>
+<li>
+<p>Egress Peer, for example used to throttle requests routed by the NCC through a directly connected
+                            peer.</p>
+</li>
+<li>
+<p>Outbound, for example used to throttle requests destined to a destination host or realm. This is used at system level.</p>
+</li>
+</ul>
+<p>All profile types support adding further criteria (for example, application and command) to focus throttling on more specific scenarios.</p>
+<p>A request can be throttled by invoking a discard or reject action on the request.</p>
+<p>The criteria and actions of the profiles are configured as message filters (see the section
+                    “Message Filters” in the <i>NCC-Administration Guide</i> for more information
+                    about message filters)</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Throttling profile parameters</b></p>
+<p>To configure the Throttling profile:</p>
+<p>Select the Throttling tab and then Throttling Profile from the hamburger menu. In the basic Details window of the Throttling Profiles screen, enter the profile name, a description, the security domain.</p>
+<p>In the same window, enter a filter group name, and choose one of the following profile types:</p><ul>
+<li>
+<p>Inbound</p>
+</li>
+<li>
+<p>Outbound</p>
+</li>
+<li>
+<p>Ingress Peer</p>
+</li>
+<li>
+<p>Egress Peer</p>
+</li>
+</ul>
+<p>Tap the Add Message Filter button and specify the maximum number of requests per interval (default 1) along with the interval size, entered in milliseconds (default 100) to tune the overall rate of requests per interval. You can configure either the Max reqs per interval or the Interval Size, or both, to increase or decrease the overall rate. For example, </p>
+<p>If you want to throttle an ingress peer at 100 messages per second, you could configure the following:</p><ul>
+<li>
+<p>Max reqs per interval = 10</p>
+</li>
+<li>
+<p>Interval size = 10 ms</p>
+</li>
+</ul>
+<p>
+<codeph>10 messages per interval /interval size of 0.10 = 100 messages/second</codeph>
+</p>
+<p>By reducing the Interval size, the same result can be achieved by changing the Max reqs per interval, as follows:</p>
+<p>
+<codeph>5 messages per second/50 ms Interval = 100 messages/second</codeph>
+</p>
+<p>This is followed by adding the message criteria and actions required to identify the messages that need to be throttled.</p>
+<note>
+<p>The message rate for the throttling is configured as based on the aggregate traffic for all the processing VMs. Each processing VM supports a message rate that is the configured rate divided by the number of active processing VMs.  For example, when there are five processing VMs sharing the processing load, 10,000 requests per second is applied as 10000/5=2000 requests per second on each processing VM.</p>
+</note>
+</sectiondiv>
+<sectiondiv>
+<p><b>Configuring throttling</b></p>
+<p>Diameter throttling is configured by assigning a throttling profile to a throttling configuration using the Service Manager GUI. The throttling profiles must exist before adding them to the Throttling Configuration.</p>
+<table colsep="1" rowsep="1">
+                                                  <tgroup cols="3">
+                                                  <colspec colname="col1"/>
+                                                  <colspec colname="col2"/>
+                                                  <colspec colname="COLSPEC0"/>
+                                                  <thead>
+                                                  <row>
+                                                  <entry>
+                                                  <p>Parameter</p>
+                                                  </entry>
+                                                  <entry>
+                                                  <p>Description</p>
+                                                  </entry>
+                                                  <entry>
+                                                  <p>Options</p>
+                                                  </entry>
+                                                  </row>
+                                                  </thead>
+                                                  <tbody>
+                                                  <row>
+                                                  <entry> Name </entry>
+                                                  <entry> Enter a name for the throttling
+                                                  configuration. </entry>
+                                                  <entry/>
+                                                  </row>
+                                                  <row>
+                                                  <entry> Throttling Interval Before Alarm </entry>
+                                                  <entry> Enter a throttling interval that specifies
+                                                  the number of consecutive throttled intervals
+                                                  before logging an alarm. </entry>
+                                                  <entry> 1 to 10 </entry>
+                                                  </row>
+                                                  <row>
+                                                  <entry> Inbound Profiles </entry>
+                                                  <entry> Select the inbound profile name to include
+                                                  in the configuration. </entry>
+                                                  <entry> — </entry>
+                                                  </row>
+                                                  <row>
+                                                  <entry> Outbound Profiles </entry>
+                                                  <entry> Select the outbound profile name to
+                                                  include in the configuration. </entry>
+                                                  <entry> — </entry>
+                                                  </row>
+                                                  <row>
+                                                  <entry> Description </entry>
+                                                  <entry> A textual a description of the
+                                                  configuration. </entry>
+                                                  <entry> — </entry>
+                                                  </row>
+                                                  <row>
+                                                  <entry> Security Domain </entry>
+                                                  <entry> The security domain for the configuration. </entry>
+                                                  <entry> — </entry>
+                                                  </row>
+                                                  </tbody>
+                                                  </tgroup>
+                                                  </table>
+</sectiondiv>
+</section>
+</conbody></concept>

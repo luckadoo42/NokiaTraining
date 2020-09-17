@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="architecture_enabler_components">
+    <title>Architecture enabler components</title>
+    <conbody>
+        <p>This section describes the enabler components of NCC CNF architecture.</p>
+        <section id="section_tyz_rnc_llb">
+            <title>Diameter IO handler</title>
+            <p>The Diameter IO Handler (IOHD) terminates 4G Diameter traffic over TCP and converts
+                into HTTP for service mesh friendly communication with the charging pods. Traffic is
+                load balanced across the pool of available charging pods.</p>
+            <p>All HTTP Ingress traffic, including both 5G HTTP/2 as well as the various other HTTP
+                traffic, is load balanced directly by the Kubernetes / Istio infrastructure to the
+                appropriate pods. There is no IO handler.</p>
+        </section>
+        <section id="section_vcv_jwt_mlb"><title>Lock and Transaction Manager</title><p> Lock and
+                Transaction Manager (LTM) includes two related but distinct functions: Lock Manager
+                and Transaction Manager.</p><p><b>Lock Manager</b></p><p>In order to ensure
+                consistency of DB read/write operations, DB users obtain locks from the centralized
+                Lock Manager. Since every transaction needs one or more locks, the Lock  Manager
+                must support 100Ks of TPS with very low latency. The Lock  Manager supports queuing
+                of requests, responses to lock requests, and cleanup of orphaned locks. For
+                performance reasons, the Lock Manager keeps all its data in local memory and is
+                currently stateful. </p><p><b>Transaction Manager</b>
+            </p><p>When a transaction requires updates to multiple records, transaction management
+                ensures all records are updated consistently, or not at all, by rolling back
+                partially completed transactions. The NCC architectural intent is that the majority
+                of transactions involve only a single record and therefore do not require any
+                transaction management (which allows for optimum performance).</p><p>NCC provides
+                its own simple transaction management since it is not available in the database
+                itself. NCC provides very simple functionality compared to traditional Oracle
+                transaction management. Multiple locks are managed as one transaction with one guard
+                timer. Locks can be added to an existing transaction without impacting the original
+                guard timer. If the guard timer expires, LTM triggers the RollBack Manager
+                (RBM).</p>LTM clients communicate with the LTM server using HTTP and leveraging
+            Istio.</section>
+        <section id="section_syw_ync_llb">
+            <title>Rollback Manager</title>
+            <p>The Rollback Manager (RBM) restores the original values to the DB records to return
+                the DB to its pre-transaction state. RBM must have access to previous values of data
+                (before the transaction began). When transaction management is enabled, the system
+                stores those values into a new Aerospike record for each updated record, just before
+                writing the new records. If the transaction succeeds, the old value records are
+                deleted. If the transaction fails, the RBM uses the records of old values to restore
+                the DB back to its pre-transaction state. The records of old values are then
+                deleted.</p>
+            <p>The rollback component is centralized as only the transactions in the vulnerable
+                stage between writing their first and last records need to be rolled back. LTM sends
+                requests to the rollback component to roll back orphaned transactions (for example,
+                if a requesting application fails and does not complete the transaction) and extends
+                the lock time slightly to allow the rollback to complete. For example, if a pod
+                fails that was processing 300 TPS lasting less than 100 ms each (&lt; 30
+                transactions in progress) and only 33% of the transactions are in the phase where
+                rollback is required, then only 10 transactions need to be rolled back.</p>
+            <p>Applications might also request a rollback directly if an exception occurs where the
+                transaction cannot be completed. For example, if a DB error occurs on the second or
+                later DB write, then the earlier DB writes must be rolled back.</p>
+        </section>
+        <section id="section_tyw_ync_llb">
+            <title>Timed Events Manager</title>
+            <p>The Timed Events Manager (TEM) provides a durable, robust and high-performance
+                capability for managing the triggering of event processing that must be performed at
+                specific times. TEM data is stored in the DB to achieve this durability as well as
+                replication to the mate NCC site. TEM uses Kafka events to alert an application
+                handler of the event trigger. Normally TEM only sends these event triggers on the
+                NCC site that is primary for a particular set of subscribers, but in the event when
+                the primary is down, the TEM on the secondary site triggers the Kafka events for
+                that set of subscribers.</p>
+        </section>
+        <section id="section_cs1_14c_llb">
+            <title>Kafka</title>
+            <p>Kafka is used in NCC for several purposes.</p>
+            <p>Application components can subscribe to data change notification. The DB access layer
+                publishes the old and new data values in notifications on a publish/subscribe topic.
+                That is, any Kafka consumer that subscribes to the topic gets all of the messages in
+                the topic, so that all consumers learn about the DB change. </p>
+            <p>Applications that generate CDRs submit the CDRs to a Kafka work queue. The Kafka
+                consumers in that case share the load of reading the CDRs, so that each CDR is read
+                by one consumer, that is, each topic partition is assigned to exactly one Kafka
+                consumer at all times.</p>
+            <p>TEM publishes TEM triggers on Kafka work queues. The consumers get work items such as
+                subscriber Life Cycle Management (LCM) events, device audit events, and session
+                timeout events and take action.</p>
+            <p>Kafka is configured with a replication factor of 2 to provide redundancy with the
+                minimal resources used (Cloudera recommends setting the replication factor to 3). A
+                good configuration with 3 or more brokers is replication factor = 2, minimum in-sync
+                replicas = 1, and acks = all (all in-sync replicas). That allows SU to update a
+                broker while writes continue to at least 2 brokers (the new leader and one
+                follower). When a broker returns to service, Kafka copies data to it that the broker
+                missed to make it in-sync. Once the recovered broker is in-sync, it resumes topic
+                partition leadership/followership for the partitions it had before the failure (or
+                SU). Setting acks = all helps avoid missed messages during leader changes. The new
+                follower does not likely become in-sync during an SU because the original leader or
+                follower returns to the cluster within seconds. However, before the switch back to
+                the updated broker, that broker is already in-sync and is part of acks = all in-sync
+                replicas to allow a seamless transition.</p>
+            <p>Software updates for brokers must wait for brokers to return to the in-sync state
+                before updating a subsequent broker if rack awareness is not enabled. Given that the
+                number of Kafka brokers required for NCC is not large, NCC CNF disables Kafka rack
+                awareness and simply wait for brokers to be in-sync before updating the next broker.
+                Whether or not NCC uses Kafka rack awareness, NCC requires a Kubernetes operator to
+                manage updates for Kafka brokers.</p>
+        </section>
+        <section id="section_ycz_5rc_llb">
+            <title>Database</title>
+            <p>NCC uses a high-performance clustered in-memory NoSQL database from Aerospike. It
+                supports advanced data types with nesting (NCC uses lists, maps, lists of maps, and
+                more), N-way geographic replication between sites (clusters), flexible data
+                migration within the cluster to maintain the requested replication factor,
+                tombstoning to prevent resurrection of deleted records, and many other advanced
+                features.</p>
+            <p>NCC uses a replication factor of 2 for all namespaces, meaning that Aerospike ensures
+                that two copies of every record always exist within the cluster. When a DB pod
+                fails, data migration happens within the cluster to add a copy of those records onto
+                the other DB pods. When that failed DB pod recovers, the records are migrated back
+                onto that recovered pod again.</p>
+            <p>DB containers are horizontally scalable, where dimensioning in some deployments is
+                driven by the need for more TPS, and in other deployments by the need for more
+                memory. Note that DB containers cannot scale-in and scale-out as freely as most
+                other container types, since even in times of low traffic TPS, the database records
+                still require a similar amount of memory. This creates a "minimum number" of
+                database container instances, independent of traffic load. For this reason, the
+                Aerospike DB pods are manually scalable at this time, rather than automatically
+                scalable.</p>
+            <p>Most NCC records are 2-way replicated in the operator's network, using Aerospike XDR,
+                with a mate NCC site. (Two copies of a record within a cluster/site, replicated with
+                another site where there are also two copies in that cluster.) The global mapping
+                records might be N-way replicated in the network, if the operator is using a
+                Networked NCC Pair deployment model.</p>
+            <p>The DB layer built into the pods of DB clients supports a pub/sub feature that allows
+                clients to subscribe to notifications of DB record changes. Kafka is used as the
+                pub/sub provider. The DB layer inserts into Kafka, for subscribed changes, the
+                before and after values for the changed record. Note that Aerospike also provides a
+                change notification feature, but it does not provide the original data values that
+                the NCC applications require.</p>
+            <p><b>DB Zones, rack awareness and DB software updates</b></p>
+            <p>Aerospike supports rack awareness, a feature that NCC uses to configure one-half of
+                its DB instances in rack 1 and the other half in rack 2. Aerospike keeps one copy of
+                a record in rack 1 and the other copy in rack 2. </p>
+            <p>Rack awareness provides some improvement to our NCC availability, as it allows us to
+                lose multiple DB instances in the same rack in rapid fire, without losing any data
+                access. Without rack awareness, losing any two DB instances before migration
+                completes  always causes loss of some data access and results in NCC monitoring
+                declaring this site OOS (till the instances recover).</p>
+        </section>
+    </conbody>
+</concept>

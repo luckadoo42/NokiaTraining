@@ -1,0 +1,414 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="overview_of_sps_containers">
+    <title>Overview of SPS containers</title>
+    <conbody>
+        <p>The containers used in SPS consist of two groups: SPS application containers (baseline
+            and additional) and CSF Telemetry Blueprint (BTEL) containers. SPS application
+            containers are responsible for core SPS functionality and include Data Refinary (DR)
+            containers, which are used for CDRs.  BTEL containers are related to fault and
+            performance monitoring as well as logging. BTEL is the core part of a cloud monitoring
+            solution.</p>
+        <p>The following table describes SPS baseline containers.</p>
+        <table frame="all" rowsep="1" colsep="1" id="table_g34_jkv_klb">
+            <title>SPS baseline containers</title>
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="1*"/>
+                <colspec colname="c2" colnum="2" colwidth="1.9*"/>
+                <thead>
+                    <row>
+                        <entry>Container</entry>
+                        <entry>Description</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry><b>iohd</b></entry>
+                        <entry>Handles the ingress / egress traffic for 4G Diameter messages. Load
+                            balances the ingress traffic to the Policy and Charging applications,
+                            wrapping the Diameter message in an HTTP Post.</entry>
+                    </row>
+                    <row>
+                        <entry><b>charging</b></entry>
+                        <entry>Provide the business logic for charging. (Includes logic for Policy
+                            also, but that will not be exercised). In the future, when both Charging
+                            and Policy may be present, a feature is required to split the traffic as
+                            it is being load balanced so that it is directed to the appropriate
+                            container type.In the future, some microservices may be broken out of
+                            these containers for things like audits, rollback manager, balance
+                            manager, etc. But in this initial release, the apps will remain largely
+                            unchanged.</entry>
+                    </row>
+                    <row>
+                        <entry><b>servicemanager</b></entry>
+                        <entry>The Service Manager application. In the future, the SM GUI front-end
+                            interface will be broken out into its own container. It can be
+                            independently scaled and already uses the standard REST API from the SM
+                            core app.</entry>
+                    </row>
+                    <row>
+                        <entry><b>provisioning</b></entry>
+                        <entry>Subscriber-related services (largely, not entirely). Includes ME
+                            Provisioning that receives updates from the SM and provisions them into
+                            the ME database. Also includes the subscriber Life Cycle Manager
+                            function that is triggered by TEM events and handles events for things
+                            such as end-of-billing-cycle handling, etc..</entry>
+                    </row>
+                    <row>
+                        <entry><b>notification</b></entry>
+                        <entry>The Notification Server engine provides a rules-based notification
+                            service for sending various notifications to end subscribers or to other
+                            machine systems, over many varied delivery channels such as SMS, email,
+                            app channel, SOAP, etc. Also supports ingress TCP port for SurePay to
+                            send notifications into NS, which may result in outgoing notifications
+                            from SPS NS on various delivery channels. (Ingress TCP messages are
+                                <b>DEFERRED</b> from initial SPS CNF release. Notif is used only for
+                            sending outgoing notifications.)</entry>
+                    </row>
+                    <row>
+                        <entry><b>aerospike</b></entry>
+                        <entry>The NoSQL database server (Aerospike) containers, used by the SPS
+                            charging and policy applications, as well as various SPS
+                            functions.</entry>
+                    </row>
+                    <row>
+                        <entry><b>cdr</b></entry>
+                        <entry>Core functionality leveraging Data Refinery (DR) microservices, to
+                            enhance the flexibility and features of SPS CDR handling. Consumes CDRs
+                            received on Kafka queue (from applications), manages and mediates them,
+                            and makes available to a variety of consumers. Several pod types.<p>DR
+                                runs on both CHF Router and CHF nodes, for providing both Assume
+                                Positive feature functionality as well as CDR management.</p><ul
+                                id="ul_ljw_ym1_llb">
+                                <li>
+                                    <p><b>DR CNF infrastructure</b></p>
+                                </li>
+                                <li>
+                                    <p><b>DR CDR Streams</b></p>
+                                </li>
+                                <li><b>DR Assume Positive Streams</b></li>
+                                <li><b>Redis DB</b>: Used for storing DR data for CDRs, assume
+                                    positive</li>
+                            </ul></entry>
+                    </row>
+                    <row>
+                        <entry><b>centralmanagement</b></entry>
+                        <entry>
+                            <p>Central Services &amp; Management. Includes Lock and Transaction
+                                Manager (LTM) and Timed Events Manager (TEM) functionality. </p>
+                            <ul id="ul_zyp_jk1_llb">
+                                <li>
+                                    <p>LTM is used by Apps to obtain a lock when accessing database
+                                        records for provisioning or call processing, based on the
+                                        device ID or the group ID, etc, to provide transactional
+                                        behavior on top of Aerospike. Its data is in-memory only.
+                                    </p>
+                                </li>
+                                <li>
+                                    <p>Apps add entries to TEM to get called back for future events,
+                                        such as lifecycle events (e.g. start of a new billing
+                                        cycle). These timed events are stored in the DB for
+                                        persistence.</p>
+                                </li>
+                                <li>May also include CNF-level monitoring logic and network
+                                    heartbeat.</li>
+                            </ul>
+                            <p>In a future release, this will be broken down into separate LTM and
+                                TEM containers. At that time, LTM will be made horizontally
+                                scalable, to address real-time limitations from a single instance,
+                                as well as to increase fault tolerance.</p>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry><b>kafka</b></entry>
+                        <entry>Distributed streaming platform used by SPS for a variety or purposes,
+                            including pub/sub to events such as data changes, or work distribution
+                            queues for timed events, audits, and sending CDRs from the apps to the
+                            CDR consumer pods.</entry>
+                    </row>
+                    <row>
+                        <entry><b>etcd</b></entry>
+                        <entry>Used for service discovery &amp; configuration</entry>
+                    </row>
+                    <row>
+                        <entry><b>zookeeper</b></entry>
+                        <entry>Centralized service for maintaining configuration information,
+                            naming, providing distributed synchronization, and providing group
+                            services. Used by Kafka.</entry>
+                    </row>
+                    <row>
+                        <entry><b><b>keycloak</b></b></entry>
+                        <entry>Provides user authentication / SSO capabilities for the SM App and
+                            for Data Refinery components. It stores its information in Maria DB.
+                            KeyCloak will run on the pair of SMs, but in local-only mode in this
+                            initial release (will not be GR). The pair of KeyCloaks will be used by
+                            both SM for its authentication, as well as by the Data Refinery (which
+                            is running on the MEs).</entry>
+                    </row>
+                    <row>
+                        <entry><b>mariadb</b></entry>
+                        <entry>There will be two instances of Maria DB relational database in the
+                            SPS CNF solution. One instance will run on the SM nodes, deployed as
+                            part of KeyCloak. (KeyCloak requires Maria DB and it is deployed as part
+                            of CKEY Helm.) A separate instance is provided in all SPS CNF instances
+                            as part of the BTEL Helm deployment (if the optional BTEL solution is
+                            deployed in a given operator's environment). BTEL stores alarms in Maria
+                            DB.</entry>
+                    </row>
+                    <row>
+                        <entry><b>policy</b></entry>
+                        <entry>Provide the business logic for policy.</entry>
+                    </row>
+                    <row>
+                        <entry><b>hlapi</b></entry>
+                        <entry>An operator-specific microservice created and deployed by the Nokia
+                            Services team which mediates between an agreed High Level API with an
+                            operator, and the SM App REST APIs. Based on R&amp;D SDK and template
+                            app. (Not initially required by Verizon, since they are leveraging
+                            native REST APIs in SM.)</entry>
+                    </row>
+                    <row>
+                        <entry><b>udhandler</b></entry>
+                        <entry>An operator-specific microservice created and deployed by the Nokia
+                            Services team which mediates between the operator’s SPR, sending User
+                            Data requests to SPS SM, and the SM App REST APIs. Based on R&amp;D SDK
+                            and template app. (not required for initial Charging service.) </entry>
+                    </row>
+                    <row>
+                        <entry><b>ldapspr</b>
+                        </entry>
+                        <entry>Developed by Services, based on R&amp;D SDK and template app.
+                            Deployed independently by Services. Manages the communications and
+                            vendor-specific LDAP schema for a given operator's SPR (Subscriber
+                            Profile Repository). (not required for initial Charging service)</entry>
+                    </row>
+                    <row>
+                        <entry><b>ldapconcentrator</b></entry>
+                        <entry>For SPR LDAP communications, consolidating the communications from
+                            many Charging or Policy apps into a small number of connections to the
+                            SPR. This is not required in the initial SPS CNF release, since the
+                            initial release is only for Charging application which does not today
+                            use this SPR interface. (not required for initial Charging
+                            service)</entry>
+                    </row>
+                    <row>
+                        <entry><b>dblayer</b></entry>
+                        <entry>Layer that abstracts the Aerospike database and manages data schema
+                            transformations across releases, enabling in-service software updates
+                            with new and old DB user container versions running simultaneously, even
+                            as DB schema evolves in a new release. Clients invoke the dblayer
+                            service only when they need assistance for data transformation. In the
+                            normal flows, no transformation is required and clients would access the
+                            Aerospike DB directly. Based on how in-service updates are design in
+                            initial release, it turns out that we do NOT require dblayer.</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <p>The following table describes additional SPS containers.</p>
+        <table frame="all" rowsep="1" colsep="1" id="table_jbq_3m1_llb">
+            <title>Additional SPS containers</title>
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="1*"/>
+                <colspec colname="c2" colnum="2" colwidth="1.9*"/>
+                <thead>
+                    <row>
+                        <entry>Container</entry>
+                        <entry>Description</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry><b>policy</b></entry>
+                        <entry>Provide the business logic for policy.</entry>
+                    </row>
+                    <row>
+                        <entry><b>hlapi</b></entry>
+                        <entry>An operator-specific microservice created and deployed by the Nokia
+                            Services team which mediates between an agreed High Level API with an
+                            operator, and the SM App REST APIs. Based on R&amp;D SDK and template
+                            app. (Not initially required by Verizon, since they are leveraging
+                            native REST APIs in SM.)</entry>
+                    </row>
+                    <row>
+                        <entry><b>udhandler</b></entry>
+                        <entry>An operator-specific microservice created and deployed by the Nokia
+                            Services team which mediates between the operator’s SPR, sending User
+                            Data requests to SPS SM, and the SM App REST APIs. Based on R&amp;D SDK
+                            and template app. (not required for initial Charging service.) </entry>
+                    </row>
+                    <row>
+                        <entry><b>ldapspr</b>
+                        </entry>
+                        <entry>Developed by Services, based on R&amp;D SDK and template app.
+                            Deployed independently by Services. Manages the communications and
+                            vendor-specific LDAP schema for a given operator's SPR (Subscriber
+                            Profile Repository). (not required for initial Charging service)</entry>
+                    </row>
+                    <row>
+                        <entry><b>ldapconcentrator</b></entry>
+                        <entry>For SPR LDAP communications, consolidating the communications from
+                            many Charging or Policy apps into a small number of connections to the
+                            SPR. This is not required in the initial SPS CNF release, since the
+                            initial release is only for Charging application which does not today
+                            use this SPR interface. (not required for initial Charging
+                            service)</entry>
+                    </row>
+                    <row>
+                        <entry><b>dblayer</b></entry>
+                        <entry>Layer that abstracts the Aerospike database and manages data schema
+                            transformations across releases, enabling in-service software updates
+                            with new and old DB user container versions running simultaneously, even
+                            as DB schema evolves in a new release. Clients invoke the dblayer
+                            service only when they need assistance for data transformation. In the
+                            normal flows, no transformation is required and clients would access the
+                            Aerospike DB directly. Based on how in-service updates are design in
+                            initial release, it turns out that we do NOT require dblayer.</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <p>The following table describes BTEL containers.</p>
+        <table frame="all" rowsep="1" colsep="1" id="table_wd2_dv1_llb">
+            <title>BTEL containers</title>
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="1*"/>
+                <colspec colname="c2" colnum="2" colwidth="1.9*"/>
+                <thead>
+                    <row>
+                        <entry>Component</entry>
+                        <entry>Container description</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry><b>BTEL operator</b></entry>
+                        <entry>Includes this container:<ul id="ul_js1_gv1_llb">
+                                <li>btel-oper</li>
+                            </ul></entry>
+                    </row>
+                    <row>
+                        <entry><b>Maria DB</b></entry>
+                        <entry>
+                            <p>Includes this container, used to store alarms (see alarm manager
+                                above):</p>
+                            <ul id="ul_wnr_hv1_llb">
+                                <li>
+                                    <p>cmdb-mariadb</p>
+                                </li>
+                            </ul>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry><b>Message broker / queing</b></entry>
+                        <entry>
+                            <p>Includes this container</p>
+                            <ul id="ul_pzq_3v1_llb">
+                                <li>
+                                    <p>crmq</p>
+                                </li>
+                            </ul>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry><b>Prometheus</b></entry>
+                        <entry>
+                            <p>Includes these containers for managing metrics and associated
+                                alerts:</p>
+                            <ul id="ul_xk4_jv1_llb">
+                                <li>
+                                    <p>cpro-alertmanager</p>
+                                </li>
+                                <li>
+                                    <p>cpro-gen3gppxml</p>
+                                </li>
+                                <li>
+                                    <p>cpro-kube-state-metrics</p>
+                                </li>
+                                <li>
+                                    <p>cpro-push-gateway</p>
+                                </li>
+                                <li>
+                                    <p>cpro-restserver</p>
+                                </li>
+                                <li>
+                                    <p>cpro-server</p>
+                                </li>
+                                <li>
+                                    <p>grafana</p>
+                                </li>
+                            </ul>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry><b>Notifications</b></entry>
+                        <entry>
+                            <p> Includes this container to manage notifications related to
+                                alarms/metrics alerts</p>
+                            <ul id="ul_crb_lv1_llb">
+                                <li>
+                                    <p>cnot</p>
+                                </li>
+                            </ul>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry><b>Ingress controller</b></entry>
+                        <entry>
+                            <ul id="ul_lgz_mv1_llb">
+                                <li>
+                                    <p>citm-ingress-controller</p>
+                                </li>
+                                <li>
+                                    <p>citm-default-404</p>
+                                </li>
+                            </ul>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry><b>Alarm manager</b></entry>
+                        <entry>
+                            <p>Includes these containers to manage alarms:</p>
+                            <ul id="ul_l42_pv1_llb">
+                                <li>
+                                    <p>calm</p>
+                                </li>
+                                <li>
+                                    <p>calm-config</p>
+                                </li>
+                            </ul>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry><b>EFK stack</b></entry>
+                        <entry> Includes these containers to manage the searching and viewing of
+                                logs:<ul id="ul_cf4_qv1_llb">
+                                <li>belk-curator</li>
+                                <li>belk-elasticsearch-client</li>
+                                <li>belk-elasticsearch-data</li>
+                                <li>belk-elasticsearch-master</li>
+                                <li>belk-kibana</li>
+                            </ul></entry>
+                    </row>
+                    <row>
+                        <entry><b>cproc-node-exporter</b></entry>
+                        <entry>There is one instance on each worker node, associated with the
+                            exporting of Prometheus data.</entry>
+                    </row>
+                    <row>
+                        <entry><b>belk-fluentd-daemonset</b></entry>
+                        <entry>There is one instance on each worker node for our fluentd management
+                            and routing of stdout info. Verizon does not allow daemonsets, so this
+                            will run as a stateful set instead.</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <section id="section_ivq_cdb_llb">
+            <title>Integration of additional or external microservices into SPS CNF</title>
+            <p>Data Refinary (DR) is an external microservice integrated into SPS CNF. Similarly,
+                based on the same generic principles, other microserveces might be integrated into
+                SPS CNF.</p>
+        </section>
+    </conbody>
+</concept>

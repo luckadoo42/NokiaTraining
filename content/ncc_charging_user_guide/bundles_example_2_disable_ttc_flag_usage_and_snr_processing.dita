@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="disablettc">
+<title>Example 2: Disable TTC flag usage and SNR processing</title>
+<body>
+<p>SNR is processed in following cases:</p><ul>
+<li>
+<p>On exhaustion: Either reference bundle or aligned bundle is exhausted.</p>
+</li>
+<li>
+<p>On expiration when there is no active session: Reference bundle is expired through TEM module. In case there is an active session, SNR can be processed based on configuration.</p>
+</li>
+<li>
+<p>On subscribing the reference bundle.</p>
+</li>
+</ul>
+<p>
+<uicontrol>Scenario 1: SNR processing at different stages of subscription</uicontrol>
+</p>
+<p>
+<uicontrol>Lifecycle configuration for SNR processing: </uicontrol>
+</p>
+<p>The following figure shows the configuration for SNR processing in the reference bundle periodic lifecycle. In this, when a subscription moves from <userinput>Active</userinput> to <userinput>Pre-active</userinput>, that is, barred state, the SNR action is configured to set the virtual policy counter status to <userinput>LOW</userinput>.</p>
+<fig>
+<title>Reference bundle periodic lifecycle</title>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/basebundle_lc_default.png-->
+     <image href="../images/img9yz-09126-ug01-pczza-sp1-basebundle_lc_default.png" scale="40"/>
+</fig>
+<p>Similarly, when a <uicontrol>Not Enough Funds Event</uicontrol> is generated and a reference bundle is moved to suspended/barred state, the SNR action sets the virtual policy counter to <userinput>LOW</userinput>.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/basebundle_lc2_default.png-->
+     <image href="../images/img9yz-09126-ug01-pczza-sp1-basebundle_lc2_default.png" scale="40"/>
+</fig>
+<p>When a <uicontrol>Max Renewals Reached Event</uicontrol> is generated and a subscription moves to <b>Final</b> state, the SNR action sets the virtual policy counter status to <b>Removed</b> state.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/max_renewals_default.png-->
+     <image href="../images/img9yz-09126-ug01-pczza-sp1-max_renewals_default.png" scale="40"/>
+</fig>
+<p>
+<uicontrol>Threshold configuration for counters for SNR processing:</uicontrol>
+</p>
+<p>
+<uicontrol>Reference bundle (Base bundle)</uicontrol>
+</p>
+<p>The following threshold is configured in the reference bundle. For the threshold value of 0, SNR for virtual policy counter is set to <userinput>HIGH</userinput>. For the threshold value of 50 (which is exhaustion value in following case), SNR for virtual policy counter is set to <userinput>LOW</userinput>.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/basebundle_counter_default.png-->
+     <image href="../images/img9yz-09126-ug01-pczza-sp1-basebundle_counter_default.png" scale="60"/>
+</fig>
+<p>
+<uicontrol>Aligned bundle (Data boost bundle)</uicontrol>
+</p>
+<p>The following threshold is configured in the referenced bundle. For the threshold value of 0, SNR for virtual policy counter is set to <userinput>HIGH</userinput>. For the threshold value of 40 (which is exhaustion value in following case), SNR for virtual policy counter is set to <userinput>LOW</userinput>.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/alignedbundle_counter_default.png-->
+     <image href="../images/img9yz-09126-ug01-pczza-sp1-alignedbundle_counter_default.png" scale="60"/>
+</fig>
+<p>
+<uicontrol>Flow of events:</uicontrol>
+</p>
+<p>When a device subscribes to the reference bundle subscription, the SNR is processed and virtual
+     policy counter status is set to <userinput>HIGH</userinput>.</p>
+<p>After the usage, when the reference bundle subscription gets exhausted, the SNR is processed and virtual policy counter status is set to <userinput>LOW</userinput>. This is done through threshold configuration.</p>
+<p>After the exhaustion of reference bundle subscription, when a device subscribes to aligned
+     bundle, the SNR is processed and virtual policy counter is set to
+     <userinput>HIGH</userinput>.</p>
+<p>After the usage is committed from aligned bundle subscription and on exhaustion, SNR is processed and virtual policy counter is set to <userinput>LOW</userinput>.</p>
+<p>After the reference bundle expires and moves to <b>Pre-active</b> state through TEM auditing on expiry of bundle, SNR is not sent since virtual policy counter already in <userinput>LOW</userinput> state.</p>
+<p>
+<uicontrol>Scenario 2: TTC is not set and VT is aligned to expiry time when “disable TTC” is configured in reference bundle</uicontrol>
+</p>
+<p>
+<uicontrol>Pre-conditions:</uicontrol>
+</p>
+<p>Following is the initial configuration:</p>
+<p>
+<uicontrol>Slicing profile</uicontrol>
+</p>
+<p>The validity time is set to 50 seconds in the slicing profile.</p>
+<fig>
+     <!--MMO resource relative URI: ../Graphics/Release_20.6/slicing_profile_default.png-->
+     <image href="../images/img9yz-09126-ug01-pczza-sp1-slicing_profile_default.png" scale="50"/>
+    </fig>
+<p>
+<uicontrol>Reference bundle: Disable TTC flag is set to true</uicontrol>
+</p>
+<fig>
+     <!--MMO resource relative URI: ../Graphics/Release_20.6/boubasebundle_default.png-->
+     <image href="../images/img9yz-09126-ug01-pczza-sp1-boubasebundle_default.png" scale="50"/>
+    </fig>
+<p>
+<uicontrol>Flow of events:</uicontrol>
+</p>
+<p>When a Device subscribes to the reference bundle, virtual policy counter is set to <userinput>HIGH</userinput>.</p>
+<p>When the Device uses up the reference bundle completely, virtual policy counter is set to <userinput>LOW</userinput>.</p>
+<p>Device subscribes to a aligned bundle subscription, virtual policy counter set to <userinput>HIGH</userinput> again.</p>
+<p>
+<uicontrol>Scenario 3: Disable TTC flag is configured in aligned bundle but not reference bundle</uicontrol>
+</p>
+<p>
+<uicontrol>Pre-conditions:</uicontrol>
+</p>
+<p>In this case, the TTC/VT default logic is followed, that is, the aligned bundle configuration is
+     ignored. The configuration of <uicontrol>Disable TTC</uicontrol> is used.</p>
+<p>In the reference bundle, <uicontrol>Disable TTC</uicontrol> flag is set to <userinput>False</userinput>.</p>
+<fig>
+     <!--MMO resource relative URI: ../Graphics/Release_20.6/boudisablettc_default.png-->
+     <image href="../images/img9yz-09126-ug01-pczza-sp1-boudisablettc_default.png" scale="50"/>
+    </fig>
+<p>In the aligned bundle, <uicontrol>Disable TTC</uicontrol> flag is set to <userinput>True</userinput>.</p>
+<fig>
+     <!--MMO resource relative URI: ../Graphics/Release_20.6/databoost_default.png-->
+     <image href="../images/img9yz-09126-ug01-pczza-sp1-databoost_default.png" scale="50"/>
+    </fig>
+<p>
+<uicontrol>Flow of events:</uicontrol>
+</p>
+<p>Device makes a call. The reference bundle expiry time is between the current time of the call and validity time.</p>
+<p>
+<uicontrol>Post-conditions:</uicontrol>
+</p>
+<p> In this case, the VT is set to default behavior considering randomization factor. TTC is also set that indicates that the configuration of referenced bundle is ignored and aligned bundle configuration is used.</p>
+</body>
+</topic>

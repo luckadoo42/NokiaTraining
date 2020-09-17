@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9YZ-09018-UG00-PCZZA-d1e1087"><title>Virtual network function</title><conbody>
+<section><title>Overview </title>
+<p>Nokia Converged Charging (NCC) supports three virtual network functions (VNFs)–an SM, an ME, and
+                                                  an Integrated SM/ME (IG). </p>
+                                                  <p>The <b>Service Manager (SM)</b> is a VNF for
+                                                  API access and provisioning that is used to access
+                                                  the NCC for provisioning, and data access that
+                                                  provides various interfaces to external systems. </p>
+<p>The <b>Managed Element (ME)</b> VNF can be configured for <b>NCC</b> triggered by Diameter
+                                                  traffic on the Gy interface in 4G environments or
+                                                  triggered by HTTP/2 traffic in 5G environments for
+                                                  performing the role of a Online Charging Function
+                                                  (OCF).<note><b>Policy</b> is provided by the Nokia
+                                                  Policy Controller (NPC) which is triggered by
+                                                  either Diameter traffic on the Gx or Rx interface
+                                                  in 4G environments or triggered by HTTP/2 traffic
+                                                  on the N7 and N28 interface in 5G environments for
+                                                  service data flow detection and policy enforcement
+                                                  performing the role of a Policy and Charging Rules
+                                                  Function (PCRF/PCF). Policy supports the framework
+                                                  for unknown AVPs in incoming messages.</note></p>
+<p>The IG VNF groups all the functionality of SM and ME within a single VNF.</p>
+<note>
+<p>The Notification Server (NS) component is incorporated into the ME and IG on the COMSVC VM and the three containers cannot be individually selected. Both are installed and configured to run.</p>
+</note>
+<note>
+<p>On initial installation the NCC supports both HTTP and HTTPS connection. The NCC supports HTTP
+                    1.1 and HTTP 2.0 for unsecured HTTP traffic.</p>
+</note>
+</section>
+<section><title>Benefits</title>
+<p>Following are the benefits provided by NCC service providers:</p><ul>
+<li>
+<p>
+                                                  <b>Flexibility and Agility</b>: Flexibility is
+                                                  provided by the Nokia Agile Rule Technology (ART)
+                                                  rules engine and is leveraged by all applications
+                                                  on the next-generation platform running both 4G
+                                                  and 5G technologies.</p>
+</li>
+<li>
+<p>
+                        <b>Subscriber model</b>: The NCC subscriber model provides flexibility in
+                        the number of accounts that can be attached to a device.</p>
+</li>
+<li>
+<p>
+                        <b>Scale and performance:</b> NCC uses a three-tier architecture that
+                        independently scales IO, applications and databases. </p>
+</li>
+<li>
+<p>
+                        <b>Virtualization</b>: NCC is deployed on the Nokia CloudBand Infrastructure
+                        Software Virtual Infrastructure Manager (VIM) and managed by CloudBand
+                        Application Manager (CBAM) VNFM. Both the platforms are pre-integrated to
+                        support the zero-touch Openstack lifecycle management including
+                        instantiation, healing, and scaling.</p>
+</li>
+<li>
+<p>
+                        <b>Focus on groups</b>: NCC incorporates a group theme, such as family,
+                        large enterprise groups, or ad-hoc groups based on rule-based quota
+                        allocation algorithms on the Gy interface. The groups are formed for a short
+                        period of time to either share a new subscription or share remaining
+                        resources on the same account.</p>
+</li>
+<li>
+<p>
+                        <b>Serviceability</b>: The N-K nature of the NCC architecture enables the
+                        upgrade of one Virtual Machine (VM) at a time while the remaining VMs take
+                        the load. The Aerospike database offers the capability of running two
+                        different code versions to facilitate nodes at different software levels but
+                        using the same database. This allows independent upgrades of the individual
+                        functions, such as policy, charging, and customer experience. NCC runs a new
+                        software version without updating the database and it is possible to revert
+                        to the previous software version without data loss.</p>
+</li>
+</ul>
+</section>
+<section><title>Features of NCC charging application</title>
+<p>Following are the key features of NCC application:</p><ul>
+<li>
+<p>Performs online rating and charging for data session.</p>
+</li>
+<li>
+<p>Provides session and balance management for Diameter calls triggered on the Gy interface.</p>
+</li>
+<li>
+<p>Performs rating and charging for data and SMS services on all devices and customer types.</p>
+</li>
+<li>
+<p>Invokes Nokia ART rules to determine the charging rates for the different services, such as easy customization of rating and charging and additional flexibility.</p>
+</li>
+<li>
+<p>Enables operators to offer their customers innovative, flexible, and context-specific real-time charging models to provide easy and immediate payment options for expanding the existing revenue streams tailored to individual market segments.</p>
+</li>
+</ul>
+</section>
+<section><title>Features of Policy application</title>
+<p>Following are the key features of Policy application:</p><ul>
+<li>
+<p>Controls and authorizes the network bandwidth, QoS, and charging based on the subscriber subscription using virtual Policy and Charging Rule Function (PCRF).</p>
+</li>
+<li>
+<p>Dynamically reconfigures the Policy and Charging Enforcement Function (PCEF) using the Policy Control and Charging (PCC) rules, and Bearer Binding and Event Reporting Function (BBERF) using the QoS rule (in EPS Off-Path only) to ensure desired QoS and bandwidth for User Equipment (UE) traffic.</p>
+</li>
+<li>
+<p>Reports and relays events and session and media-related information amongst Application Function (AF), PCEF, and BBERF.</p>
+</li>
+<li>
+<p>Provides SDF charging information to PCEF through PCC so that PCEF can work with online and offline chargers to charge the traffic.</p>
+</li>
+<li>
+<p>Relays PCEF charging information (<i>Access-Network-Charging-Identifier</i>) to AF for charging the application accordingly.</p>
+</li>
+</ul>
+</section>
+<section><title>Features of Notification Service application</title>
+<p>Notification Service is a key feature of the Notification Server:</p><ul>
+<li>
+<p>Sends smart notifications to end users based on predefined notification templates selected after ART rule evaluation.</p>
+</li>
+<li>
+<p>Receives triggers from NCC applications (Charging and Policy) and other applications (for
+                        example, SurePay, external PCRF) for sending notifications. The Notification
+                        Service application sends out notifications after evaluating whether and
+                        when a notification should be sent.</p>
+</li>
+<li>
+<p>Supports multiple channels like email, SMS, SOAP, REST, and TCP/IP for sending the notifications.</p>
+</li>
+<li>
+<p>Consults several IT systems before sending a notification and informs an IT system after sending it, for logging purposes.</p>
+</li>
+</ul>
+</section>
+<section><title>Features of NCC SM application</title>
+<p>Following are the key features of the NCC SM application:</p><ul>
+<li>
+<p>Common point of presence for provisioning of NCC network systems.</p>
+</li>
+<li>
+<p>Provides GUI to service providers Operation, Administration, and Maintenance (OAM) network as well as REST and SOAP APIs to external provisioning.</p>
+</li>
+<li>
+<p>Maintains master copy locally and distributes to all NCC the application configuration related
+                        data.</p>
+</li>
+<li>
+<p>Distributes to a selected NCC system subscriber related data and maintains the NCC system
+                        location active/primary and backup of those data.</p>
+</li>
+<li>
+<p>Acts as an API request gateway for SOAP and REST API requests sent by external clients by
+                        identifying the right NCC system and proxying the request to them.</p>
+</li>
+</ul>
+</section>
+</conbody></concept>

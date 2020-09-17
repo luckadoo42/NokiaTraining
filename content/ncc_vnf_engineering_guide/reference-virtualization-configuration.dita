@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+		<concept id="id9YZ-08923-CN08-PEZZA-d1e937" >
+		    <title>Reference Virtualization Configuration</title><conbody>
+
+<section><title>Overview</title>
+
+<p>NCC has been tested in the following environments. Deploying NCC in environments where these
+                items are different may result in different performance characteristics.</p>
+<p>It is highly recommended that you verify the performance of the NCC in the production environment
+                prior to enabling live traffic. NCC performance can be impacted by the
+                infrastructure hardware and infrastructure configuration. There is no substitute for
+                measuring the NCC performance in the actual environment in which it will run</p>
+</section>
+<section><title>OpenStack (CBIS) Reference Platform</title>
+
+<p>
+<!--xref URI: #CBIS-->
+<xref keyref="id9YZ-08923-CN08-PEZZA-d1e937/CBIS"/> shows the impact to dimensioning for the OpenStack (CBIS) reference platform.</p>
+<table id="CBIS" colsep="1" frame="all" pgwide="1" rowsep="1">
+                <title>OpenStack (CBIS) Reference Platform</title>
+                <tgroup cols="4" colsep="1">
+                    <colspec colname="1" colnum="1"/>
+                    <colspec colname="2" colnum="2"/>
+                    <colspec colname="3" colnum="3"/>
+                    <colspec colname="4" colnum="4"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Parameter Name</p>
+                            </entry>
+                            <entry>
+                                <p>Reference Value</p>
+                            </entry>
+                            <entry>
+                                <p>High Impact to Dimensioning</p>
+                            </entry>
+                            <entry>
+                                <p>Notes and/or Details</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> CBIS Versions </entry>
+                            <entry> CBIS 18/19 </entry>
+                            <entry> No </entry>
+                            <entry> No significant performance differences between versions </entry>
+                        </row>
+                        <row>
+                            <entry> BIOS set to ‘Static High Performance’ </entry>
+                            <entry> True </entry>
+                            <entry> Yes </entry>
+                            <entry> Not all BIOS models may have this setting </entry>
+                        </row>
+                        <row>
+                            <entry> CPU Model </entry>
+                            <entry>
+                                <p>E5-2680 v3</p>
+                                <p>12 core</p>
+                            </entry>
+                            <entry> No </entry>
+                            <entry> It is assumed that a slight difference in the model won’t have a
+                                large impact </entry>
+                        </row>
+                        <row>
+                            <entry> Number of CPUs per compute </entry>
+                            <entry> 2 </entry>
+                            <entry> No </entry>
+                            <entry> Number of CPUs (sockets) may impact the number of VMs per
+                                compute but not the overall VM speed </entry>
+                        </row>
+                        <row>
+                            <entry> CPU Clock Speed (GHz) </entry>
+                            <entry> 2.5 GHz </entry>
+                            <entry>Yes</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry> Hyperthreading Enabled </entry>
+                            <entry> Yes </entry>
+                            <entry> Unknown </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry> CPU Allocation Ratio </entry>
+                            <entry> 1 </entry>
+                            <entry> Yes </entry>
+                            <entry> Higher CPU allocation ratios can result in CPU contention which
+                                can lower NCC performance </entry>
+                        </row>
+                        <row>
+                            <entry> Number of vCPUs reserved for the hypervisor </entry>
+                            <entry> 6 to 12 </entry>
+                            <entry> Yes </entry>
+                            <entry> An undersized hypervisor can result in high network latency and
+                                slow storage I/O and overall slower NCC performance. Large scale
+                                set-ups require up to 12 vCPUs or more for the hypervisor. </entry>
+                        </row>
+                        <row>
+                            <entry> Receive Packet Steering (RPS) configured </entry>
+                            <entry> Yes </entry>
+                            <entry> Yes </entry>
+                            <entry> Enabling RPS on large scale set-ups will lower network latency
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> CPU Pinning </entry>
+                            <entry> No </entry>
+                            <entry> No </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry> SR-IOV </entry>
+                            <entry> No </entry>
+                            <entry> No </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry> RAM allocation ratio </entry>
+                            <entry> 0.85 </entry>
+                            <entry> Yes </entry>
+                            <entry> Over-allocated memory can lower NCC performance </entry>
+                        </row>
+                        <row>
+                            <entry> Interference with noisy neighbours </entry>
+                            <entry> No </entry>
+                            <entry> Yes </entry>
+                            <entry> Interference from noisy neighbours due to over-allocation of
+                                CPU, networking, or storage can lower NCC performance </entry>
+                        </row>
+                        <row>
+                            <entry> Storage I/O Latency </entry>
+                            <entry> &lt;1 ms </entry>
+                            <entry> Yes </entry>
+                            <entry> Higher storage I/O can result in a failure to install NCC,
+                                unstable NCC, and slower performance </entry>
+                        </row>
+                        <row>
+                            <entry> Storage IOPS per VM </entry>
+                            <entry> 100 </entry>
+                            <entry> Yes </entry>
+                            <entry> Lower IOPS can result in a failure to install NCC, unstable NCC,
+                                and slower performance </entry>
+                        </row>
+                        <row>
+                            <entry rowsep="0"> Multi-queue enabled </entry>
+                            <entry rowsep="0"> Yes </entry>
+                            <entry rowsep="0"> Yes </entry>
+                            <entry rowsep="0"> Not using multi-queue will result in slower NCC
+                                performance </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+</section>
+<section><title>VMWare Reference Platform</title>
+
+<p>
+<!--xref URI: #VMWare-->
+<xref keyref="id9YZ-08923-CN08-PEZZA-d1e937/VMWare"/> shows the impact to dimensioning for the VMWare reference platform.</p>
+<table id="VMWare" colsep="1" pgwide="1" rowsep="1">
+                <title>VMWare Reference Platform</title>
+                <tgroup cols="4" colsep="1">
+                    <colspec colname="1" colnum="1"/>
+                    <colspec colname="2" colnum="2"/>
+                    <colspec colname="3" colnum="3"/>
+                    <colspec colname="4" colnum="4"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Parameter Name</p>
+                            </entry>
+                            <entry>
+                                <p>Reference Value</p>
+                            </entry>
+                            <entry>
+                                <p>High Impact to Dimensioning</p>
+                            </entry>
+                            <entry>
+                                <p>Notes and/or Details</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> VMware vCloud NF </entry>
+                            <entry> versions 2.0.1/2.1 </entry>
+                            <entry> Unknown </entry>
+                            <entry> These versions tested. </entry>
+                        </row>
+                        <row>
+                            <entry> BIOS set to ‘Static High Performance’ </entry>
+                            <entry> True </entry>
+                            <entry> Yes </entry>
+                            <entry> Not all BIOS models may have this setting </entry>
+                        </row>
+                        <row>
+                            <entry> CPU Model </entry>
+                            <entry>
+                                <p>E5-2670</p>
+                                <p>8 core</p>
+                            </entry>
+                            <entry> No </entry>
+                            <entry> It is assumed that a slight difference in the model will not
+                                have a large impact. </entry>
+                        </row>
+                        <row>
+                            <entry> Number of CPUs per compute </entry>
+                            <entry> 2 </entry>
+                            <entry> No </entry>
+                            <entry> Number of CPUs (sockets) may impact the number of VMs per
+                                compute but not the overall VM speed. </entry>
+                        </row>
+                        <row>
+                            <entry> HW CPU Clock Speed (GHz) </entry>
+                            <entry> 2.6 GHz </entry>
+                            <entry> Yes </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry> Hyperthreading Enabled </entry>
+                            <entry> Yes </entry>
+                            <entry> Unknown </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry> Allocation Model </entry>
+                            <entry> PAYG </entry>
+                            <entry> No </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry> CPU resources guaranteed (%) </entry>
+                            <entry> 100%</entry>
+                            <entry> Yes </entry>
+                            <entry> The reference platform was single tenant with VMs laid out to
+                                avoid CPU contention. In multi-tenant environments, it is
+                                recommended to increase the CPU resource guarantee. </entry>
+                        </row>
+                        <row>
+                            <entry> vCPU Speed </entry>
+                            <entry> 2.1 </entry>
+                            <entry> Yes </entry>
+                            <entry> vCPU speed should be set lower than the HW CPU speed above.
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Memory resources guaranteed </entry>
+                            <entry> 80 </entry>
+                            <entry> Yes </entry>
+                            <entry> Over-allocated memory can lower NCC performance. </entry>
+                        </row>
+                        <row>
+                            <entry> Shares per vCPU </entry>
+                            <entry> 1000 per vCPU </entry>
+                            <entry> Yes </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry> Sched.cpu.latencySensitivity </entry>
+                            <entry> Normal </entry>
+                            <entry> Unknown </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry rowsep="0"> VM Hardware Adapter Type </entry>
+                            <entry rowsep="0"> VMXNET 3 </entry>
+                            <entry rowsep="0"> Unknown </entry>
+                            <entry rowsep="0"> Only this type has been tested. </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+</section>
+<section><title>Storage, IOPS, and Networking Performance Requirements for Policy</title>
+
+<p>The following section describes the performance requirements for policy.</p><ul>
+
+<li>
+<p>Each DB VM must be able to sustain a storage write rate of 40 Mbytes/s to the datastore volume, for peak performance.</p>
+</li>
+<li>
+<p>Each DB VM must be able to sustain a storage read rate of 10 Mbytes/s from the datastore volume, for peak performance. Bursts (for example, during DB start-up) could be as high as the infrastructure allows.</p>
+</li>
+<li>
+<p>Each diameter application VM must be able to sustain 60 Mbytes/s of network I/O (sent and received combined), for peak performance. This traffic is in between both the active IOHD VM and all the DB VMs. </p>
+</li>
+<li>
+<p>Each DB VM must be able to sustain 85 Mbytes/s of network I/O (sent and received combined), for peak performance.</p>
+</li>
+<li>
+<p>The active IOHD VM must be able to sustain 8 Mbytes/s per 10K diameter TPS of network I/O (send and received combined).</p>
+</li>
+<li>
+<p>Each DB VM and each Aux VM requires approximately the equivalent performance of a locally attached SAS HDD. Approximately 200 IOPS.</p>
+</li>
+</ul>
+</section>
+</conbody></concept>

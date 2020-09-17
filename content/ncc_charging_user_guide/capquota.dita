@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-capquota"><title>Cap functionality</title><conbody>
+<section><title>Overview</title>
+<p>A cap is the limit assigned to the device by the top-level group on its hierarchy resources. It
+                is applied to shared resources to limit the usage of that resource, that is, bucket
+                or main balance. The limit can be defined in the cap entity. See <xref
+                    href="cap.dita"/> for more details.</p>
+<note>
+<p>NCC applies no check on upcoming cap or threshold actions for over-commit scenarios. During the
+                    slice reservation, with the slice reduction feature enabled or disabled, the
+                    upcoming cap or threshold actions are not considered. For information on cap or
+                    threshold actions for over-commit scenarios, see the <xref
+                        href="#id9yz-09126-ug01-pczza-sp1-capquota/ex4" format="dita"/>.</p>
+</note>
+<p>If a cap or threshold value is zero, then the NCC checks whether
+                    <systemoutput>Reject</systemoutput>, <systemoutput>Notification
+                    Reject</systemoutput>, or <systemoutput>Stop</systemoutput> action is triggered
+                at the time of reservation but does not send any notification.</p>
+<p>For all other actions, minimum slice is granted at reservation and action is triggered at commit.</p>
+<note>
+<p>If the reduced slice or RSU is less than the minimum slice allocated at the time of reservation,
+                    then the NCC always considers the minimum slice.</p>
+</note>
+<p>For information on cap action after reducing the allocated slice size, see the <xref
+                    keyref="id9YZ-09126-UG01-PCZZA-SP1-slicereduction"/> section.</p>
+<p>For information on cap for the carry-over feature, see the <xref
+                    keyref="id9YZ-09126-UG01-PCZZA-SP1-CarryOverBundle"/> section in this chapter.
+                The <systemoutput>Notification-Stop</systemoutput> action is the recommended action
+                for the carry-over functionality because a device can have many counters but for
+                these counters, only one cap or threshold with zero value can be configured.</p>
+<note>
+<p>For counters, the cap functionality is not governed by usage limit or overage limit (if defined for that counter).</p>
+</note>
+</section>
+<section><title>Examples</title>
+<p>The following examples give a better understanding about the cap or quota functionality:</p></section>
+    <section><title>Example 1: When cap is applied on a particular or all available resources of a group</title>
+<p>
+<b>Provisioning:</b>
+</p><ol>
+<li>
+<p>Associate an iPhone to a <varname>Management</varname> group using individual and group data buckets.</p>
+<p>The <varname>Management</varname> group is associated with two data buckets <varname>B1</varname> and <varname>B2</varname>, and the iPhone is associated with a data bucket <varname>B3</varname> and a counter <varname>DeviceCounter</varname>.</p>
+</li>
+<li>
+<p>Apply a cap limit of 300 MB to the iPhone.</p>
+</li>
+</ol>
+<p>
+<b>Result:</b>
+</p>
+<p>When a data call is executed requesting the data usage of 300 MB, the iPhone uses both individual and group data buckets to accumulate the same in its counter <varname>DeviceCounter</varname>.</p>
+<p>When the <varname>DeviceCounter</varname> counter is accumulated, then the quota is evaluated. Once the applied cap limit is reached, iPhone triggers the configured action.</p>
+</section>
+    <section><title>Example 2: When cap is applied on overage to determine the value till which a specific main account balance can go negative</title>
+<p>
+<b>Provisioning:</b>
+</p><ol>
+<li>
+<p>Create a main account balance of 4 United States dollars for an iPhone device.</p>
+</li>
+<li>
+<p>Apply a monetary cap of 6 United States dollars to the iPhone.</p>
+</li>
+</ol>
+<p>
+<b>Result:</b>
+</p>
+<p>When the iPhone executes a data call requesting 100 RSU, the rate applicable result costs to 10 United States dollars. The call is not rejected with an error due to insufficient balance in the main account. Instead, the call continues because the overage defined is 6 United States dollars. Therefore, the cap applied on an overage helps to determine the value till which the main account balance is not restricted to zero and can go negative.</p>
+<note>
+<p>Consider that the main account balance is not sufficient to complete the call but the cap applied on the overage is sufficient to complete the call.</p>
+</note>
+</section>
+    <section><title>Example 3: When a cap is applied on a specific traffic type usage or cost accumulation</title>
+<p>
+<b>Provisioning:</b>
+</p><ol>
+<li>
+<p>Associate an iPhone to a <varname>Management</varname> group.</p>
+</li>
+<li>
+<p>Create a charging service for the group subscription.</p>
+</li>
+<li>
+<p>Configure a group counter <varname>GC1</varname> for the above group to identify whether the traffic type is <varname>Netflix</varname> in the rules engine at the charging service of the group subscription and another group counter <varname>GC2</varname> to capture the non-Netflix data.</p>
+</li>
+<li>
+<p>Apply a non-monetary cap of 500 MB to the <varname>Management</varname> group counter.</p>
+</li>
+<li>
+<p>Configure an applicability condition of group counter <varname>GC1</varname>, which is restricted to <i>TrafficType</i> = <varname>Netflix</varname>.</p>
+</li>
+</ol>
+<p>
+<b>Result:</b>
+</p>
+<p>When a data call is executed requesting 500 MB Netflix data, the iPhone uses the resources from its group hierarchy to accumulate it in the device counter. Once the device counter is accumulated, the quota is evaluated.</p>
+<p>If the applied cap limit of 500 MB is reached, then the iPhone triggers the configured notification action. Therefore, when a cap limit is applied on a specific traffic type usage or if the cost accumulated is exceeded, then a specific action is performed.</p>
+</section>
+    <section id="ex4"><title>Example 4: When no check is applied on upcoming cap and threshold actions in over-commit scenario</title>
+<p>
+<b>Provisioning:</b>
+</p><ol>
+<li>
+<p>Subscribe an iPhone to a monthly data bucket of 20 GB.</p>
+</li>
+<li>
+<p>Create a bundle lifecycle with <i>Periodic Length</i> of <varname>2 minutes</varname> for the monthly shared bundle. Configure <systemoutput>RenewSubscription</systemoutput> and <systemoutput>ResetPeriod</systemoutput> actions in the bundle periodic lifecycle.</p>
+</li>
+<li>
+<p>Apply a threshold at 12 GB and a cap at 10 GB in the <varname>Device-Group</varname> counter.</p>
+</li>
+<li>
+<p>The <varname>Device-Group</varname> counter has a monthly periodic lifecycle and the family group subscription has a periodic lifecycle with <i>Periodic Length</i> of <varname>2 minutes</varname>.</p>
+</li>
+<li>
+<p>Configure the <varname>Device-Group</varname> counter with:</p><ul>
+<li>
+<p>
+<i>Counter Scope</i> set as <varname>SELF</varname>,</p>
+</li>
+<li>
+<p>
+<i>Attach mode</i> set as <varname>DEVICE_GROUP</varname>,</p>
+</li>
+<li>
+<p>
+<i>Counter Consumption type</i> set as <varname>ALL</varname>, and</p>
+</li>
+<li>
+<p>
+<i>Counter Consumption List</i> set empty.</p>
+</li>
+</ul>
+</li>
+</ol>
+<p>
+<b>Result:</b>
+</p>
+<p>When a data call is executed requesting 10 GB of data from the monthly data bucket, the GSU is 10 GB. However, due to further data requirements, the USU goes up to 15 GB, which refers to an over-commit scenario because the GSU is exceeded by 5 GB than the initial GSU. As per the configuration, the threshold should have triggered a notification when the USU crossed the limit of 12 GB.</p>
+<p>In over-commit scenario, while deducting extra GSU from monthly data bucket, the upcoming threshold or cap actions are not checked. The threshold notification is sent only after deducting the extra GSU from the data bucket.</p>
+</section>
+    <section><title>Example 5: Cap on carry over bucket</title>
+<p>
+<b>Provisioning:</b>
+</p><ol>
+<li>
+<p>Create a <varname>NOKIA</varname> family group of 10 GB wherein:</p><ul>
+<li>
+<p>Father device has a cap of 10 GB on regular bucket and unlimited on carry-over bucket.</p>
+</li>
+<li>
+<p>Mother device has a cap of 5 GB on regular bucket and unlimited on carry-over bucket.</p>
+</li>
+<li>
+<p>Kid device has a cap of 0 GB on regular bucket and a cap of 2 GB on carry-over bucket.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Create a charging service for family group bundle.</p>
+</li>
+<li>
+<p>Create a group bundle and associate the charging service created.</p>
+</li>
+<li>
+<p>Create a threshold profile group and define the action to send SNRs based on threshold value wherein the <i>Absolute type Threshold 1</i> value is <varname>0</varname> and action is set as <systemoutput>Send-SNR</systemoutput> action with state set as low.</p>
+</li>
+<li><p>Create the following counters:</p><ol>
+                            <li>
+                                <p>
+                                    <varname>Counter1</varname> for father device with cap of 10 GB
+                                    and <uicontrol>Bucket Type</uicontrol> set to <varname>Main
+                                        Only</varname> and add this as device-group counter for
+                                    father device.</p>
+                            </li>
+                            <li>
+                                <p>
+                                    <varname>Counter2</varname> for mother device with cap of 5 GB
+                                    and <uicontrol>Bucket Type</uicontrol> set to <varname>Main
+                                        Only</varname> and add this as device-group counter for
+                                    mother device.</p>
+                            </li>
+                            <li>
+                                <p>
+                                    <varname>Counter3</varname> for kid device with cap of 0 GB and
+                                        <uicontrol>Bucket Type</uicontrol> set to <varname>Main
+                                        Only</varname> and add this as device-group counter for kid
+                                    device.</p>
+                            </li>
+                            <li>
+                                <p>
+                                    <varname>Counter4</varname> for kid device with cap of 2 GB and
+                                        <uicontrol>Bucket Type</uicontrol> set to <varname>Carryover
+                                        Only</varname> and add this as device-group counter for
+                                    kid.</p>
+                            </li>
+                        </ol>
+                        <!--MMO resource relative URI: ../Graphics/Release_19.0/Cap_on_carryover_default.png-->
+                        <image
+                            href="../images/img9yz-09126-ug01-pczza-sp1-cap_on_carryover_default.png"
+                        />
+                    </li>
+</ol>
+<p>
+<b>Result:</b>
+</p>
+<p>At the end of the month, the unused units from the father and mother are carried over as carry-over is available to father, mother, and kid (up to 2 GB for the kid).  To provide an unlimited offer with low quality of service to the kid, an individual bundle with charging service without bucket and a policy counter of usage type can be used. Policy counter has a threshold defined on zero value and threshold action is <systemoutput>Send-SNR</systemoutput> action.</p>
+</section>
+</conbody></concept>

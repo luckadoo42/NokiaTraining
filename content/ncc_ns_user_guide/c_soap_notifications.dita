@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9YZ-08540-UG02-PCZZA-d1e33344_overview">
+   <title>SOAP notifications</title>
+   <conbody>
+
+      <p>In this case, the back office uses SOAP as the end point for sending the notification message to the external server. SOAP allows the web applications to communicate over the internet. Since HTTP is supported by all internet browsers and servers, it is the best method used to communicate between applications. SOAP uses the HTTP request and response model where the SOAP request parameters are in a HTTP request and SOAP response parameters are in a HTTP response. The HTTP applications must use the media type <codeph>text/xml</codeph> when including SOAP entity bodies in the HTTP messages.</p>
+      <p>The following figure shows the flow of messages between the REST client, notification service, and external server. <fig>
+
+            <title>SOAP message flow </title>
+            <!--MMO resource relative URI: ../Graphics/SOAP_message1_default.png-->
+            <image href="../images/soap_message1_default.png"/>
+         </fig>
+      </p>
+      <p>The following table provides information on the SOAP HTTP messages.<table rowsep="1"
+            colsep="1" frame="all" pgwide="1">
+            <title>SOAP HTTP messages</title>
+            <tgroup cols="3">
+               <colspec colname="col1"/>
+               <colspec colname="col2"/>
+               <colspec colname="col3"/>
+               <thead>
+                  <row>
+                     <entry>
+                        <p>SOAP HTTP request</p>
+                     </entry>
+                     <entry>
+                        <p>SOAP action header field</p>
+                     </entry>
+                     <entry>
+                        <p>SOAP HTTP response</p>
+                     </entry>
+                  </row>
+               </thead>
+               <tbody>
+                  <row>
+                     <entry>It specifies at least two HTTP headers - Content-Type and
+                        Content-Length. </entry>
+                     <entry>
+                        <p>It indicates the intent of the SOAP HTTP request and the value of this
+                           field is URI. An HTTP client must use this header when issuing a SOAP
+                           HTTP request.</p>
+                        <p>The format of a soap action is as follows:</p>
+                        <p>
+                           <userinput>soapaction=”SOAPAction” “:” [&lt;”&gt; URI-reference
+                              &lt;”&gt;]</userinput>
+                        </p>
+                     </entry>
+                     <entry>
+                        <p>It follows the semantics of the HTTP status codes for communicating
+                           status information in HTTP. For example, a 2xx status code indicates that
+                           the client's request including the SOAP component was successfully
+                           received, understood, and accepted.</p>
+                        <p>If there is a SOAP error while processing the request, the SOAP HTTP
+                           server will issue an HTTP 500 “Internal Server Error” response.</p>
+                     </entry>
+                  </row>
+               </tbody>
+            </tgroup>
+         </table> Following are the HTTP status codes:</p>
+      <ul>
+
+         <li>
+            <p>2xx Success: It indicates the action requested by the client was received, understood, accepted, and processed successfully. Example: <codeblock>200 OK</codeblock>, the standard response for successful HTTP requests.</p>
+         </li>
+         <li>
+            <p>3xx Redirection: It indicates that the client must take additional action to complete the request. Many of these status codes are used in the URL redirection. Example: To ask a visitor to follow a new link: <codeblock>Please follow &lt;a href=”http://www.example.com/”&gt;this link&lt;/a&gt;</codeblock>.</p>
+         </li>
+         <li>
+            <p>4xx Client Error: It is intended for situations in which the client seems to have erred. Example: <codeblock>400 Bad Request</codeblock>, the request is not understood by the server to malformed syntax.</p>
+         </li>
+         <li>
+            <p>5xx Server Error: It indicates that the server failed to fulfill a valid request. Example: <codeblock>500 Internal Server Error</codeblock>, the server encountered an unexpected condition which prevented it from fulfilling the request.</p>
+         </li>
+      </ul>
+      <p>Following is an example of a back office SOAP request format. </p>
+      <fig>
+         <codeblock>&lt;soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ws="http://ws.aerospike.notifserver.tapps.nokia.com/"&gt;
+&lt;soapenv:Header/&gt;
+&lt;soapenv:Body&gt;
+&lt;ws:read&gt;
+&lt;arg0&gt;
+&lt;channel&gt;BACK_OFFICE_SOAP&lt;/channel&gt;&lt;templateID&gt;Template_01&lt;/templateID&gt;
+&lt;/arg0&gt;
+&lt;/ws:read&gt;
+&lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;</codeblock>
+      </fig>
+      <table rowsep="1" colsep="1" pgwide="1" id="httprc">
+         <title>HTTP response codes</title>
+
+         <tgroup cols="3">
+            <colspec colname="col1"/>
+            <colspec colname="COLSPEC0"/>
+            <colspec colname="COLSPEC1"/>
+            <thead>
+               <row>
+                  <entry>
+                     <p>HTTP response code</p>
+                  </entry>
+                  <entry>
+                     <p>Code interpretation</p>
+                  </entry>
+                  <entry>
+                     <p>Retry</p>
+                  </entry>
+               </row>
+            </thead>
+            <tbody>
+               <row>
+                  <entry>
+&gt;=200
+</entry>
+                  <entry>SC_OK </entry>
+                  <entry>
+No
+</entry>
+               </row>
+               <row>
+                  <entry>
+&gt;=300
+</entry>
+                  <entry>SC_MULTIPLE_CHOICES </entry>
+                  <entry>
+Yes
+</entry>
+               </row>
+               <row>
+                  <entry>
+&gt;=400
+</entry>
+                  <entry>SC_BAD_REQUEST </entry>
+                  <entry>
+Yes
+</entry>
+               </row>
+               <row>
+                  <entry>
+401
+</entry>
+                  <entry>SC_UNAUTHORIZED </entry>
+                  <entry>
+Yes
+</entry>
+               </row>
+               <row>
+                  <entry>
+404
+</entry>
+                  <entry>SC_NOT_FOUND </entry>
+                  <entry>
+Yes
+</entry>
+               </row>
+               <row>
+                  <entry>
+405
+</entry>
+                  <entry>SC_METHOD_NOT_ALLOWED </entry>
+                  <entry>
+Yes
+</entry>
+               </row>
+               <row>
+                  <entry>
+406
+</entry>
+                  <entry>SC_NOT_ACCEPTABLE </entry>
+                  <entry>
+Yes
+</entry>
+               </row>
+               <row>
+                  <entry>
+415
+</entry>
+                  <entry>SC_UNSUPPORTED_MEDIA_TYPE </entry>
+                  <entry>
+Yes
+</entry>
+               </row>
+               <row>
+                  <entry>
+&gt;=500
+</entry>
+                  <entry>SC_INTERNAL_SERVER_ERROR </entry>
+                  <entry>
+Yes
+</entry>
+               </row>
+            </tbody>
+         </tgroup>
+      </table>
+      <note>
+
+         <p>Retry is not allowed for permanent failures.</p>
+      </note>
+   </conbody>
+</concept>

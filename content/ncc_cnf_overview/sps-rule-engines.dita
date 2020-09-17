@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+		<concept id="id9YZ-09018-UG00-PCZZA-d1e14568"><title>SPS Rule Engines</title><conbody>
+
+<section><title>Rule engine overview</title>
+
+<p>This chapter describes rule authoring, the common SPS Diameter rule engine architecture and operations, the composition of a rule for all applications, along with variables, and mapping for the specific application rule engine operations used to manage the traffic handled by the SPS. </p>
+<p>Each application (Diameter Configuration, SPS-Policy and SPS-Charging) has their own robust rule engine with rule system functionality that is specifically designed for the application.</p>
+<p>The application specific rule engines are organized into groups of pre-defined scenarios called rule system versions. Each rule system version contains a collection of rule groups that implement a customized SPS message modification and additional behavior each time a Diameter message is received or whenever the rule engine is invoked by the application. </p>
+</section>
+<section><title>Rule authoring overview</title>
+
+<p>The rule engines evaluate the rules and return the results as shown in the following figure. </p>
+<fig>
+                <title>Overall rule processing</title>
+                <!--MMO resource relative URI: ../Graphics/Overallruleprocessing_default.png-->
+                <image href="../images/overallruleprocessing_default.png" scale="50"/>
+            </fig>
+<p>Rules are used  to customize the SPS behaviors when certain events occur. Rules can be used for many things, including sending and customizing notifications, generating event logs, modifying session parameters, defining system policy and charging, and for making customized policy and charging decisions. For example, when a session is established, you might want to customize bandwidth, or quality of service for certain devices or users, or get information from a CCR for a type of roaming to enact the correct rating and charging on a call.</p>
+<p>The Rule Engines operate in a simple input and output concept. The input is the data available for an invocation along with a set of rules to be invoked. The output is a result returned from the invocation. The Rule Engine implements an event-driven, forward-chaining rule evaluation algorithm using production style rules on invocation. When required, the SPS requests that the Rule Engine executes a particular Trigger via an interface available to the SPS. </p>
+<p>All rules in the rule group that make up the Trigger are evaluated by the appropriate rule engines as their conditions are matched. A top level rule group is generated from any profile or policy that exists. In each group, the first rule (in the order of precedence ) whose conditions are met is executed. The actions specified in the rule are returned to the SPS application, where the appropriate steps are performed for the action (for example, action values to accept or reject the application session request, construct a PCC rule, etc.). </p>
+<p>After the application plugins have been sequenced, the rules and messages are evaluated and invoked by the system to process the specific functionality in the sequence of, and by, the installed application plugins. That is, rules are written such that as they cascade through the system the rule whose conditions are matched first is executed offering an order of precedence as shown in the following diagram.</p>
+<fig>
+<title>Rule precedence by application plugin</title>
+<!--MMO resource relative URI: ../Graphics/ddmappplugins12_default.png-->
+<image href="../images/ddmappplugins12_default.png"/>
+</fig>
+<p>For the Diameter Rule Engine functionality, when a Diameter message arrives at the SPS, the rule engine can be invoked up to two times depending on whether the message is a Diameter Request or Answer: once for the scenario of a basic message type Trigger, and again for the specific message type Trigger. The rule engine first parses the incoming message as either a Diameter answer or a Diameter request message and invokes the appropriate request/answer Trigger. Once the generic processing is complete, the SPS rule engine may be invoked again to execute the Trigger for the specific message type. The rule processing flow is shown in the following figure.</p>
+<fig>
+<title>Diameter rule processing flow</title>
+<!--MMO resource relative URI: ../Graphics/diarulengineflow1_default.gif-->
+<image href="../images/diarulengineflow1_default.gif" scale="90"/>
+</fig>
+<p>For the SPS-Policy application, when a trigger occurs, such as a message arriving at SPS Policy, the associated set of rules are evaluated. The rules, with access to all of the data available, determine the policy for the device. SPS Policy will then take the appropriate action, such as sending the policy information to the PCEF for the device, as shown in the following figure.</p>
+<fig>
+<title>SPS-Policy rule processing flow</title>
+<!--MMO resource relative URI: ../Graphics/policyrulexec1_default.gif-->
+<image href="../images/policyrulexec1_default.gif"/>
+</fig>
+<p>For the SPS-Charging application, when a trigger occurs, such as a message arriving at SPS-Charging, the associated set of rules from the profiles configured are evaluated. The rules, with access to all of the data available, determine the service, rating, and charging for the device, group, and account. SPS-Charging will then take the appropriate action as shown in the following figure.</p>
+<fig>
+<title>SPS-Charging rule processing flow</title>
+<!--MMO resource relative URI: ../Graphics/chargingruleflow1_default.gif-->
+<image href="../images/chargingruleflow1_default.gif"/>
+</fig>
+<p>Rules are organized into (potentially large) groups called Triggers. All triggers are pre-defined in the SPS and are evaluated by the appropriate rule engine. Although you can define the contents of the Triggers, you cannot introduce new Triggers. </p>
+<p>A rule group is a set of rules associated with a trigger that may be associated with a rule system version. Each rule group contains one or more groups of conditions and associated actions. When an event happens in the system, the corresponding Trigger is invoked, and then all rule groups that belong to the Trigger are evaluated and the Rule Groups are executed in an order of precedence.</p>
+<p>For Charging rules, the selection of a specific Trigger is automatic by the SPS depending on the profile you are working in and not visible to the operator that is authoring the rules. However, if you are provisioning with an API or configuring a rule variable, you are required to add the Trigger.</p>
+<p>For Policy rules, the selection of a Trigger by the operator that is authoring the rules is mandatory for each grouping of rules.</p>
+<p>A rule belongs to a rule group and is built from the options available in the rule conditions and actions. Triggers determine when the associated rule tables are analyzed and as message processing flows are executed in the SPS, specific Triggers are applied.</p>
+<p>See the respective application user guides for more information about their specific rule engines.</p>
+</section>
+</conbody></concept>

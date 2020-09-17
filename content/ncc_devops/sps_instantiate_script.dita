@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//NSN//DTD DITA Concept//EN" "nsnconcept.dtd">
+<concept id="id9yz-09126-mt02-rezza-d1e8979"><title>sps-instantiate script</title><conbody>
+<section><title>Description</title>
+<p>This script is a wrapper and used to do the following:</p><ul>
+<li>
+<p>install a patch</p>
+</li>
+<li>
+<p>download the NCC tar files and images</p>
+</li>
+<li>
+<p>create images in a cloud computing platform</p>
+</li>
+<li>
+<p>create a VNF in CBAM</p>
+</li>
+<li>
+<p>upload a CSAR package to CBAM</p>
+</li>
+<li>
+<p>modify a VNF in CBAM</p>
+</li>
+<li>
+<p>instantiate a VNF in CBAM</p>
+</li>
+<li>
+<p>upgrade the NCC</p>
+</li>
+</ul>
+</section>
+<section><title>Syntax</title>
+<p>
+                <codeph>sps-instantiate [-a] [-b] [-c] &lt;-d &lt;url|path&gt;|-g
+                    &lt;url|path&gt;&gt; [-f &lt;file&gt;] [-h] -i &lt;sdc_config&gt; -j
+                    &lt;path_to_vnf_conf&gt; [-k] [-l &lt;log&gt;] -n &lt;nodes&gt; [-o] [-r] -s
+                    &lt;stack&gt; -t &lt;types&gt; [-S] [-u &lt;task&gt;] [-v &lt;release&gt;] [-w
+                    &lt;dir&gt;] -z &lt;speed&gt; &lt;load&gt;</codeph>
+            </p>
+<table colsep="1" rowsep="1" frame="all">
+                <tgroup cols="2">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Option</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>
+                                <codeph>-a</codeph>
+                            </entry>
+                            <entry>Install the patch. This will only install the patch in nodes that
+                                have not been attempted yet or nodes that failed in previous
+                                attempts. Combine this with -r to install patches from scratch.
+                                Mutually exclusive with -b and -c. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-b</codeph>
+                            </entry>
+                            <entry>Back out the patch. Mutually exclusive with -a and -c. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-c</codeph>
+                            </entry>
+                            <entry>List patching status. Mutually exclusive with -a and -b. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-d &lt;url|path&gt;</codeph>
+                            </entry>
+                            <entry>
+                                <p>Specifies the URL of the artifactory or the directory path of the
+                                    NCC load, including the NCC images and CSAR packages.</p>
+                                <p>In patching this is the URL or path to the patch tar file.
+                                    Moreover, in patching HTTP, HTTPS, and FTP protocols are
+                                    supported and the option -a is required.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-f &lt;file&gt;</codeph>
+                            </entry>
+                            <entry>Specifies the full path of
+                                    <filepath>clouds-config.yaml</filepath> file. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-g &lt;url|path&gt;</codeph>
+                            </entry>
+                            <entry>
+                                <p>Generates <filepath>cbam_package.zip</filepath> file only from a
+                                    given location of the CSAR package tar file.</p>
+                                <p>Requires running <codeph>sps-cbam</codeph> to complete
+                                    instantiation.</p>
+                                <p>Overwrites option <codeph>-d</codeph>.</p>
+                                <p>This option may not be given in the case of patching.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-h</codeph>
+                            </entry>
+                            <entry> Displays usage/help information. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-i &lt;SDC Config file&gt;</codeph>
+                            </entry>
+                            <entry>Specifies the full path of the SDC Config json file. This option
+                                may not be given when applying a patch. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-j &lt;path_to_vnf_conf&gt;</codeph>
+                            </entry>
+                            <entry>The full path of the VNF CONF json file. This is required by
+                                patching operations. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-k</codeph>
+                            </entry>
+                            <entry>Keeps downloaded NCC files. Not applicable in patching. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-l &lt;log&gt;</codeph>
+                            </entry>
+                            <entry> Specifies the filename to log the instantiated VNF.
+                                Not applicable in patching. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-n &lt;nodes&gt;</codeph>
+                            </entry>
+                            <entry>Specifies the patch node names (comma-separated host names) to
+                                which the operation is applied. The internal IP addresses can also
+                                be used. Optional and mutually exclusive with -t.</entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-o </codeph>
+                            </entry>
+                            <entry>Enables debug logging for patching. Requires option -a, -b, or
+                                -c. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-r</codeph>
+                            </entry>
+                            <entry>
+                                <p>Removes the previously installed load if exists.</p>
+                                <p>In patching this forces reinstallation of the patch from scratch
+                                    and the option -a is required.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-s &lt;stack&gt;</codeph>
+                            </entry>
+                            <entry>
+                                <p>Specifies the VNF stack, IG, ME or SM.</p>
+                                <p>Not applicable in patching.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>-S</codeph></entry>
+                            <entry>The upgrade contains a security patch and will apply to all
+                                nodes. If <codeph>-S</codeph> is present as an option in this
+                                command, the value is true, and the upgrade contains a security
+                                patch. If <codeph>-S</codeph> is not present as an option in this
+                                command, the value is false, and the upgrade does not contain a
+                                security patch.</entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-t &lt;types&gt;</codeph>
+                            </entry>
+                            <entry>
+                                <p>A comma-separated list of node types onto which the patch is to
+                                    be applied. Optional and mutually exclusive with -n. The actual
+                                    supported types depend on the NCC deployment. The types listed
+                                    here are examples and may not be supported by all NCC
+                                    deployments.</p>
+                                <p>The valid types are: </p>
+                                <ul>
+                                    <li>
+                                        <p>auxiliary</p>
+                                    </li>
+                                    <li>
+                                        <p>cdr</p>
+                                    </li>
+                                    <li>
+                                        <p>comsvc</p>
+                                    </li>
+                                    <li>
+                                        <p>db</p>
+                                    </li>
+                                    <li>
+                                        <p>diameterapp</p>
+                                    </li>
+                                    <li>
+                                        <p>iohd</p>
+                                    </li>
+                                    <li>
+                                        <p>ioho, </p>
+                                    </li>
+                                    <li>
+                                        <p>oame</p>
+                                    </li>
+                                    <li>
+                                        <p>smapp</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-u &lt;task&gt;</codeph>
+                            </entry>
+                            <entry>
+                                <p>Performs automated in-service software upgrade (ISU)</p>
+                                <p>If <codeph>all</codeph> is specified, then all the site’s VMs are
+                                    upgraded in one attempt without soak testing.</p>
+                                <p>If <codeph>group</codeph> is specified, then the first half of
+                                    the VMs of a site is upgraded for soak testing.</p>
+                                <p>Requires <codeph>-v</codeph>.</p>
+                                <p>Not applicable in patching.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-v &lt;release&gt;</codeph>
+                            </entry>
+                            <entry>
+                                <p>Specifies the release version from which the NCC is upgraded.</p>
+                                <p>Not applicable in patching.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-w &lt;dir&gt;</codeph>
+                            </entry>
+                            <entry>
+                                <p>Specifies the workspace directory path.</p>
+                                <p>Not applicable in patching.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>-z &lt;speed&gt;</codeph>
+                            </entry>
+                            <entry>
+                                <p>Specifies the speed of patching (how many nodes in parallel to be
+                                    applied at a time for each node type). If the given speed number
+                                    is greater than half of the node number, the latter will be
+                                    applied. </p>
+                                <p>Must be a positive integer. </p>
+                                <p>This option requires the install (-a), backout (-b), or list (-c)
+                                    option.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeph>&lt;load&gt;</codeph>
+                            </entry>
+                            <entry>
+                                <p>Specifies the required load build ID of the NCC.</p>
+                                <p>In patching the load build ID may not be used.</p>
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+</section>
+<section><title>Examples</title>
+<p>To generate <filepath>cbam_package.zip</filepath> from a specified location of the CSAR package tar file, enter:</p>
+<p>
+<codeph>sps-instantiate -g /opt/sps/downloads -i /opt/sps/configs/sdc_config.json -j /opt/sps/configs/vnf_conf.json -s me &lt;SPS load ID&gt;</codeph>
+</p>
+<p>To instantiate from a specified directory path of the NCC artifacts, enter:</p>
+<p>
+<codeph>sps-instantiate -d /opt/sps/download -i /opt/sps/configs/sdc_config.json -j /opt/sps/configs/vnf_conf.json -s me  &lt;SPS load ID&gt;</codeph>
+</p>
+<p>To instantiate by downloading the NCC artifacts from a given URL, enter:</p>
+<p>
+<codeph>sps-instantiate -d https://&lt;Artifactory URL&gt; -i /opt/sps/configs/&lt;SDC Config file&gt; -j /opt/sps/configs/&lt;VNF Config file&gt; -s me &lt;SPS load ID&gt;</codeph>
+</p>
+<p>To perform ISU from release 19.9 and upgrade all the site’s VMs in one attempt, enter:</p>
+<p>
+<codeph>sps-instantiate -d https://&lt;Artifactory URL&gt;/sps-generic-candidates/spsmainbuild/SPS_19_9_Ixyz -i /opt/sps/configs/sdc_config.json -j /opt/sps/configs/vnf_conf.json -s me -u all -v 19.9 SPS_19_9_R1_SPS_19_9_Ixyz</codeph>
+</p>
+<p>To install a patch file that is applied to 3 nodes in parallel, enter:</p>
+<p>
+<codeph>sps-instantiate -a -d /opt/sps/downloads/SPS_20_3_R1_SP1_PP2.tgz -j /opt/sps/configs/vnf_conf.json -t oame -z 3</codeph>
+</p>
+</section>
+</conbody></concept>

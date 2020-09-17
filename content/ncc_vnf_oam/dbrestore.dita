@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-dbrestore"><title>db-restore tool</title><conbody>
+<section><title>Description</title>
+<p>This tool restores the complete NCC database from a backup copy that was made previously with the
+                db-backup tool. </p>
+<p>db-restore is run on the fixed IP address of the active OAME node in the NCC system. You must
+                ensure that you log in to the fixed IP address of the active OAME node and not the
+                floating IP address. If you log in to the floating IP address of the active OAME
+                node, you will experience a broken pipe error.</p>
+<p>Unless you are doing a disaster recovery, Nokia recommends that you perform this procedure during off hours (non-peak-hours).</p>
+<p>All namespaces and data sets will be restored, assuming there is a compressed (gzip) file for each namespace in the specified backup directory.</p><ul>
+<li>
+<p>This tool will stop the database and application server processes.  Do not use this tool if there is live traffic running. </p>
+</li>
+<li>
+<p>This tool will first remove the database files on each database node. Please use this tool only if you are sure that this restore action is required.</p>
+</li>
+<li>
+<p>Once restored, the database will be current as of the time of the last backup that is being
+                        restored. Data updates since that last backup will be lost, unless they are
+                        recovered from another source (for example, another NCC system in the
+                        network). </p>
+</li>
+</ul>
+</section>
+<section><title>Syntax</title>
+<p>
+<userinput>/opt/tpa/bin/db-restore -d &lt;directory&gt; -n &lt;namespace[,namespace]*&gt; [-f] [-r &lt;local|both|all&gt;]</userinput>
+</p>
+<table>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+<p>
+<b>Code</b>
+</p>
+</entry>
+<entry>
+<p>
+<b>Description</b>
+</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+<codeblock>No arguments</codeblock>
+</entry>
+<entry>
+Displays usage/help information
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-h</codeblock>
+</entry>
+<entry>
+Displays usage/help information.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-d &lt;directory&gt;</codeblock>
+</entry>
+<entry>
+Directory where the compressed (zip) backup files exist as a result of the backup procedure.
+</entry>
+</row>
+<row>
+<entry>
+-n &lt;namespace&gt;
+</entry>
+<entry>
+<p>Namespace list to restore. Allows you to specify the namespaces to restore.</p>
+<p>
+<b>Note:</b> If any of the specified namespaces are not part of the backup, db-restore will print out an error similar to the following and stop immediately:</p>
+<p>
+<systemoutput>db-restore issued at: Wed Apr  3 13:17:59 EDT 2019 No distributed backup found on the running nodes: 192.168.3.102 192.168.3.103 contain the specified namespace(s): foo,bar,dsclocal.</systemoutput>
+</p>
+<p>If you have more than one namespace, you can enter the namespaces as a comma-separated list.</p>
+</entry>
+</row>
+<row>
+<entry>
+-f
+</entry>
+<entry>
+Force execution. The user will not be asked for confirmation.
+</entry>
+</row>
+<row>
+<entry>
+-r &lt;local|both|all&gt;   
+</entry>
+<entry>
+<p>Nodes the backup files are located, where:</p><ul>
+<li>
+<p>local: local OAME node</p>
+</li>
+<li>
+<p>both: both OAME nodes</p>
+</li>
+<li>
+<p> all: all database nodes</p>
+</li>
+</ul>
+<p>If local, both, or all are not specified, the default is local.</p>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section><title>Example Output</title>
+<p>A summary output for this command using the “-r all” option is provided to the user. Details of the restore operation can be found in the restorelog file, in the specified backup directory.</p>
+<fig>
+<codeblock>[root@sps-me-1-oame-0 tpaadmin]# db-restore -d /BACKUP/20190322 -r all
+15:14  db-restore issued at: Fri Mar 22 15:14:55 EDT 2019
+15:14  
+15:14  Backup on 192.168.3.102:
+15:14     2019-03-22_15:13:38    sps-me-1-db-0
+15:14  Backup on 192.168.3.103:
+15:14     2019-03-22_15:13:38    sps-me-1-db-1
+15:14  Backup on 192.168.3.104:
+15:14     2019-03-22_15:13:38    sps-me-1-db-2
+15:14  Backup on 192.168.3.105:
+15:14     2019-03-22_15:13:38    sps-me-1-db-3
+15:14  
+
+This action will replace the local database with the specified
+database backup! All database server processes
+and application server processes in the local site
+will be restarted after this configuration change!
+
+Do you wish to continue? (y/n)y
+15:15  
+15:15  Detecting running application servers
+15:15  Detected 10 running application server(s)
+15:15  Stopping app server on host [sps-me-1-comsvc-0]
+15:15  Stopping app server on host [sps-me-1-comsvc-1]
+15:15  Stopping app server on host [sps-me-1-diameterapp-0]
+15:15  Stopping app server on host [sps-me-1-diameterapp-1]
+15:15  Stopping app server on host [sps-me-1-iohd-0]
+15:15  Stopping app server on host [sps-me-1-iohd-1]
+15:15  Stopping app server on host [sps-me-1-ioho-0]
+15:15  Stopping app server on host [sps-me-1-ioho-1]
+15:15  Stopping app server on host [sps-me-1-oame-0]
+15:15  Stopping app server on host [sps-me-1-oame-1]
+15:15  App server on host [sps-me-1-diameterapp-1] stopped
+15:15  App server on host [sps-me-1-diameterapp-0] stopped
+15:15  App server on host [sps-me-1-comsvc-0] stopped
+15:15  App server on host [sps-me-1-comsvc-1] stopped
+15:15  App server on host [sps-me-1-iohd-1] stopped
+15:15  App server on host [sps-me-1-iohd-0] stopped
+15:15  App server on host [sps-me-1-oame-1] stopped
+15:15  App server on host [sps-me-1-oame-0] stopped
+15:15  App server on host [sps-me-1-ioho-0] stopped
+15:15  App server on host [sps-me-1-ioho-1] stopped
+15:15  
+15:15  Stopping db server on host [192.168.3.102]
+15:15  Stopping db server on host [192.168.3.103]
+15:15  Stopping db server on host [192.168.3.104]
+15:15  Stopping db server on host [192.168.3.105]
+15:16  DB server on host [192.168.3.105] stopped
+15:16  DB server on host [192.168.3.104] stopped
+15:16  DB server on host [192.168.3.103] stopped
+15:16  DB server on host [192.168.3.102] stopped
+15:16  
+15:16  Deleting the datastore on all database nodes for namespace [dsc]
+15:16  Deleting the datastore on all database nodes for namespace [dsclocal]
+15:16  Deleting the datastore on all database nodes for namespace [dscglobal]
+15:16  Deleting the datastore on all database nodes for namespace [spspd1]
+15:16  
+15:16  Starting db server on host [192.168.3.102]
+15:16  Starting db server on host [192.168.3.103]
+15:16  Starting db server on host [192.168.3.104]
+15:16  Starting db server on host [192.168.3.105]
+15:16  DB server on host [192.168.3.105] started
+15:16  DB server on host [192.168.3.104] started
+15:16  DB server on host [192.168.3.103] started
+15:16  DB server on host [192.168.3.102] started
+15:16  
+15:16  Disabling XDR for namespaces [ dsc dscglobal spspd1]
+15:16  
+15:16  Starting restore on 192.168.3.102 for sps-me-1-db-0-dsc
+15:16  Starting restore on 192.168.3.103 for sps-me-1-db-1-dsc
+15:16  Starting restore on 192.168.3.104 for sps-me-1-db-2-dsc
+15:16  Starting restore on 192.168.3.105 for sps-me-1-db-3-dsc
+15:16  Restore for sps-me-1-db-0-dsc completed
+15:16  Restore for sps-me-1-db-2-dsc completed
+15:16  Restore for sps-me-1-db-3-dsc completed
+15:16  Restore for sps-me-1-db-1-dsc completed
+15:16  Starting restore on 192.168.3.102 for sps-me-1-db-0-dsclocal
+15:16  Starting restore on 192.168.3.103 for sps-me-1-db-1-dsclocal
+15:16  Starting restore on 192.168.3.104 for sps-me-1-db-2-dsclocal
+15:16  Starting restore on 192.168.3.105 for sps-me-1-db-3-dsclocal
+15:16  Restore for sps-me-1-db-0-dsclocal completed
+15:16  Restore for sps-me-1-db-2-dsclocal completed
+15:16  Restore for sps-me-1-db-1-dsclocal completed
+15:16  Restore for sps-me-1-db-3-dsclocal completed
+15:16  Starting restore on 192.168.3.102 for sps-me-1-db-0-dscglobal
+15:16  Starting restore on 192.168.3.103 for sps-me-1-db-1-dscglobal
+15:16  Starting restore on 192.168.3.104 for sps-me-1-db-2-dscglobal
+15:16  Starting restore on 192.168.3.105 for sps-me-1-db-3-dscglobal
+15:17  Restore for sps-me-1-db-3-dscglobal completed
+15:17  Restore for sps-me-1-db-1-dscglobal completed
+15:17  Restore for sps-me-1-db-2-dscglobal completed
+15:17  Restore for sps-me-1-db-0-dscglobal completed
+15:17  Starting restore on 192.168.3.102 for sps-me-1-db-0-spspd1
+15:17  Starting restore on 192.168.3.103 for sps-me-1-db-1-spspd1
+15:17  Starting restore on 192.168.3.104 for sps-me-1-db-2-spspd1
+15:17  Starting restore on 192.168.3.105 for sps-me-1-db-3-spspd1
+15:17  Restore for sps-me-1-db-3-spspd1 completed
+15:17  Restore for sps-me-1-db-2-spspd1 completed
+15:17  Restore for sps-me-1-db-1-spspd1 completed
+15:17  Restore for sps-me-1-db-0-spspd1 completed
+15:17  
+15:17  sps-me-1-db-0
+15:17      dsc             Completed
+15:17      dsclocal        Completed
+15:17      dscglobal       Completed
+15:17      spspd1          Completed
+15:17  sps-me-1-db-1
+15:17      dsc             Completed
+15:17      dsclocal        Completed
+15:17      dscglobal       Completed
+15:17      spspd1          Completed
+15:17  sps-me-1-db-2
+15:17      dsc             Completed
+15:17      dsclocal        Completed
+15:17      dscglobal       Completed
+15:17      spspd1          Completed
+15:17  sps-me-1-db-3
+15:17      dsc             Completed
+15:17      dsclocal        Completed
+15:17      dscglobal       Completed
+15:17      spspd1          Completed
+15:17  
+15:17  Enabling XDR for namespaces [ dsc dscglobal spspd1]
+15:17  
+15:17  Starting app server on host [sps-me-1-diameterapp-1]
+15:17  Starting app server on host [sps-me-1-diameterapp-0]
+15:17  Starting app server on host [sps-me-1-comsvc-0]
+15:17  Starting app server on host [sps-me-1-comsvc-1]
+15:17  Starting app server on host [sps-me-1-iohd-1]
+15:17  Starting app server on host [sps-me-1-iohd-0]
+15:17  Starting app server on host [sps-me-1-oame-1]
+15:17  Starting app server on host [sps-me-1-oame-0]
+15:17  Starting app server on host [sps-me-1-ioho-0]
+15:17  Starting app server on host [sps-me-1-ioho-1]
+15:17  App server on host [sps-me-1-diameterapp-1] started
+15:17  App server on host [sps-me-1-diameterapp-0] started
+15:17  App server on host [sps-me-1-comsvc-0] started
+15:17  App server on host [sps-me-1-comsvc-1] started
+15:17  App server on host [sps-me-1-iohd-1] started
+15:17  App server on host [sps-me-1-iohd-0] started
+15:17  App server on host [sps-me-1-oame-1] started
+15:17  App server on host [sps-me-1-oame-0] started
+15:17  App server on host [sps-me-1-ioho-0] started
+15:17  App server on host [sps-me-1-ioho-1] started
+15:17  
+15:17  
+15:17  SPS DB restore successfully completed from directory [/BACKUP/20190322]
+15:17  on the database nodes.
+15:17  
+15:17  See [/BACKUP/20190322/DB_BACKUP_*/*.restorelog] for
+15:17  detailed output of restore command execution.
+15:17  
+15:17  db-restore completed at: Fri Mar 22 15:17:46 EDT 2019
+
+Output files on sps-me-1-db-0 (similar directory structure on other database nodes)
+[root@sps-me-1-oame-0 tpaadmin]# ssh -qn sps-me-1-db-0 ls /BACKUP/20190322
+DB_BACKUP_sps-me-1-db-0
+[root@sps-me-1-oame-0 tpaadmin]# ssh -qn sps-me-1-db-0 ls /BACKUP/20190322/DB_BACKUP_sps-me-1-db-0
+sps-me-1-db-0.backupinfo
+sps-me-1-db-0-dsc.backuplog
+sps-me-1-db-0-dscglobal.backuplog
+sps-me-1-db-0-dscglobal.gz
+sps-me-1-db-0-dscglobal.restorelog
+sps-me-1-db-0-dsc.gz
+sps-me-1-db-0-dsclocal.backuplog
+sps-me-1-db-0-dsclocal.gz
+sps-me-1-db-0-dsclocal.restorelog
+sps-me-1-db-0-dsc.restorelog
+sps-me-1-db-0-spspd1.backuplog
+sps-me-1-db-0-spspd1.gz
+sps-me-1-db-0-spspd1.restorelog
+</codeblock>
+</fig>
+</section>
+</conbody></concept>

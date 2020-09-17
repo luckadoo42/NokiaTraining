@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-cn01-tczza-d1e14452"><title>Centralized or decentralized unit determination </title><conbody>
+<section><title>Overview</title>
+<p>The NCC application determines the centralized or decentralized unit determination as per the
+                given table:</p>
+<table colsep="1" pgwide="1" rowsep="1">
+<title>Status of RSU AVP in MSCC AVP for CCR-I</title>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+<p>Requested-Service-Unit (RSU) AVP in CCR-I</p>
+</entry>
+<entry>
+<p>Mode</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry> Present with Sub-AVPs </entry>
+<entry> Decentralized </entry>
+</row>
+<row>
+<entry> Present as Empty </entry>
+<entry> Centralized </entry>
+</row>
+<row>
+<entry> Absent </entry>
+<entry> Call Rejected </entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>Consider the following points for centralized or decentralized unit determination:</p><ul>
+<li>
+<p>
+<i>Requested-Service-Unit (RSU)</i> AVP is read at Multiple-Services-Credit-Control (MSCC) level.</p>
+</li>
+<li>
+<p>
+<i>Used-Service-Unit (USU)</i> AVP value is ignored in a CCR-I request.</p>
+</li>
+<li>
+<p>Once a session call is identified as centralized, it remains in the same mode throughout the complete session. If an RSU AVP is reported in Credit-Control-Request-Update (CCR-U) request, then it is ignored by the charging application. </p>
+</li>
+<li>
+<p>In the case of centralized mode, only one unit type is supported.</p>
+</li>
+<li>
+<p>Slicing algorithm is supported only during centralized mode and is only for <varname>VOLUME</varname> unit type.</p>
+</li>
+<li>
+<p>Decentralized unit determination and rating is considered only for the first unit from the RSU.</p>
+<p>If multiple service units are reported in an RSU, such as <varname>CC-Time</varname> or <varname>CC-Total-Octets</varname>, then the following order is followed in case of decentralized mode:</p><ul>
+<li>
+<p>
+<varname>CC-Time</varname> followed by </p>
+</li>
+<li>
+<p>
+<varname>CC-Money</varname>
+</p>
+</li>
+<li>
+<p>
+<varname>CC-Total-Octets</varname>
+</p>
+</li>
+<li>
+<p>
+<varname>CC-Input-Octets</varname>
+</p>
+</li>
+<li>
+<p>
+<varname>CC-Output-Octets</varname>
+</p>
+</li>
+<li>
+<p>
+<varname>CC-Service-Specific-Units</varname>
+</p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<varname>CC-Total-Octets</varname> used for data calls:</p>
+<p>Decentralized unit determination and rating:</p><ul>
+<li>
+<p>Only the first unit from the RSU or USU is considered for reservation or commit.</p>
+</li>
+<li>
+<p>CCA contains all units received in CCR.</p>
+</li>
+</ul>
+<p>Centralized unit determination and rating</p><ul>
+<li>
+<p>If <varname>CC-Total-Octets</varname> is present in CCR, and <varname>CC-Input-Octets</varname>, <varname>CC-Output-Octets</varname>, or both are present, then only <varname>CC-Total-Octets</varname> is considered for commit logic and the same is sent while sending CCA.</p>
+</li>
+<li>
+<p>If <varname>CC-Total-Octets</varname> is not present in CCR, but <varname>CC-Input-Octets</varname>, <varname>CC-Output-Octets</varname>, or both are present, then both are summed together to consider it equivalent to <varname>CC-Total-Octets</varname> and the same is used for commit logic. In CCA, only <varname>CC-Total-Octets</varname> is sent.</p>
+</li>
+</ul>
+<p>Same is the behavior for all combination where <varname>CC-Total-Octets</varname> is not present in CCR, as mentioned in the following table:</p>
+<table colsep="1" frame="all" rowsep="1">
+<tgroup cols="5">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<colspec colname="col3"/>
+<colspec colname="col4"/>
+<colspec colname="col5"/>
+<thead>
+<row>
+<entry nameend="col3" namest="col1">
+<p>Units in CCR</p>
+</entry>
+<entry morerows="1">
+<p>Unit considered for Charging</p>
+</entry>
+<entry morerows="1">
+<p>Units in CCA</p>
+</entry>
+</row>
+<row>
+<entry>
+<p>CC-Total-Octets</p>
+</entry>
+<entry>
+<p>CC-Input-Octets</p>
+</entry>
+<entry>
+<p>CC-Output-Octets</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry> Yes </entry>
+<entry> Yes </entry>
+<entry> Yes </entry>
+<entry> CC-Total-Octets </entry>
+<entry> CC-Total-Octets </entry>
+</row>
+<row>
+<entry> Yes </entry>
+<entry> Yes </entry>
+<entry> No </entry>
+<entry> CC-Total-Octets </entry>
+<entry> CC-Total-Octets </entry>
+</row>
+<row>
+<entry> Yes </entry>
+<entry> No </entry>
+<entry> Yes </entry>
+<entry> CC-Total-Octets </entry>
+<entry> CC-Total-Octets </entry>
+</row>
+<row>
+<entry> Yes </entry>
+<entry> No </entry>
+<entry> No </entry>
+<entry> CC-Total-Octets </entry>
+<entry> CC-Total-Octets </entry>
+</row>
+<row>
+<entry> No </entry>
+<entry> Yes </entry>
+<entry> Yes </entry>
+<entry> CC-Total-Octets = CC-Input-Octets + CC-Output-Octets </entry>
+<entry> CC-Total-Octets </entry>
+</row>
+<row>
+<entry> No </entry>
+<entry> Yes </entry>
+<entry> No </entry>
+<entry> CC-Total-Octets = CC-Input-Octets </entry>
+<entry> CC-Total-Octets </entry>
+</row>
+<row>
+<entry> No </entry>
+<entry> No </entry>
+<entry> Yes </entry>
+<entry> CC-Total-Octets = CC-Output-Octets </entry>
+<entry> CC-Total-Octets </entry>
+</row>
+<row>
+<entry> No </entry>
+<entry> No </entry>
+<entry> No </entry>
+<entry> Non-data call; some other unit will be used for charging </entry>
+<entry> Non-data call; some other unit will be sent </entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</li>
+<li>
+<p>In the case of <varname>VOLUME</varname> unit type, only <varname>CC-Total-Octets</varname> is supported during CCA request in centralized mode.</p>
+</li>
+<li>
+<p>Immediate Event Charging (IEC) calls are not supported in centralized mode.</p>
+</li>
+</ul>
+</section>
+</conbody></concept>

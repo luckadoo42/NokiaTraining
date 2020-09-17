@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="id9YZ-09126-MT00-REZZA-SP2-d1e66398"><title>Performing a disaster recovery for a non-geo-redundant SM, IG, and ME site</title><taskbody id="d1e66435"><context>
+<sectiondiv><p>Use this procedure to recover a site in a non-geo-redundant SM, IG, and ME
+            site.</p><p><b>Before you begin:</b></p>It is mandatory that the operator has taken
+        periodic backups of the VNF(s) and that they are available for the restoration/recovery of
+        the site that suffered the disaster. See <!--xref URI: #performingcbamBu--><xref
+          keyref="id9YZ-09126-MT00-REZZA-SP2-performingcbamBu"/> for more information.<p>Any time
+          that you need to instantiate or re-instantiate an NCC site in the following procedures,
+          the default tpaadmin user password must be changed on the first login and that password
+          must be propagated to all the VMs in the site. </p><p>The backup operation includes the
+          backing up of all the users Linux system files necessary for accounts and groups
+          management, such as /etc/default/passwd, /etc/group, /etc/passwd, /etc/motd, etc. All
+          these files are backed up from each VM. The restore operation includes restoring all the
+          backed up users Linux system files to each VM. </p><p>If the OAME VMs are logged in ahead
+          of the restore operation, then refer to the NCC Installation and Upgrade Guide and execute
+          the "Changing password on first login" procedure for the tpaadmin user. The password used
+          for this procedure can be anything that follows the default password complexity rules
+          listed under the "Security and user management" section in the OAM Guide, or it can be the
+          same password that has been backed up. The restore procedure will restore the password of
+          tpaadmin that was backed up.</p></sectiondiv>
+</context>
+<steps>
+<stepsection><b>Steps</b></stepsection>
+<step><cmd>Update the VNF EXTENSION.json file and configure the “set_oos_drr” parameter to “true”. The “set_oos_drr” parameter is part of the VNF EXTENTION and defines whether or not a VNF stays in the OOS state. When this parameter is set to true, the instantiated VNF remains in the OOS state until the Disaster Recovery procedure has been executed. As well, when in this OOS_DRR state, incoming XDR messages are blocked and outgoing XDR messages are discarded.</cmd><info><p>This step will ensure that the recovering ME, SM, and/or IG will instantiate on OOS (Out Of Service) state and live traffic will not be routed on the recovering site. In this step, configuration files (XXX_ ME_VNF EXTENSION.json, XXX_ SM_VNF EXTENSION.json) which were used to instantiate ME, SM, and/or IG before disaster, will be updated. Value "set_oos_drr" flag in both files need to be updated as "true" before re-instantiation of ME, SM, and/or IG. for example:</p><fig>
+<codeblock>VNF EXTENTION.json
+    {
+      "name": "localize_and_start_sps",
+      "value": "true"
+    },
+    {
+      "name": "set_oos_drr",
+      "value": "true"
+    },
+    {
+      "name": "ntp_servers",
+      "value": "135.111.9.166,4,y"</codeblock>
+</fig></info></step>
+<step><cmd>Instantiate the ME, IG, and/or SM using the VNF EXTENTION.json file from the first step.</cmd><info/></step>
+<step>
+        <cmd>If the OAME VMs are logged in ahead of the restore operation, then refer to the <i>NCC
+            Installation and Upgrade Guide</i> and execute the "Changing password on first login"
+          procedure for the tpaadmin user.</cmd>
+        <info>
+          <p> The password used for this procedure can be anything that follows the default password
+            complexity rules listed under the "Security and user management" section in the OAM
+            Guide, or it can be the same password that has been backed up. The restore procedure
+            will restore the password of tpaadmin that was backed up.</p>
+          <p>Refer </p>
+        </info>
+      </step>
+<step><cmd>Restore the VNF backup file for the SM and/or ME using CBAM. See <!--xref URI: #performingcbamRe--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-performingcbamRe"/> for more information about restoring a backup file using CBAM.</cmd><info/></step>
+<step><cmd>Perform the following to allow the recovering SM, ME, or IG to transition into an IS state.</cmd><info>
+          <ol id="ol_dxx_j4x_tmb">
+            <li>Log in to the active OAME node on the recovering SM, ME, or IG as tpaadmin and
+              navigate to the /opt/tpa/bin directory.</li>
+            <li>Enter the following command to allow the recovering ME, IG, and/or SM to transition
+              into an In Service (IS) state:<p>
+                <userinput>xdr-status -d true</userinput>
+              </p><p>After issuing this command, allow enough time for the recovering site to
+                transition into the IS state.</p></li>
+          </ol></info></step>
+</steps>
+</taskbody></task>

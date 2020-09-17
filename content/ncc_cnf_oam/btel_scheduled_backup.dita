@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="btel_scheduled_backup">
+    <title>BTEL scheduled backup</title>
+    <body>
+        <p>The scheduled backups for BTEL components cmdb, cpro, grafana and gen3gppxml are not
+            enabled by default. After installing BTEL they can be enabled, if desired. Follow the
+            instructions here: <xref
+                href="https://confluence-app.ext.net.nokia.com/display/SPS/Backup+and+restore+-+NCC+20.9#Backupandrestore-NCC20.9-Enable/disablescheduledbackupswithCBURmasterRestAPI"
+                format="html" scope="external">Enable/Disable scheduled
+            backups</xref><!--DRAY: FIXME; fix this link because it's not allowed.--></p>
+        <p>The default schedules for the cron jobs that performs scheduled backups for all BTEL BR
+            policies (cmdb, cpro, grafana, gen3gppxml) are set to the same value: "0 2 * * *" which
+            means daily at 2am.</p>
+        <section id="section_tjk_s54_wmb">
+            <title>Update schedules for scheduled backups</title>
+            <p>To update the cronJob schedules defined at install time for any of the BR policies
+                created by BTEL, an helm upgrade has to be performed, providing the new value for
+                the cronJob schedules, and reusing old values for all other properties.</p>
+            <p>Then the scheduled backups have to be enabled by following the instructions at: <xref
+                    href="https://confluence-app.ext.net.nokia.com/display/SPS/Backup+and+restore+-+NCC+20.9#Backupandrestore-NCC20.9-Enable/disablescheduledbackupswithCBURmasterRestAPI"
+                    format="html" scope="external">Enable/Disable scheduled
+                backups</xref><!--DRAY: FIXME; fix this link because it's not allowed.-->.</p>
+            <p><b>Update schedules for scheduled backups</b></p>
+            <codeblock># For example, the following helm upgrade will change the schedules to run the backup for cpro daily at 5am
+helm3 upgrade btel btel-chart-20.9.1-*.tgz -n $NAMESPACE --set cpro.server.cbur.cronJob="0 5 * * *" --reuse-values --wait --timeout=1200s
+ 
+# To make the change effective, the scheduled backups have to be enabled.
+# If the scheduled backups were already enabled before doing the upgrade, then they need to be disabled and re-enabled for the changes to the policy to have effect.</codeblock>
+        </section>
+    </body>
+</topic>

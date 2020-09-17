@@ -1,0 +1,528 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="rule_var">
+    <title>Rule variables</title>
+    
+    <conbody>
+        <section id="section_rnt_bd3_plb">
+            <title>Overview</title>
+            <p>The NCC provides a flexible way to define a variable and set its value based on a
+                flexible logic defined in rules. The rule variable can be used to store values
+                during a rules evaluation and is available to SPS-Policy, SPS-Charging, and
+                SPS-Customer-Engagement to simplify the composition of rule logic.</p>
+            <p>Rule variables are configurable elements that are unique to a Rule System Version
+                (RSV) under the Rules and Variables tab in Policy or the Variables tab in Charging.
+                They can be configured on SM using either the GUI or north bound API as part of the
+                RSV. Different values can be assigned to a rule variable based on different
+                conditions. After a rule variable is configured, it can be used in the rules of
+                either a rule group or rule set in the same RSV, or in a service profile outside of
+                the RSV by using the related rule variable dictionary attributes. The variable is
+                set based on a rule. One rule variable can also reference another rule variable
+                defined in the same RSV.</p>
+            <p>A Rule Variable is associated with a trigger and re-initialized every time the
+                Trigger is invoked. The NCC knows which operations and contexts to make available in
+                the GUI according to the trigger and application. Only the source contexts that are
+                applicable to the triggers selected for the rule variable can be used in the rule
+                variable definition. For each rule engine invocation, a new variable context
+                instance is created to keep the status and values of all rule variables used by the
+                evaluated rule trigger and /rule group. When the rule engine completes the
+                evaluation and returns, the variable context will be removed. So each rule engine
+                invocation has an independent view of the rule variable instances it used in the
+                evaluation.</p>
+            <p>Rule variables can be imported from other files under the import tab by supplying the
+                name of the rule variable and browsing to the appropriate file.</p>
+            <p>The Reference Rule Variable tab allows the marking of the variable as a reference for
+                use in other sites. That is, one rule variable can also reference other rule
+                variables defined in the same RSV. </p>
+        </section>
+        <section id="section_vxb_2d3_plb">
+            <title>Basic rule variable usage</title>
+            <p>A rule variable can be defined as a simple variable with only a name and value type
+                or with a list of complicated evaluation rules that are used to set the value of the
+                rule variable based on different conditions. A default value can also be set for a
+                rule variable.</p>
+            <p>Basic usage defines the variable with a name (for example, isRural) and type (for
+                example, boolean). Then the conditions under which it is given a value are
+                    defined.<note>The @ character prefixed to the name of the rule variable allows
+                    the variable name to be entered without the Get Variables (Name) argument. For
+                    example: Variables.GetVariable(Name = isRuralAPN) can be written as
+                    (@isRuralAPN) in the SM GUI.</note></p>
+            <p>For this basic example, a rule could be constructed that looks
+                like:<codeblock>If (Gx-Msg-Session.Called-Station-ID = CustomDataProfile(“APN Name”,
+“Rural_APNs”))
+Then
+@isRuralAPN = yes
+Else
+@isRuralAPN = no</codeblock></p>
+            <p>Below is a rule variable defined to use other variables:</p>
+            <p>First the definition of the
+                Variable:<codeblock>name : isRuralXampLTE
+type : boolean</codeblock></p>
+            <p>Then configuration of a rule to use the variable, for
+                example:<codeblock>If (@isRuralAPN) AND (@isLTEXamp)
+Then
+@isRuralXampLTE = true
+Else
+@isRuralXampLTE = false</codeblock></p>
+        </section>
+        <section id="section_pnz_qf3_plb">
+            <title>Rule variables configuration example</title>
+            <p>The value of each variable is specified using rules logic (rule conditions and
+                actions) where the only permitted value is to set the variable value. The conditions
+                have the full power of the rule engine; however, the value of the rule variable is
+                assigned only if the conditions are met. An optional initializer can also be
+                included to modularize the rules logic and to separate out independent pieces of
+                rules logic for easier reading and maintenance.</p>
+            <p>For example, the following rule could be written with or without rule variables to
+                accomplish the same outcome. Without the rule
+                variable:<codeblock>If
+(Gx-Message.Called-Station-Id = “vip.apn” or
+Gx-Message.Called-Station-Id = “vip2.apn”) and
+Device.CustomData(“VIP”) NOT-PRESENT
+Then
+Gx-Message.Terminate</codeblock></p>
+            <p>With the rule variable, one variable called “isVIPNet” could be defined which
+                defaults to false with the following initializer and then another variable called
+                “isVIPDevice ”, which defaults to false with the initializer that follows
+                “isVIPNet”:<codeblock>If
+(Gx-Message.Called-Station-Id = “vip.apn” or
+Gx-Message.Called-Station-Id = “vip2.apn”)
+Then
+@isVIPNet = true</codeblock></p>
+            <p>The “isVIPDevice ” initializer, which will be true if the device is connected to one
+                of the ‘vip’ APNs; otherwise
+                false:<codeblock>If
+(Device.CustomData(“VIP”) IS-PRESENT
+Then
+@isVIPDevice = true</codeblock></p>
+            <p>This variable will be true if the device has the “VIP” SOC code; otherwise it will be
+                false. The same rule written with rule variables
+                becomes:<codeblock>If
+(@isVIPNet = true) and (@isVIPDevice = false)
+Then
+Gx-Message.Terminate</codeblock></p>
+            <p>More complex examples can be used as follows to expound the versatility of the rule
+                variable.</p>
+            <p><b>Simple value type rule variable with simple value condition</b></p>
+            <p>Below is a rule variable defining the use of multiple SGSN MCC/MNC and RAT-Type
+                values to be under one
+                variable.<codeblock>name : isLTEXamp
+type : enum of type Boolean
+If (Gx Combined Msg/Session.3GPP-SGSN-MCC-MNC.MNC = [630, 880, 640, 610])
+AND
+(Gx Combined Msg/Session.3GPP-SGSN-MCC-MNC.MCC = 302) AND
+(Gx Combined Msg/Session.RAT-Type = RATType.EUTRAN)
+THEN
+@isLTEXamp = True
+ELSE
+@isLTEXamp = false</codeblock></p>
+            <p><b>Simple value type rule variable with attribute condition value using custom
+                    data</b></p>
+            <p>Below is a rule variable defining the use of a variable in custom
+                data.<codeblock>name : isRuralAPN
+type : enum
+If (Gx-Msg-Session.Called-Station-ID = CustomDataProfile (“APN Name”,
+“Rural_APNs”))
+THEN
+@isRuralAPN = true
+Else
+@isRuralAPN = false</codeblock></p>
+            <p><b>Simple value type rule variable with attribute condition value using another rule
+                    variable</b></p>
+            <p>Below is a rule variable defining the use of a variable in a condition that uses
+                another rule
+                variable.<codeblock>name : isRuralXampLTE
+type : enum
+If ((Variables.Get-Variable(Name = isRuralAPN) = true) AND (Variables.
+Get-Variable(Name = isLTEXamp) = true
+THEN
+@isRuralXampLTE = true
+ELSE
+@isRuralXampLTE = false
+</codeblock></p>
+            <p><b>Simple value type rule variable with attribute condition value using complex
+                    mapping output</b></p>
+            <p>Below is a rule variable defining the use of a variable in a condition that uses a
+                value from a complex
+                mapping.<codeblock>name : isRuralAPN
+type : enum
+If ((ComplexMap.Load-Row(“MapName”, “Key1”, “key2”, “key3”, “V1”, “V2”,
+“V3”) == true) and
+(Variables.Get-Variable(Name =V1) = “A”) and
+(Variables.Get-Variable(Name =V2) = “B”) and
+(Variables.Get-Variable(Name =V3) = “C”)
+THEN
+@isRuralAPN = true
+ELSE
+@isRuralAPN = false</codeblock></p>
+            <p><b>Simple value type rule variable for a List value type</b></p>
+            <p>Below is a rule variable defining the use of the List value
+                type.<codeblock>name : callZoneList
+type : List
+If (Gx-Msg-Session.Called-Station-ID = CustomDataProfile(“APN Name”,
+“Rural_APNs”))
+THEN
+callZoneList = [zone1, zone2]
+ELSE
+callZoneList = [zone3, zone4]</codeblock></p>
+            <p><b>Attribute value type rule variable using value from output of complex
+                mapping</b></p>
+            <p>Below is a rule variable defining the use of an attribute as output from complex
+                mapping.<codeblock>name : Variable1
+type : string
+If ((Gx-Msg-Session.Called-Station-ID = CustomDataProfile(“APN Name”,
+“Rural_APNs”)) AND
+(ComplexMap.Load-Row(“CarrierDeviceMappingTable”, “Fido”, “iPhone”,
+“bandwidthSelectionRow”)) = true )
+THEN
+Variable1= QOS_MANAGEMENT.Max-Requested-Bandwidth-UL(ComplexMap.
+Get-Row-Integer("bandwidthSelectionRow", 1)
+ELSE
+Variable1= QOS_MANAGEMENT.Max-Requested-Bandwidth-DL(ComplexMap.
+Get-Row-Integer("bandwidthSelectionRow", 2)</codeblock></p>
+            <p><b>Adjustment operator as a rule variable</b></p>
+            <p>Below is an example of an Adjustment operator used in configuring the value of a rule
+                variable.<codeblock>name : Variable1
+type : string
+Variable1= “value1” Concat “abc”
+</codeblock></p>
+            <p><b>Mapping lookup with optional default value</b></p>
+            <p>Below is an example of using a rule variable in a Complex Mapping lookup. First the
+                variable is
+                defined:<codeblock>name : RGbyCallType
+type : String
+default value: "SMS_INVALID"
+If (Message.ServiceCallType IS-PRESENT) and
+(Message.CallSubType IS-PRESENT) and
+(ComplexMap.Load-Row("CallTypeMappingTable", "Message.ServiceCallType",
+"Message.CallSubTypeMap-Info", "CallTypeRow")) = true)
+THEN
+@RGbyCallType=(CallTypeRow, 1)
+ELSE
+@RGbyCallType=(CallTypeRow, 2)</codeblock></p>
+            <p>The map is assumed to exist. Using the rule variable in a rule condition, could be as
+                    follows:<codeblock>If (@RGbyCallType = "SMS_MO")
+</codeblock><note>Although not
+                    used in this example, the default value (CallTypeRow, 2) would have been used if
+                    the call type was not equal to SMS_MO.</note></p>
+        </section>
+        <section id="section_m2j_vg3_plb">
+            <title>Usage examples of Rule variables</title>
+            <p>Rule variables can be used in rules, in a rule group that is part of an RSV or in a
+                service profile, in a condition, or in an action that is to be assigned to another
+                variable or attribute. The following are examples of rules that use Rule
+                variables.</p>
+            <p><b>Using a rule variable in a condition</b></p>
+            <p>
+                <codeblock>IF [RULE Rule1](Variables.Get-Variable(Name = Variable1) = abc)
+THEN
+(DSC.APN-Aggregate-Max-Bitrate-DL = 10000)</codeblock>
+            </p>
+            <p><b>Using a rule variable in an action to assign value to a Notification
+                Variable</b></p>
+            <p>
+                <codeblock>(Notification Variables.Subscriber-User-Id = Variables.Get-Variable(Name
+= Variable1))</codeblock>
+            </p>
+            <p><b>Using a rule variable in an action to clear the value of a rule variable</b></p>
+            <p>
+                <codeblock>Variables.Clear-Variable = Variable1</codeblock>
+            </p>
+        </section>
+        <section id="section_vlg_bh3_plb">
+            <title>Attribute parameters of the rule variable</title>
+            <p>Rule-variables are configured on the Rule System Versions (RSV) page of the SM GUI.
+                After a Draft RSV is configured and saved, the rule editor for the RSV appears
+                containing a box for Triggers and a box for Rule Variables. A trigger must first be
+                selected. Then select Add Rule Variable. When the Rule Variable Details window
+                appears, the Rule Variable can be named, select a Value Type, and if needed provide
+                a default value for the rule variable. The New Rule button can then be clicked to
+                define the value.</p>
+            <p>The value of each variable is specified using rules logic (rule conditions and
+                actions) where the only permitted value is to set the variable value. The conditions
+                have the full power of the rule engine; however, the value of the rule variable is
+                assigned only if the conditions are met. An optional initializer can also be
+                included to modularize the rules logic and to separate out independent pieces of
+                rules logic for easier reading and maintenance.</p>
+            <p>The following table describes the parameters that can be configured for a rule
+                    variable.<table frame="all" rowsep="1" colsep="1" id="table_d22_dh3_plb">
+                    <tgroup cols="3">
+                        <colspec colname="c1" colnum="1" colwidth="1*"/>
+                        <colspec colname="c2" colnum="2" colwidth="1*"/>
+                        <colspec colname="c3" colnum="3" colwidth="1*"/>
+                        <thead>
+                            <row>
+                                <entry>Parameter</entry>
+                                <entry>Description</entry>
+                                <entry>Options</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry>Rule Variable</entry>
+                                <entry>The name of the rule variable.</entry>
+                                <entry>
+                                    <p>The name must be a string and must be unique within the
+                                        RSV.</p>
+                                    <p>Must be 1 to 80 characters in length.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>Description</entry>
+                                <entry>A short textual description of the variable.</entry>
+                                <entry>Maximum length: 255 characters.</entry>
+                            </row>
+                            <row>
+                                <entry>Applicable Triggers</entry>
+                                <entry>
+                                    <p>Applicable Triggers (rule sets) can be selected for a rule
+                                        variable during the configuration for either Policy or
+                                        Charging, including those in an RSV and those in
+                                        profiles.</p>
+                                    <p>If a specific rule set is not selected, the default is all
+                                        rule sets.</p>
+                                    <p>Rule sets of the rule group that uses the rule variable
+                                        should be the same as or a subset of the rule sets in the
+                                        rule variable definition. </p>
+                                </entry>
+                                <entry>
+                                    <p>For Policy, one of the following rule sets can be chosen:<ul
+                                            id="ul_ax3_4h3_plb">
+                                            <li>IpCanSessionEstablishment</li>
+                                            <li>IpCanSessionModification</li>
+                                            <li>IpCanSessionTermination</li>
+                                            <li>AfSessionEstablishment</li>
+                                            <li>AfSessionModification</li>
+                                            <li>AfSessionTermination</li>
+                                            <li>QosManagement</li>
+                                            <li>SPRNotificationUpdateIpCanSession</li>
+                                            <li>SPRNotificationUpdate</li>
+                                            <li>DynamicRuleCreation</li>
+                                            <li>SySessionUpdate</li>
+                                        </ul></p>
+                                    <p>For Charging, one of the following rule sets can be
+                                            chosen:<ul id="ul_ltn_sh3_plb">
+                                            <li>Applicablity</li>
+                                            <li>GyGreditRequest</li>
+                                            <li>Tariff</li>
+                                            <li>Threshold</li>
+                                        </ul></p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>Value Type</entry>
+                                <entry>The Value Type that can be assigned to the rule
+                                    variable.</entry>
+                                <entry>One of the following value types can be chosen:<ul
+                                        id="ul_hh5_5h3_plb">
+                                        <li>STRING</li>
+                                        <li>ENUM</li>
+                                        <li>LONG</li>
+                                        <li>TIME DURATION</li>
+                                        <li>IP ADDRESS</li>
+                                        <li>DATE TIME</li>
+                                        <li>TIME OF DAY</li>
+                                        <li>BASE</li>
+                                        <li>FLOAT</li>
+                                        <li>DOUBLE</li>
+                                    </ul></entry>
+                            </row>
+                            <row>
+                                <entry>Value Type Class</entry>
+                                <entry>Appears only when the Value Type is Enum Value or
+                                    Boolean.</entry>
+                                <entry>
+                                    <p>Select the Class from the drop-down menu.</p>
+                                    <p>See the section “Enumeration Types and Event Triggers” in
+                                        this chapter for more information.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>Default Value</entry>
+                                <entry>
+                                    <p>A default value can be configured for the rule variable. If
+                                        none of the conditions in a rule variables are met, the
+                                        default value is in effect.</p>
+                                    <p>The value must be compatible with the rule variable type. It
+                                        can be a single value, a list of values, or an attribute.
+                                        The attribute may also be another rule variable or the
+                                        output from a complex mapping.</p>
+                                </entry>
+                                <entry>A default value is optional; however, the default value of
+                                    the rule variable must be compatible with the value type of the
+                                    rule variable.</entry>
+                            </row>
+                            <row>
+                                <entry>New Rule</entry>
+                                <entry namest="c2" nameend="c3">This panel provides the evaluation
+                                    for the rules using the rule variable. The rule variable is only
+                                    evaluated on the first use. When there are multiple Evaluations
+                                    present, they are executed in order and the first matched
+                                    evaluation will set the value of this variable.</entry>
+                            </row>
+                            <row>
+                                <entry>Name</entry>
+                                <entry>The name of the evaluation for the rule variable. This is a
+                                    mandatory field.</entry>
+                                <entry>
+                                    <p>The Name must be a string and must be unique within the
+                                        RSV.</p>
+                                    <p>Must be 1 to 80 characters in length.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>Description</entry>
+                                <entry>A short textual description of the variable.</entry>
+                                <entry>Maximum length: 255 characters.</entry>
+                            </row>
+                            <row>
+                                <entry>ON or OFF toggle button</entry>
+                                <entry>The individual rule can enabled or disabled. By default, the
+                                    rule is enabled—toggled ON. If OFF is displayed, the rule is
+                                    disabled and stored but not used. This allows the rule to be
+                                    stored without activating the rule.</entry>
+                                <entry>Use the toggle button to select whether the rule is enabled,
+                                    the ON button; or disabled, the OFF button.</entry>
+                            </row>
+                            <row>
+                                <entry>if</entry>
+                                <entry>The conditional statement for the rule. The conditions in the
+                                    rule variable can be any of the conditions that are supported by
+                                    the rule engine (including use of another rule variable or
+                                    output from a mapping).</entry>
+                                <entry>Enter the<ul id="ul_qzg_g33_plb">
+                                        <li>Source context required</li>
+                                        <li>Attribute to which this rule variable will apply.</li>
+                                        <li>Operator (for example, IS-PRESENT, EQUAL...)</li>
+                                        <li>Logical operator (The condition statement of the rule
+                                            can be configured with a single criterion or with
+                                            multiple criteria constructed with “and” and “OR”
+                                            logical operators.)</li>
+                                    </ul></entry>
+                            </row>
+                            <row>
+                                <entry>value</entry>
+                                <entry>The value must be compatible with the rule variable type. It
+                                    can be a single value, a list of values, or an attribute. The
+                                    attribute may also be another rule variable or the output from a
+                                    complex mapping.</entry>
+                                <entry>
+                                    <p>The value is always an equation that has the name of the rule
+                                        variable equal to any supported value type. For example:</p>
+                                    <p>isRuralAPN = true (In the case of a boolean ENUM value
+                                        type.)</p>
+                                    <p>or</p>
+                                    <p>Variable1= Variables.GetVariable(Name =V1) (In the case of a
+                                        string value type. See the section “)</p>
+                                    <p>When the conditionContainer is matched, this Value is the
+                                        value of the rule variable.</p>
+                                </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table></p>
+        </section>
+        <section id="section_x3m_k33_plb">
+            <title>Attributes for use with Rule variables</title>
+            <p>The following table describes the attributes that can be used to perform an action on
+                a rule variable that is a string value. These actions can be used to access, clear,
+                or set the value of a defined rule variable. They can be used in rule group to
+                access the value of a rule variable, or to set/clear the value of rule variable when
+                needed.</p>
+            <p>The Get-Variable attribute can also be used in rule variable definition as a
+                condition to access the value of a rule variable.<note>For a given rule engine
+                    invocation, All the rule variables have two state:<ul id="ul_nmt_l33_plb">
+                        <li>initialized—means a value is set to this variable, a null is also a
+                            value.</li>
+                        <li>uninitialized—means no value is set to this variable yet. The start
+                            state of all rule variable is uninitialized for rule engine
+                            invocations.</li>
+                    </ul></note><table frame="all" rowsep="1" colsep="1" id="table_jnq_n33_plb">
+                    <tgroup cols="3">
+                        <colspec colname="c1" colnum="1" colwidth="1*"/>
+                        <colspec colname="c2" colnum="2" colwidth="1*"/>
+                        <colspec colname="c3" colnum="3" colwidth="1*"/>
+                        <thead>
+                            <row>
+                                <entry>Attribute</entry>
+                                <entry>Description</entry>
+                                <entry>Input value</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry>VARIABLES.Get-Variable ()</entry>
+                                <entry>
+                                    <p> This attribute gets the named attribute and is used in
+                                        conditions and actions.</p>
+                                    <p>When VARIABLES.GetVariable (variable-name) is used:<ul
+                                            id="ul_o4n_q33_plb">
+                                            <li>If the state of this rule variable is uninitialized,
+                                                the first use of get attribute on this variable will
+                                                trigger the initialization logic defined in the rule
+                                                variable and set a value to it. This value will be
+                                                returned immediately and will also change the status
+                                                from uninitialized to initialized.</li>
+                                            <li>If the variable is in an initialized state, the
+                                                current value is returned.</li>
+                                        </ul></p>
+                                </entry>
+                                <entry>&lt;variable-name></entry>
+                            </row>
+                            <row>
+                                <entry>Variables.Set —Variable ()</entry>
+                                <entry>This attribute sets the named attribute to a specific value.
+                                    Use of this attribute always causes the state to become
+                                    initialized.</entry>
+                                <entry>&lt;variable-name|value></entry>
+                            </row>
+                            <row>
+                                <entry>Variables.Clear-Variable ()</entry>
+                                <entry>This attribute clears the value of a rule variable with the
+                                    name specified in the "variable-name" parameter and cause the
+                                    attribute to become uninitialized.</entry>
+                                <entry>&lt;variable-name></entry>
+                            </row>
+                            <row>
+                                <entry>Variables.Clear-All-Variables ()</entry>
+                                <entry>This attribute clears all the rule variables and causes them
+                                    to become uninitialized.</entry>
+                                <entry>—</entry>
+                            </row>
+                            <row>
+                                <entry>Variables.Evaluate-RegularExpression ()</entry>
+                                <entry>
+                                    <p>This is an evaluateRegex attribute. It is uses a
+                                        regular_expression to parse the target_string, and save the
+                                        matched results to the variables in the varnames list. All
+                                        the variables in vernames are initialized.</p>
+                                    <p>If the number of matched results is less than the number of
+                                        variable names, then the extra variables will be initialized
+                                        with a null value.</p>
+                                    <p>If the number of matched results is greater than the number
+                                        of variable names, then the extra matched result will be
+                                        discarded. </p>
+                                </entry>
+                                <entry>
+                                    <p>&lt;target_String|regular_ expression|varnames></p>
+                                    <p>The target_string is a text string to be parsed.</p>
+                                    <p>A regular_expression contains the parse pattern
+                                        expression</p>
+                                    <p>The varnames contain one or multiple variable names used to
+                                        store the match/parse results.</p>
+                                    <p>For example:</p>
+                                    <p>target_string="The info of a person: name=John, age=25, he is
+                                        an engineer"</p>
+                                    <p>regular_expression=".*name= ([A-Za-z]+).*age=([0-9]+).*";</p>
+                                    <p>varnames = var1, var2</p>
+                                    <p>The result will be:</p>
+                                    <p>var1="John"</p>
+                                    <p>var2="25"</p>
+                                </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table></p>
+        </section>
+    </conbody>
+</concept>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="db-remove-data">
+    <title>db-remove-data</title>
+    <conbody>
+        <section id="section_h1k_1sj_nlb">
+            <title>Description</title>
+            <p>This tool is used to delete data from a set (table) in the SPS database. At times, it
+                may be required to empty a given data set. db-remove-data allows users to remove all
+                records from a data set in a simple, efficient manner.</p>
+            <p>This tool may also be used to clean all data from a given node the next time that
+                node reboots. This is achieved by the tool setting a flag that gets read during the
+                next node reboot, which will then remove all database disk files and force a clean
+                boot (relying instead on the data from peer database nodes to populate the database
+                on that node).</p>
+            <p><i>CAUTION:</i> This command will remove ALL data from the specified data set. Once
+                complete, this action cannot be reversed. Ensure this is what you want to do before
+                running the db-remove-data tool.</p>
+            <note>
+                <p>A clean boot is required anytime a node has been out-of-service for more than a
+                    couple hours, prior to bringing that node back in-service, to ensure that no
+                    deleted records will get mistakenly re-inserted back into the database
+                    cluster.</p>
+            </note>
+            <note>
+                <p>db-remove-data will not run if there is an instance running of db-backup,
+                    db-restore, or db-remove-data for the same data set. In this case, an error
+                    message will be displayed.</p>
+            </note>
+        </section>
+        <section id="section_z2k_jsj_nlb">
+            <title>Syntax</title>
+            <p>
+                <codeblock>db-remove-data -s &lt;set> [-n namespace] [-r]
+db-remove-data -w &lt;node>
+db-remove-data -c &lt;node></codeblock>
+            </p>
+            <table frame="all" rowsep="1" colsep="1" id="table_z51_lsj_nlb">
+                <tgroup cols="2">
+                    <colspec colname="c1" colnum="1" colwidth="1*"/>
+                    <colspec colname="c2" colnum="2" colwidth="1*"/>
+                    <thead>
+                        <row>
+                            <entry>Code</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry><codeph>No arguments</codeph></entry>
+                            <entry>Displays usage/help information.</entry>
+                        </row>
+                        <row>
+                            <entry><codeph>-h</codeph></entry>
+                            <entry>Displays usage/help information. </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>-s &lt;set></codeph></entry>
+                            <entry>Specifies the data set (table) from which to remove the
+                                data.</entry>
+                        </row>
+                        <row>
+                            <entry><codeph>-n &lt;namespace></codeph></entry>
+                            <entry>Namespace for the specified set, or all. Default is all. “all”
+                                means to remove data from the given set from all namespaces that
+                                include a set by that name.</entry>
+                        </row>
+                        <row>
+                            <entry><codeph>-r</codeph></entry>
+                            <entry>
+                                <p>Remove records completely without the durable delete feature,
+                                    leaving behind no tombstones.</p>
+                                <p><i>CAUTION:</i> This can leave the system vulnerable to
+                                    resurrected records that were previously deleted. This option
+                                    should therefore NOT BE USED for most situations.</p>
+                                <p>This option should only be used for specific use cases by users
+                                    who completely understand the impacts.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>-w &lt;node></codeph></entry>
+                            <entry>
+                                <p>Wipe all data from a given database node, where &lt;node> is the
+                                    IP address. This removes all database disk files from that node
+                                    so that a database restart on that node will populate its
+                                    database by retrieving data from peer database nodes, rather
+                                    than from its local disk files.<note>This can only be used on a
+                                        node that is reachable, but where the database is currently
+                                        OOS.</note><note>If the given node is unreachable, use the
+                                        -c option instead.</note></p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>-c &lt;node></codeph></entry>
+                            <entry>Clean all data from a given node, where &lt;node> is the IP
+                                address, the next time that node reboots. This removes all database
+                                disk files from that node the next that it restarts, so that the
+                                database will populate its data by retrieving from peer database
+                                nodes, rather than from its local disk files.</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section id="section_vmx_zsj_nlb">
+            <title>Examples<!--Dray: I need examples; ask Arundhati once he's done.--></title>
+            <p><!--Dray: I certainly will need examples.--></p>
+        </section>
+    </conbody>
+</concept>

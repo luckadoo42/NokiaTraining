@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id ="id9YZ-08540-UG05-PCZZA-d1e12732"><title>Overview</title><conbody>
+<section>
+
+<p>Devices have the following relationships with other entities:</p><ul>
+
+<li>
+<p>
+<b>Device and User</b>: A user owns a device. The relationship between the users and devices is 1:N, such that a given subscriber owns many devices.</p>
+</li>
+<li>
+<p>
+<b>Device and Account</b>: An account is responsible for services offered through a device. There is no direct linkage between an account and a device. The services paid by an account are related to a particular device. For example, Dan has an iPhone and an iPad and he pays $5 per device.</p>
+</li>
+<li>
+<p>
+<b>Device and Group</b>: A group contains many devices and groups. It is possible for a group to contain a mix of subscription identifiers and device identifiers.</p>
+</li>
+<li>
+<p>
+<b>Device and Service Definition</b>: The relationship between a device and a service is based on the definition of the service itself. There is not a direct relationship between an individual device and a particular service definition, but there may be a relationship between a class of devices and a particular service (for example, a data plan that is only usable by iPhones).</p>
+</li>
+<li>
+<p>
+<b>Device and Service Instance</b>: A device may have one or more services linked to it, such as 100 service instances linked to a single device.</p>
+</li>
+</ul>
+<p><xref href="#id9YZ-08540-UG05-PCZZA-d1e12732/Devicequery" format="dita"/> shows device query that
+                returns the following device objects:</p><ul>
+
+<li>
+<p>The device object that is a primary object</p>
+</li>
+<li>
+<p>Secondary objects, such as subscriber, devices, group membership, and service instances included in the response.</p>
+</li>
+</ul>
+<note>
+
+<p>A device object cannot be a primary or secondary object at the same time.</p>
+</note>
+<fig id="Devicequery">
+<title>Objects for device query</title>
+
+<image href="../images/objects_for_device_query_default.png" placement="break" width="6in" />
+</fig>
+<sectiondiv>
+<p><b>Time of Day Blocking</b></p>
+<p>This section describes the configuration of a Time-Of-Day (ToD) Blocking policy in the NCC. The
+                                                  feature is specific to NCC-Policy and not used for
+                                                  Charging deployments. The purpose of this feature
+                                                  is to provide a Time of Day operation that allows
+                                                  or denies a device access to the network.</p>
+<p>Time of day policies allow timed access to data plans based on a predefined configuration, where the Device can be allowed or denied access to the network. </p>
+<p>The policy can also be made relative to the device&#8217;s current time zone or relative to the device&#8217;s configured time zone. The purpose of the time zone configuration is to check whether the intervals configured in the device are active or inactive as per the user's current time.</p>
+<p>ToD Blocking is configured and enabled on the device. ToD Blocking can be activated or deactivated, per subscriber device, in 15 minute intervals. For example, Device A may have policy X active from 8 pm to 6 am, Device B may have policy X active from 9:45 pm to 8 am, and Device C may have policy Y active from 6:15 pm to 11:30 pm. </p>
+<p>The name of the custom data is "ToD Blocking Enabled" the value flag is equal to &#8220;true&#8221;. If the value is equal to &#8220;false&#8221; ToD Blocking is disabled.</p>
+<p>When you configure the Device entity in the Subscriber Manager, you must include ToD Blocking parameter and ToD Blocking interval configuration for the device as follows:</p><ul>
+
+<li>
+<p>Device Time Zone: This is the time zone for the subscriber, which can be in the range of -12:00 to +14:00 (for example, UTC +offset). For example, the UTC+14 (time zone) on Wednesday, January 25, 2017 at 2:00 pm corresponds to UTC (GMT) Wednesday, January 25, 2017 at 12:00 am.</p>
+</li>
+<li>
+<p>Device Daylight Saving: This is a Boolean &#8220;true&#8221; if DST is in force in that time zone or &#8220;false&#8221; if DST is not in force.</p>
+</li>
+<li>
+<p>Start Day: Day of the week (SUNDAY, MONDAY, TUESDAY,.....,SATURDAY)</p>
+</li>
+<li>
+<p>Start Time: HH:mm:ss</p>
+</li>
+<li>
+<p>Stop Day: Day of the week (SUNDAY, MONDAY, TUESDAY,.....,SATURDAY)</p>
+</li>
+<li>
+<p>Stop Time: HH:mm:ss</p>
+</li>
+<li>
+<p>Tag: Any String such as BLOCK, THROTTLE, or NONE. Values other than those listed here are acceptable.</p>
+</li>
+</ul>
+<p>See the section <xref keyref="id9YZ-08540-UG05-PCZZA-deviceconfig" /> in this guide for more information about the ToD Blocking parameters and ToD Blocking Intervals.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example of policy rules using the ToD Blocking feature</b></p>
+<userinput>IF ((Present SPR_DEVICE.TOD-Time-Zone)</userinput>
+<userinput>AND (SPR_DEVICE.Subscriber-Custom-Attribute( &#8220;ToD Blocking Enabled&#8221; ) = &#8220;True&#8221;))</userinput>
+<userinput>THEN</userinput>
+<userinput>(IF ((SPR_DEVICE.TOD-Interval-Is-Active(SPR_DEVICE.TOD-Time-Zone) = &#8220;true&#8221;)</userinput>
+<userinput>AND</userinput>
+<userinput>(SPR_DEVICE.TOD-Tag = &#8221;BLOCK&#8221;))</userinput>
+<userinput>THEN</userinput>
+<userinput>(SPS.Session-Command = SessionCommandType.Terminate)</userinput>
+<userinput>ELSE IF ((SPR_DEVICE.TOD-Interval-Is-Active(SPR_DEVICE.TOD-Time-Zone) = &#8220;false&#8221;))</userinput>
+<userinput>THEN</userinput>
+<userinput>(SPS.Revalidation-Time = SPR_DEVICE.TOD-Next-Update(SPR_DEVICE.TOD-Time-Zone)))</userinput>
+</sectiondiv>
+<sectiondiv>
+<p><b>ToD Rounding Parameter Value (seconds) system preference</b></p>
+<p>This system preference allows the PCRF to reduce the amount of messaging in the case when a network message is received too close to the end of a ToD interval.</p>
+<p>For example, consider the time interval Monday 02:00:00 - Monday 08:00:00. Assume ToD Rounding parameter is set to 120 seconds (2 min).User attaches at 01:58:10. Message comes too close to the start of interval. Rounding parameter value is added to user time to match with the intervals configured in Device. Now the user time is 02:00:10. Time 02.00.10 is matched with interval Monday 02:00:00 - Monday 08:00:00.</p>
+</sectiondiv>
+</section>
+</conbody></concept>

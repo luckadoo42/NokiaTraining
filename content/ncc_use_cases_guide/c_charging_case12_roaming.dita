@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//NSN//DTD DITA Concept//EN" "nsnconcept.dtd">
+		<concept id="id9YZ-09018--PL00-FPZZA-d1e17138"><title>Case 12: Roaming pass with home package</title><conbody>
+
+<section><title>Overview</title>
+
+<p>Bob has an iPhone subscribed to a monthly package of 50 GB data bucket and 1000 units of SMS bucket. When a data call is run by the iPhone, the data services are charged from the data bucket and when an SMS call is run by the iPhone, the units are charged from the SMS bucket.</p>
+<p>To limit the consumption of data and SMS under roaming conditions, a cap limit is applied to the monthly package. For example, a cap limit of 100 SMS and 10 GB of data in the monthly package. There is no cap limit applied to the monthly package under non-roaming conditions.</p>
+<p>If the data consumption or SMS units exceed the cap limit, an email sent to Bob notifying that consumption of resources beyond the cap limit is not allowed.</p>
+</section>
+<section><title>Flow of events</title>
+
+<p/><ul>
+
+<li>
+iPhone starts browsing data and has finished the usage of 10 GB from the roaming location and it is allowed.
+</li>
+<li>
+iPhone tries to use further data of 5 GB from the roaming location. In this case, data usage of 5 GB is not allowed as the data consumption reaches the allowed limit of 10 GB and a notification is sent to Bob.
+</li>
+<li>
+iPhone tries to use data of 15 GB from the roaming location and it is allowed.
+</li>
+<li>
+iPhone starts sending SMS and is allowed to send 100 SMS from the roaming location.
+</li>
+<li>
+iPhone sends an SMS from the home location and is allowed to send 200 SMS. In this case, the SMS call is successful.
+</li>
+<li>
+iPhone sends another SMS from the roaming location. In this case, the SMS is unsuccessful and the iPhone is not allowed to use more than 100 SMS from the SMS bucket under roaming conditions.
+</li>
+</ul>
+</section>
+<section><title>Provisioning</title>
+
+<note type="attention">
+
+<p>Ensure that after creating a record, you distribute it to ME. Otherwise, the provisioning will not be successful.</p>
+</note>
+<p>Following entities are required for this use case.<table pgwide="1" colsep="1" rowsep="1">
+     <title>Entities for case 12</title>
+     <tgroup cols="2">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <thead>
+       <row>
+        <entry> Entity </entry>
+        <entry> Task </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> Notification preferences </entry>
+        <entry> Select the notification channel as email and SMS. </entry>
+       </row>
+       <row>
+        <entry> Notification template </entry>
+        <entry> Create the notification templates for data and SMS usage alerts. </entry>
+       </row>
+       <row>
+        <entry> Notification server </entry>
+        <entry> Configure a notification server to send the email and SMS notification. </entry>
+       </row>
+       <row>
+        <entry> Charging Service </entry>
+        <entry>
+         <p>Create a charging service with the following details:</p>
+         <ol>
+          <li>
+           
+            <uicontrol>Bucket:</uicontrol> Create the data and SMS buckets.
+          </li>
+          <li>
+           
+            <uicontrol>Counter:</uicontrol> Create the data and SMS usage counters.
+          </li>
+          <li>
+           
+            <uicontrol>Tariff:</uicontrol> Create a tariff formula to apply different rates based on
+            the zone in which the call is originated. 
+          </li>
+         </ol>
+        </entry>
+       </row>
+       <row>
+        <entry> Bundle </entry>
+        <entry> Create a bundle and associate it with the subscription lifecycle. </entry>
+       </row>
+       <row>
+        <entry> Cap </entry>
+        <entry> Create the data and SMS cap limits. </entry>
+       </row>
+       <row>
+        <entry> Rules and Variables </entry>
+        <entry> Create a roaming status rule variable to identify the location using
+          <varname>TARIFF</varname> trigger. </entry>
+       </row>
+       <row>
+        <entry> Mapping tables </entry>
+        <entry> Create complex maps to define mapping between MCCMNC and zone. </entry>
+       </row>
+       <row>
+        <entry> Lifecycles </entry>
+        <entry> Create a subscription, account, and device lifecycles. </entry>
+       </row>
+       <row>
+        <entry> Account </entry>
+        <entry> Create an account and associate with an account lifecycle. </entry>
+       </row>
+       <row>
+        <entry> Device </entry>
+        <entry> Create a device and associate with a bundle and device lifecycle. </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table></p>
+<p>Provision the following data:</p><ol>
+
+<li>Create a notification profile to send email and SMS notifications. To do this, navigate to
+      <uicontrol>Notification Management</uicontrol> and select the <uicontrol>Notification
+      Preferences</uicontrol> tab. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png"/> to create a notification profile. <!--MMO resource relative URI: ../graphics/Case12_Notifprofile_default.png-->
+     <image href="../images/case12_notifprofile_default.png"/>
+    </li>
+<li>Create the notification template for data and SMS. To do this, navigate to
+      <uicontrol>Notification Management</uicontrol> and select the <uicontrol>Notification
+      Templates</uicontrol> tab. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png" id="image_lsd_qvt_3lb"/> to create a
+     notification template. <p>Notification template for data:</p>
+     <table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1"/>
+       <colspec colname="col2"/>
+       <thead>
+        <row>
+         <entry> Parameter </entry>
+         <entry> Value </entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry> Name </entry>
+         <entry> Usage_Notification_Template_Data </entry>
+        </row>
+        <row>
+         <entry> Notification priority </entry>
+         <entry> Normal </entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <!--MMO resource relative URI: ../graphics/Case12_Notiftemp1_default.png-->
+     <image href="../images/case12_notiftemp1_default.png"/>
+     <p>Notification template for SMS:</p>
+     <table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1"/>
+       <colspec colname="col2"/>
+       <thead>
+        <row>
+         <entry> Parameter </entry>
+         <entry> Value </entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry> Name </entry>
+         <entry> Usage_Notification_Template_SMS </entry>
+        </row>
+        <row>
+         <entry> Notification priority </entry>
+         <entry> Normal </entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <!--MMO resource relative URI: ../graphics/Case12_NotifTempSMS_default.png-->
+     <image href="../images/case12_notiftempsms_default.png"/>
+    </li>
+<li>
+Configure the notification server to send email and SMS messages. To do this, navigate to <uicontrol>Notification Management</uicontrol> and select the <uicontrol>Notification Servers</uicontrol> tab. Browse to select SMS or email from drop-down list and click 
+<!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+<image href="../images/sdd_button_default.png"/>
+ to configure. Do this for both SMS and email options from the drop-down list.
+</li>
+<li>Configure the <varname>CAPRoamingData</varname> as follows. To do this, navigate to
+      <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select the
+      <uicontrol>Common</uicontrol> tab. Browse to select CAP from the drop-down. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png" id="image_l33_mvt_3lb"/> to create a CAP. <table
+      pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1"/>
+       <colspec colname="col2"/>
+       <thead>
+        <row>
+         <entry> Parameter </entry>
+         <entry> Value </entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry> Name </entry>
+         <entry> localPass_CAPData </entry>
+        </row>
+        <row>
+         <entry> Unit type </entry>
+         <entry> GByte </entry>
+        </row>
+        <row>
+         <entry> Value </entry>
+         <entry> 10 </entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p>
+      <uicontrol>Configuration:</uicontrol>
+     </p>
+     <!--MMO resource relative URI: ../graphics/Case12_Capdata_default.png-->
+     <image href="../images/case12_capdata_default.png" placement="break" scale="60"/>
+    </li>
+<li>Configure <varname>CAPRoamingSMS</varname> as follows. To do this, navigate to <uicontrol>Policy
+      &amp; Charging Configuration</uicontrol> and select the <uicontrol>Common</uicontrol> tab.
+     Browse to select <uicontrol>CAP</uicontrol> from the drop-down. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png" id="image_d51_mvt_3lb"/> to create a CAP. <table
+      pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1"/>
+       <colspec colname="col2"/>
+       <thead>
+        <row>
+         <entry> Parameter </entry>
+         <entry> Value </entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry> Name </entry>
+         <entry> localPass_CAPSMS </entry>
+        </row>
+        <row>
+         <entry> Unit type </entry>
+         <entry> Unit </entry>
+        </row>
+        <row>
+         <entry> Value </entry>
+         <entry> 100 </entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p>
+      <uicontrol>Configuration:</uicontrol>
+     </p>
+     <!--MMO resource relative URI: ../graphics/Case12_CapSMS_default.png-->
+     <image href="../images/case12_capsms_default.png" placement="break" scale="60"/>
+    </li>
+<li>
+<p>Create a complex map to define the mapping between MCCMNC and zone. To do this, navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select the <uicontrol>Common</uicontrol> tab. Browse to select <uicontrol>Mapping Tables</uicontrol> from the drop-down. Click 
+<!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+<image href="../images/sdd_button_default.png"/>
+ to create the mapping.</p>
+<p>For information on complex mapping table configurations, see <!--xref URI: Case_3_Application_based_charging.xml#appbased--><xref keyref="id9YZ-09018--PL00-FPZZA-appbased"/>.</p>
+</li>
+<li>
+Create a <emphasis>RoamingStatus</emphasis> rule variable in the Rule System Version (RSV) to identify the home or roaming location for <emphasis>Trigger</emphasis> set to <varname>TARIFF</varname>.
+<!--MMO resource relative URI: ../graphics/Case12_RSV_default.png-->
+<image href="../images/case12_rsv_default.png"/>
+</li>
+<li>
+<p>Create a charging service. To do this, navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select the <uicontrol>Charging</uicontrol> tab. Browse to select <uicontrol>Charging Services</uicontrol> from the drop-down. Click 
+<!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+<image href="../images/sdd_button_default.png"/>
+ to create a charging service.</p>
+ <table pgwide="1" rowsep="1" colsep="1">
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+Parameter
+</entry>
+<entry>
+Value
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+Name
+</entry>
+<entry>
+LocalPAss_CS_Data
+</entry>
+</row>
+<row>
+<entry>
+Priority
+</entry>
+<entry>
+63
+</entry>
+</row>
+<row>
+<entry>
+Category
+</entry>
+<entry>
+DefaultCategory
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>
+<uicontrol>Add bucket:</uicontrol>
+</p>
+<!--MMO resource relative URI: ../graphics/Case12_CS1_default.png-->
+<image href="../images/case12_cs1_default.png"/>
+<p>
+<uicontrol>Add counter:</uicontrol>
+</p>
+<!--MMO resource relative URI: ../graphics/Case12_CS2_default.png-->
+<image href="../images/case12_cs2_default.png"/>
+<p>
+<uicontrol>Tariff formula:</uicontrol>
+</p>
+<!--MMO resource relative URI: ../graphics/Case12_CS3_default.png-->
+<image href="../images/case12_cs3_default.png"/>
+</li>
+<li>
+Create a <varname>RoamlikeHome</varname> bundle. To do this, navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select the <uicontrol>Charging</uicontrol> tab. Browse to select <uicontrol>Bundles</uicontrol> from the drop-down. Click 
+<!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+<image href="../images/sdd_button_default.png"/>
+ to create a bundle.
+<!--MMO resource relative URI: ../graphics/Case12_bundle_default.png-->
+<image href="../images/case12_bundle_default.png"/>
+</li>
+<li>
+Create an account (<varname>PrePAid_Acnt</varname>) and associate with an account lifecycle.
+</li>
+<li>
+<p>Create a device and associate with <varname>RoamlikeHome</varname> bundle and device lifecycle. Provision the iPhone in <uicontrol>Active</uicontrol> state. </p>
+<p>To subscribe bundle with iPhone, navigate to <uicontrol>Subscriber Manager</uicontrol> and select the <uicontrol>Devices</uicontrol> tab. Search the device and edit and add the subscription.</p>
+<p>
+<uicontrol>Add subscription:</uicontrol>
+</p>
+<!--MMO resource relative URI: ../graphics/Case12_subscription_default.png-->
+<image href="../images/case12_subscription_default.png"/>
+<p>To provision the iPhone in <uicontrol>Active</uicontrol> state, set the <uicontrol>Lifecycle State</uicontrol> parameter in the Device entity to <varname>Active</varname>.</p>
+</li>
+</ol>
+</section>
+</conbody></concept>

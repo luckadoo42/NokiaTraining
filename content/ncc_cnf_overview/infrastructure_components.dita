@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="infrastructure_components">
+    <title>Architecture characteristics</title>
+    <conbody>
+        <p>This section describes the characteristics of NCC CNF architecture.</p>
+        <section id="section_o4d_pnc_llb">
+            <title>Autoscaling</title>
+            <p>NCC CNF supports horizontal autoscaling (scale-in and scale-out) of all scalable pods
+                using a Kubernetes controller, Horizontal Pod Autoscaler (HPA). HPA monitors
+                workload and utilization of resources in a cluster, and based on the current need as
+                well as specified utilization metrics and thresholds, dynamically adjusts the number
+                of containers of a particular type. By default the utilization metric is set to CPU
+                utilization.</p>
+        </section>
+        <section id="section_gmq_qnc_llb">
+            <title>Service mesh (Istio)</title>
+            <p>The term service mesh is used to describe the network of microservices that make up
+                such applications and the interactions between them. As a service mesh grows in size
+                and complexity, it can become harder to understand and manage. Its requirements can
+                include discovery, load balancing, failure recovery, metrics, and monitoring. A
+                service mesh also often has more complex operational requirements, like A/B testing,
+                canary rollouts, rate limiting, access control, and end-to-end authentication.</p>
+            <p>Istio provides behavioral insights and operational control over the service mesh as a
+                whole, offering a complete solution to satisfy the diverse requirements of
+                microservice applications. Istio makes it easy to create a network of deployed
+                services with load balancing, service-to-service authentication, monitoring, and
+                more. </p>
+            <p>Istio support is added to services by deploying a special sidecar proxy throughout
+                the environment that intercepts all network communication between microservices,
+                then configure and manage Istio using its control plane functionality, which
+                includes the following:</p>
+            <ul id="ul_hmq_qnc_llb">
+                <li>automatic load balancing for HTTP, gRPC, WebSocket, and TCP traffic</li>
+                <li>fine-grained control of traffic behavior with rich routing rules, retries,
+                    failovers, and fault injection</li>
+                <li>a pluggable policy layer and configuration API supporting access controls, rate
+                    limits, and quotas</li>
+                <li>automatic metrics, logs, and traces for all traffic within a cluster, including
+                    cluster ingress and egress</li>
+                <li>secure service-to-service communication in a cluster with strong identity-based
+                    authentication and authorization, and mTLS support between pods</li>
+            </ul>
+            <p>For the initial NCC CNF deployment, customers are providing the service mesh as part
+                of their Kubernetes environment. NCC must configure it for injection into the
+                various pods and flows.</p>
+        </section>
+        <section id="section_syz_rnc_llb">
+            <title>IP addressing </title>
+            <p>There is a single IP shared across multiple NCC services. URL routing is applied to
+                steer traffic to specific services. This approach is consistent with Kubernetes
+                principles of having only a single IP address per pod.</p>
+            <p>Internal NCC routing between pods is either all IPv4 or all IPv6, not a hybrid
+                mixture. Externally, the peers that NCC must connect with might be either IPv4
+                and/or IPv6. Some operator environments might employ a load balancer that can handle
+                both IPv4 and IPv6 and interface with the NCC pods with either IPv4 or IPv6,
+                depending on the configuration of  Istio, Kubernetes, or other deployment
+                features.</p>
+            <note>The current NCC version supports only IPv4 for internal NCC routing.</note>
+        </section>
+    </conbody>
+</concept>

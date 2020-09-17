@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-disasterrecovery"><title>Disaster recovery</title><conbody>
+<p>This document describes the procedures required to restore from catastrophic and non-catastrophic disaster situations between or among various non-geo-redundant and geo-redundant sites for 1+1 deployments.</p>
+<p>A catastrophic disaster is a situation like earthquake, flood, fire, accidental termination of VNF, etc.</p>
+<p>A non-catastrophic disaster is a situation where data replication from peers in a particular NCC
+            site has lagged behind, which may be due to a failure of WAN connectivity or some other
+            reason.</p>
+<p>An SM or ME cannot come back into service until its database is up-to-date. The NCC exchanges
+            information between itself and the NCC XDR peers in the network to reflect the
+            dc_timelag and dc_state of that NCC toward each of its connected data center (DC)
+            peers. A recovering NCC then monitors these external views of the recovering NCC (DC)
+            and only comes back in-service when the other active XDR peer NCC indicates an
+            acceptably low dc_timelag and a CLUSTER_UP dc state. The dc-timelag and dc_state are
+            kept on each node in the database cluster and has information about each of the XDR peer
+            DCs. NCCs use the dc_timelag metric for a per-datacenter view of whether XDR is keeping
+            up or has fallen behind. </p>
+<p>If data replication lags behind, Monitoring will enquire about its XDR status from other peers
+            and if the NCC status shows that the data replication is sufficiently behind, it will
+            report as OVERFLOW and this site will mark itself as Out Of Service (OOS) with a sub
+            state of Disaster Recovery Required (DRR).</p>
+<p>When monitoring identifies the site state as being OOS–Disaster Recovery Required, it will raise a critical alarm and block all incoming XDR traffic on this site by modifying the firewall rules. </p>
+<p>The following table defines some of the terminology that you will see throughout this guide related to whether or not a site is in-service or out-of-service.</p>
+<table>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+<p>Term</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+IS
+</entry>
+<entry>
+In service
+</entry>
+</row>
+<row>
+<entry>
+OOS
+</entry>
+<entry>
+Out of service
+</entry>
+</row>
+<row>
+<entry>
+OOS-CSD
+</entry>
+<entry>
+Out of service Critical Service Down meaning that the system is not healthy enough to be in service.
+</entry>
+</row>
+<row>
+<entry>
+OOS-DRR
+</entry>
+<entry>
+Out of service Disaster Recovery Required meaning that the system needs a complete copy of its Aerospike data from other systems.
+</entry>
+</row>
+<row>
+<entry>
+OOS-WFR
+</entry>
+<entry>
+Out of service Waiting for Resync meaning that the system is trying to go in service but is waiting for XDR to catch up so that its data is current.
+</entry>
+</row>
+<row>
+<entry>
+OOS-Manual
+</entry>
+<entry>
+Out of service Manual meaning that a person used a tool to manually force the system to an out of service state.
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</conbody></concept>

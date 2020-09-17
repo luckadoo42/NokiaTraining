@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-d1e30500"><title>Monitoring Network Status</title><conbody>
+<section><title>Heartbeat overview</title>
+<p>This section describes the NCC heartbeat, which allows NCC sites to communicate status about
+                their own connectivity and state on a component basis, as well as their view of the
+                other known sites. The heartbeat allows a site to make decisions for a device based
+                on the state of other sites. For example, when a device’s secondary site detects
+                that its primary site is out of service, the device’s secondary site could take over
+                handling of the traffic for that device until the primary site comes back in
+                service. </p>
+<sectiondiv>
+<p><b>Location and community</b></p>
+<p>Heartbeat uses location data configured in Topology to communicate status about connectivity and
+                    state. That is, Topology data is used in the determination of whether or not a
+                    site is in service. A location is a building, complex, or buildings in close
+                    proximity that house one or more NCC installations (SM and/or MEs). Topology
+                    data is configured on each NCC SM and ME in the network to identify the location
+                    of all NCC systems with which the SM or ME will exchange heartbeats. The
+                    heartbeat service gets its topology data from the VNF Extensions file, which is
+                    configured at installation time. See the <i>NCC-Installation guide</i> for more
+                    information.</p>
+<p>In a multi-location community (locations &gt;= 3), heartbeat requires at least one other member outside its own location to determine if another member is OOS when it is missing a heartbeat with a member. For example, members in close proximity of each other (a location) may experience similar network connectivity issues. When connectivity to one member is lost, the lack of visibility of that member from another location must be confirmed before the member can be declared OOS.</p>
+<note>Location information is used if there are three or more locations. Location information is not
+                    used if there is less than three locations.</note>
+<p>In a 2-location community with two MEs, if the heartbeat is missing between members, one site will take over as soon as the configured number of heartbeats is missed in one of the sites. However, in the case of a true split brain condition some manual intervention to isolate one site or the other may be required to set one of the members In-Service. See the section <!--xref URI: #force--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-d1e30500/force"/> for more information about isolating a site.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>When does an NCC work on behalf of another NCC (reroute)</b></p>
+<p>An ME will always handle its own traffic, unless it goes OOS, which is a local decision. An ME
+                    will take over traffic for a remote site that it shares a partition with if the
+                    other site declares itself OOS, or if a community decision is made that it is
+                    OOS. An NCC will reroute, or work on behalf of another NCC site when there is no
+                    OAM and Diameter heartbeat from an NCC site that is unreachable from any other
+                    NCC site in the system. If one or the other heartbeat connection is not present,
+                    then heartbeat processing uses the status presented on the remaining heartbeat
+                    connection, which could present the site as In-service. At least one member from
+                    outside of the unreachable site’s own location determines whether or not the
+                    site is truly out-of-service (OOS). If the site is truly OOS as determined from
+                    the remote location, the NCC site is treated as OOS by the other members and
+                    traffic is rerouted. The SMs and ME sites will only use the secondary NCC when
+                    the primary NCC has zero indications of life from its own Diameter connectivity
+                    (MEs only) and from the reports of the other SMs and MEs.</p>
+<p>The following figure illustrates an example of heartbeat detection and how the subsequent decisions are made. </p>
+<fig>
+<title>Heartbeat detection and subsequent decisions</title>
+    <image href="../images/geohbdetectionanddecision_default.gif"/>
+</fig>
+<p>In A, all members get a direct heartbeat from SPS 3 over OAM, so there is no group decision. A group decision is made only if you do not get a direct heartbeat. If SPS 3 reports itself as OOS, all other SPSs and SMs will then switch to the secondary SPS for transactions normally homed on SPS 3. If SPS 3 reports itself as IS, transactions normally homed on SPS 3 will continue to be routed to SPS 3.</p>
+<p>In B, all MEs and SMs detect loss of connectivity and loss of heartbeat, but the previous status of SPS 3 from other SPSs and SMs is “In Service”. All SPSs and SMs provide their view that SPS 3 is OOS. All SPSs and SMs build a view that themselves and all others list SPS 3 as OOS. All SPSs and SMs will then switch to the secondary SPS for transactions normally homed on SPS 3.</p>
+</sectiondiv>
+</section>
+<section><title>Heartbeat in a geo-redundant NCC system</title>
+<p>Location information in the SM and ME configuration files enhances the heartbeat component to use
+                that location information for determination of status–IS or OOS. First the NCC
+                determines if there is a third location from which to receive confirmation of a
+                heartbeat, and second, the NCC uses that confirmation from any NCC at a third
+                location to determine that a system not sending heartbeats is actually OOS.</p>
+<note>If a site has only two components, the reported states and group decisions can be different
+                for each component.<p/></note>
+<p>Information communicated in the heartbeat is used by:</p><ul>
+<li>
+<p>The Timed Event Manager (TEM) to determine whether the Primary site should process events for its Secondary site, when the Secondary is determined to be OOS. Session audits and monthly account resets are examples of TEM events.</p>
+</li>
+<li>
+<p>The Diameter site routing plug-in to make decisions on how to route Diameter requests based on the states of the Primary and Secondary sites.</p>
+</li>
+<li>
+<p>The Service Manager (SM) to monitor the status of the NCC sites it manages and the state of the
+                        other SM.</p>
+</li>
+</ul>
+<p>The sites will wait for the receipt of all reports from all members or the next polling interval before processing and making a decision on whether to change the membership status and/or the network view.</p>
+<p>To determine a site's component status as IS or OOS, each member (SM and ME) of the community
+                provides its state and view of the community as the heartbeat monitor polls for
+                status. An NCC tracks the following for polled status:</p><ul>
+<li>
+<p>member's component status (IN_SERVICE, OUT_OF_SERVICE, UNKNOWN)</p>
+</li>
+<li>
+<p>Number of missed heartbeats with member over OAM.</p>
+</li>
+<li>
+<p>Number of missed heartbeats with member over diameter if applicable</p>
+</li>
+<li>
+<p>Timestamp of last heartbeat with member.  (Used for logging.)</p>
+</li>
+<li>
+<p>Timestamp of last attempted heartbeat with member.  (Used for logging.)</p>
+</li>
+</ul>
+<p>To be determined truly out of service where there are &gt;= 3 locations, at least one member of the community that is located outside of the unreachable site’s own location must see the offending location as OOS. </p>
+</section>
+<section><title>Heartbeat polling</title>
+<p>When an NCC starts up, heartbeat loads the topology for the members and then attempts to poll
+                them. Polling goes in rounds; each member is polled in every round. During a
+                heartbeat round, a polled member's heartbeat responds with its components (for
+                example, ME or SM) states for itself and other members component’s states for the
+                others. Any members that do not return a response go through an evaluation to
+                determine what state should be used for them. The initial state for its members’
+                components is Unknown until they are polled.</p>
+<p>The initial status of a member's component state starts as UNKOWN, and remains that way until a response is received. Then it will go to the state returned in the poll, either IN_SERVICE, or OUT_OF_SERVICE.</p>
+<p>When polling begins, the heartbeat monitor queries the remote web service, over the OAM network, that is served on the floating IP address of the active/standby OAME nodes. Then the web service queries the local Heartbeat Monitor to get the local states for its components, as well as its view of the network and returns it. The following figure shows the heartbeat poll over the OAM network.</p>
+<fig>
+<title>Heartbeat poll over the OAM network</title>
+<!--MMO resource relative URI: ../Graphics/geoHBOAM3d_default.gif-->
+    <image href="../images/geohboam3d_default.gif"/>
+</fig>
+<p>The Diameter network polling occurs in parallel with the OAM network polling.  The OAME triggers the request, and then the application server sends the Diameter message to the remote site. The application server on the remote site queries its local OAME service to retrieve the component statuses and return them. In the case that the remote OAME service is in the middle of an activity switch, the application VM will only return its site’s component statuses without the network view as it does not have access to the information.</p>
+<fig>
+<title>Heartbeat poll over the Diameter network</title>
+<!--MMO resource relative URI: ../Graphics/geoHB3d_default.gif-->
+    <image href="../images/geohb3d_default.gif"/>
+</fig>
+<p>The poll is sent out to the components of the remote member. If a heartbeat is received, the reported status is used; otherwise, a check is performed to see if there has been enough missed beats to make a decision. If the missed heart beat threshold has been exceeded, there is a check to see if anyone has seen that member as up. If yes, then the member is treated as in service. If not, then all members polled agree the member is OOS. Then a check is performed to see if the polling site can see another location to ensure it is not the problem. If everyone agrees the member is down, and the polling site can see at least one other location, the member’s component is declared down, an alarm is raised indicating that the component is OOS and there is consensus from the community.</p>
+<p>In a location with three or more sites, when considering a decision as to whether or not a component in a site is OOS and to avoid making decisions on stale data, the decision is based on the input of other community members with whom heartbeat data is shared. If one or both are received then the heartbeat was successful. If a site has missed heartbeats with another member and has exceeded the missing heart beat threshold (Missed threshold), it will use its community’s view of the site to determine if the component is OOS. A heartbeat is missed if no result (Diameter or OAM) was received in a round.</p>
+</section>
+<section><title>Member response to heartbeat polling</title>
+<p>When polled, a member not only responds with its state, but it also responds with its view of the community. When one member misses a heartbeat with another member (member X) of the community, it searches all the other member's responses (from that heartbeat round) for their view of member X to see if it can reach a decision about member X's state. </p>
+<p>When a site is polled, it can report the other member’s component as being:</p><ul>
+<li>
+<p>Unknown</p>
+<p>The initial state for its members’ components is Unknown until they are polled. A member cannot report its own status as unknown.</p>
+</li>
+<li>
+<p>In-service (IS)</p>
+<p>If the polling site has polled the member and if it reported itself as IS.</p>
+</li>
+<li>
+<p>Out-of-service (OOS)</p>
+<p>If the polling site has polled the member’s component and it has reported itself OOS, or if the polling site polled the member’s component and the member has exceeded the configured threshold for missed heartbeats. </p>
+</li>
+</ul>
+</section>
+<section><title>Logging</title>
+<p>Heartbeat status information from other members of the community is logged in the SPSServer.log. Most logging is at the debug level, but status changes for sites are logged at the info level. At start up, there is no previous poll with members; therefore, statuses of Unknown are expected. After start up and the first polling, statuses are reported. The status is maintained in memory and logged.</p>
+</section>
+<section><title>Activity switches on OAME VMs</title>
+<p>When an activity switch occurs on OAME VMs, the primary heartbeat service is down until the floating IP Address is switched over and the heartbeat service is started on the new active OAME VM. The duration of this event could be longer than the time it takes to declare a component out of service (number of missed heartbeats * polling interval). </p>
+<p> To prevent other NCC members from erroneously taking over processing for the NCC with the
+                activity switch, the Diameter heartbeat will continue to respond to incoming
+                requests, but it will only respond with the component statuses of the local
+                member. It will not communicate the network view as that is only maintained on the
+                OAM heartbeat service on the OAME nodes and the Diameter heartbeat service cannot
+                retrieve that information from the OAME nodes during the activity switch.</p>
+</section>
+<section><title>Heartbeat configuration</title>
+<note>Whenever possible, SMs and MEs should be deployed at three geographically separated locations
+                so that components at two sites can agree that components at the third site are OOS.
+                <p/></note>
+<p>Configuration for the heartbeat is done with the instantiation of the product but also consists of setting the following application preferences:</p><ul>
+<li>
+<p>Heartbeat Interval (seconds):</p>
+<p>Used to determine the frequency of polling. By default the heartbeat interval is 2 seconds. The range is 1 to 15 seconds. </p>
+</li>
+<li>
+<p>Heartbeat Missed Beat Threshold:</p>
+<p>Used to determine a threshold for the number of missed heartbeats before a site is declared down.
+                        By default, the number of missed heartbeats before a site is declared down
+                        is 3. The range is 1 to 5. To declare an NCC's component OOS due to missed
+                        heartbeats, an SM or ME requires one other NCC in a location that is
+                        different than its own, in locations &gt;= 3, to communicate via its
+                        heartbeat that the NCC in question is OOS.</p>
+</li>
+</ul>
+<note>Application preferences are configured in the Global Configuration application. See the
+                section “Geo-redundancy application preferences” in the Global Configuration Guide
+                for more information.<p/></note>
+<note>When you have a co-located SM and ME, the forced in service tool can be used on the site
+                affecting all components, or it can be used to force individual components in
+                service if necessary. See <!--xref URI: #force--><xref
+                    keyref="id9YZ-09126-MT00-REZZA-SP2-d1e30500/force"/> for more
+                information.<p/></note></section>
+    <section><title>On-demand heartbeat status</title>
+<p>Tools are available to get the heartbeat status on demand. For the local server status, run the TPA_heartbeatStatus script. See the section “TPA_heartbeatStatus” in the Tools chapter for more information.</p>
+</section>
+    <section id="force"><title>Forcing a system to be In Service</title>
+<p>In a two site deployment, where there are only two SMs and two MEs, there may be a time when an
+                NCC site cannot heartbeat with another site and you will need to manually override
+                the OOS decision that the heartbeat has made. This would be a situation where
+                network connectivity is problematic because both the OAM and Diameter networks are
+                severed between two locations, but both MEs (and SMs) are processing on behalf of
+                the other site. </p>
+<p>When there are only two locations, a 4-member network of 2 MEs and 2 SMs, it is possible to enter a true split-brain condition. In this case, members from one location cannot see members from the other location, which causes them to incorrectly start processing on the other members behalf while they are still processing their own traffic and TEM events. When the communication cannot be restored, the “force-remote-site-in-service” tool can be used to treat the other member as in service so that processing on behalf of that member will stop. The tool overrides the heartbeat decision for the member that this tool is run on, until a direct heartbeat is received from the errant member.</p>
+<p>When the SM and ME at location 1 are not able to see the SM and ME at location 2, and vice versa, the tool needs to be run on all the SMs and MEs. When this tool is used to force a member IS, the "SPS treating other member as if heartbeat received In Service" alarm is generated. When the tool clears the heartbeat status, it raises "SPS heartbeat treatment returned to normal" and then clears the first alarm. </p>
+<p>The forced In Service treatment ends when a heartbeat is actually received from the errant NCC,
+                which indicates a status other than In Service or after 10 minutes of In Service
+                heartbeats are received without missing the number of heartbeats required to
+                consider it OOS. When this occurs the "SPS heartbeat treatment automatically reset
+                to normal" alarm will be raised. If an activity switch of the OAMEs occurs in the 10
+                minute window, the count is reset when the standby takes over.</p>
+<p>The tool also provides an option to list any active forced In Service members and an option to
+                manually clear the forced In Service state of a specific NCC. See the
+                    <!--xref URI: t-tools-SPS-force-remote-site-in-service.xml#forceremoteHB--><xref
+                    keyref="id9YZ-09126-MT00-REZZA-SP2-forceremoteHB"/>for more information.</p>
+</section>
+<section><title>Heartbeat alarming</title>
+<note>Alarms are raised per monitored component, so in an integrated system an alarm will be raised
+                against the SM and the ME individually. The "SPS unreachable Over Diameter" is an
+                exception, as it does not differ based on component.<p/></note>
+<p>There are different alarms that can be raised by the heartbeat monitor, as follows. The alarms cover scenarios where OOS is declared in a network with at least three locations, where a remote member is OOS, and where Diameter heartbeats are missed with a member. The alarms are named as follows:</p><ul>
+<li>
+<p>“SPS unreachable over Diameter” is the alarm raised when Diameter heartbeats are missed.</p>
+</li>
+<li>
+<p>“SPS was determined to be Out Of Service” is the alarm raised when the heartbeat sees the remote member as OOS.</p>
+</li>
+<li>
+<p>“Heartbeat is missing with member” is the alarm raised when there are more than three sites and a member is, </p><ul>
+<li>
+<p>missing a heartbeat, but someone continues to see the member as IS</p>
+</li>
+<li>
+<p>missing a heartbeat, and everyone sees OOS, but no other location is seen </p>
+</li>
+<li>
+<p>missing a heartbeat, and everyone sees OOS, but another location is seen </p>
+<p>Only one of above can be raised at a time.</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>If the deployment has less than three locations, the missing heartbeat alarms are raised when a member is,</p><ul>
+<li>
+<p>missing a heartbeat, but someone continues to see the member as IS </p>
+</li>
+<li>
+<p>missing a heartbeat, and everyone sees OOS </p>
+</li>
+</ul>
+<p>The following scenarios describe the scenarios where the above alarms are generated by the heartbeat monitor in networks that have at least three locations and where heartbeats with the other member have been missed. </p><ul>
+<li>
+<p>Alarm 1–If the heartbeat between this site and the remote site is down, all members reporting a heartbeat agree that the remote site is unreachable or OOS. At least one of the reporters is from another location. The remote site is treated as OOS.</p>
+</li>
+<li>
+<p>Alarm 2–If the heartbeat between this site and the remote site is down and all members reporting a heartbeat agree that the remote site is unreachable or OOS, but we can only see members at our location, the problem may be with the sites at this location. The member is treated by its last known status, which could be IS or OOS.</p>
+</li>
+<li>
+<p>Alarm 3–If the Heartbeat is missing with member, at least one other member that we received heartbeats from can see the remote site as in service.</p>
+</li>
+</ul>
+<p>In configurations with less than three locations where the heartbeat between this site and the remote site is down, the remote site is treated as OOS.</p>
+<p>Only one of the above alarms will exist per member with which you are polling. If there is a status change to a more or less severe scenario, then the existing alarm will be cleared and a new alarm will be raised. A heartbeat alarm is cleared when the member no longer misses a heartbeat, or when the conditions of another alarm is met. If another alarm condition is met, the new alarm will be raised in its place. If the heartbeat returns, any active alarm will be cleared.</p>
+<p>The following demonstrates how the alarms are raised and cleared when there are at least three locations in the network:</p><ul>
+<li>
+<p>Multiple alarms can be raised but only one alarm per member. For example, in a four member network, Member 1 does not have a heartbeat with Member 2 or Member 3, but is polling with Member 4. Member 4 sees both Member 2 and Member 3 as in service. On Member 1 you will see two alarms raised as follows:</p>
+<p>ALARM3 for Member 2</p>
+<p>ALARM3 for Member 3</p>
+</li>
+<li>
+<p>Transitions from an existing alarm to another alarm where Member 1 does not have a heartbeat with Member 2.  However Members 3 and 4 continue to see Member 2 as in service.  The current alarm state is:</p>
+<p>ALARM3 for Member 2</p>
+<p>On the next heart beat round, Members 3 and 4 report Member 2 as OOS.  Member 1 then clears the alarm and raises a new alarm:</p>
+<p>Clear ALARM3 for Member 2</p>
+<p>Raise ALARM1 for Member 2</p>
+</li>
+<li>
+<p>An alarm is cleared where Member 1 has an alarm that member 2 is OOS and it is missing heartbeats (ALARM1). On the next heartbeat round, it receives a response from Member 2. Member 2 reports itself as OOS, but because there are no missed heartbeats with ME2, the alarm is cleared.</p>
+<p>Clear ALARM1 for Member 2</p>
+</li>
+</ul>
+<p>Other alarms can also be raised as follows:</p><ul>
+<li>
+<p>SPS heartbeat treatment automatically reset: SPS automatically reset to normal heartbeat treament for another SPS</p>
+</li>
+<li>
+<p>SPS heartbeat treatment returned to normal: SPS returned to normal heartbeat treatment for another SPS</p>
+</li>
+<li>
+<p>SPS treating other site as In Service heartbeat received: SPS forced to treat another SPS site as if its heartbeat was received indicating In Service</p>
+</li>
+</ul>
+</section>
+</conbody></concept>

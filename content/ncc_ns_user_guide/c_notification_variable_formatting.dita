@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="typeConvert">
+   <title>Notification variable formatting and conversion</title>
+   <conbody>
+			   <p>Notification Service formats variables in template text on the basis of the modifier
+				available in the incoming request. The modifier and variable in the notification
+				text must be in the following format:</p>
+			   <codeblock>$(Modifier)[Variable]</codeblock>
+			   <p>Following are the supported modifiers:</p>
+      <ul>
+				     <li>
+					       <p>MONEY</p>
+				     </li>
+				     <li>
+					       <p>TIME</p>
+				     </li>
+				     <li>
+					       <p>DATE</p>
+				     </li>
+				     <li>
+					       <p>BYTE</p>
+				     </li>
+				     <li>
+					       <p>ORDINAL: DAY, UNIT</p>
+				     </li>
+				     <li>
+					       <p>FIXEDLENGTH</p>
+					       <p>Format: <codeblock>$(FIXEDLENGTH)(&lt;Length&gt;,&lt;Type of
+							padding&gt;,&lt;Padding character&gt;,&lt;Type of
+							trimming&gt;,&lt;Discard&gt;)[Variable]</codeblock>
+					       </p>
+					       <p/>
+					       <ul>
+						         <li>
+							           <p>Length: Desired length of the variable in the final notification
+								text. Minimum length is 1. Maximum length can be equal to the length
+								of the incoming variable (after trimming of white spaces).</p>
+						         </li>
+						         <li>
+							           <p>Padding character: The character to be used for padding. Valid values
+								are 0 and whitespace character.</p>
+						         </li>
+						         <li>
+							           <p>Type of padding: RIGHTPADDING, LEFTPADDING, NOPADDING</p>
+						         </li>
+						         <li>
+							           <p>Type of trimming: RIGHTTRIMMING, LEFTTRIMMING, TRIM, NOTRIMMING</p>
+						         </li>
+						         <li>
+							           <p>Discard: LEFTDISCARD, RIGHTDISCARD, NODISCARD</p>
+						         </li>
+					       </ul>
+					       <p>For any wrong configuration, the request is not forwarded and an error is
+						generated.</p>
+				     </li>
+				     <li>
+					       <p>DATETIME</p>
+				     </li>
+			   </ul>
+			   <note>
+				     <p>For configuring output formats of money, date, and byte, the following configurations
+				are available in the application preferences. See <xref
+					href="c_syspref1_overview.dita"/> for details.</p>
+				     <p/>
+				     <ul>
+					       <li>
+						         <p>For Money: 'Notification Precision Factor for Money' and 'Notification
+							Money Separator Symbol'</p>
+					       </li>
+					       <li>
+						         <p>For Date: 'Notification Date Format' and 'Notification Timezone'</p>
+					       </li>
+					       <li>
+						         <p>For Byte: 'Notification Byte Conversion Factor'</p>
+					       </li>
+				     </ul>
+			   </note>
+			   <p>
+				     <b>Request syntax</b>
+			   </p>
+      <codeblock>&lt;ext:entities xmlns:ext="externalNotificationSPS"&gt; 
+         &lt;entity&gt; 
+            &lt;id&gt;Device&lt;/id&gt; 
+            &lt;type&gt;Device&lt;/type&gt; 
+            &lt;templateId&gt;EMAIL&lt;/templateId&gt; 
+            &lt;templateParameters&gt; 
+               &lt;templateParameter&gt; 
+                  &lt;key&gt;Key&lt;/key&gt; 
+                  &lt;value&gt;Value&lt;/value&gt; 
+               &lt;/templateParameter&gt; 
+            &lt;/templateParameters&gt; 
+            &lt;attributes&gt; 
+               &lt;attribute&gt; 
+               &lt;key&gt;EMAIL&lt;/key&gt; 
+               &lt;value&gt;EmailServerId&lt;/value&gt; 
+               &lt;/attribute&gt;
+            &lt;/attributes&gt; 
+         &lt;/entity&gt; 
+         &lt;/ext:entities&gt;</codeblock>
+			   <codeblock/>
+			   <table rowsep="1" colsep="1" frame="all" pgwide="1">
+				     <title>Example conversions</title>
+				     <tgroup cols="5">
+					       <colspec colname="col1" colwidth="0.7*"/>
+					       <colspec colname="COLSPEC0" colwidth="0.6*"/>
+					       <colspec colname="COLSPEC1" colwidth="0.6*"/>
+					       <colspec colname="COLSPEC2" colwidth="0.8*"/>
+					       <colspec colname="col2" colwidth="0.8*"/>
+					       <thead>
+						         <row>
+							           <entry>
+								             <p>Template text</p>
+							           </entry>
+							           <entry>
+								             <p>Key</p>
+							           </entry>
+							           <entry>
+								             <p>Value</p>
+							           </entry>
+							           <entry>
+								             <p>Application preferences</p>
+							           </entry>
+							           <entry>
+								             <p>Output text</p>
+							           </entry>
+						         </row>
+					       </thead>
+					       <tbody>
+						         <row>
+							           <entry morerows="3"> Hi, your current balance is $(MONEY)
+								[CurrentBalance] </entry>
+							           <entry morerows="3"> CurrentBalance </entry>
+							           <entry> 2345 </entry>
+							           <entry>
+								             <p>Notification Precision Factor for Money: 2</p>
+								             <p>Notification Money Separator Symbol: .</p>
+								             <p>'Notification Currency for Money' is not provided or the value is
+									wrong.</p>
+							           </entry>
+							           <entry> Hi, your current balance is 2,345.00 </entry>
+						         </row>
+						         <row>
+							           <entry> 2345 </entry>
+							           <entry>
+								             <p>Notification Precision Factor for Money: 2</p>
+								             <p>Notification Money Separator Symbol: .</p>
+								             <p>Notification Currency for Money: Indian Rupee</p>
+							           </entry>
+							           <entry> Hi, your current balance is Rs. 2,345.00 </entry>
+						         </row>
+						         <row>
+							           <entry> 11 </entry>
+							           <entry>
+								             <p>Notification Precision Factor for Money: 2</p>
+								             <p>Notification Money Separator Symbol: .</p>
+								             <p>Notification Currency for Money: US Dollar</p>
+							           </entry>
+							           <entry> Hi, your current balance is $11.00 </entry>
+						         </row>
+						         <row>
+							           <entry> 100000.0399 </entry>
+							           <entry>
+								             <p>Notification Precision Factor for Money: 2</p>
+								             <p>Notification Money Separator Symbol: ,</p>
+								             <p>Notification Currency for Money: Indian Rupee</p>
+							           </entry>
+							           <entry> Hi, your current balance is Rs. 100.000,04 </entry>
+						         </row>
+						         <row>
+							           <entry> Hi, you have consumed $(ORDINAL) [UNIT] SMS </entry>
+							           <entry> UNIT </entry>
+							           <entry> 13 </entry>
+							           <entry> - </entry>
+							           <entry> Hi, you have consumed 13 SMS </entry>
+						         </row>
+						         <row>
+							           <entry> Hi, your tariff will expire on $(ORDINAL) [DAY] day. </entry>
+							           <entry> DAY </entry>
+							           <entry> 13 </entry>
+							           <entry> - </entry>
+							           <entry> Hi, your tariff will expire on 13th day. </entry>
+						         </row>
+						         <row>
+							           <entry morerows="1"> Hi, Kindly recharge by $(DATE) [CurrentDate]. To
+								continue services. </entry>
+							           <entry morerows="1"> CurrentDate </entry>
+							           <entry morerows="1"> 1495107394 </entry>
+							           <entry>
+								             <p>Notification Date Format: DD-MM-YYYY</p>
+								             <p>Notification Timezone: GMT</p>
+							           </entry>
+							           <entry> Hi, Kindly recharge by 18-05-2017. To continue services.
+							</entry>
+						         </row>
+						         <row>
+							           <entry>
+								             <p>Notification Date Format: MM-DD-YYYY</p>
+								             <p>Notification Timezone: Africa*Lome</p>
+							           </entry>
+							           <entry> Hi, Kindly recharge by 05-18-2017. To continue services.
+							</entry>
+						         </row>
+						         <row>
+							           <entry morerows="1"> Duration for last call is $(TIME) [CurrentTime]. </entry>
+							           <entry> CurrentTime </entry>
+							           <entry> 11900 </entry>
+							           <entry> - </entry>
+							           <entry> Duration for last call is 3 Hours 18 Minutes 20 Seconds.
+							</entry>
+						         </row>
+						         <row>
+							           <entry> CurrentTime </entry>
+							           <entry> 119 </entry>
+							           <entry> - </entry>
+							           <entry> Duration for last call is 1 Minute 59 Seconds. </entry>
+						         </row>
+						         <row>
+							           <entry morerows="1"> Data consumed for this cycle is $(BYTE)
+								[CurrentData]. </entry>
+							           <entry morerows="1"> CurrentData </entry>
+							           <entry morerows="1"> 126570148.6592 </entry>
+							           <entry> Notification Byte Conversion Factor: 1024 </entry>
+							           <entry> Data consumed for this cycle is 120.71 MB. </entry>
+						         </row>
+						         <row>
+							           <entry> Notification Byte Conversion Factor: 1000 </entry>
+							           <entry> Data consumed for this cycle is 126.57 MB. </entry>
+						         </row>
+						         <row>
+							           <entry> Customized notification message received $(FixedLength) (25,
+								RIGHTPADDING, ,   LEFTTRIMMING) [Variable]. </entry>
+							           <entry> Variable </entry>
+							           <entry> Abc </entry>
+							           <entry> - </entry>
+							           <entry> Customized notification message received ABC . </entry>
+						         </row>
+						         <row>
+							           <entry> Customized notification message received $(FixedLength)
+								(25,RIGHTPADDING, 0, LEFTTRIMMING) [Variable]. </entry>
+							           <entry> Variable </entry>
+							           <entry> Abc </entry>
+							           <entry> - </entry>
+							           <entry> Customized notification message received ABC000000
+								0000000000000000. </entry>
+						         </row>
+						         <row>
+							           <entry> Customized notification message received $(FIXEDLENGTH)(15,
+								RIGHTPADDING, 0, LEFTDISCARD) [Variable]. </entry>
+							           <entry> Variable </entry>
+							           <entry> Abc 000 </entry>
+							           <entry> - </entry>
+							           <entry> Customized notification message received 000. </entry>
+						         </row>
+						         <row>
+							           <entry> Customized notification message received $(FIXEDLENGTH)(35,
+								RIGHTPADDING, , LEFTDISCARD) [Variable]. </entry>
+							           <entry> Variable </entry>
+							           <entry> Abc 000 </entry>
+							           <entry/>
+							           <entry> Customized notification message received Abc 000 . </entry>
+						         </row>
+						         <row>
+							           <entry> Hi! Kindly recharge by $(DATETIME) [CurrentDateTime]. To
+								continue services. </entry>
+							           <entry> CurrentDateTime </entry>
+							           <entry> 1495107394 </entry>
+							           <entry> - </entry>
+							           <entry> Hi! Kindly recharge by 2017-05-18 11:36:34 GMT. To continue
+								services. </entry>
+						         </row>
+						         <row>
+							           <entry> Hi! Kindly recharge by $(DATETIME) [CurrentDate]. To continue
+								services. </entry>
+							           <entry> CurrentDate </entry>
+							           <entry> 1495107394 </entry>
+							           <entry> - </entry>
+							           <entry> Hi! Kindly recharge by 18/05/17 11:36:34 IST. To continue
+								services. </entry>
+						         </row>
+					       </tbody>
+				     </tgroup>
+			   </table>
+		</conbody>
+</concept>

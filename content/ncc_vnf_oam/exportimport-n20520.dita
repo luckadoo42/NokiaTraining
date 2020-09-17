@@ -1,0 +1,415 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-exportimport-n20520"><title>User Federation configuration</title><conbody>
+<section><title>Overview of User Federation in the Web SSO Admin Console</title>
+<p>The NCC supports Web SSO (KeyCloak) functionality for LDAP and Active Directory. When a user logs
+                in, KeyCloak will look into its own internal user store to find the user. If it
+                cannot find it there, it will iterate over every User Storage provider you have
+                configured for the realm until it finds a match. Data from the external store is
+                mapped into a common user model that is consumed by the KeyCloak runtime. </p>
+<p>In the <i>Web SSO Admin Console</i> you can navigate to Users &gt; Lookup &gt; View all users and select the one of interest to see the status of that user. The attribute Federation Link indicates whether the user is from LDAP. Other attributes, like User Temporarily Locked and Email Verified can be modified here if the user has problems with login.</p>
+<sectiondiv>
+<p><b>User Federation configuration and settings</b></p>
+<p>From the <i>Web SSO Admin Console</i>, navigate to the User Federation screen from a left-sidebar
+                    link, and choose “Add Provider”, then select ldap as the type. <xref
+                        href="#id9yz-09126-mt00-rezza-sp2-exportimport-n20520/kcladapsettings"
+                        format="dita"/> is an example configuration for integration with the LDAP
+                    server. Details will vary depending on how the server is configured.</p>
+<note>All of the below configuration only needs to be done once on the active IOHO of one side of an
+                    SM pair. The configuration database is replicated so it takes effect on both
+                    sites.</note>
+<table id="kcladapsettings" colsep="1" rowsep="1">
+                    <title>User Federation “ldap” settings</title>
+                    <tgroup cols="3">
+                        <colspec colname="col1"/>
+                        <colspec colname="col2"/>
+                        <colspec colname="col3"/>
+                        <thead>
+                            <row>
+                                <entry>
+                                    <p>Name</p>
+                                </entry>
+                                <entry>
+                                    <p>Value</p>
+                                </entry>
+                                <entry>
+                                    <p>Note</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry> Priority </entry>
+                                <entry> 1 </entry>
+                                <entry> 1 is highest. Keycloak internally defined users are higher
+                                    than any externally defined users </entry>
+                            </row>
+                            <row>
+                                <entry> Import users </entry>
+                                <entry> ON </entry>
+                                <entry> keycloak will import the user on first access and
+                                    synchronize with it periodically </entry>
+                            </row>
+                            <row>
+                                <entry> Sync Registrations </entry>
+                                <entry> OFF </entry>
+                                <entry> NCC will not write to this LDAP store </entry>
+                            </row>
+                            <row>
+                                <entry> Vendor </entry>
+                                <entry> Other </entry>
+                                <entry> For ActiveDirectory integration, choose Active Directory
+                                    here </entry>
+                            </row>
+                            <row>
+                                <entry> Edit Mode </entry>
+                                <entry> READ_ONLY </entry>
+                                <entry> this is the only mode tested </entry>
+                            </row>
+                            <row>
+                                <entry> Username LDAP attribute </entry>
+                                <entry> cn </entry>
+                                <entry> The ldap attribute mapped to SM login name </entry>
+                            </row>
+                            <row>
+                                <entry> RDN LDAP attribute </entry>
+                                <entry> cn </entry>
+                                <entry> The ldap attribute used to lookup this unique user </entry>
+                            </row>
+                            <row>
+                                <entry> UUID LDAP attribute </entry>
+                                <entry> cn </entry>
+                                <entry> The ldap attribute that uniquely identifies this user
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> User Object Class </entry>
+                                <entry> inetOrgPerson </entry>
+                                <entry> The schema used for describing user records in the LDAP
+                                    store </entry>
+                            </row>
+                            <row>
+                                <entry> Connection URL </entry>
+                                <entry> ldap://1.1.1.1:10389 </entry>
+                                <entry> — </entry>
+                            </row>
+                            <row>
+                                <entry> Users DN </entry>
+                                <entry> ou=people,dc=internal,dc=users,dc=root </entry>
+                                <entry> The directory hierarchy where users are located in LDAP
+                                    store </entry>
+                            </row>
+                            <row>
+                                <entry> Bind Type </entry>
+                                <entry> simple </entry>
+                                <entry> how to authenticate to the LDAP server </entry>
+                            </row>
+                            <row>
+                                <entry> Bind DN </entry>
+                                <entry> cn=Directory Manager </entry>
+                                <entry> privileged user name for authenticating to LDAP server
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> Bind Credential </entry>
+                                <entry> *** </entry>
+                                <entry> privileged user password </entry>
+                            </row>
+                            <row>
+                                <entry> Search Scope </entry>
+                                <entry> One Level </entry>
+                                <entry> — </entry>
+                            </row>
+                            <row>
+                                <entry> Validate Password Policy </entry>
+                                <entry> OFF </entry>
+                                <entry> Related to update which is not currently supported for the
+                                    NCC integration </entry>
+                            </row>
+                            <row>
+                                <entry> Connection Pooling </entry>
+                                <entry> ON </entry>
+                                <entry> — </entry>
+                            </row>
+                            <row>
+                                <entry> Connection Timeout </entry>
+                                <entry> 10000 </entry>
+                                <entry> — </entry>
+                            </row>
+                            <row>
+                                <entry> Read Timeout </entry>
+                                <entry> 10000 </entry>
+                                <entry> — </entry>
+                            </row>
+                            <row>
+                                <entry> Pagination </entry>
+                                <entry> ON </entry>
+                                <entry> — </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+</sectiondiv>
+<sectiondiv>
+<p><b>User Federation Mappers for users</b></p>
+<p>You can create mappers for LDAP attributes, to convert them when KeyCloak imports user information. Do not change the existing OOB mappers as these result in LDAP attributes being injected into the KeyCloak token. The username displayed on the GUI is of the most significance.</p><ul>
+<li>
+<p>last name</p>
+</li>
+<li>
+<p>email</p>
+</li>
+<li>
+<p>modify date</p>
+</li>
+<li>
+<p>first name</p>
+</li>
+<li>
+<p>username</p>
+</li>
+<li>
+<p>creation date</p>
+</li>
+</ul>
+</sectiondiv>
+<sectiondiv>
+<p><b>User Federation Mappers for roles</b></p>
+<p>There are two options for user-to-role mapping</p><ul>
+<li>
+<p>LDAP groups</p>
+<p>With ldap groups, the user-to-role mapping is defined entirely in LDAP. See <xref
+                                href="#id9yz-09126-mt00-rezza-sp2-exportimport-n20520/ldapgroups"
+                                format="dita"/> for configuration details.</p>
+</li>
+<li>
+<p>Default Role</p>
+<p>With default-role, there is no mapping in LDAP, so a single role is assigned by KeyCloak to any users authenticated from a particular LDAP store. If it is not possible to configure ldap groups, users can authenticate and be given a default role using the KeyCloak static configuration. To do this navigate to: User Federation &gt; myldap &gt; LDAP Mappers: Create and configure:</p>
+<p>-Name: defaultRole</p>
+<p>-Mapper Type: hardcoded-ldap-role-mapper</p>
+<p>-Role: administrator (or other desired common role)</p>
+</li>
+</ul>
+<p>If a default role is configured in KeyCloak, nothing else needs to be done in the LDAP server.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>LDAP groups</b></p>
+<p>A mapper is created for importing roles from LDAP, which are stored there as groups. The import is done from KeyCloak by querying LDAP for the groups to which a given user belongs. Typically groups in LDAP are defined as groupOfNames or groupOfUniqueNames, where the group object contains multiple attributes, one for each member. This configuration tells KeyCloak how to query the group and extract the username for membership. The group name becomes the role name in KeyCloak. For example: if you create a group “smprovisioners” in LDAP with a member ”smuser1”. Then when smuser1 logs into SM, the role smprovisioners will be assigned to that user. This role must also be setup in SM with the appropriate permissions.</p>
+<p>You need to create a group for each SM role. The group name needs to be the SM role name. The groups should be located in the directory tree to match the configuration of the mapper in KeyCloak. For example: "ou=groups,dc=internal,dc=users,dc=root". </p>
+<note>
+<p>Locally defined users such as the OOB smadmin user continue to work as before, after LDAP integration is enabled. Keycloak checks for locally-defined users before searching LDAP.</p>
+</note>
+<table id="ldapgroups"><title>User Federation &gt; ldap &gt; LDAP Mappers: Create</title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<colspec colname="col3"/>
+<thead>
+<row>
+<entry>
+<p>Name</p>
+</entry>
+<entry>
+<p>Value</p>
+</entry>
+<entry>
+<p>Note</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+Name
+</entry>
+<entry>
+smroles
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+Mapper Type
+</entry>
+<entry>
+role-ldap-mapper
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+LDAP Roles DN
+</entry>
+<entry>
+ou=groups,dc=internal,dc=users,dc=root
+</entry>
+<entry>
+Where to find groups in LDAP
+</entry>
+</row>
+<row>
+<entry>
+RoleName LDAP Attribute
+</entry>
+<entry>
+cn
+</entry>
+<entry>
+what attribute to use for the role name
+</entry>
+</row>
+<row>
+<entry>
+Role Object Classes
+</entry>
+<entry>
+groupOfUniqueNames
+</entry>
+<entry>
+what schema is used to define the group (could also be groupOfNames)
+</entry>
+</row>
+<row>
+<entry>
+Membership LDAP Attribute
+</entry>
+<entry>
+uniqueMember
+</entry>
+<entry>
+what attribute in the group object identifies a member
+</entry>
+</row>
+<row>
+<entry>
+Membership Attribute Type
+</entry>
+<entry>
+DN
+</entry>
+<entry>
+how to interpret the member data value, here we say it contains a fully qualified Distinguished Name)
+</entry>
+</row>
+<row>
+<entry>
+Membership User LDAP Attribute
+</entry>
+<entry>
+cn
+</entry>
+<entry>
+unused
+</entry>
+</row>
+<row>
+<entry>
+Mode
+</entry>
+<entry>
+READ_ONLY
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+User Roles Retrieve Strategy
+</entry>
+<entry>
+LOAD_ROLES_BY_MEMBER_ATTRIBUTE
+</entry>
+<entry>
+use the group object itself and process the membership list
+</entry>
+</row>
+<row>
+<entry>
+Member-Of LDAP Attribute
+</entry>
+<entry>
+memberOf
+</entry>
+<entry>
+unused
+</entry>
+</row>
+<row>
+<entry>
+Use Realm Roles Mapping
+</entry>
+<entry>
+ON
+</entry>
+<entry>
+—
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+<sectiondiv>
+<p><b>Client Mappers</b></p>
+<p>Create a hard-coded attribute to inform the GUI that user information is read only and cannot be modified by SM. This is communicated to the GUI through the userInfo data that the GUI fetches at login time, from the KeyCloak server. Navigate to: Clients &gt; "spssm" &gt; mappers (tab) &gt; Create and configure the following:</p><ul>
+<li>
+<p>name: readonly</p>
+</li>
+<li>
+<p>Mapper Type: hardcoded claim</p>
+</li>
+<li>
+<p>Token Claim Name: readonly</p>
+</li>
+<li>
+<p>Claim value: true</p>
+</li>
+<li>
+<p>Claim JSON Type: Boolean</p>
+</li>
+<li>
+<p>Add to ID token: OFF</p>
+</li>
+<li>
+<p>Add to access token: OFF</p>
+</li>
+<li>
+<p>Add to userinfo: ON</p>
+</li>
+</ul>
+</sectiondiv>
+<sectiondiv>
+<p><b>KeyCloak configuration for secure access</b></p>
+<p>KeyCloak be configured to access LDAP via the secure protocol (ldaps). To do this, KeyCloak needs to trust the LDAP server certificate. This can be done by importing the ldap server certificate into KeyCloak's client keystore. This currently requires manual configuration for which an example is shown below for configuring KeyCloak to connect with a samba-based AD server via ldaps on port 636:</p>
+<p>On an AD server:</p>
+<fig>
+<codeblock># cd /usr/local/samba/private/tls
+# cat cert.pem ca.pem &gt; adclient.chain.pem
+# openssl pkcs12 -export -inkey key.pem -in chain.pem -out adclient.p12
+password: 123456
+# scp adclient.p12 chain.pem keycloakserver:/opt/keycloak/security/ssl
+(note, you only need adclient.chain.pem for verifying the connection with openssl below)</codeblock>
+</fig>
+<p>On each KeyCloak server (IOHO) of the pair in the NCC site:</p>
+<fig>
+<codeblock># cd /opt/keycloak/security/ssl 
+# keytool -importkeystore -srckeystore adclient.p12 -srcstoretype pkcs12 -destkeystore client_keystore.jks 
+dest password: keycloak 
+src  password: 123456</codeblock>
+</fig>
+<p>To test the connection from KeyCloak server to ldap:</p>
+<fig>
+<codeblock># openssl s_client -msg -connect &lt;adserverhostname&gt;:636 -CAfile chain.pem
+... Verify return code: 0 (ok)</codeblock>
+</fig>
+<note>
+<p>The host name that you configure in KeyCloak needs to match the hostname in the certificate and that hostname must be able to be looked-up from the KeyCloak side, which may mean adding it to KeyCloak server's /etc/host file if it is not a DNS-registered hostname.</p>
+</note>
+</sectiondiv>
+</section>
+</conbody></concept>

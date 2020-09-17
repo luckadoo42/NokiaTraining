@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-cn01-tczza-d1e17861"><title>Transaction and rollback in the NCC Gy interface</title><conbody>
+<section><title>Overview</title>
+<p>NCC uses the transaction manager service to facilitate resource access. In the NCC module,
+                SPOCSPlugin receives the Diameter request and passes on this message to
+                CommandDispatcher for processing. All the tasks are executed in a single thread
+                based on request type. If the request type is GY, then the task begins in same
+                thread else thread pool is used. After processing the request, rollback conditions
+                must be checked, which can be either transaction timeout or error scenarios. If the
+                transaction mark is rollback, then transaction rollback is executed. Otherwise, the
+                transaction is committed.</p>
+<p>Rollback can be handled for following cases:</p><ul>
+<li>
+<p>
+<uicontrol>Transaction timeout</uicontrol>: The UserTransaction interface is used to begin transaction. It provides a method to set timeout value in user transaction considered to be 10 milliseconds less than the request timeout. If the request process time is more than the transaction timeout, then the Diameter stack sends out the response as <varname>DIAMETER_TOO_BUSY</varname>.</p>
+</li>
+<li>
+<p>
+<uicontrol>Error scenarios</uicontrol>: In case of transaction rollback due to the failure scenarios, rollback is done only for 5xx response received from application. In such cases, CDR is generated per the error scenario and CCA is constructed correctly. </p>
+</li>
+<li>
+<p>
+<uicontrol>Exception while committing or rollback</uicontrol>: If an exception occurs during rollback and commit transaction, then the call control sends a response <varname>DIAMETER_UNABLE_TO_COMPLY</varname> in CCA. CDR is generated as error and MSCC AVP is removed from CCA.</p>
+</li>
+</ul>
+</section>
+</conbody></concept>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="id9YZ-09126-MT00-REZZA-SP2-d1e84262"><title>Verify that the ME has returned to service</title><taskbody>
+<steps>
+<stepsection><b>Steps</b></stepsection>
+<step><cmd>As the tpaadmin user, check the XDR status on both MEs using the following command:</cmd><info><p>
+<userinput>$ xdr-status</userinput>
+</p><p>Output similar to the following should appear:</p><fig>
+<codeblock>[root@sps-me1-oame-0 bin]# xdr-status
+XDR replication status (local site towards remote sites):
+-------------------------------------------------------
+Collection Time: 2018-06-20 12:31:20 -0400
+dlog_free_pct: 100%
+xdr_timelag: 0
+Destination site name: spssite2:
+..dc_state: UP
+..sync up state: CURRENT
+..dc_timelag: 0
+..dc_ship_latency_avg: 0
+..dc_ship_source_error: 0
+..dc_ship_destination_error: 0
+XDR replication status (remote sites toward local site):
+-------------------------------------------------------
+Source site name: spssite2
+..Polling time: 2018-06-20 12:31:20 -0400
+..site service state: IN_SERVICE
+..collection time: 2018-06-20 12:31:20 -0400
+..dlog_free_pct: 100
+..dc_state: UP
+..sync up state: CURRENT
+..dc_timelag: 0
+..dc_ship_latency_avg: 0
+..dc_ship_source_error: 275
+..dc_ship_destination_error: 375
+
+Overall States:
+---------------
+Service State: UP
+Internal service state: Current
+Override for OOS-WFR: false
+Override for OOS-DRR: false
+</codeblock>
+</fig></info></step>
+<step><cmd>Note the errors in the above output: </cmd><info><p>..dc_ship_source_error: 275 </p><p>..dc_ship_destination_error: 375</p><p>These are normal, as long as they do not increment, the xdr is is operational. </p></info></step>
+<step><cmd>Use the sps-status tool to verify the status of the recovering ME. The state of the ME is also displayed as Site State: UP via monitoring on the Active OAM of the ME using the sps-status tool. As the tpaadmin user, enter the command:</cmd><info><p>
+<userinput>./sps-status</userinput>
+</p><p>See the <!--xref URI: #spsstatus--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsstatus"/>section in this guide for more information about getting the status of the ME. </p><p>Output similar to the following should appear:</p><fig>
+<!--MMO resource relative URI: ../Graphics/187aspsstatusME_default.png-->
+    <image href="../images/aspsstatusme_default.png"/>
+</fig></info></step>
+<step><cmd>Verify the Heartbeat status from all Members, SM and ME within the community using the TPA_heartbeatStatus tool. As the tpaadmin user, enter the following command:</cmd><info><p>
+<userinput>TPA_heartbeatStatus</userinput>
+</p><p>Output similar to the following should appear:</p><fig>
+<codeblock>[root@sps-me1-oame-0 bin]# TPA_heartbeatStatus
+Local Service Status:
+IN_SERVICE
+Status for Site 'sps-sm-1' ID [5] Service status [IN_SERVICE] Missed OAM beats [0] Missed traffic beats [N/A] Last contact [1s ago] Last attempt [1s ago]
+Status for Site 'sps-sm-2' ID [6] Service status [IN_SERVICE] Missed OAM beats [0] Missed traffic beats [N/A] Last contact [Never] Last attempt [0s ago]
+Status for Site 'sps-me-2' ID [2] Service status [IN_SERVICE] Missed OAM beats [0] Missed traffic beats [
+0] Last contact [1s ago] Last attempt [0s ago]
+</codeblock>
+</fig></info></step>
+<step><cmd>Log into the OAM VIP of the ME as tpaadmin and run the following command:</cmd><info><p>
+<userinput>“twiddle &lt;name of Active IOHO e.g. psceel01-ioho-0&gt; get com.alcatel.tpapps.spr:service=LdapClient CurrentLdapConnectionInfo”</userinput>
+</p><p>Verify that the LDAP connections have returned.</p></info></step>
+<step><cmd>In the SM GUI choose Global Configurations→MANAGED ELEMENTS→Managed Elements List to verify that the ME appears as registered on the SM.</cmd><info/></step>
+</steps>
+</taskbody></task>

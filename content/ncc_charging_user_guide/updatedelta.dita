@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e215261"><title>updateDeltaDevice and updateDeltaGroup APIs</title><conbody>
+<section><title>Overview</title>
+<p>The <i>updateDeltaDevice</i> and <i>updateDeltaGroup</i> APIs allow operators to modify the delta information of a Device and Group. If multiple devices are attached to a Group, then all the Device details are not needed to update the Group.</p>
+<p>For example, consider that a Group has 10 devices attached to it. Operator wants to remove a single <varname>Device6</varname>, then only the details of <varname>Device6</varname> must be sent in the request to remove it. The details of other 9 devices linked are not needed in the request.</p>
+<note>
+<p>Only the root level variables and list objects are considered for delta updates. Delta update of fields within nested object is not considered and entire object gets updated.</p>
+</note>
+</section>
+<section><title>API operations</title>
+<p>Operators can perform the following operations using the <i>updateGroup</i> API:</p><ul>
+<li>
+<p>Subscribe a new bundle</p>
+</li>
+<li>
+<p>Subscribe multiple bundles</p>
+</li>
+<li>
+<p>Remove a bundle </p>
+</li>
+<li>
+<p>Remove multiple subscriptions using one request </p>
+</li>
+<li>
+<p>Add a device</p>
+</li>
+<li>
+<p>Add multiple devices </p>
+</li>
+<li>
+<p>Update a notification profile</p>
+</li>
+</ul>
+<p>Operators can perform the following operations using the <i>updateDevice</i> API:</p><ul>
+<li>
+<p>Add a new IMSI</p>
+</li>
+<li>
+<p>Add a new MSISDN</p>
+</li>
+<li>
+<p>Remove an existing MSISDN</p>
+</li>
+<li>
+<p>Update a notification profile</p>
+</li>
+</ul>
+</section>
+<section><title>Examples</title>
+<sectiondiv>
+<p><b>Example 1: Delta Device update to add or modify a single variable</b></p>
+<p>Operators can send the following API request to modify the delta information of a Device. The <uicontrol>subAction</uicontrol> parameter defines the action to perform. The following request adds a notification profile named <uicontrol>Notification1</uicontrol> to the Device <uicontrol>Device1</uicontrol> if a notification profile does not exist for <uicontrol>Device1</uicontrol>. Otherwise, the API request replaces the existing value of notification profile for <uicontrol>Device1</uicontrol>.</p>
+<p>https://&lt;SM_IP&gt;:8443/services/ServiceManager/subscriber/deltaUpdate/Device?subAction=modify</p>
+<p>
+<b>Request:</b>
+</p>
+<fig>
+<codeblock>{
+			"id":Device1",
+			"notificationProfile":"Notification1"
+}</codeblock>
+</fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 2: Delta Device update to modify a collection variable</b></p>
+<p>The API request performs the following actions:</p><ul>
+<li>
+<p>Removes the existing groups from <uicontrol>Device1</uicontrol>.</p>
+</li>
+<li>
+<p>Adds <uicontrol>Group2</uicontrol> to <uicontrol>Device1</uicontrol>.</p>
+</li>
+<li>
+<p>Adds a notification profile named <uicontrol>Notification2</uicontrol> to <uicontrol>Device1</uicontrol> if a notification profile does not exist. Otherwise, the API request replaces the existing value of notification profile for <uicontrol>Device1</uicontrol>.</p>
+</li>
+</ul>
+<p>https://&lt;SM_IP&gt;:8443/services/ServiceManager/subscriber/deltaUpdate/Device?subAction=modify</p>
+<p>
+<b>Request:</b>
+</p>
+<fig>
+<codeblock>{
+			"id":Device1",
+			"groups":["Group2"]
+			"notificationProfile":"Notification2"
+}</codeblock>
+</fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 3: Delta Device update to add a collection variable</b></p>
+<p>The API request adds the identity value to <uicontrol>Device1</uicontrol>. That is, the API appends the defined identity value to the existing device identities list if this identity value is not already added.</p>
+<p>https://&lt;SM_IP&gt;:8443/services/ServiceManager/subscriber/deltaUpdate/Device?subAction=add</p>
+<p>
+<b>Request:</b>
+</p>
+<fig>
+<codeblock>{
+			"id":Device1",
+			"identities":[
+				{
+					"identityType:"E164",
+					"value:"12345678"
+				}]
+			"notificationProfile":"Notification3"
+}</codeblock>
+</fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 4: Delta Device update to remove a collection variable</b></p>
+<p>The API request removes the already added subscription from <uicontrol>Device1</uicontrol> whose subscription id is provided in the request. </p>
+<note>
+<p>To update a value of collection element, it is recommended to first remove and then add it. </p>
+<p>To update a collection with only one element, you can send the entire object with subAction=modify.</p>
+</note>
+<p>https://&lt;SM_IP&gt;:8443/services/ServiceManager/subscriber/deltaUpdate/Device?subAction=remove</p>
+<p>
+<b>Request:</b>
+</p>
+<fig>
+<codeblock>{
+			"id":Device1",
+			"subscriptions":[{id":"e29591f1-1530-48b0-9cfb-cac06e6a5908"}]
+			"identities":[
+				{
+					"identityType:"E164",
+					"value:"12345678"
+				}]
+}</codeblock>
+</fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 5: Delta Group update to modify a single variable</b></p>
+<p>Adds a notification profile named <uicontrol>Notification5</uicontrol> to the Group named <uicontrol>Group1</uicontrol> if a notification profile does not exist. Otherwise, the API request replaces the existing value of notification profile for <uicontrol>Group1</uicontrol>.</p>
+<p>https://&lt;SM_IP&gt;:8443/services/ServiceManager/subscriber/deltaUpdate/Group?subAction=modify</p>
+<p>
+<b>Request:</b>
+</p>
+<fig>
+<codeblock>{
+			"id":Group1",
+			"notificationProfile":"Notification5"
+}</codeblock>
+</fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 5: Delta Group update to remove a collection variable</b></p>
+<p>The API request removes the already added aggregate view named <uicontrol>GrpAV</uicontrol> from <uicontrol>Group1</uicontrol>.</p>
+<p>https://&lt;SM_IP&gt;:8443/services/ServiceManager/subscriber/deltaUpdate/Group?subAction=remove</p>
+<p>
+<b>Request:</b>
+</p>
+<fig>
+<codeblock>{
+			"id":Group1",
+			"aggregateViewIdList":["GrpAV"]
+}</codeblock>
+</fig>
+</sectiondiv>
+</section>
+</conbody></concept>

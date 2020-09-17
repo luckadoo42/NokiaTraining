@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="sm_apis">
+    <title>SM APIs</title>
+    <conbody>
+        <p>Nokia Converged Charging (NCC) hosts application programming interfaces (APIs) on its Service
+            Manager (SM) CNF. These APIs are typically REST-based and support a variety of users,
+            including:</p>
+        <ul id="ul_qkf_zbx_nlb">
+            <li>
+                <p><b>SM GUI users</b></p>
+                <p>The SM GUI implementation invokes the REST APIs to take action on the data
+                    submitted through the GUI.</p>
+            </li>
+            <li>
+                <p><b>IT systems</b></p>
+                <p>Customers have a variety of IT systems for configuring, provisioning, and
+                    querying data in NCC. These IT systems are users of the NCC APIs provided by the
+                    NCC SM API Gateway.</p>
+            </li>
+            <li>
+                <p><b>Self-care users</b></p>
+                <p>The users that might come from mobile applications or web portals.</p>
+            </li>
+        </ul>
+        <p>In all of these use cases, the same REST API layer in SM is invoked. This layer provides
+            the business logic to authorize the user, validate data change requests (including
+            against other data already in the DB), index, mediate, and persist appropriate portions
+            of the data in the SM database.</p>
+        <p>The following figure shows the API layer.</p>
+        <fig id="fig_bmm_5mz_cmb">
+            <title>REST API layer</title>
+            <image placement="break" href="../images/cnf_overview_REST-API-layer.GIF" scale="30"
+                align="center" id="image_cmm_5mz_cmb"/>
+        </fig>
+        <p>When a GUI user requests that a set of data gets saved, it is saved into the SM database.
+            Later, when the GUI user requests that data be distributed to a set of Managed Elements
+            (MEs), then the SM forwards that data to the requested NCC MEs in the network.</p>
+        <p>Some data remains in the SM database even after distributing it to the MEs, such as
+            service definitions. However, other data, such as subscriber / device data, is not kept
+            in the SM database, but instead, SM keeps only a mapping table of which subscribers /
+            devices are homed on which NCC MEs in the network.</p>
+        <p>For each service data managed object, SM maintains the provisioned state for each
+            applicable ME, in its SM database. This is used to track the association of
+            each object with where the user intends it to be sent, and whether SM was successful in
+            sending it there. The GUI displays an indication for failed / partially distributed
+            objects to alert the user that action needs to be taken to correct problems.</p>
+        <p>The APIs are accessible only through HTTPS. SM expects each REST API invocation to
+            contain an HTTP-Basic header containing username and password, which is separately
+            authenticated. Since HTTP-basic is inherently insecure, it needs to be transferred using
+            HTTPS. </p>
+        <p>SM also supports custom APIs provided by Nokia Services as microservices deployed on the
+            SM. These microservices enable operator-specific custom APIs to be offered externally,
+            with custom mediation into the standard SM REST APIs. These custom APIs must be
+            contracted through Nokia Services.</p>
+        <p>For more information about the SM REST API interfaces and classes, including examples and
+            parameter descriptions, see the NCC Documentation in the Service Manager GUI and locate
+            SM API Reference.</p>
+    </conbody>
+</concept>

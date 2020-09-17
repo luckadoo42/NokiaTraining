@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="deploying_ap_streams_helm_chart">
+    <title>Deploying AP-streams Helm chart</title>
+    <taskbody>
+        <context>This procedure provides instructions on how to deploy the AP-streams Helm charts
+            for ME and IG CNFs. </context>
+        <steps>
+            <step>
+                <cmd>Update the following:</cmd>
+                <info>
+                    <ul id="ul_h4z_lv2_vmb">
+                        <li><codeph>AP_STREAMS_VERSION</codeph> by
+                            entering:<codeblock>AP_STREAMS_VERSION=$(helm show chart ap-streams-chart*.tgz | grep version | tail -1 | awk '{print $2}')</codeblock></li>
+                        <li>
+                            <p>ID/address pairs for all home SMS-ME IDs returned by the home SPS-ME
+                                query in the format <codeph>protocol://hostname:port</codeph>, for
+                                    example:<codeblock>CHF_LOOKUP_VALUES="4 = https://wiremock:32800, 5 = https://wiremock:32801"</codeblock>where:<ul
+                                    id="ul_pmw_41z_zmb">
+                                    <li><codeph>protocol</codeph> is <codeph>http</codeph> or
+                                            <codeph>https</codeph>.</li>
+                                    <li><codeph>hostname</codeph> is the host name used to describe
+                                        SMS-ME in the topology section of the SPS yaml file.</li>
+                                </ul>
+                            </p>
+                        </li>
+                        <li>home SPS-ME lookup URL by
+                            entering:<codeblock>CHF_LOOKUP_ADDRESS="https://update_host_here/rest-services/v1/getAllMeList"</codeblock></li>
+                    </ul>
+                </info>
+            </step>
+            <step>
+                <cmd>Create the Overrides yaml file for the AP-streams Helm chart by entering:</cmd>
+                <info>
+                    <codeblock>cat > ap-streams-overrides.yaml &lt;&lt;EOF
+global:
+#POD_NAME_PREFIX  fullnameOverride: "$POD_NAME_PREFIX"
+#POD_NAME_PREFIX  containerNamePrefix: "$CONTAINER_NAME_PREFIX"
+  universalPodAnnotations:
+    placeholder: "true"
+  datarefinery:
+    imageTag: $DR_VERSION
+  istio:
+    enabled: true
+  KafkaBootstrapServers: &amp;kafkaBootstrap  "${KAFKA_SERVICE_NAME}:9092"
+  
+initImage: &amp;initImage
+  imageTag: $AP_STREAMS_VERSION
+  imagePullPolicy: "IfNotPresent"
+  
+vz-ap-collection:
+  initImage: *initImage
+  parameters:
+    AP_CFG_COLLECTOR:
+      KafkaBootstrapServers: *kafkaBootstrap
+      KafkaTopicName: "aprecords"
+  schedule:
+      AP_CFG_COLLECTOR:
+        months: "1,2,3,4,5,6,7,8,9,10,11,12"
+        days_of_month: "*"
+        days_of_week: "*"
+        hours: "*"
+        minutes: "0,5,10,15,20,25,30,35,40,45,50,55"
+        retry_attempts: "1"
+        wait_time: "60"
+  connpoints: # Modify as needed. Contains all connection points and transfer configurations used by this stream instance
+    # example of two sftp connpoints
+    sftp:
+     - connid: "SMF1"
+       Port: "22"
+       SourceHost: "10.75.186.141"
+       Password: "password"
+       Username: "username"
+       SourceId: "SMF1_1"
+       transferConfiguration:
+         SourceDirectory: "/home/comptel/AP3"
+         FileTransferCount: "10"
+         PrimaryCollection: "true"
+         DiscardThreshold: "2"
+     - connid: "SMF2"
+       Port: "22"
+       SourceHost: "10.75.186.142"
+       Password: "password"
+       Username: "username"
+       SourceId: "SMF2_1"
+       transferConfiguration:
+         SourceDirectory: "/home/comptel/AP3"
+         FileTransferCount: "10"
+         PrimaryCollection: "true"
+         DiscardThreshold: "2"
+ 
+vz-ap-handler:
+  initImage: *initImage
+  parameters:
+    CFG_CG_AP_HANDLER:
+      KafkaBootstrapServers: *kafkaBootstrap
+      disposition_kafka: "topic = apdisposition, instances = 1, bootstrap.servers = ${KAFKA_SERVICE_NAME}:9092"
+      retransmission_kafka: "topic = apretransmission, bootstrap.servers = ${KAFKA_SERVICE_NAME}:9092"
+      smf_kafka: "topic = aprecords, instances = 1, poll.timeout = 100 ms, bootstrap.servers = ${KAFKA_SERVICE_NAME}:9092"
+      chfRouter_kafka: "bootstrap.servers = ${KAFKA_SERVICE_NAME}:9092, instances = 1, poll.timeout = 100 ms, topic = aprequests"
+      chfLookup_lookupValues: "${CHF_LOOKUP_VALUES}"
+      chfLookup_connection_address: "${CHF_LOOKUP_ADDRESS}"
+      chfLookup_throttleControl_batchSize: "1"
+      chfLookup_throttleControl_restPeriod: "10 ms"
+      chfLookup_throttleControl_waitPeriod: "10 ms"
+      chf_throttleControl_batchSize: "1"
+      chf_throttleControl_restPeriod: "10 ms"
+      chf_throttleControl_waitPeriod: "10 ms"
+ EOF</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Based on the input, replace the values in the Overrides file by entering:</cmd>
+                <info>
+                    <codeblock>if [ -n "$POD_NAME_PREFIX" ]; then sed -i 's/#POD_NAME_PREFIX//g' ap-streams-overrides.yaml; fi</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Modify the following in the Overrides file:</cmd>
+                <info>
+                    <ol id="ol_dsv_cmm_vmb">
+                        <li>Set the <codeph>vz-ap-collection.schedule</codeph> parameter as
+                            needed.</li>
+                        <li>Replace the <codeph>example of two sftp connpoints</codeph> with your
+                            network model data that is collected by this AP-streams
+                            installation.</li>
+                    </ol>
+                </info>
+            </step>
+            <step>
+                <cmd>Edit the Overrides yaml file as needed.</cmd>
+            </step>
+            <step>
+                <cmd>Install AP-streams Helm chart by entering:</cmd>
+                <info>
+                    <codeblock>helm install -n $NAMESPACE ap-streams ap-streams-chart*.tgz -f ap-streams-overrides.yaml</codeblock>
+                </info>
+            </step>
+        </steps>
+    </taskbody>
+</task>

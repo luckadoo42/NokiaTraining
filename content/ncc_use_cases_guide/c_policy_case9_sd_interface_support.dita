@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//NSN//DTD DITA Concept//EN" "nsnconcept.dtd">
+		<concept id="id9YZ-09018--PL00-FPZZA-d1e26530"><title>Case 9: Sd interface support</title><conbody>
+
+<section><title>Overview</title>
+
+<p>Operators can configure the Traffic Detection Function (TDF) servers similar to the Diameter client and select the right TDF within policy rules. IP-CAN Session Establishment with PCRF along with Sd session Establishment with TDF.</p>
+<p>Following figure shows the traffic detection using the Sd interface:<fig>
+
+<!--MMO resource relative URI: ../graphics/Case9_TDF_default.png-->
+<image href="../images/case9_tdf_default.png"/>
+</fig></p>
+<p>Sd is the reference point located between the Policy and Charging Rules Function (PCRF) and TDF. Application Detection and Control (ADC) rules from the PCRF is provisioned for the purpose of traffic detection and enforcement at TDF. The start/stop of a detected application's traffic are reported based on the event trigger. The ADC rules that can be configured are Dynamic ADC rules and Predefined ADC rules.</p>
+</section>
+<section><title>Flow of events</title><ul>
+
+<li>Verify that PCC Rule is installed on the Gx Interface on PGW and ADC Rule installed on Sd
+                    Interface with Event Triggers installed with Application Start and Application
+                    Stop on TDF. </li>
+<li>Verify the CCR-I initial request comes towards PCRF from PGW. </li>
+<li>PCRF initiates the TSR request message to TDF server to Install the ADC rule in ADC Rule Install
+                    AVP with all the required AVPs. </li>
+<li>PCRF install the successfully Predefined PCC rule in the Charging rule Install AVP in CCA-I with
+                    Result code 2001 for IP_CAN session Establishment. </li>
+<li>TDF server responses the TSA message to PCRF with Result code 2001. </li>
+</ul>
+</section>
+<section><title>Provisioning</title>
+
+<note type="attention">
+
+<p>Ensure that after creating a record, you distribute it to ME. Otherwise, the provisioning will
+                    not be successful.</p>
+<p>
+                    <uicontrol>Pre-condition:</uicontrol> Verify that the basic provisioning for Gx
+                    and Sd is done at NCC.</p>
+</note>
+<p>Provision the following data:</p><ol>
+
+<li>Create the PCC rule templates<draft-comment> using Gx policy RSV rule group</draft-comment>. To
+     do this, log in to the SM GUI and navigate to <uicontrol>Policy &amp; Charging
+      Configuration</uicontrol> and select <uicontrol>Policy</uicontrol> tab. Select the
+      <uicontrol>Network Rule Templates</uicontrol> from the drop-down list. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png" id="image_mtq_4qt_3lb"/> to create the rule
+     templates as shown in the following figure: <!--MMO resource relative URI: ../graphics/Case9_NWT1_default.jpg-->
+     <image href="../images/case9_nwt1_default.jpg"/>
+     <!--MMO resource relative URI: ../graphics/Case9_NWT2_default.png-->
+     <image href="../images/case9_nwt2_default.png" placement="break" scale="70"/>
+     <p>Similarly, create the ADC rule templates <draft-comment>using Sd policy RSV rule group
+      </draft-comment>as shown in the following figure:</p>
+     <!--MMO resource relative URI: ../graphics/Case9_NWT3_default.png-->
+     <image href="../images/case9_nwt3_default.png" scale="70" placement="break"/>
+     <!--MMO resource relative URI: ../graphics/Case9_NWT4_default.png-->
+     <image href="../images/case9_NWT4_default.png" scale="70" placement="break"/>
+     <p>
+      <uicontrol>Note</uicontrol>: Use the <uicontrol>Rule System Version</uicontrol> created
+      already following the steps mentioned in the
+       <!--xref URI: ../../../IP/SPS_Usecases.xml#gc--><xref keyref="id9YZ-09018--PL00-FPZZA-gc"/>
+      section.</p>
+    </li>
+<li>Define the condition with <uicontrol>IPCAN_SESSION_ESTABLISHMENT</uicontrol> trigger for
+     establishing the TDF Policy. <!--MMO resource relative URI: ../graphics/Case9_TDFpolicy_default.png-->
+     <image href="../images/case9_tdfpolicy_default.png"/>
+    </li>
+<li>Define the condition with <uicontrol>IPCAN_SESSION_ESTABLISHMENT</uicontrol> trigger for the
+     definition of the PCC rule. <!--MMO resource relative URI: ../graphics/Case9_PCC_default.png-->
+     <image href="../images/case9_pcc_default.png"/>
+    </li>
+<li>Define the default actions with <uicontrol>SD_SESSION_ESTABLISHMENT</uicontrol> trigger in new
+     rule group to arm two default event triggers named Application_Start and Application_Stop for
+     Sd interface. <!--MMO resource relative URI: ../graphics/Case9_Defaultactions_default.png-->
+     <image href="../images/case9_defaultactions_default.png"/>
+    </li>
+<li>Create the RSV and assign the PCRF condition for the SD SESSION Establishment for TDF selection.
+     Define the condition for the ADC rule definition selection. <!--MMO resource relative URI: ../graphics/Case9_TDFRSV_default.png-->
+     <image href="../images/case9_tdfrsv_default.png"/>
+     <p>
+      <uicontrol>Note:</uicontrol> The DSC.TDF server has the value of TDF host. It changes based on
+      the TDF system. </p>
+    </li>
+<li>Create the device E.164. To do this, navigate to <uicontrol>Subscriber Manager</uicontrol> and
+     select the <uicontrol>Devices</uicontrol> tab. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png"/> to create the device. </li>
+</ol>
+</section>
+</conbody></concept>

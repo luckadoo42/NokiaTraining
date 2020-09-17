@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="id9YZ-09126-MT00-REZZA-SP2-d1e84013"><title>Returning to Service</title><taskbody>
+<steps>
+<stepsection><b>Steps</b></stepsection>
+<step><cmd>Perform the following steps to enable the incoming XDR traffic on the ME. </cmd><info>
+                    <ol id="ol_ors_2tx_tmb">
+                        <li>Log in to the active OAME node of the recovering ME site as the tpaadmin
+                            user and navigate to the /opt/tpa/bin directory.<p>
+                                <userinput>$ cd /opt/tpa/bin</userinput>
+                            </p></li>
+                        <li>Enable the incoming XDR traffic with the following command:<p>
+                                <userinput>$ sudo ./xdr-traffic-control -a</userinput>
+                            </p><p>Output similar to the following will appear:</p><fig
+                                id="fig_fys_htx_tmb">
+                                <codeblock>Doing precheck....
+Precheck ok, atleast 1 DB Host '192.168.3.104' is active
+INFO: Starting to Start XDR on '192.168.3.104'
+INFO:Backup firewall successful.
+Start incoming XDR traffic successful on this host.
+Start XDR traffic on '192.168.3.104' successful
+INFO: Starting to Start XDR on '192.168.3.105'
+INFO:Backup firewall successful.
+Start incoming XDR traffic successful on this host.
+Start XDR traffic on 192.168.3.105' successful
+INFO: Starting to Start XDR on '192.168.3.102'
+INFO:Backup firewall successful.
+Start incoming XDR traffic successful on this host.
+Start XDR traffic on '192.168.3.102' successful
+INFO: Starting to Start XDR on '192.168.3.103'
+INFO:Backup firewall successful.
+Start incoming XDR traffic successful on this host.
+Start XDR traffic on '192.168.3.103' successful</codeblock>
+                            </fig></li>
+                        <li>As root, log into one of databases of the isolated site and verify the
+                            xdr entries were successfully updated to allow XDR traffic using the
+                            following command: <p>
+                                <userinput>#cat/etc/firewalld/direct.xml</userinput>
+                            </p><p>The direct.xml file should be successfully updated and should
+                                contain entries similar to the following:</p><fig
+                                id="fig_dgx_3tx_tmb">
+                                <codeblock>&lt;rule priority="20" table="filter" ipv="ipv4" chain="ALATPAascustomizationXDR"&gt; -s 10.76.70.142 -j ACCEPT -m comment --comment 'Allow inbound XDR connection'&lt;/rule&gt;
+&lt;rule priority="21" table="filter" ipv="ipv4" chain="ALATPAascustomizationXDR"&gt; -s 10.76.70.143 -j ACCEPT -m comment --comment 'Allow inbound XDR connection'&lt;/rule&gt;
+&lt;rule priority="22" table="filter" ipv="ipv4" chain="ALATPAascustomizationXDR"&gt; -s 10.76.70.144 -j ACCEPT -m comment --comment 'Allow inbound XDR connection'&lt;/rule&gt;
+&lt;rule priority="23" table="filter" ipv="ipv4" chain="ALATPAascustomizationXDR"&gt; -s 10.76.70.144 -j ACCEPT -m comment --comment 'Allow inbound XDR connection'&lt;/rule&gt;</codeblock>
+                            </fig></li>
+                    </ol></info></step>
+<step><cmd>After issuing this command, allow enough time for the recovering site to transition into the IS state. Invoke the following command as tpaadmin on both the isolated ME and the Active ME.</cmd><info><p>
+<userinput>$ xdr-status</userinput>
+</p><p>output similar to the following should appear:</p><fig>
+<codeblock>-sh-4.2$ xdr-status
+Date: Mon Dec  3 16:29:59 EST 2018
+XDR replication status (local site towards remote sites):
+-------------------------------------------------------
+Collection Time: 2018-11-29 15:23:00-0500
+dlog_free_pct: 100%
+xdr_timelag: 0
+Destinatio
+n site name: spssite2:
+..dc_state: UP
+..sync up state: CURRENT
+..dc_timelag: 0
+..dc_ship_latency_avg: 296
+..dc_ship_source_error: 63
+..dc_ship_destination_error: 3
+XDR replication status (remote sites toward local site):
+-------------------------------------------------------
+Source site name: spssite2
+..Polling time: 2018-12-03 16:30:00-0500
+..site service state: 
+IN_SERVICE
+..collection time: 2018-12-03 16:29:50-0500
+..dlog_free_pct: 100
+..dc_state: UP
+..sync up state: 
+CURRENT
+..dc_timelag: 0
+..dc_ship_latency_avg: 0
+..dc_ship_source_error: 0
+..dc_ship_destination_error: 0
+Overall States:
+---------------
+Service State: UP
+Internal service state: Current
+Override for OOS-WFR: false
+Override for OOS-DRR: false
+-sh-4.2$</codeblock>
+</fig></info></step>
+<step><cmd>Clear the Manual OOS State (MOOS) from the ME using the following command:</cmd><info><p>
+<userinput>$ cd /opt/tpa/bin</userinput>
+</p><p>
+<userinput>$./configure-manual-oos-e ME</userinput>
+</p><p>
+<userinput>$./configure-manual-oos-s </userinput>
+</p><p>Out put similar to the following will appear:</p><fig>
+<codeblock>------------------
+COMPONENT | MOOS
+------------------
+ME: FALSE
+</codeblock>
+</fig><note>
+<p>See the <!--xref URI: #confMOOS--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-confMOOS"/> section in this guide for more information about changing the ME state to OOS using this tool. </p>
+</note><note>
+<p>The state of the ME is also displayed as Component ME State: UP via monitoring on the Active OAM of the ME using the sps-status tool. As the tpaadmin user, enter the command:</p>
+<p>
+<userinput>./sps-status</userinput>
+</p>
+<p>See the <!--xref URI: #spsstatus--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsstatus"/>section in this guide for more information about getting the status of the ME. </p>
+</note></info></step>
+<step><cmd>Verify that the ME has connected to the OneNDS or Ldap server. This information can be found in the SPSServer.log file and then enable the LDAP Server as follows:</cmd><info>
+                    <ol id="ol_cqw_ltx_tmb">
+                        <li>Log in to the SM GUI and navigate to Policy and Charging
+                            Configuration→Common→LDAP External Server:<p>
+                                <userinput>https://&lt;IOHO-FloatingIPAddress&gt;:8443/servicemanager/v18_7/</userinput>
+                            </p></li>
+                        <li>Choose the Edit LDAP Server button in the line item for the configured
+                            LDAP server that appears.</li>
+                        <li>In the LDAP External SPR window change the Admin State from Disabled to
+                            Enabled and click on the “Save” button.</li>
+                    </ol></info></step>
+<step><cmd>Click on the Distribution icon in the line item for the configured LDAP server, you will see the LDAP server undistributed to both the MEs. </cmd><info>
+                    <ol id="ol_qgm_qtx_tmb">
+                        <li>Select the isolated ME in the “Available Managed Elements” side of the
+                            dialog.</li>
+                        <li>Tap the arrow in the direction of the “Managed Elements with
+                            Distributed” side of the dialog. The selected ME now appears in the
+                            “Managed Elements with Distributed” side of the dialog.</li>
+                        <li>Tap the Update button. The server is now distributed.</li>
+                        <li>Tap on the Distribution icon again, you will see the LDAP server is
+                            distributed to the MEs.</li>
+                    </ol></info></step>
+</steps>
+</taskbody></task>

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="overview">
+    <title>Deployment cluster readiness</title>
+    <conbody>
+        <p>The deployment environment for SPS CNF is the Kubernetes cluster. The Kubenetes cluster
+            is ready for SPS installation when the following is done and available.</p>
+        <ul id="ul_d5w_b3p_5lb">
+            <li>Sufficient Kubernetes cluster resources are available.</li>
+            <li>Sufficient OpenStack cloud resources are available.</li>
+            <li>Security requirements are configured.</li>
+        </ul>
+        <section id="section_plr_bjp_5lb">
+            <title>Deployment environment requirements</title>
+            <p>The recommended minimum deployment architecture for SPS CNF is as follows:</p>
+            <ul id="ul_js1_qnp_5lb">
+                <li>The deployment includes:<ul id="ul_ry2_zdd_vlb">
+                        <li>one deploy server</li>
+                        <li>one control node</li>
+                        <li>one edge node </li>
+                        <li>three worker nodes</li>
+                    </ul></li>
+                <li>All servers are interconnected via a private blackplane network (automatically
+                    generated) for all the Kubernetes cluster traffic, and connected to an external
+                    network for external access.</li>
+                <li>The external IP of the control node is available to access the Kubernetes
+                    GUI.</li>
+                <li>The external IP of the edge node is available to access all the services
+                    deployed by SPS.</li>
+                <li>Cinder is used for Persistent Volume.</li>
+            </ul>
+            <p><b>Recommended resources per node type</b></p>
+            <ul id="ul_s1j_pnp_5lb">
+                <li>DeployServer: flavor=m1.large (RAM = 8192 MB / vcpus = 4 / Disk = 80 GB) ;
+                    cinder = 0</li>
+                <li>Control node: flavor=m1.large (RAM = 8192 MB / vcpus = 4 / Disk = 80 GB) ;
+                    cinder = 110 GB (2 volumes)</li>
+                <li>Edge node: flavor=m1.large (RAM = 8192 MB / vcpus = 4 / Disk = 80 GB) ; cinder =
+                    50 GB (1 volume)</li>
+                <li>Worker node: flavor=c24_r32_d100 (RAM = 32768 MB / vcpus = 24 / Disk = 100 GB) ;
+                    cinder = 50 GB (1 volume)</li>
+            </ul>
+            <p><b>Minimum OpenStack resources required for SPS deployed in Kubernetes</b></p>
+            <ul id="ul_ks3_4np_5lb">
+                <li>RAM: 120 GB</li>
+                <li>VCPUs:84</li>
+                <li>Cinder Total (if BTEL is used): 702 GB (Cinder volume required for BCMT nodes:
+                    310 GB + Cinder Volume required for BTEL: 245 GB + Cinder volumes required for
+                    basic SPS with 3xDB pods: 147 GB)</li>
+                <li>Security-Group: 10</li>
+                <li>Number of free IP from external network's DHCP pool: 6</li>
+            </ul>
+            <p>If Data Refinery (DR) is used, the following additional resources are needed for each
+                ME and IG.</p>
+            <ul id="ul_bg3_nnp_5lb">
+                <li>RAM: 93 GB</li>
+                <li>VCPU: 47</li>
+                <li>Cinder: 44 GB</li>
+                <li>additional external IP (for fetching CDRs)</li>
+            </ul>
+            <p>If CBUR is used, the following additional resources are needed for each ME, IG and
+                SM.</p>
+            <ul id="ul_rn5_nnp_5lb">
+                <li>RAM: 2 GB</li>
+                <li>VCPU: 1.5</li>
+                <li>Cinder: 40 GB</li>
+            </ul>
+        </section>
+        <section id="section_vth_mmp_5lb">
+            <title>DHCP configuration</title>
+            <p>Ensure that under the CBIS/OpenStack's dashboard <b>Project / Network / Networks /
+                    &lt;your provider network, e.g., a1557_Provider_145> / Subnets / &lt;your
+                    provider subnet, e.g., a1557_Provider_145></b> the following is set as shown
+                here:</p>
+            <p><b>DHCP Enabled Yes</b></p>
+            <p>If the setting is "<b>No</b>", then to update it execute the following:</p>
+            <ol id="ol_qds_4mp_5lb">
+                <li>click on "<b>Edit Subnet</b>",</li>
+                <li>select the "<b>Subnet Details</b>" tab</li>
+                <li>click on the square box next to "<b>Enable DHCP</b>" (this will add the
+                    checkmark)</li>
+                <li>and click on "<b>Save</b>"</li>
+                <li>finally, verify that the "<b>DHCP Enabled</b>" setting is as shown above</li>
+            </ol>
+        </section>
+        <section id="section_vp4_1pp_5lb">
+            <title><b>OpenStack project configuration</b></title>
+            <ol id="ol_xxs_gpp_5lb">
+                <li>Make sure the m1.large and c24_r32_d100 flavors are available:<ul
+                        id="ul_yxs_gpp_5lb">
+                        <li>
+                            <p>m1.large (RAM = 8192 MB / vcpus = 4 / Disk = 80 GB)</p>
+                        </li>
+                        <li>
+                            <p>c24_r32_d100 (RAM = 32768 MB / vcpus = 24 / Disk = 100 GB)</p>
+                        </li>
+                    </ul>If not present, create any missing flavor using the "Flavor Create" tool
+                    accessible through the vMonitor page by clicking on the blue pill icon under the
+                        <b>Admin</b> column of your vLab node and selecting "User Tools"</li>
+                <li>Optional: Create images for both the bcmt-baseos and bcmt-deployserver images
+                    from the following QCOW2 files, and make note of the UUIDs of each image for
+                    later use:</li>
+            </ol>
+        </section>
+        <section id="section_tvb_mpp_5lb">
+            <title>Required information collection</title>
+            <p>The following information needs to be collected:</p>
+            <ol id="ol_khp_rpp_5lb">
+                <li>IP addresses of DNS and NTP servers that are used for vLab<p>In the Nokia vLab
+                        environment, this file is accessible through the vMonitor page (<xref
+                            href="https://10.76.104.249/vMonitor/" format="html" scope="external"
+                            >https://10.76.104.249/vMonitor/</xref>). </p><p>Locate the correct node
+                        and click on the blue pill icon under the <b>Admin</b> column. NTP and DNS
+                        server IP addresses are listed.</p></li>
+                <li>UUIDs of neutron network and associated neutron subnet that will be used a
+                    public/external network for the BCMT nodes<p>Note: A minimum of 6 free IP
+                        addresses must be available on that subnet</p><p>From Openstack GUI</p><p>-
+                        Go to Project > Networks</p><p>- Click on the public network you plan on
+                        using</p><p>- In the next window select the 'subnet' tab, and click on the
+                        IPv4 subnet you plan on using. the following should be displayed:</p></li>
+            </ol>
+            <fig id="fig_m2q_dqp_5lb">
+                <title>Networks configuration in OpenStack project</title>
+                <image placement="break" href="../images/cnf_install_project-networks.PNG"
+                    align="center" id="image_n2q_dqp_5lb"/>
+            </fig>
+        </section>
+        <section id="section_gv4_kbv_rlb">
+            <title>Role-based access control requirements</title>
+            <p>The application uses Kubernetes APIs controlled through RBAC security. A service
+                account is required for the application to use. This can either be set up beforehand
+                and given to the application, or the application can create the service account
+                itself. It is recommended that technical service account is set up beforehand.</p>
+            <p>The service account requires the following permissions:</p>
+            <ul id="ul_nfg_5l2_tlb">
+                <li>API group: apps, resource: statefulsets, verbs: get,list</li>
+                <li>API group: default, resource: pods, service and namespaces, verbs: get, list,
+                    watch, update</li>
+            </ul>
+            <p>Once the service account is created, it can be provided to the SPS helm chart as an
+                input through the global.serviceAccount property.</p>
+        </section>
+        <section id="section_hv4_kbv_rlb">
+            <title>Pod security policy requirements</title>
+            <p><i>It is unclear how this will work. What we are doing may not be allowed by Verizon
+                    and we need to check</i></p>
+        </section>
+        <section id="section_iv4_kbv_rlb">
+            <title>Configuration of storage</title>
+            <p>The application has configurable storage types used for database files, log files,
+                and other persistent data. The application needs local storage and shared disk
+                storage. Local storage is not shared, and it is used for Aaerospike database and log
+                files. Shared disk storage is shared across multiple nodes. Glusterfs is a common
+                example. The Kafka and ZooKeeper storage uses this.</p>
+        </section>
+    </conbody>
+</concept>

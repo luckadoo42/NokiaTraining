@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-d1e82308"><title>Rule dictionaries and definitions across SM and MEs</title><conbody>
+<section>
+<title>Overview</title>
+<p>The custom rule dictionary, along with the attribute definition, and custom vendor definition files must be copied to all SM and/or ME applications. This includes custom rule dictionaries for Charging, Policy, and SM. </p>
+<p>You must perform both of the following procedures, one after the other:</p><ul>
+<li>
+<p>
+<!--xref URI: #customruledict-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-customruledict"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #attrdefin-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-attrdefin"/>
+</p>
+</li>
+</ul>
+<p>The NCC also supports the use of an unlimited number of VSA dictionary files and the Attribute
+        definition dictionaries. The VSA files can be used across all Diameter interfaces. Each
+        dictionary defines the list of valid attributes that are supported by the vendor and are
+        available for Policy and Charging management. The dictionaries must be on the NCC
+        workstation to be loaded. You add a VSA to a vendor dictionary to add the VSA to the NCC. To
+        display the VSA in the GUI or to use it in rules, you must also add the VSA to the
+        VsaToContextMapping.xml file in the respective contexts.</p>
+<p>If you are adding VSAs, see <!--xref URI: #vsacontextmapping--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-d1e82308/vsacontextmapping"/>.</p>
+</section>
+<section id="vsacontextmapping">
+<title>Adding VSAs</title>
+<p>The workflow to create or modify a dictionary is as follows:</p><ul>
+<li>
+<p>create an entry in the CustomVendorDefinition.xml for the vendor</p>
+</li>
+<li>
+<p>create a dictionary by name and specify all of the VSAs in the VsaToContextMapping.xml file</p>
+</li>
+<li>
+<p>reload all of the VSA dictionaries to load the changes</p>
+</li>
+<li>
+<p>distribute the files to all of the nodes</p>
+</li>
+</ul>
+<p>To add or modify attributes, you need to create a dictionary and add or modify the attributes
+        (see <!--xref URI: #attrdefinadd--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-attrdefinadd"/>)
+        in the dictionary in the opt/tpa/conf/sac/diameter directory. You can add a VSA dictionary
+        file to the NCC at any time. The format of the file is:</p>
+<p>
+<userinput>/opt/tpa/schemas/DiameterDefinition.xsd</userinput>
+</p>
+<p>To display the VSA in the NCC rule engine, the GUI, or to be able to use the VSA in rules for
+        Policy or Charging, you must also add the VSA to the VsaToContextMapping.xml in the
+        respective files and contexts. That is, a VSA entry must be present in a dictionary and a
+        source and/or result context mapping must be in the VSA mapping file. </p>
+<p>To use a VSA on specific interfaces only, the VsaRuleSourceContext and VsaRuleResultContext must be mapped to the VSA. When the context is mapped to the VSA, the VSA is only available as a criteria or an action along with the configured contexts. </p>
+<p>To configure VSA entries in a dictionary, use the VsaToContextMapping.xml file. The VsaToContextMapping.xml file provides an xml document that can be modified to include the individual VSA definitions. </p>
+<p>The VsaToContextMapping.xml file for Policy is located in:</p>
+<p>
+<userinput>/opt/tpa/conf/sac/diameter/rule/VsaToContextMapping.xml </userinput>
+</p>
+<p>The VsaToContextMapping.xml file for Charging is located in:</p>
+<p>
+<userinput>/opt/tpa/conf/sac/diameter/rule/ChargingVsaToContextMapping.xml</userinput>
+</p>
+<p>Copy the contents of the VSA mapping file and enter the required values for the VSAs you are adding, as follows:</p>
+<fig>
+<codeblock>&lt;diameterToRuleContextMap xmlns="diameterRuleContextMap"&gt;
+&lt;vsaToContext&gt;
+ &lt;vsaToRuleSourceContexts&gt;
+ &lt;vsaRuleSourceContext&gt;
+      &lt;context type="CONTEXT"/&gt;
+      &lt;vendorInfo&gt;
+        &lt;name&gt;vendorname&lt;/name&gt;
+        &lt;includeAttribute name=”attribute-VSA”/&gt;
+        &lt;includeAttribute name=”attribute-VSA2” maxOccurs="unbounded" additive="true"/&gt;
+        &lt;includeAttribute name=”attribute-VSA3”  valueType="EnumValueType" valueTypeClassName="com.alcatel.tpapps.diameter.par.EventTrigger"/&gt;
+        &lt;includeAttribute name=”attribute-VSA4.attribute-VSA5”  includeGroupIndexArgs="true"/&gt;
+      &lt;/vendorInfo&gt;
+ &lt;/vsaRuleSourceContext&gt;
+ &lt;/vsaToRuleSourceContexts&gt;
+ &lt;vsaToRuleResultContexts&gt;
+ &lt;vsaRuleResultContext&gt;
+     &lt;context type="CONTEXT"/&gt;
+     &lt;vendorInfo&gt;
+        &lt;name&gt;vendorname&lt;/name&gt;
+        &lt;includeAttribute name=”attribute-VSA”/&gt;
+        &lt;includeAttribute name=”attribute-VSA2” maxOccurs="unbounded" additive="true"/&gt;
+        &lt;includeAttribute name=”attribute-VSA3”  valueType="EnumValueType" valueTypeClassName="com.alcatel.tpapps.diameter.par.EventTrigger"/&gt;
+        &lt;includeAttribute name=”attribute-VSA4.attribute-VSA5”  includeGroupIndexArgs="true"/&gt;
+     &lt;/vendorInfo&gt;
+ &lt;/vsaRuleResultContext&gt;
+ &lt;/vsaToRuleResultContext&gt;
+ &lt;/vsaToContext&gt;
+&lt;/diameterToRuleContextMap&gt;</codeblock>
+</fig>
+<p>Save and add the file back to the respective directory. </p>
+<p>Perform <!--xref URI: #attrdefin--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-attrdefin"/> to copy and distribute the VSA mapping file, the attribute definition and custom vendor definition files.</p>
+</section>
+</conbody></concept>

@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+		<concept id="id9YZ-09018-IN00-RJZZA-logrotate-section"><title>logrotate section</title><conbody id="logrotate-section">
+
+<p>The logrotate section is used for configuring the parameters for log rotation. Three scopes are defined in the logrotate configuration—Global, Local, and System. Logrotate configurations are defined in Local and System scopes. Local scope is used to define logrotate configuration specifically for the node. Local scope contains log rotation configurations in the Local group that define log rotation of the files that reside on the OAME nodes only. System scope is used to define logrotate configuration for all nodes. The parameters in the System scope define log rotation of the files that reside on all the nodes. </p>
+<p>The following log files configured in the Local scope:</p><ul>
+
+<li>
+<p>/var/log/sps/RadiusClient.log</p>
+</li>
+<li>
+<p>/var/log/sps/DiameterClient.log</p>
+</li>
+<li>
+<p>/var/log/sps/DSCSecurity.log</p>
+</li>
+<li>
+<p>/var/log/sps/aerospike.log</p>
+</li>
+<li>
+<p>/var/log/sps/aerospike_warning.log</p>
+</li>
+<li>
+<p>/var/log/sps/RSCampaign.log- not on SM</p>
+</li>
+<li>
+<p>/var/log/sps/RSSubscriber.log-not on SM</p>
+</li>
+<li>
+<p>/var/log/sps/RSArming.log-not on SM</p>
+</li>
+<li>
+<p>/var/log/system/nokia_harmonized.log</p>
+</li>
+<li>
+<p>/var/log/sps/DataGenerator.log</p>
+</li>
+<li>
+<p>/var/log/sps/UpgradeManager.log</p>
+</li>
+<li>
+<p>/var/log/sps/Cdr.log</p>
+</li>
+<li>
+<p>/var/log/sps/DiameterInterceptor.log</p>
+</li>
+<li>
+<p>/var/log/sps/asmeasmt.log</p>
+</li>
+<li>
+<p>/var/log/sps/LogCollector.log</p>
+</li>
+<li>
+<p>/var/log/sps/PolicyDecision.log</p>
+</li>
+<li>
+<p>/var/log/sps/Error.log</p>
+</li>
+<li>
+<p>/var/log/sps/LDAPSearch.log</p>
+</li>
+<li>
+<p>/var/log/sps/HLAPIServer.log</p>
+</li>
+<li>
+<p>/var/log/sps/UserAccess.log-not on ME</p>
+</li>
+<li>
+<p>/var/log/sps/ServiceManager.log-not on ME</p>
+</li>
+<li>
+<p>/var/log/sps/ManagedElement.log--not on ME</p>
+</li>
+<li>
+<p>/var/log/sps/Provisioning.log-not on ME</p>
+</li>
+<li>
+<p>/var/log/sps/NotificationFailures.log</p>
+</li>
+<li>
+<p>/var/log/sps/Spotlight.log</p>
+</li>
+<li>
+<p>/var/log/sps/watson.log</p>
+</li>
+<li>
+<p>/var/log/sps/localization.log</p>
+</li>
+<li>
+<p>/var/log/sps/Server.log</p>
+</li>
+<li>
+<p>/var/log/sps/SPSServer.log</p>
+</li>
+<li>
+<p>/var/log/sps/TPA_system.log </p>
+</li>
+<li>
+<p>/var/log/sps/Keycloak.log</p>
+</li>
+</ul>
+<p>The following log files configured in the System scope:</p><ul>
+
+<li>
+<p>/var/log/cron</p>
+</li>
+<li>
+<p>/var/log/maillog</p>
+</li>
+<li>
+<p>/var/log/messages</p>
+</li>
+<li>
+<p>/var/log/secure</p>
+</li>
+<li>
+<p>/var/log/spooler</p>
+</li>
+</ul>
+<p>For more information about log rotation, see section <i>Logging</i> in <i>Operation, Administration, and Maintenance Guide</i>. The following table describes the parameters of the logrotate section. </p>
+<note>
+
+<p>Do not remove the parameters.</p>
+</note>
+<table pgwide="1" rowsep="1" colsep="1"><title>logrotate parameters descriptions</title>
+
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC3"/>
+<colspec colname="COLSPEC0"/>
+<thead>
+<row>
+<entry>
+Parameter
+</entry>
+<entry>
+Description
+</entry>
+<entry>
+Update notes
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry nameend="COLSPEC0" namest="col1">
+<p>
+<b>&lt;hostname_prefix from vnf_extensions&gt;-oame-&lt;VM number (i.e., oame-0)&gt;/config/logrotate/conf</b>
+</p>
+<p>For example:</p>
+<codeblock>"[Local]": {
+        "sps-sm-oame-0/config/logrotate/conf" :[
+      {
+        "key": "spsoamefiles1",
+        "file": "/var/log/sps/SPSServer.log;/var/log/sps/Provisioning.log;/var/log/sps/ManagedElement.log;/var/log/sps/ServiceManager.log;/var/log/sps/UserAccess.log;/var/log/sps/HLAPIServer.log;/var/log/sps/LDAPSearch.log;/var/log/sps/Error.log;/var/log/system/nokia_harmonized.log",
+        "rotate": "30",
+        "size": "30M",
+        "age": "",
+        "interval": "1m",
+        "options": "notifempty,missingok,extension .log, compress,delaycompress"
+      }</codeblock>
+<p>This parameter is a collection of records that defines log rotation settings for the Local log files that are local to the specified VM.</p>
+<p>Each record represents a group of log files that have the same settings for log rotation. Each record is defined with &lt;key&gt;, &lt;file&gt;, &lt;rotate&gt;, &lt;size&gt;, &lt;age&gt;, &lt;interval&gt;, &lt;options&gt;, &lt;signal&gt;, and &lt;Apps&gt; parameters, where &lt;Apps&gt;, &lt;signal&gt;, &lt;options&gt; and &lt;interval&gt; are non-modifiable parameters.</p>
+<p>If you need to modify &lt;rotate&gt;, &lt;size &gt; or &lt;age&gt; for a log, you can do it either by transferring that log from its current log group to the group with more suitable settings, or by creating a new log group. If you change a group or create a new group for a particular log, you must ensure that all non-modifiable parameters in the new group have the same values as in the original group. For example, if the original log group had &lt;options&gt; set to <varname>notifempty,missingok,extension .log</varname>, the new group must have the exact same set of command options configured in &lt;options&gt;.</p>
+              <p>If Resource Naming Convention 4 is used during installation on VMWare, then key
+                name must be modified "&lt;hostname_configured>/config/logrotate/conf". </p>
+              <p>where hostname_configured is new hostname as per defined parameters above.</p>
+              <p><b>Example</b>: ts8spshoamesv1001/config/logrotate/conf will be new key name</p>
+<p>The operator can add new parameters as &lt;options&gt; if  required; for example, compress, delaycompress. See the "options" parameter in this table for more details.</p>
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC0" namest="col1">
+<p>
+<b>logrotate/conf</b>
+</p>
+<p>This parameter is a collection of records that defines log rotation settings for System log files.</p>
+<p>For the definition of a record and information on how to modify a record, see <b>&lt;hostname_prefix from vnf_extensions&gt;-oame-&lt;VM number (i.e., oame-0)&gt;/config/logrotate/conf</b>.</p>
+</entry>
+</row>
+<row>
+<entry>
+key
+</entry>
+<entry>
+This parameter defines the name used to identify a particular group of logs. The name can be arbitrary, for example, <varname>systemfiles1</varname> or <varname>spsoamefiles1</varname>.
+</entry>
+<entry>
+Modify if needed.
+</entry>
+</row>
+<row>
+<entry>
+file
+</entry>
+<entry>
+<p>This parameter defines the file path of log files on the VM. This parameter can be a list of multiple file paths separated by semicolon (“;”).</p>
+<p>Example:</p>
+<p>/var/log/cron;/var/log/maillog;/var/log/secure;/var/log/spooler</p>
+</entry>
+<entry>
+Modify if needed.
+</entry>
+</row>
+<row>
+<entry>
+rotate
+</entry>
+<entry>
+This parameter defines how many archived logs to keep before logrotate deletes the older ones.
+</entry>
+<entry>
+Modify if needed.
+</entry>
+</row>
+<row>
+<entry>
+size
+</entry>
+<entry>
+<p>This parameter defines the size of how big logs can grow before they are rotated. The unit is in kilobytes if K is used, megabytes if M is used, and gigabytes if G is used. If the unit is not specified than it is assumed that this parameter is in kilobytes.</p>
+<p>For example, 100, 100k, 100M or 100G are valid values for this parameter.</p>
+</entry>
+<entry>
+Modify if needed.
+</entry>
+</row>
+<row>
+<entry>
+age
+</entry>
+<entry>
+This parameter defines the maximum age for a rotated log file. The unit is day. Logrotate will remove rotated logs older than &lt;count&gt; days. The age is only checked if the logfile is to be rotated
+</entry>
+<entry>
+Modify if needed.
+</entry>
+</row>
+<row>
+<entry>
+interval
+</entry>
+<entry>
+<p>If the option "size" is set, it determines how long to try to rotate log files. If the log file’s size is not bigger than the value of "size", log files will not be rotated.</p>
+<p>If the option "size" is not set, it determines how long the log files are rotated.</p>
+<p>It can be a number of minutes, a number of hours, "daily", "weekly", "monthly" and "yearly".</p>
+<p>For example * 5m, rotate log files every 5 minutes or 1h, rotate log files every 1 hour.</p>
+<p>The default value is "daily".</p>
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry>
+options
+</entry>
+<entry>
+<p>This parameter defines the applicable options for <codeph>logrotate</codeph> Linux command.</p>
+<p>The command options are: </p><ul>
+
+<li>
+<p>
+<varname>delaycompress</varname>
+</p>
+<p>This option postpones compression of a log file to the next rotation cycle. This option only has effect when it is used in combination with <varname>compress</varname>. This option can be used when a program cannot be told to close its log file and thus might continue writing to that log file for some time.</p>
+</li>
+<li>
+<p>
+<varname>missingok</varname>
+</p>
+<p>If a log file is missing, this option allows to go on to the next log file without issuing an error message. See also nomissingok</p>
+</li>
+<li>
+<p>
+<varname>compress</varname>
+</p>
+<p>This option allows to compress old versions of log files with gzip(1) by default. See also nocompress.</p>
+</li>
+<li>
+<p>
+<varname>notifempty</varname>
+</p>
+<p>This option does not allow to rotate an empty log (this overrides ifempty option).</p>
+</li>
+<li>
+<p>
+<varname>copytruncate</varname>
+</p>
+<p>This option allows to truncate the original log file and keep it after creating its copy instead of moving the original log file and optionally creating a new one. It can be used when some program cannot close its log file and thus might continue appending to the previous log file forever. There is a very small time slice between copying the file and truncating it, so some logging data might be lost. When this option is used, the create option has no effect since the old log file stays in place.</p>
+</li>
+</ul>
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry>
+signal
+</entry>
+<entry>
+<p>This parameter defines whether or not to send a signal to applications after log rotation.</p>
+<p>The values are:</p><ul>
+
+<li>
+<p>
+<varname>yes</varname>
+</p>
+</li>
+<li>
+<p>
+<varname>no</varname>
+</p>
+</li>
+</ul>
+<p>The values are case insensitive. If the value is <i>no</i>, Nokia recommends to have <varname>copytruncate</varname> in &lt;options&gt;.</p>
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry>
+Apps
+</entry>
+<entry>
+This parameter defines the application name to which a HUP signal is sent with  <codeph>/usr/bin/killall -HUP &lt;application name&gt;</codeph> command. This parameter is relevant only if &lt;signal&gt; is set to <varname>yes</varname>.
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</conbody></concept>

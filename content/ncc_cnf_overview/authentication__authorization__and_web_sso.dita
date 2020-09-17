@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="authentication__authorization__and_web_sso">
+    <title>Authentication, authorization, and Web SSO</title>
+    <conbody>
+        <p>The NCC SM leverages Keycloak web single sign on (Web SSO) as an authorization server
+            providing authentication and authorization protection for client web services. The Web
+            SSO is a bundle that manages users, passwords, and roles in its MariaDB database. The
+            MariaDB database information is replicated between the SM sites. </p>
+        <p>In addition, the CDR (Data Refinery) GUI on the NCC MEs also leverages this same Web SSO
+            server on the SM. DR is configured to know how to reach the Web SSO servers on the
+            SMs.</p>
+        <p>The REST API client on SM obtains an encrypted access token from the Web SSO server and
+            uses it in a bearer authentication header while trying to access the SM application. The
+            SM application interfaces back to the Web SSO server from which it obtains the public
+            key to validate the token.</p>
+        <p>The SM GUI runs an embedded Web SSO client, which redirects the web browser to the Web
+            SSO server to login, and then further redirects it back to the SM GUI application with
+            the access token stored in its database.</p>
+        <p>The OAuth protocol defines three different message exchange scenarios and the JavaScript
+            adapter uses the authorization code flow, during which, the Web SSO server returns an
+            authorization code (not an authentication token) to the SM application. The JavaScript
+            adapter exchanges the code for an access token and a refresh token after the web browser
+            is redirected back to the SM application. The access token is then placed into a bearer
+            authentication HTTP header for REST requests to the SM application server.</p>
+        <p>The Access token is used with requests to the SM application server and has a relatively
+            short expiration time. The access token is configured in the realm on the Web SSO server
+            and defaults to five minutes.</p>
+        <p>The SM server and Web SSO server communicates using HTTPS and must have all the
+            compatible certificates installed. The Web SSO server has its own keystore and during
+            the SM installation, this keystore is populated with the same trusted certificates as
+            the SM server (for example, dscca.cer). This allows both SM and Web SSO servers to
+            communicate with each other and if any changes are made to the SM keystore after
+            installation, then similar changes are passed on to the Web SSO keystore as well.</p>
+        <p>The maintenance of GUI users, passwords, and role mapping is done with the Web SSO
+            administration GUI. However, the bulk of Web SSO administrative tasks are done through
+            the Web SSO Admin Console. For information about user administration and about
+            configuring Realm settings, events, SSL mode, export and import operations, and event
+            storage, see <i>CNF Administration, Operation and Maintenance Guide</i> in the NCC
+            documentation set.</p>
+        <section id="section_s1s_nbx_nlb">
+            <title><b>MariaDB and MaxScale</b></title>
+            <p>Keycloak Web SSO data is stored in MariaDB. This includes SM user authentication
+                details comprised of usernames and encrypted passwords. The MariaDB component with
+                MaxScale provides tools and support for installing and managing MariaDB server
+                database instances. MariaDB is installed in two pod instances in a Replication
+                Master / Replication slave (RM/RS) mode. If the RM pod fails, the RS pod is promoted
+                to RM. Kubernetes spins up a replacement pod instance in RS mode. During the
+                switchover time from RS to RM, it is possible that calls to Web SSO fails or is not
+                processed.</p>
+            <p> MariaDB and MaxScale provide replication between the two SMs in the network, working
+                in active/active mode across the two sites. Each SM CNF writes its Web SSO data
+                locally and relies on MariaDB to replicate the data to the other SM. However,
+                MariaDB does not currently resolve conflicts between data centers. If the same user
+                data is modified or created in both SMs at nearly the same time, there might be a
+                loss or conflict of data between the SMs. </p>
+            <note>
+                <p>Although the SMs are active/active, Nokia recommends that back-to-back
+                    transactions for the same Web SSO user are all sent to the same SM to avoid race
+                    conditions with the data replication.</p>
+            </note>
+        </section>
+    </conbody>
+</concept>

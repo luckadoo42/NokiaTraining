@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="configure-manual-oos">
+    <title>configure-manual-oos</title>
+    <conbody>
+        <section id="section_qp5_fns_nlb">
+            <title>Description</title>
+            <p>This command is run as the root user or tpaadmin from /opt/tpa/bin and used to
+                manually declare a component that is in a geo-redundant deployment out of service.
+                It can set and clear the manual out of service flag for a component (stored in
+                SDC).</p>
+            <p>When a site is set OOS using configure-manual-oos:<ul id="ul_b15_34s_nlb">
+                    <li>other sites in the geo-redundant configuration see this site as
+                        Out-Of-Service (SMs and MEs), until it is returned to service using
+                        configure-manual-oos -e &lt;component name></li>
+                    <li>there is a system wide graceful shutdown of all Diameter links (Client or
+                        NCC Initiated)</li>
+                    <li>provisioning operations cannot be executed on the OOS site (SM or ME), until
+                        it is returned to service</li>
+                </ul></p>
+        </section>
+        <section id="section_gym_k4s_nlb">
+            <title>Syntax</title>
+            <p><codeph>configure-manual-oos [-d] [-e] [-h] [-s]</codeph><note>The component name is
+                    case sensitive and must be entered as upper case ME or SM. For
+                    example:<codeblock>configure-manual-oos -d ME
+</codeblock></note></p>
+            <table frame="all" rowsep="1" colsep="1" id="table_i2w_m4s_nlb">
+                <tgroup cols="2">
+                    <colspec colname="c1" colnum="1" colwidth="1*"/>
+                    <colspec colname="c2" colnum="2" colwidth="1*"/>
+                    <thead>
+                        <row>
+                            <entry>Option</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry><codeph>-d &lt;component name></codeph></entry>
+                            <entry>Declares the component manually out of service.</entry>
+                        </row>
+                        <row>
+                            <entry><codeph>-e &lt;component name></codeph></entry>
+                            <entry>Clear the component from being declared manually out of
+                                service.</entry>
+                        </row>
+                        <row>
+                            <entry><codeph>-h or -?</codeph></entry>
+                            <entry>Displays usage/help information.</entry>
+                        </row>
+                        <row>
+                            <entry><codeph>-s</codeph></entry>
+                            <entry>Print each component name and whether or not it is manually out
+                                of service. </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <note>When this command is run on a non-Geo NCC, it will do nothing but “Component ME
+                State: UP” will be displayed when running the “chf-status” tool.</note>
+            <note>This command is supported on an IG but requires that you state SM or ME to render
+                the respective functionality on the IG OOS.</note>
+        </section>
+        <section id="section_mdw_s4s_nlb">
+            <title>Examples</title>
+            <p>The following is an example of the output that you will receive from the
+                    <codeph>configure-manual-oos -d ME</codeph> command. The <codeph>-s</codeph>
+                command accompanying the <codeph>-d</codeph> command prints each component name and
+                whether or not it is out of
+                service.<codeblock>[root@sps-me-1-centralmanagement-1 ~]# configure-manual-oos -d ME
+[root@sps-me-1-centralmanagement-1 ~]# configure-manual-oos -s
+------------------
+COMPONENT | MOOS
+------------------
+ME: TRUE</codeblock></p>
+            <p>The following is an example of the output that you will receive from the
+                    <codeph>configure-manual-oos -e ME</codeph> command. The <codeph>-s</codeph>
+                command accompanying the <codeph>-e</codeph> command prints each component name and
+                whether or not it is out of
+                service.<codeblock>[root@sps-me-1-centralmanagement-1 ~]# configure-manual-oos -e ME
+[root@sps-me-1-centralmanagement-1 ~]# configure-manual-oos -s
+------------------
+COMPONENT | MOOS
+------------------
+ME: FALSE
+</codeblock></p>
+            <p>The following is an example of the output that you will receive from the
+                    <codeph>configure-manual-oos -d SM</codeph> command. The <codeph>-s</codeph>
+                command accompanying the <codeph>-d</codeph> command prints each component name and
+                whether or not it is out of
+                service.<codeblock>[root@sps-me-1-centralmanagement-1 ~]# configure-manual-oos -d SM
+[root@sps-me-1-centralmanagement-1 ~]# configure-manual-oos -s
+------------------
+COMPONENT | MOOS
+------------------
+SM: TRUE
+</codeblock></p>
+            <p>The following is an example of the output that you will receive from the
+                    <codeph>configure-manual-oos -e SM</codeph> command. The <codeph>-s</codeph>
+                command accompanying the <codeph>-e</codeph> command prints each component name and
+                whether or not it is out of
+                service.<codeblock>[root@sps-me-1-centralmanagement-1 ~]# configure-manual-oos -e SM
+[root@sps-me-1-centralmanagement-1 ~]# configure-manual-oos -s
+------------------
+COMPONENT | MOOS
+------------------
+SM: FALSE</codeblock></p>
+        </section>
+        <section id="section_ftq_1wq_cmb">
+            <title>Usage examples of output from the ME</title>
+            <p>In this example, the site’s initial status according to configure-manual-oos,
+                chf-status and network-heartbeat is displayed for an ME. Then the same is displayed
+                when the site is taken out-of-service (OOS). Finally, we show the OOS cleared on the
+                site.</p>
+            <p>Output similar to the following is expected when you run <codeph>configure-manual-oos
+                    -s</codeph> on an ME that is running with all services UP in a geo-redundant
+                deployment.<codeblock>[root@sps-me-1-centralmanagement-1 ~]# configure-manual-oos -s
+------------------
+COMPONENT | MOOS
+------------------
+ME: FALSE</codeblock></p>
+            <p>If you run the <codeph>chf-status</codeph> command after running the
+                    <codeph>configure-manual-oos -s</codeph> command, you will confirm the ME
+                component is UP and the services that are UP by the output of the chf-status
+                command:<codeblock>[root@sps-me-1-centralmanagement-1 ~]# chf-status
+Software Version: SPS_18_7_R1 (SPS_18_7_I335)
+Date: Tue Jul 24 13:23:21 EDT 2018
+Site Name: SPS-ME-1-SCTP-SPS_18_7_I335
+Component ME State: UP
+----------------------------------------------------------
+Service State Vital Mode Instances
+----------------------------------------------------------
+ROLLBACK UP true ONEPLUSONE sps-me-1-centralmanagement-0: UP (STANDBY)
+sps-me-1-centralmanagement-1: UP (ACTIVE)
+CDR UP true NPLUSK sps-me-1-cdr-0: UP
+sps-me-1-cdr-1: UP
+LOADBALANCER UP true ONEPLUSONE sps-me-1-ioho-0: UP (ACTIVE)
+sps-me-1-ioho-1: UP (STANDBY)
+LTM UP true ONEPLUSONE sps-me-1-centralmanagement-0: UP (STANDBY)
+sps-me-1-centralmanagement-1: UP (ACTIVE)
+DIAMETERIO UP true ONEPLUSONE sps-me-1-iohd-0: UP (ACTIVE)
+sps-me-1-iohd-1: UP (STANDBY)
+AEROSPIKE_CLUSTER UP true STANDALONE
+XDR UP true STANDALONE
+CHARGING UP true NPLUSK sps-me-1-diameterapp-0: UP
+sps-me-1-diameterapp-1: UP
+RECOMMENDATION UP false NPLUSK sps-me-1-comsvc-0: UP
+sps-me-1-comsvc-1: UP
+PROVISIONING UP false NPLUSK sps-me-1-comsvc-0: UP
+sps-me-1-comsvc-1: UP
+TEM UP true ONEPLUSONE sps-me-1-centralmanagement-0: UP (STANDBY)
+sps-me-1-centralmanagement-1: UP (ACTIVE)
+POLICY UP true NPLUSK sps-me-1-diameterapp-0: UP
+sps-me-1-diameterapp-1: UP
+------------------------------------------------------------------------------
+
+Service state queried from 'sps-me-1-centralmanagement-1'.</codeblock></p>
+            <p>If you run the network-heartbeat script on this ME, you will get output similar to
+                the
+                following:<codeblock>[root@sps-me-1-centralmanagement-1 ~]# network-heartbeat
+Local Status:
+Component [ME] Service Status [IN_SERVICE]
+Status for Site 'sps-me-2' ID [2] Component [ME] Service status
+[IN_SERVICE] Missed OAM beats [0] Missed traffic beats [0] Last contact
+[1s ago] Last attempt [1s ago]
+Status for Site 'sps-sm-6' ID [6] Component [SM] Service status
+[IN_SERVICE] Missed OAM beats [0] Missed traffic beats [N/A] Last contact
+[1s ago] Last attempt [1s ago]
+Status for Site 'sps-me-3' ID [3] Component [ME] Service status
+[IN_SERVICE] Missed OAM beats [0] Missed traffic beats [0] Last contact
+[1s ago] Last attempt [1s ago]
+Status for Site 'sps-sm-5' ID [5] Component [SM] Service status
+[IN_SERVICE] Missed OAM beats [0] Missed traffic beats [N/A] Last contact
+[1s ago] Last attempt [1s ago]
+No alarm.
+</codeblock></p>
+            <p>When you manually set this ME to Out-Of-Service and list the running MEs, using
+                configure-manual-oos and display the site’s status according to
+                configure-manual-oos, chf-status, and network-heartbeat, you have output similar to
+                the
+                following:<codeblock>[root@sps-me-1-centralmanagement-1 ~]# configure-manual-oos -d ME
+[root@sps-me-1-centralmanagement-1 ~]# configure-manual-oos -s
+------------------
+COMPONENT | MOOS
+------------------
+ME: TRUE</codeblock></p>
+            <p>After running the <codeph>configure-manual-oos -s</codeph> command and from the
+                    <codeph>chf-status</codeph> command, you will confirm the ME component is DOWN
+                and services that are UP as
+                follows:<codeblock>[root@sps-me-1-centralmanagement-1 ~]# chf-status
+Software Version: SPS_18_7_R1 (SPS_18_7_I335)
+Date: Tue Jul 24 13:23:48 EDT 2018
+Site Name: SPS-ME-1-SCTP-SPS_18_7_I335
+Component ME State: DOWN
+----------------------------------------------------------
+Service State Vital Mode Instances
+----------------------------------------------------------
+ROLLBACK UP true ONEPLUSONE sps-me-1-centralmanagement-0: UP (STANDBY)
+sps-me-1-centralmanagement-1: UP (ACTIVE)
+CDR UP true NPLUSK sps-me-1-cdr-0: UP
+sps-me-1-cdr-1: UP
+LOADBALANCER UP true ONEPLUSONE sps-me-1-ioho-0: UP (ACTIVE)
+sps-me-1-ioho-1: UP (STANDBY)
+LTM UP true ONEPLUSONE sps-me-1-centralmanagement-0: UP (STANDBY)
+sps-me-1-centralmanagement-1: UP (ACTIVE)
+DIAMETERIO UP true ONEPLUSONE sps-me-1-iohd-0: UP (ACTIVE)
+sps-me-1-iohd-1: UP (STANDBY)
+AEROSPIKE_CLUSTER UP true STANDALONE
+XDR UP true STANDALONE
+CHARGING UP true NPLUSK sps-me-1-diameterapp-0: UP
+sps-me-1-diameterapp-1: UP
+RECOMMENDATION UP false NPLUSK sps-me-1-comsvc-0: UP
+sps-me-1-comsvc-1: UP
+PROVISIONING UP false NPLUSK sps-me-1-comsvc-0: UP
+sps-me-1-comsvc-1: UP
+TEM UP true ONEPLUSONE sps-me-1-centralmanagement-0: UP (STANDBY)
+sps-me-1-centralmanagement-1: UP (ACTIVE)
+POLICY UP true NPLUSK sps-me-1-diameterapp-0: UP
+sps-me-1-diameterapp-1: UP
+------------------------------------------------------------------------------
+Service state queried from 'sps-me-1-centralmanagement-1'.</codeblock></p>
+            <p>If you run the network-heartbeat script on this ME, you will get output similar to
+                the
+                following:<codeblock>[root@sps-me-1-centralmanagement-1 ~]# network-heartbeat
+Local Status:
+Component [ME] Service Status [OUT_OF_SERVICE]
+Status for Site 'sps-me-2' ID [2] Component [ME] Service status
+[IN_SERVICE] Missed OAM beats [0] Missed traffic beats [0] Last contact
+[0s ago] Last attempt [0s ago]
+Status for Site 'sps-sm-6' ID [6] Component [SM] Service status
+[IN_SERVICE] Missed OAM beats [0] Missed traffic beats [N/A] Last contact
+[0s ago] Last attempt [0s ago]
+Status for Site 'sps-me-3' ID [3] Component [ME] Service status
+[IN_SERVICE] Missed OAM beats [0] Missed traffic beats [0] Last contact
+[0s ago] Last attempt [0s ago]
+Status for Site 'sps-sm-5' ID [5] Component [SM] Service status
+[IN_SERVICE] Missed OAM beats [0] Missed traffic beats [N/A] Last contact
+[0s ago] Last attempt [0s ago]
+</codeblock></p>
+            <p>In the final part of this example, the manual OOS state is cleared from the
+                applicable component on the site using configure-manual-oos and then we display the
+                site’s status according to configure-manual-oos, chf-status, and
+                network-heartbeat.<codeblock>[root@sps-me-1-centralmanagement-1 ~]# configure-manual-oos -e ME
+[root@sps-me-1-centralmanagement-1 ~]# configure-manual-oos -s
+------------------
+COMPONENT | MOOS
+------------------
+ME: FALSE
+</codeblock></p>
+            <p>Then verify with
+                chf-status:<codeblock>[root@sps-me-1-centralmanagement-1 ~]# chf-status
+Software Version: SPS_18_7_R1 (SPS_18_7_I335)
+Date: Tue Jul 24 13:24:25 EDT 2018
+Site Name: SPS-ME-1-SCTP-SPS_18_7_I335
+Component ME State: UP
+----------------------------------------------------------
+Service State Vital Mode Instances
+----------------------------------------------------------
+ROLLBACK UP true ONEPLUSONE sps-me-1-centralmanagement-0: UP
+(STANDBY)
+sps-me-1-centralmanagement-1: UP (ACTIVE)
+CDR UP true NPLUSK sps-me-1-cdr-0: UP
+sps-me-1-cdr-1: UP
+LOADBALANCER UP true ONEPLUSONE sps-me-1-ioho-0: UP (ACTIVE)
+sps-me-1-ioho-1: UP
+(STANDBY)
+LTM UP true ONEPLUSONE sps-me-1-centralmanagement-0: UP
+(STANDBY)
+sps-me-1-centralmanagement-1: UP (ACTIVE)
+DIAMETERIO UP true ONEPLUSONE sps-me-1-iohd-0: UP (ACTIVE)
+sps-me-1-iohd-1: UP
+(STANDBY)
+AEROSPIKE_CLUSTER UP true STANDALONE
+XDR UP true STANDALONE
+CHARGING UP true NPLUSK sps-me-1-diameterapp-0: UP
+sps-me-1-diameterapp-1: UP
+RECOMMENDATION UP false NPLUSK sps-me-1-comsvc-0: UP
+sps-me-1-comsvc-1: UP
+PROVISIONING UP false NPLUSK sps-me-1-comsvc-0: UP
+sps-me-1-comsvc-1: UP
+TEM UP true ONEPLUSONE sps-me-1-centralmanagement-0: UP
+(STANDBY)
+sps-me-1-centralmanagement-1: UP (ACTIVE)
+POLICY UP true NPLUSK sps-me-1-diameterapp-0: UP
+sps-me-1-diameterapp-1: UP
+----------------------------------------------------------
+Service state queried from 'sps-me-1-centralmanagement-1'.</codeblock></p>
+            <p>Then use
+                network-heartbeat:<codeblock>[root@sps-me-1-centralmanagement-1 ~]# network-heartbeat
+Local Status:
+Component [ME] Service Status [IN_SERVICE]
+Status for Site 'sps-me-2' ID [2] Component [ME] Service status
+[IN_SERVICE] Missed OAM beats [0] Missed traffic beats [0] Last contact
+[1s ago] Last attempt [1s ago]
+Status for Site 'sps-sm-6' ID [6] Component [SM] Service status
+[IN_SERVICE] Missed OAM beats [0] Missed traffic beats [N/A] Last contact
+[1s ago] Last attempt [1s ago]
+Status for Site 'sps-me-3' ID [3] Component [ME] Service status
+[IN_SERVICE] Missed OAM beats [0] Missed traffic beats [0] Last contact
+[1s ago] Last attempt [1s ago]
+Status for Site 'sps-sm-5' ID [5] Component [SM] Service status
+[IN_SERVICE] Missed OAM beats [0] Missed traffic beats [N/A] Last contact
+[1s ago] Last attempt [1s ago]</codeblock></p>
+            <p>The following is an example of the output that you will receive from the
+                    <codeph>configure-manual-oos -d</codeph> SM command. The <codeph>-s</codeph>
+                command accompanying the <codeph>-d</codeph> command prints each component name and
+                whether or not it is out of
+                service.<codeblock>[root@sps-me-1-centralmanagement-1 ~]# configure-manual-oos -d SM
+[root@sps-me-1-centralmanagement-1 ~]# configure-manual-oos -s
+------------------
+COMPONENT | MOOS
+------------------
+SM: TRUE</codeblock></p>
+            <p>When you run the chf-status command, the status of the services are given for the
+                services associated with the SM. When you run the network-heartbeat command, the
+                heartbeat statuses of both the SM and the MEs associated with the SM are output. For
+                example:<codeblock>[root@sps-sm-6-centralmanagement-0 ~]# network-heartbeat Local Status:
+Component [SM] Service Status [OUT_OF_SERVICE]
+Status for Site 'sps-sm-5' ID [5] Component [SM] Service status
+[IN_SERVICE] Missed OAM beats [0] Missed traffic beats [N/A] Last contact
+[1s ago] Last attempt [1s ago]
+Status for Site 'sps-me-2' ID [2] Component [ME] Service status
+[IN_SERVICE] Missed OAM beats [0] Missed traffic beats [N/A] Last contact
+[1s ago] Last attempt [1s ago]
+Status for Site 'sps-me-3' ID [3] Component [ME] Service status
+[IN_SERVICE] Missed OAM beats [0] Missed traffic beats [N/A] Last contact
+[1s ago] Last attempt [1s ago]
+Status for Site 'sps-me-1' ID [1] Component [ME] Service status
+[IN_SERVICE] Missed OAM beats [0] Missed traffic beats [N/A] Last contact
+[1s ago] Last attempt [1s ago]</codeblock></p>
+        </section>
+    </conbody>
+</concept>

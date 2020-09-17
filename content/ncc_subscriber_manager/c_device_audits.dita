@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id ="id9YZ-08540-UG05-PCZZA-d1e67364"><title>Device audits</title><conbody>
+<section>
+
+<p>Device audits keep the device records synchronized with the remote SPR, if applicable, as well as clean up device records that have not been used in a &#8220;long time&#8221;. For normal device records, a &#8220;long time&#8221; is approximately 60 days without a session from when the audit last ran. For unknown subscribers, a &#8220;long time&#8221; is as soon as there are no sessions using the device record when the audit runs.</p>
+<note>
+
+<p>Device audits against the external SPR only occur when there is an external SPR. If the subscriber device data is stored locally then only the unknown devices are audited. </p>
+</note>
+<p>A record is created when the device record is created. The record&#8217;s timestamp is set such that the device record is audited during the scheduled time, the day after tomorrow, when the device record is more than 24 hours old. </p>
+<p>When a notification is received, the device record described in the notification is audited. The audit consists of synchronizing the device record with the remote SPR, if applicable, and checking if the device record has not been used in a long time. For unknown subscribers, the device record is deleted if there are no sessions referencing the device record. </p>
+<p>The work for controlling, monitoring, and providing audits is continuously performed according to how you set the system preferences for the audit. For a device audit, you can configure the following system preferences. Configuration of the system preferences is performed in the Global Configurations application.<table colsep="1" rowsep="1"><title>Application Preference for device audits</title>
+
+
+<tgroup cols="3">
+<colspec colname="col1" />
+<colspec colname="col2" />
+<colspec colname="col3" />
+<thead>
+<row>
+<entry>
+<p>Application Preference</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+<entry>
+<p>Options</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+Device Audit Start Time (seconds)
+</entry>
+<entry>
+For device audits to keep the device records synchronized with the remote SPR and to clean up old device records.
+</entry>
+<entry>
+<p>Integer</p>
+<p>The number of seconds after midnight that the daily auditing of the device should begin (for example, 2am = 2 * 60 * 60)</p>
+</entry>
+</row>
+<row>
+<entry>
+Device audit start at midnight (boolean)
+</entry>
+<entry>
+Used to start a device audit at midnight.
+</entry>
+<entry>
+<p>true or false</p>
+<p>Default value: true </p>
+</entry>
+</row>
+<row>
+<entry>
+Device Audit start offset time (seconds)
+</entry>
+<entry>
+<p>A delay that can be added to the Device Audit task start time. For example, if the default device audit start offset time is 1 hr and the start time is midnight, the audit will start at 1 am.</p>
+<p>If "Device audit start at midnight (boolean)" is false, the time can be from the current moment (now).</p>
+</entry>
+<entry>
+<p>Integer</p>
+<p>(Minutes*60sec)</p>
+<p>Default: 3600</p>
+</entry>
+</row>
+<row>
+<entry>
+Device Audit Length (seconds)
+</entry>
+<entry>
+The amount of time in seconds that the device audit will run. Commonly known as the audit window. 
+</entry>
+<entry>
+<p>Integer</p>
+<p>(Minutes*60sec)</p>
+<p>For example,  a 90 minute run would be: 90* 60 = 5400 seconds</p>
+<p>Default: 172800 (2 days)</p>
+</entry>
+</row>
+                            <row>
+                                <entry> Device Data Expiry Time (seconds) </entry>
+                                <entry>
+                                    <p>The external device data expiry time in the local database. </p>
+                                    <p>The number of seconds after which device data expires. If not
+                                        specified or set to a negative value, the device data never
+                                        expires. If the expiry time is 0, the device data always
+                                        expires and a new record is retrieved from the LDAP server.
+                                        If the expiry time is 300 s, the device data expires 300 s
+                                        after the session is established with the remote LDAP
+                                        sever.</p>
+                                    <p>Known devices are audited, updated when they expire, and then
+                                        checked for a session attachment. The Device Expiry time is
+                                        only applicable to Known LDAP devices.</p>
+                                    <p>Nokia recommends to always have Unused Device Expiry Time
+                                        (days) timer set equal to or higher than the Device Data
+                                        Expiry Time (seconds) so that it can take effect.</p>
+                                </entry>
+                                <entry> Default: 86400 (24 hours) </entry>
+                            </row>
+</tbody>
+</tgroup>
+</table></p>
+            <p>The following is an example of how a set of application preferences are used to fetch
+                a device from the external SPR.</p>
+            <p>A Call is triggered and timestamped at "Thu Dec 14 11:50:57 AM" and that device is
+                also fetched from the external SPR as created in the local DB at the same timestamp
+                "Thu Dec 14 11:50:57 AM". The TEM reference time is daily at midnight if the
+                application preference “Device audit start at midnight” is true thereby making the
+                base time the next nearest midnight time: "Fri Dec 15 12:00:00 AM". </p>
+            <p>To this time, either “Device Data Expiry Time” or “Unknown Device Expiry Time” is
+                added depending on whether the device is KNOWN or UNKNOWN. In this example, the
+                device is known (24 hrs) which makes it "Sat Dec 16 12:00:00 AM". Now, the
+                application preference “Device Audit start offset time (seconds)” specifies the time
+                after which the midnight audit should start every day. In this case, it is 3600
+                seconds; therefore, the calculated time becomes "Sat Dec 16 1:00:00 AM".</p>
+            <p>The audit window is active for an interval as configured in “Device Audit Length
+                (seconds)” which is 7200 seconds (2 hrs). The window will remain active from “Sat
+                Dec 16 1:00:00 AM” to “Sat Dec 16 3:00:00 AM”.</p>
+            <p>A random number is generated (which lies somewhere within the audit interval window)
+                and added to obtain the final TEM timestamp value that is within the interval. This
+                is done so that all devices do not correspond to the same time interval value for
+                audit thereby allowing even distribution of the devices for audit and reducing the
+                audit load. The random number generated in this case is 4794 seconds (1 hr 19 mins
+                54 secs), making the final TEM timestamp value “Sat Dec 16 2:19:54 AM”.</p>
+<sectiondiv>
+<p><b>Unknown Device Audits</b></p>
+<p>An unknown device record is created when NCC-Policy fails to retrieve a device record from either
+                    the internal or external SPR. However, only a deployment with an external SPR
+                    can update an unknown device record to a known device record. Unknown devices in
+                    the NCC-Policy database transition to a known device either by regular database
+                    device audit or external UDR change notification. All device records created by
+                    an external SPR lookup have a creation timestamp for auditing. The audit time
+                    interval is configurable via SM according to the following NCC-Policy system
+                    preferences.</p>
+<p>For unknown devices, the device record is deleted if there are no sessions referencing the device record. If there are no sessions on the device, it is checked to see if this has been the case for more than 60 days, and if so, the device record is deleted.</p>
+<table colsep="1" rowsep="1">
+<tgroup cols="3">
+<colspec colname="col1" />
+<colspec colname="col2" />
+<colspec colname="col3" />
+<thead>
+<row>
+<entry>
+<p>Application Preference</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+<entry>
+<p>Options</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+Unknown Device Expiry Time (seconds)
+</entry>
+<entry>
+<p>The unknown device expiry time in the local database.</p>
+<p>The number of seconds after which unknown device data expires. If not specified or set to a negative value, the device data never expires. If the expiry time is 0, the device data always expires and a new record is retrieved from the LDAP server. If the expiry time is 300 seconds, the Unknown device data expires 300 seconds after the session is established with the remote LDAP sever.</p>
+</entry>
+<entry>
+<p>0, or any positive or negative integer</p>
+<p>Default: 172800 (2 days)</p>
+</entry>
+</row>
+<row>
+<entry>
+Unused Device Expiry Time (days)
+</entry>
+<entry>
+<p>The off line device record aging time in the local database.</p>
+<p>Provides a configurable duration of time in days before the record of a device with no sessions is deleted from an external SPR. </p>
+<p>The Unused Device Expiry time is only applicable to Known LDAP devices. <draft-comment>Unused device audits depend on successful known device audits as governed by the SPR server audit interval and Device Data Expiry timer.</draft-comment>
+</p>
+<p>Known devices are audited, updated when they expire, and then checked for a session attachment. If the unused device expiry time is reached for the known device, the unused device is marked for cleanup. If no session attachment occurs until next SPR audit run, the known unused device without a session is deleted at next SPR audit time. </p>
+<p>Nokia recommends to always have Unused Device Expiry Time (days) timer set equal to or higher than the Device Data Expiry Time (seconds) so that it can take an effect.</p>
+<p>A minimum of 2 audit runs are required to remove the unused device after the timer expires for the known device. It is possible that more than two audit runs are necessary if there is a failover, where the newly active VM needs to execute an SPR Audit again to decide if the known subscriber qualifies as unused or not.</p>
+</entry>
+<entry>
+Default: 60 (2 billing cycles)
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+</section>
+</conbody></concept>

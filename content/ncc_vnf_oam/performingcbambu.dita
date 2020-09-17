@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="id9YZ-09126-MT00-REZZA-SP2-performingcbamBu"><title>Procedure: Performing a VNF or VDU group backup with CBAM</title><taskbody id="d1e65717"><context>
+<sectiondiv><p>An operator can use this procedure to backup an entire VNF at any time using the CBAM
+                                                  GUI. </p><p>This procedure can also be used to
+                                                  backup the data for one vdu group (for example, in
+                                                  the vdu-OAME group there are two nodes: oame 0 and
+                                                  oame 1). If the backup_mode is “NONE”, each vdu
+                                                  group’s backup data is backed up to the “/BACKUP”
+                                                  directory on the active OAME node, or it is backed
+                                                  up to the NFS server, after a successful backup.
+                                                  The backup log for each node is available on the
+                                                  active OAME at “/var/log/BR/BR.log”.
+                                                  </p><p><b>Before you begin:</b></p>CBAM must exist
+                                                  as the VNFM for the Backup and Restore. <p>The NCC
+                                                  instantiate must have been successful with the
+                                                   backup_mode="NETBKUP" or backup_mode="NONE" in
+                                                  this procedure.</p><p>The configuration for the
+                                                  backup server must be complete. </p><p>Ensure that
+                                                  the MariaDB and Maxscale are UP and running using
+                                                  the “Checking mariaDB and MaxScale” procedure in
+                                                  this guide: </p></sectiondiv>
+</context>
+<steps>
+<step><cmd>Log in to the CBAM GUI. </cmd><info/></step>
+<step><cmd>Navigate to the CBAM catalogue and select the VNF from the list (the number value under the VNFs label). The VNF-specific window appears.</cmd><info/></step>
+<step><cmd>In the VNF-specific window, click the More button at the end of the line item and select Backup from the menu.</cmd><info/></step>
+<step><cmd>In the Backup window, there is the parameter: “nodes_info”. The format for the “Nodes_info” parameter is “node_group, ALL”. You can enter any of the following in the parameter field:</cmd><info><ul>
+<li>
+<p>ALL or (“), the default value 'ALL' nodes</p>
+</li>
+<li>
+<p>the node_group, for example: vdu-COMSVC</p>
+</li>
+<li>
+<p>a combination of node_groups, for example: vdu-COMSVC, vdu-IOHO</p>
+</li>
+</ul><p>If this is to be a backup made at upgrade time, you need to configure the su_backup parameter. By default this parameter is “no”. If this backup is executed at upgrade time, the parameter must be configured to “yes”.</p></info></step>
+<step><cmd>Click the “Finish” button.</cmd><info/></step>
+<step><cmd>On CBAM check the “/var/log/cbam/workflows.log” and on the active OAME node check both the “/appdata/LCM/BR/BR_deploy.log” and the “/var/log/BR/BR.log” to check the backup result and records. The backup files are also saved under the same directory in the active OAME node. </cmd><info><p>If the backup_mode is “NONE”, each node’s backup data is backed up to the “/BACKUP” directory on the active OAME node after a successful backup. The backup log for each node is available on the active OAME at “/var/log/BR/BR.log”.</p><p>If the partition type is set to "NFS", all the backup data will be backed up to the dedicated repository of the NFS server.</p><p>If the backup_mode is NETBK and the backup is successful, the data are backed up on the NETBACKUP server and you will see the result from the “Active Monitor”. </p></info></step>
+</steps>
+</taskbody></task>

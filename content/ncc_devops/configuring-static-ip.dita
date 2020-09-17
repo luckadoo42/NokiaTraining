@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="id9YZ-09126-MT02-REZZA-Configuring-static-IP"><title>Configuring static IP address for Maestro VM deployed in VMware vCloud</title><taskbody id="d1e2498"><context>
+            <p>This procedure provides instructions on how to configure the static IP address for
+                the Maestro VM deployed in VMware vCloud.</p>
+        </context><prereq>
+<p>Before beginning this procedure, ensure that you are logged in to VCD.</p>
+			<p>To configure the static IP address:</p>
+</prereq><steps>
+<step><cmd>Click the My <b>Cloud tab</b> and then click the <b>VMs</b> tab.</cmd><info/></step>
+<step><cmd>Right-click the <b>Maestro VM</b>, select <b>Properties</b> and then select <b>Hardware</b>.</cmd><info/></step>
+<step><cmd>From the <b>IP Mode</b> drop-down list, select <b>Static - Manual</b> and then select <b>IP Address</b>.</cmd><info/></step>
+<step><cmd>In the <b>IP Address</b> field, enter your static IP address and click <b>OK</b>.</cmd><info/></step>
+<step><cmd>Click the <b>Maestro VM</b> icon in the <b>Console</b> column.</cmd><info/></step>
+<step><cmd>From the Maestro VM, log in as <codeph>spsops</codeph> and then switch to <codeph>root</codeph> by entering:</cmd><info><p>
+<codeph>sudo -i</codeph>
+</p></info></step>
+<step><cmd>Modify the <filepath>vi /etc/sysconfig/network-scripts/ifcfg-ensxxx</filepath> file as follows:</cmd><info><ul>
+<li>
+<p>Remove the following:</p>
+<p>
+<userinput>BOOTPROTO=dhcp</userinput>
+</p>
+</li>
+<li>
+<p>Add the following:</p>
+<p>
+<userinput>BOOTPROTO=static</userinput>
+</p>
+<p>
+<userinput>IPADDR=&lt;assigned static ip address&gt;</userinput>
+</p>
+<p>
+<userinput>GATEWAY=&lt;gateway address&gt;</userinput>
+</p>
+<p>
+<userinput>PREFIX=&lt;prefix&gt;</userinput>
+</p>
+</li>
+</ul></info></step>
+<step><cmd>Restart network by entering:</cmd><info><codeblock>systemctl restart network</codeblock></info></step>
+</steps>
+</taskbody></task>

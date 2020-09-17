@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e20683"><title>Real-time and session update</title><conbody>
+<section><title>Overview</title>
+<p>NCC supports the <varname>Real-time Update for Query</varname> and <varname>Session Update on
+                    Provisioning</varname>. The administrative (provisioning) operations take into
+                account the calls/sessions in progress. NCC sends a RAR to update existing calls or
+                sessions with a view of the provisioned products, or to retrieve current usage to
+                populate the result.</p>
+<sectiondiv>
+<p><b>Real-time update</b></p>
+<p>For <varname>Real-time Update for Query</varname>, when a provisioning request comes to query
+                    balance/bucketinstance/counterinstace data, NCC performs the following
+                    tasks:</p><ol>
+<li>
+<p>Sends a RAR for all active sessions</p>
+</li>
+<li>
+<p>Collects CCRs and returns unused quota</p>
+</li>
+</ol>
+<p>The preceding tasks are performed so that an accurate view of available resources can be returned in the query response.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Session update</b></p>
+<p>For <varname>Session Update on Provisioning</varname>, provisioning commands can request that any sessions in-progress must be updated. That is, RAR is sent out for these sessions once execution of the command is completed.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Provisioning request</b></p>
+<p>The SM REST APIs are supported for the provisioning request. In these APIs, the parameter <varname>updateSession</varname> specifies how the calls/sessions in-progress must be informed of the sending RAR operation.</p>
+<table pgwide="1" colsep="1" rowsep="1">
+                    <title>updateSession parameter</title>
+                    <tgroup cols="2">
+                        <colspec colname="col1" colwidth="1*"/>
+                        <colspec colname="col2" colwidth="2.28*"/>
+                        <thead>
+                            <row>
+                                <entry>
+                                    <p>updateSession</p>
+                                </entry>
+                                <entry>
+                                    <p>Description</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry> 0 </entry>
+                                <entry> Sending RAR disabled. </entry>
+                            </row>
+                            <row>
+                                <entry> 1 </entry>
+                                <entry> Send RAR and Forget. Not wait for RAA or CCR-U. Immediate
+                                    response to HLAPI. </entry>
+                            </row>
+                            <row>
+                                <entry> 2 </entry>
+                                <entry> Send RAR and wait for CCR-U to get reported. Mostly to be
+                                    used for Balance query of accounts or buckets. </entry>
+                            </row>
+                            <row>
+                                <entry> 3 </entry>
+                                <entry> Send RAR (to all Gy sessions of Devices/Groups of Account
+                                    irrespective of whether they consumed from main balance or not)
+                                    and forget. </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+<p>The parameter <varname>updateSessionResult</varname> in response communicates the result of RAR.</p>
+<table pgwide="1" colsep="1" rowsep="1">
+                    <title>updateSessionResult parameter</title>
+                    <tgroup cols="2">
+                        <colspec colname="col1" colwidth="1*"/>
+                        <colspec colname="col2" colwidth="2.17*"/>
+                        <thead>
+                            <row>
+                                <entry>
+                                    <p>updateSessionResult </p>
+                                </entry>
+                                <entry>
+                                    <p>Description</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry> 0 </entry>
+                                <entry> Sending RAR successful. </entry>
+                            </row>
+                            <row>
+                                <entry> 1 </entry>
+                                <entry> Sending RAR unsuccessful. </entry>
+                            </row>
+                            <row>
+                                <entry> 2 </entry>
+                                <entry> All CCR-U received. Applicable only for Real-time Update for
+                                    Query. </entry>
+                            </row>
+                            <row>
+                                <entry> 3 </entry>
+                                <entry> Partial CCR-U received. Applicable only for Real-time Update
+                                    for Query. </entry>
+                            </row>
+                            <row>
+                                <entry> 4 </entry>
+                                <entry> No CCR-U received. Applicable only for Real-time Update for
+                                    Query. </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+</sectiondiv>
+</section>
+<section><title>REST API details</title>
+<p>The following table provides information on REST APIs, RAR, and updateSessions supported. Note that 0 indicates that sending of RAR is disabled and by default 0 is supported for all the APIs listed.</p>
+<table frame="all" pgwide="1" colsep="1" rowsep="1">
+                <tgroup cols="3">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <colspec colname="col3"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>REST API</p>
+                            </entry>
+                            <entry>
+                                <p>Send RAR Before/After</p>
+                            </entry>
+                            <entry>
+                                <p>updateSession Supported</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry valign="middle"> GET: /subscriber/getData/AVInstance </entry>
+                            <entry valign="middle"> Before </entry>
+                            <entry valign="middle"> 1 </entry>
+                        </row>
+                        <row>
+                            <entry valign="middle"> GET:/subscriber/getData/BucketInstance </entry>
+                            <entry valign="middle"> Before </entry>
+                            <entry valign="middle"> 1 and 2 </entry>
+                        </row>
+                        <row>
+                            <entry valign="middle"> PUT: /subscriber/update/BucketInstance </entry>
+                            <entry valign="middle"> After </entry>
+                            <entry valign="middle"> 1 </entry>
+                        </row>
+                        <row>
+                            <entry valign="middle"> GET: /subscriber/getData/EntityCounterInstance </entry>
+                            <entry valign="middle"> Before </entry>
+                            <entry valign="middle"> 1 and 2 </entry>
+                        </row>
+                        <row>
+                            <entry valign="middle"> GET: /subscriber/getData/Account </entry>
+                            <entry valign="middle"> Before </entry>
+                            <entry valign="middle"> 1 and 2 </entry>
+                        </row>
+                        <row>
+                            <entry valign="middle"> GET: /subscriber/getData/Device </entry>
+                            <entry valign="middle"> Before </entry>
+                            <entry valign="middle"> 1 </entry>
+                        </row>
+                        <row>
+                            <entry valign="middle"> GET: /subscriber/getData/Group </entry>
+                            <entry valign="middle"> Before </entry>
+                            <entry valign="middle"> 1 </entry>
+                        </row>
+                        <row>
+                            <entry valign="middle"> PUT: /subscriber/update/Device </entry>
+                            <entry valign="middle"> After </entry>
+                            <entry valign="middle"> 1 </entry>
+                        </row>
+                        <row>
+                            <entry valign="middle"> PUT: /subscriber/update/Group </entry>
+                            <entry valign="middle"> After </entry>
+                            <entry valign="middle"> 1 </entry>
+                        </row>
+                        <row>
+                            <entry valign="middle"> DELETE: /subscriber/delete/Device </entry>
+                            <entry valign="middle"> Before </entry>
+                            <entry valign="middle"> 1 </entry>
+                        </row>
+                        <row>
+                            <entry valign="middle"> DELETE: /subscriber/delete/Group </entry>
+                            <entry valign="middle"> Before </entry>
+                            <entry valign="middle"> 1 </entry>
+                        </row>
+                        <row>
+                            <entry valign="middle"> PUT:/subscriber/update/adjustbalance/Account </entry>
+                            <entry valign="middle"> After </entry>
+                            <entry valign="middle"> 1 </entry>
+                        </row>
+                        <row>
+                            <entry valign="middle"> PUT:/subscriber/update/setaccountbalance/Account </entry>
+                            <entry valign="middle"> After </entry>
+                            <entry valign="middle"> 1 and 3 </entry>
+                        </row>
+                        <row>
+                            <entry valign="middle"> PUT: /removeDeviceCounter/Counter </entry>
+                            <entry valign="middle"> Before </entry>
+                            <entry valign="middle"> 1 </entry>
+                        </row>
+                        <row>
+                            <entry valign="middle"> PUT:/removeDeviceGroupCounter/Counter </entry>
+                            <entry valign="middle"> Before </entry>
+                            <entry valign="middle"> 1 </entry>
+                        </row>
+                        <row>
+                            <entry valign="middle"> PUT:/removeGroupCounter/Counter </entry>
+                            <entry valign="middle"> Before </entry>
+                            <entry valign="middle"> 1 </entry>
+                        </row>
+                        <row>
+                            <entry valign="middle"> PUT:/addDeviceCounter/Counter </entry>
+                            <entry valign="middle"> After </entry>
+                            <entry valign="middle"> 1 </entry>
+                        </row>
+                        <row>
+                            <entry valign="middle"> PUT:/addDeviceGroupCounter/Counter </entry>
+                            <entry valign="middle"> After </entry>
+                            <entry valign="middle"> 1 </entry>
+                        </row>
+                        <row>
+                            <entry valign="middle"> PUT:/addGroupCounter/Counter </entry>
+                            <entry valign="middle"> After </entry>
+                            <entry valign="middle"> 1 </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+</section>
+</conbody></concept>

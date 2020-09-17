@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//NSN//DTD DITA Concept//EN" "nsnconcept.dtd">
+		<concept id="id9YZ-09018--PL00-FPZZA-d1e1999"><title>Case 2: Notifications for subscription expiry</title><conbody>
+
+<section><title>Overview</title>
+
+<p>Suppose you have an iPhone, which is associated with a monetary bucket for consumption of data
+    services. The data bundle is subscribed to the iPhone and monetary bucket is configured to
+    expire after 60 days from purchase. When you initiate a data call on your iPhone, the monetary
+    bucket is charged for its data services.</p>
+<p>When the data bundle is about to expire in 10 days, 5 days, 1 day and at expiry, an email is sent
+    to your registered email ID notifying you about the approaching expiry date.</p>
+</section>
+<section><title>Flow of events</title><ul>
+
+<li>Create a device lifecycle with defined states.</li>
+<li>Associate the device (which is, iPhone) with a monetary bucket of 10 United States dollars for
+     consumption of data services. The data is consumed from the monetary bucket at a defined rate.
+     For example, either data is charged 0.125 United States dollars per 25 MB of data consumed or
+     data is charged at 1 United States dollar from the Prepaid account per 15 minutes of data
+     consumed. </li>
+<li>Configure a data bundle subscription to expire in 60 days from the purchase.</li>
+<li>Configure to send notifications at 10 days, 5 days, 1 day before expiry and also when the bundle
+     is expired. </li>
+<li>Initiate a data call from your iPhone and the call is charged from the monetary bucket
+     balance.</li>
+<li>
+Verify that the data call is successful and charging is done correctly from the monetary bucket as per the defined rate.
+</li>
+    <li>Verify that an email is sent to your emaild ID when the data bundle subscription is about to
+     expire in 10 days, 5 days, or 1 day, or has already expired.</li>
+</ul>
+</section>
+<section><title>Provisioning</title>
+
+<note type="attention">
+
+<p>Ensure that after creating a record, you distribute it to ME. Otherwise, the provisioning will not be successful.</p>
+</note>
+<p>Following entities are required for this use case.<table pgwide="1" colsep="1" rowsep="1">
+     <title>Entities for case 2</title>
+     <tgroup cols="2">
+      <colspec colname="col1" colwidth="1*"/>
+      <colspec colname="col2" colwidth="1.54*"/>
+      <thead>
+       <row>
+        <entry>Entity</entry>
+        <entry>Task</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry>Notification preferences</entry>
+        <entry>Select the notification channel as email.</entry>
+       </row>
+       <row>
+        <entry>Notification template</entry>
+        <entry>Create a notification template and add the text to be sent in an email
+         notification.</entry>
+       </row>
+       <row>
+        <entry>Notification server</entry>
+        <entry>Configure a notification server to send an email notification.</entry>
+       </row>
+       <row>
+        <entry>Rate</entry>
+        <entry>Create different rates for volume-based and time-based data consumption.</entry>
+       </row>
+       <row>
+        <entry>Charging Service</entry>
+        <entry>
+         <p>Create a charging service with the following details:</p>
+         <ol>
+          <li>
+           <uicontrol>Bucket:</uicontrol> Create a monetary bucket. </li>
+          <li>
+           <uicontrol>Tariff:</uicontrol> Create a tariff formula to apply different rates for
+           volume-based or time-based data consumption for the charging service.</li>
+         </ol>
+        </entry>
+       </row>
+       <row>
+        <entry>Lifecycles</entry>
+        <entry>Create a subscription, account, and device lifecycles.</entry>
+       </row>
+       <row>
+        <entry>Bundles</entry>
+        <entry>Create a bundle and associate it with subscription lifecycle.</entry>
+       </row>
+       <row>
+        <entry>Users</entry>
+        <entry>Create a user.</entry>
+       </row>
+       <row>
+        <entry>Accounts</entry>
+        <entry>Create an account and associate with an account lifecycle.</entry>
+       </row>
+       <row>
+        <entry>Devices</entry>
+        <entry>Create a device and associate with a bundle and device lifecycle.</entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table></p>
+<p>Provision the following data from the SM GUI:</p><ol>
+
+<li>Create a notification preference following given steps:<ol>
+      <li>Navigate to <uicontrol>Notification Management</uicontrol> and select the
+        <uicontrol>Notification Preferences</uicontrol> tab. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+       <image href="../images/sdd_button_default.png" id="image_mfs_rht_3lb"/> to create the
+       notification
+        preference.<!--MMO resource relative URI: ../graphics/Notification_preference_default.png--><image
+        href="../images/notification_preference_default.png" placement="break" scale="50"/>Set
+        the notification type and frequency as
+        follows:<!--MMO resource relative URI: ../graphics/Notification_preference2_default.png--><image
+        href="../images/notification_preference2_default.png" placement="break" scale="70"/></li>
+     </ol></li>
+<li>Create a notification profile for the <varname>iPhone</varname> following the given steps:<ol>
+      <li>Navigate to <uicontrol>Notification Management</uicontrol> and select
+        <uicontrol>Notification Templates</uicontrol>. </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+       <image href="../images/sdd_button_default.png" id="image_xsw_tht_3lb"/> to create a
+       notification profile.Create the following notification templates:<table pgwide="1"
+        colsep="1" rowsep="1">
+        <tgroup cols="2">
+         <colspec colname="col1"/>
+         <colspec colname="col2"/>
+         <thead>
+          <row>
+           <entry> Parameter </entry>
+           <entry> Value </entry>
+          </row>
+         </thead>
+         <tbody>
+          <row>
+           <entry> Name </entry>
+           <entry> NotificationTemplate10 </entry>
+          </row>
+          <row>
+           <entry> Notification Priority </entry>
+           <entry> Normal </entry>
+          </row>
+          <row>
+           <entry namest="col1" nameend="col2">
+            <!--MMO resource relative URI: ../graphics/Case2_Temp10days_default.png-->
+            <image href="../images/case2_temp10days_default.png" scale="50"/>
+           </entry>
+          </row>
+         </tbody>
+        </tgroup>
+       </table><table pgwide="1">
+        <tgroup cols="2" rowsep="1" colsep="1">
+         <colspec colname="col1"/>
+         <colspec colname="col2"/>
+         <thead>
+          <row>
+           <entry> Parameter </entry>
+           <entry> Value </entry>
+          </row>
+         </thead>
+         <tbody>
+          <row>
+           <entry> Name </entry>
+           <entry> NotificationTemplate5 </entry>
+          </row>
+          <row>
+           <entry> Notification Priority </entry>
+           <entry> Normal </entry>
+          </row>
+          <row>
+           <entry namest="col1" nameend="col2">
+            <!--MMO resource relative URI: ../graphics/Case2_Temp5days_default.png-->
+            <image href="../images/case2_temp5days_default.png" scale="50"/>
+           </entry>
+          </row>
+         </tbody>
+        </tgroup>
+       </table><table pgwide="1" colsep="1" rowsep="1">
+        <tgroup cols="2">
+         <colspec colname="col1"/>
+         <colspec colname="col2"/>
+         <thead>
+          <row>
+           <entry> Parameter </entry>
+           <entry> Value </entry>
+          </row>
+         </thead>
+         <tbody>
+          <row>
+           <entry> Name </entry>
+           <entry> NotificationTemplate1 </entry>
+          </row>
+          <row>
+           <entry> Notification Priority </entry>
+           <entry> Normal </entry>
+          </row>
+          <row>
+           <entry namest="col1" nameend="col2">
+            <!--MMO resource relative URI: ../graphics/Case2_Temp1day_default.png-->
+            <image href="../images/case2_temp1day_default.png" scale="50"/>
+           </entry>
+          </row>
+         </tbody>
+        </tgroup>
+       </table><table pgwide="1" colsep="1" rowsep="1">
+        <tgroup cols="2">
+         <colspec colname="col1"/>
+         <colspec colname="col2"/>
+         <thead>
+          <row>
+           <entry> Parameter </entry>
+           <entry> Value </entry>
+          </row>
+         </thead>
+         <tbody>
+          <row>
+           <entry> Name </entry>
+           <entry> NotificationTemplateExpired </entry>
+          </row>
+          <row>
+           <entry> Notification Priority </entry>
+           <entry> Normal </entry>
+          </row>
+          <row>
+           <entry namest="col1" nameend="col2">
+            <!--MMO resource relative URI: ../graphics/Case2_Tempexpire_default.png-->
+            <image href="../images/case2_tempexpire_default.png" scale="50"/>
+           </entry>
+          </row>
+         </tbody>
+        </tgroup>
+       </table><table pgwide="1" colsep="1" rowsep="1">
+        <tgroup cols="2">
+         <colspec colname="col1"/>
+         <colspec colname="col2"/>
+         <thead>
+          <row>
+           <entry> Parameter </entry>
+           <entry> Value </entry>
+          </row>
+         </thead>
+         <tbody>
+          <row>
+           <entry> Name </entry>
+           <entry> SubscriptionCancelTemplate </entry>
+          </row>
+          <row>
+           <entry> Notification Priority </entry>
+           <entry> Normal </entry>
+          </row>
+          <row>
+           <entry namest="col1" nameend="col2">
+            <!--MMO resource relative URI: ../graphics/Case2_Tempcancel_default.png-->
+            <image href="../images/case2_tempcancel_default.png" scale="50"/>
+           </entry>
+          </row>
+         </tbody>
+        </tgroup>
+       </table></li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Distribute_button_default.png-->
+       <image href="../images/distribute_button_default.png"/> to distribute the notification
+       profile to the specific ME further selected for the iPhone. </li>
+     </ol>
+    </li>
+<li>Configure a notification server following the given steps:<ol>
+      <li>Navigate to <uicontrol>Notification Management</uicontrol> and select
+        <uicontrol>Notification Servers</uicontrol> tab. Browse to select the
+        <uicontrol>Email</uicontrol> from drop-down list as shown in the following figure. <!--MMO resource relative URI: ../graphics/Email_server2_default.png-->
+       <image href="../images/email_server2_default.png" scale="50"/>
+      </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+       <image href="../images/sdd_button_default.png"/> to create a notification server as shown in
+       the following figure: <!--MMO resource relative URI: ../graphics/Case1_NS_default.png-->
+       <image href="../images/case1_ns_default.png"/>
+      </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Distribute_button_default.png-->
+       <image href="../images/distribute_button_default.png"/> to distribute the notification
+       profile to the specific ME further selected for the iPhone. </li>
+     </ol></li>
+<li>Create the time-based and volume-based data consumption rates following the given steps:<ol>
+      <li>Navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select the
+        <uicontrol>Charging</uicontrol> tab. Browse to select the <uicontrol>Rates</uicontrol> from
+       the drop-down list.</li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+       <image href="../images/sdd_button_default.png" id="image_tmr_zht_3lb"/> to create a
+       time-based data consumption rate as shown in the following figure:  <!--MMO resource relative URI: ../graphics/Time-based_rate_for_use_case1_default.png-->
+       <image href="../images/time-based_rate_for_use_case1_default.png" scale="60"/>
+       The time-based rate charges data at 1 United States dollar from the monetary bucket per 15
+        minutes of data consumed.
+      </li>
+      <li>Similarly, create a volume-based data consumption rate as shown in the following figure: <!--MMO resource relative URI: ../graphics/Volume_rate_for_use_case1_default.png-->
+       <image href="../images/volume_rate_for_use_case1_default.png" scale="60"/>
+       The volume-based rate charges data at 0.125 United States dollars from the monetary bucket
+        per 25 MB of data consumed.
+      </li>
+     </ol>
+    </li>
+<li>Create a charging service following the given steps:<ol>
+      <li>Navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select the
+        <uicontrol>Charging</uicontrol> tab. Browse to select the <uicontrol>Charging
+        Services</uicontrol> from the drop-down list.</li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+       <image href="../images/sdd_button_default.png" id="image_ily_b3t_3lb"/> to create a charging
+       service as shown in the following
+        figure:<!--MMO resource relative URI: ../graphics/CS_name_config_in_use_case1_default.png--><image
+        href="../images/cs_name_config_in_use_case1_default.png" placement="break" scale="60"
+        />Click <uicontrol>CONTINUE</uicontrol>.</li>
+      <li>Associate the charging service with a monetary bucket as shown in the following figure: <!--MMO resource relative URI: ../graphics/Link_money_bucket_to_CS_use_case1_default.png-->
+       <image href="../images/link_money_bucket_to_cs_use_case1_default.png"/>
+       Click <uicontrol>CONTINUE</uicontrol>.
+      </li>
+      <li>Create a tariff formula for the charging service as shown in the following figure: <!--MMO resource relative URI: ../graphics/Tariff_formula_for_CS_use_case1_default.png-->
+       <image href="../images/tariff_formula_for_CS_use_case1_default.png" placement="break"
+        scale="60"/>
+      </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Distribute_button_default.png-->
+       <image href="../images/distribute_button_default.png"/> to distribute the charging service to
+       the specific ME further selected for the iPhone. </li>
+     </ol>
+    </li>
+<li>Create a device lifecycle with <uicontrol>Preactive</uicontrol>, <uicontrol>Active</uicontrol>,
+      <uicontrol>Active Warned</uicontrol>, <uicontrol>Expired</uicontrol>, and
+      <uicontrol>Disconnected</uicontrol> states following the given steps:<ol>
+      <li>Navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select the
+        <uicontrol>Common</uicontrol> tab. Browse to select <uicontrol>Lifecycles</uicontrol> from
+       the drop-down list as shown in the following figure: <!--MMO resource relative URI: ../graphics/Selecting_lifecycle_in_use_case1_default.png-->
+       <image href="../images/selecting_lifecycle_in_use_case1_default.png" placement="break"
+        scale="60"/>
+      </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+       <image href="../images/sdd_button_default.png"/> to create a device lifecycle as shown in the
+       following figure: <!--MMO resource relative URI: ../graphics/Create_device_lifecycle_for_use_case1_default.png-->
+       <image href="../images/create_device_lifecycle_for_use_case1_default.png"/>
+      </li>
+      <li>Define the lifecycle states as shown in the following figure: <!--MMO resource relative URI: ../graphics/Lifecycle_states_for_use_case1_default.png-->
+       <image href="../images/lifecycle_states_for_use_case1_default.png" placement="break"
+        scale="60"/>
+      </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Distribute_button_default.png-->
+       <image href="../images/distribute_button_default.png"/> to distribute the lifecycle to the
+       specific ME further selected for the iPhone. </li>
+     </ol>
+    </li>
+<li>Create a subscription periodic lifecycle following the given steps:<ol>
+      <li>Navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select the
+        <uicontrol>Common</uicontrol> tab. Browse to select <uicontrol>Lifecycles</uicontrol> from
+       the drop-down list. </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+       <image href="../images/sdd_button_default.png"/> to create a lifecycle and define the states
+       as shown in the following figure: <!--MMO resource relative URI: ../graphics/Case2_LC1_default.png-->
+       <image href="../images/case2_lc1_default.png" placement="break" scale="70"/>
+       <!--MMO resource relative URI: ../graphics/Case2_LC2_default.png-->
+       <image href="../images/case2_lc2_default.png" placement="break" scale="70"/>
+       <!--MMO resource relative URI: ../graphics/Case2_LC3_default.png-->
+       <image href="../images/case2_lc3_default.png" placement="break" scale="70"/>
+       <!--MMO resource relative URI: ../graphics/Case2_LC4_default.png-->
+       <image href="../images/case2_lc4_default.png" placement="break" scale="70"/>
+       <!--MMO resource relative URI: ../graphics/Case2_LC5_default.png-->
+       <image href="../images/case2_lc5_default.png" placement="break" scale="70"/>
+       <!--MMO resource relative URI: ../graphics/Case2_LC6_default.png-->
+       <image href="../images/case2_lc6_default.png" placement="break" scale="70"/>
+      </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Distribute_button_default.png-->
+       <image href="../images/distribute_button_default.png"/> to distribute the lifecycle to the
+       specific ME further selected for the iPhone. </li>
+     </ol>
+    </li>
+<li>Create a subscription lifecycle following the given steps:<ol>
+      <li>Navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select the
+        <uicontrol>Common</uicontrol> tab. Browse to select <uicontrol>Lifecycles</uicontrol> from
+       the drop-down list. </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+       <image href="../images/sdd_button_default.png"/> to create a lifecycle and define the states
+       as shown in the following figure: <!--MMO resource relative URI: ../graphics/Case2_SLC1_default.png-->
+       <image href="../images/case2_slC1_default.png" placement="break"/>
+       <!--MMO resource relative URI: ../graphics/Case2_SLC2_default.png-->
+       <image href="../images/case2_slc2_default.png" placement="break" scale="70"/>
+       <!--MMO resource relative URI: ../graphics/Case2_SLC3_default.png-->
+       <image href="../images/case2_slc3_default.png" placement="break" scale="70"/>
+       <!--MMO resource relative URI: ../graphics/Case2_SLC4_default.png-->
+       <image href="../images/case2_slc4_default.png" placement="break" scale="70"/>
+       <!--MMO resource relative URI: ../graphics/Case2_SLC5_default.png-->
+       <image href="../images/case2_slc5_default.png" placement="break" scale="70"/>
+       <!--MMO resource relative URI: ../graphics/Case2_SLC6_default.png-->
+       <image href="../images/case2_slc6_default.png" placement="break" scale="70"/>
+       <!--MMO resource relative URI: ../graphics/Case2_SL7_default.png-->
+       <image href="../images/case2_sl7_default.png" placement="break" scale="70"/>
+      </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Distribute_button_default.png-->
+       <image href="../images/distribute_button_default.png"/> to distribute the lifecycle to the
+       specific ME further selected for the iPhone. </li>
+     </ol>
+    </li>
+<li>Create a bundle for the charging service following the given steps:<ol>
+      <li>Navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select the
+        <uicontrol>Charging</uicontrol> tab. Browse to select the <uicontrol>Bundles</uicontrol>
+       from the drop-down list.</li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+       <image href="../images/sdd_button_default.png"/> to create a bundle as shown in the following
+       figure: <!--MMO resource relative URI: ../graphics/Case2_bundle2_default.png-->
+       <image href="../images/case2_bundle2_default.png"/>
+      </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Distribute_button_default.png-->
+       <image href="../images/distribute_button_default.png"/> to distribute the bundle to the
+       specific ME further selected for the iPhone. </li>
+     </ol>
+    </li>
+<li>Create a user following the given steps:<ol>
+      <li>Navigate to <uicontrol>Subscriber Manager</uicontrol> and select the
+        <uicontrol>Users</uicontrol> tab. </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+       <image href="../images/sdd_button_default.png"/> to create an user. </li>
+     </ol></li>
+<li>Create an account following the given steps:<ol>
+      <li>Navigate to <uicontrol>Subscriber Manager</uicontrol> and select the
+        <uicontrol>Accounts</uicontrol> tab as shown in the following figure: <!--MMO resource relative URI: ../graphics/usecase1_acc_default.png-->
+       <image href="../images/usecase1_acc_default.png"/>
+      </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+       <image href="../images/sdd_button_default.png" id="image_o5j_m3t_3lb"/> to create an account.
+        <b>Note</b>: Select the same ME specified for lifecycle distribution.</li>
+     </ol></li>
+<li>Create a device following the given steps:<ol>
+      <li>Navigate to <uicontrol>Subscriber Manager</uicontrol> and select the
+        <uicontrol>Devices</uicontrol> tab as shown in the following figure: <!--MMO resource relative URI: ../graphics/Selecting_device_in_use_case1_default.png-->
+       <image href="../images/selecting_device_in_use_case1_default.png"/>
+      </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+       <image href="../images/sdd_button_default.png" id="image_jt2_n3t_3lb"/> to create the device
+       with <emphasis>Name</emphasis> set as <varname>iPhone</varname>, select any identifier and
+       identifier type, and then click <uicontrol>CONTINUE</uicontrol>. Associate the device with
+       the lifecycle created in the previous step as shown in the following figure:  <!--MMO resource relative URI: ../graphics/Selecting_lifecycle_for_device_use_case1_default.png-->
+       <image href="../images/selecting_lifecycle_for_device_use_case1_default.png"/>
+       
+        <b>Note</b>: Select the same ME specified for lifecycle distribution.
+      </li>
+     </ol>
+    </li>
+<li>Subscribe the iPhone to the bundle created.<ol>
+      <li>Navigate to <uicontrol>Subscriber Manager</uicontrol> and select the
+        <uicontrol>Device</uicontrol> tab. Browse to select <varname>iPhone</varname> device. </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Edit_button_default.png-->
+       <image href="../images/edit_button_default.png"/> to edit the details of the bundle and
+       associate the bundle to the charging service as shown in the following figure: <!--MMO resource relative URI: ../graphics/Select_CS_for_bundle_use_case1_default.png-->
+       <image href="../images/select_cs_for_bundle_use_case1_default.png"/>
+      </li>
+     </ol>
+    </li>
+</ol>
+</section>
+</conbody></concept>

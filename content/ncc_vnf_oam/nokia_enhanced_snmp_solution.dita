@@ -1,0 +1,645 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-d1e104116"><title>NOKIA-ENHANCED-SNMP-SOLUTION-SUITE-COMMON-DEFINITION DEFINITIONS</title><conbody>
+<section><title>Overview</title>
+<p>This section contains the NOKIA-ENHANCED-SNMP-SOLUTION-SUITE-COMMON-DEFINITION DEFINITIONS file.</p>
+<fig>
+<codeblock>NOKIA-ENHANCED-SNMP-SOLUTION-SUITE-COMMON-DEFINITION DEFINITIONS ::= BEGIN
+
+-- ===============================================================
+--     Copyright (C) Nokia Networks 2005,2017
+-- ===============================================================
+--
+--
+-- Description:  MIB file for the Nokia SNMP Solution Suite for
+--               3GPP Alarm Integration Reference Point
+--               Purpose is to specify the Fault Management
+--               interface for Nokia NetAct.
+--               Further information can be found in the Interface
+--               specification 
+--                    Enhanced SNMP Solution Suite - Fault Management
+--               
+--
+-- Protocol:     SNMPv2c MIB (Simple network management protocol,
+--               version 2c, Management Information Base  )
+-- Format:       SMIv2
+--
+-- Version 
+-- 0.9         : Initial Version
+-- 1.0         : Changes to Description clauses
+--               noiSnmpAlarmIrpCommon instead of nokiaSnmpAlarmIrpCommon
+-- 1.1.          OID change, Open SNMP IF now Enhanced SNMP Solution
+--               Suite        
+-- 1.2.3       : NoiNotificationType introduced
+--               Version synchronised with Interface specification
+-- 1.2.4       : NE3S OID Registration MIB File has been renamed,
+--               to avoid naming conflict with Nokia general OID 
+--               registration MIB.
+-- 1.2.5       : noiOpenInterfaceModule imported from 
+--               NOKIA-NE3S-REGISTRATION-MIB
+--               Previous Version wrong
+--
+-- 1.2.6       : numbering of the elements in NoiNotificationType 
+--               uses now same values as the corresponding Notifications
+--               i.e.
+--                noiAlarmChanged (5)
+--                noiAlarmChanged NOTIFICATION-TYPE ::= { noiAlarmNotification 5}
+-- 1.2.7       : NoiProbableCause now aligned with values used by 3GPP 
+--               (i.e. same values as used in 3GPP Corba Solution Suite
+--               The value "Indeterminate (0)" as an extension to 3GPP kept
+--               NoiAdditionalText now up to 255 characters. 
+--               Optional delimiter introduced to allow two logical fields
+--               inside 
+--               Wording in Description Clauses modified
+-- 1.2.8      : Version change only, no changes to MIB
+-- 1.2.9      : NoiProbableCause - values updated. to comply to latest 3GPP Rel 4 specification
+-- 1.3.0      : Unicode support, more additional text fields, alarm UUID, text field maximum sizes increased. Added new event types and probable cause values
+-- ===============================================================
+-- Author         : M.Grosse-Kreul et. al.
+-- Version        : 1.3.0
+-- Last Update : 8.2.2017
+--================================================================
+
+
+--======================================================================
+-- NAMING CONVENTION
+-- 
+-- All Items (Module Indentity and Textual Convention)
+-- are prefixed with 'Noi' or 'noi'
+-- 'Noi' shall represent the abbreviation  of Nokia  Open  Interface 
+--======================================================================
+
+
+IMPORTS
+       
+        Integer32, MODULE-IDENTITY
+                FROM SNMPv2-SMI
+        DisplayString, DateAndTime, TEXTUAL-CONVENTION
+                FROM SNMPv2-TC
+        noiOpenInterfaceModule
+                FROM NOKIA-NE3S-REGISTRATION-MIB;
+
+-- ======================================================================
+-- MODULE DEFINITION
+-- ======================================================================
+
+noiSnmpAlarmIrpCommon MODULE-IDENTITY
+        LAST-UPDATED "201702080000Z"
+        ORGANIZATION "Nokia Networks"
+        CONTACT-INFO 
+                    "e-mail: NET-IMN-OM-NE3S-DL@nokia.com"
+        DESCRIPTION "The definition of common parameters used for 
+                     Nokia SNMP Solution Set of the 3GPP Alarm IRP
+                     also known as NE3S Interface."
+        REVISION "201702080000Z"
+        DESCRIPTION "Version 1.3.0"
+::= { noiOpenInterfaceModule 1 }
+
+
+--======================================================================
+-- TEXTUAL CONVENTIONS
+-- 
+-- Conventions are in alphabetical order
+--======================================================================
+
+
+
+NoiAcknowledgementState ::= TEXTUAL-CONVENTION
+        STATUS  current
+        DESCRIPTION 
+                 "Identifies the state of the alarm in the alarm table.
+                  If the agent does not support the concept of
+                  acknowledgement, than the value 'indeterminate (3)' shall 
+                  be used"
+        SYNTAX INTEGER {
+                acknowledged (1),
+                unacknowledged (2),
+                indeterminate (3) }
+
+
+NoiAcknowledgementTime ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+                "The acknowledgement time is used to set the last time 
+                 when the acknowledgement state of an alarm in
+                 the alarm table has been changed.
+                 If the agent does not support the concept of acknowledgement,
+                 than the acknowledgement time shall be empty 
+                 (string length zero(0)) in the alarm table or alarm log."
+        SYNTAX DateAndTime
+
+
+NoiAcknowledgementUserId ::= TEXTUAL-CONVENTION
+       DISPLAY-HINT "10t"
+       STATUS current
+       DESCRIPTION
+                "The acknowledgement user id is used to identify the last 
+                 user who has changed the acknowledgement state of an 
+                 alarm in the alarm table.
+                 When no user information is conveyed, the value can be 
+                 an empty string (i.e. length of the OCTET STRING shall 
+                 be 0).
+                 The default value is also an empty string"
+        SYNTAX OCTET STRING (SIZE (0..10))
+
+NoiAdditionalText ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT "3072t"
+        STATUS current
+        DESCRIPTION
+                "The additional text is used to pass additional information
+                 on the fault in the Network Element / EM in a 
+                 human readable format.
+                 It shall be used to tranfer information that supports the 
+                 operator in identifying the cause of the fault.
+                 When no information is carried, the value can be an empty
+                 string (i.e. length of the OCTET STRING shall be 0).
+                 It is recommended to use the additional text in alarm and 
+                 changed alarm notification.
+                 An empty string shall be used only within clear alarm 
+                 notification.
+
+                 The agent has two different options in setting the value
+                 - One logical text message	
+                   The agent provides one text message in this element 
+                   (i.e. no delimeter). The size may not exceed 1024 characters.
+                    NE3S manager (i.e. NetAct) can divide the string into two 
+                   parts at a fixed position (e.g. character no. 160).
+                 - Two logical text fields	
+                   The string passed in an alarm is be divided into 2 logical 
+                   fields, separated by a delimiter. Each field can be up to 
+                   160 characters and both must exceed 255 including the 
+                   delimeter. 
+                   The two logical fields are separated by the delimiter 
+                   'horizontal tab' (ASCII character 'ht' , Dec 009 or Hex 09)                  
+                   NetAct scans the string for the first occurrence of 'ht' and 
+                   split the string into two parts accordingly.
+ 
+                   Since the user user typically pays more attention at the 
+                   first part of a text message, the most important information
+                   for the end user shall be given in the first field."
+        SYNTAX OCTET STRING (SIZE (0..3072))
+
+
+NoiAlarmId ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+                 "The alarm identifier shall represent a sequence of positive
+                 integer numbers. Each alarm notification emitted by the agent
+                 shall have, at any given time, different alarm identifier.
+                 The alarm identifier shall increase with every alarm emitted 
+                 by the agent and within the scope of this specification the 
+                 value shall be incremented by one (1) whenever an alarm is
+                 inserted into the alarm table and an alarm notification is 
+                 emitted by the agent. 
+                 The correlation between the clear alarm and the related active
+                 alarms is performed in Nokia OSS by means of unambiguous 
+                 identifiers, the alarm identifier. Therefore the alarm 
+                 identifier of a clear alarm notification, alarm changed 
+                 notification or acknowledgement notification must be equal
+                 to the alarm identifier of the correlated alarm notification.
+                 It is present in all fault management notifications.
+                 The initial value of the sequence is one (1). If the maximum
+                 value is reached, the sequence will be wrapped back to the
+                 initial value one (1).
+                 Within the context of this specification the assumption is 
+                 that the agent assures in any case a sequence of the alarm 
+                 identifier (e.g. after NE restart, restart of the 
+                 agent or under similar conditions)
+                 Within the context of this specification the alarm identifier 
+                 in an alarm notification can have the same value as the 
+                 notification identifier."
+        SYNTAX Integer32 (1..2147483647)
+
+
+NoiAlarmLogControl ::= TEXTUAL-CONVENTION
+        STATUS  current
+        DESCRIPTION 
+                 "Controls the behaviour of the log and allows the manager
+                 to defined the operation of the log:
+                 Values are logging(1) and flush (2) and suspend(3).
+                 The default value shall be logging which implies
+                 normal operation of the log
+                 flush indicate a request to empty the current content of
+                 the log. Suspend indicate a request to suspended logging"
+        SYNTAX INTEGER {
+                logging (1),
+                flush (2),
+                suspend (3)}
+
+
+NoiAlarmLogCount ::= TEXTUAL-CONVENTION
+        STATUS      current
+        DESCRIPTION
+                "Contains the number of currently active 
+                 alarms in the alarm Log."
+        SYNTAX  Integer32 (0..2147483647)
+
+
+NoiAlarmTableCount ::=  TEXTUAL-CONVENTION
+        STATUS      current
+        DESCRIPTION
+                "Contains the number of currently active
+                 alarms in the alarm Table."
+        SYNTAX      Integer32 (0..2147483647)
+
+
+NoiAlarmText ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT "3072t"
+        STATUS current
+        DESCRIPTION
+                "Alarm text contains information on the fault situation 
+                in the NE in human readable format. A description of the
+                cause of the fault shall be conveyed within the alarm 
+                text. The alarm text must be in capital letters.
+                Alarm text shall not be empty, meaning a zero length 
+                string  must not be used in alarm notifications.
+                A clear alarm notification can use a zero length character
+                string. The size of alarm text must not exceed 1024 characters."
+        SYNTAX OCTET STRING (SIZE (0..3072))
+
+
+NoiEventTime ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+                "Time when the event has occurred.
+                 The event time is decoded according to RCF 1903"
+        SYNTAX DateAndTime
+
+
+NoiEventType ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+                "Event type as specified in ITU recommendations 
+                 X.733.
+                 The value unknown (0) shall not be used."
+        SYNTAX INTEGER {
+                unknown(0),
+                communicationsAlarm(2),
+                environmentalAlarm(3),
+                equipmentAlarm(4),
+                processingErrorAlarm(10),
+                qualityOfServiceAlarm(11),
+                integrityViolation(5),
+                operationalViolation(8),
+                physicalViolation(9),
+                securityViolation(13),
+                timeDomainViolation(15)}
+
+
+NoiLogFullAction ::= TEXTUAL-CONVENTION
+        STATUS  current
+        DESCRIPTION 
+                 "Control the behaviour of the log when the log becomes
+                 full. Possible values are wrap (0) and halt (1).
+                 The default value must be wrap. The agent shall start operate
+                 the Log in wrap mode, unless the parameter is changed by
+                 the manager"
+        SYNTAX INTEGER {
+                wrap(0),
+                halt(1)}
+
+
+NoiNotificationId ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+                 "The notification identifier is typically generated by the
+                 alarm system in the Network Element that detects the fault.
+                 The notification identifier shall represent a consecutive 
+                 sequence of positive integer number, starting with the 
+                 value one (1). The value zero(0) must not be used.
+                 
+                 The notification identifier in a fault management 
+                 notification (alarm-, clear alarm  notification, severity
+                 changed or acknowledgement notification) is used to detect
+                 if notification supposed to be received by the OS 
+                 (manager) application have been lost.
+                 Therefore each alarm notification shall have, at any given
+                 time, different notification identifier.
+                 
+                 The notification identifier shall represent a consecutive
+                 sequence of positive integer numbers. Each notification 
+                 emitted by the agent shall have, at any given time, 
+                 different notification identifier and it shall be a 
+                 consecutive sequence in any case. 
+                 Within the scope of this interface the value is 
+                 incremented by one (1) whenever a notification is emitted by 
+                 the agent. It is present in all notification (e.g. alarm-,
+                 clear alarm notification, severity changed or acknowledgement 
+                 notification)."
+        SYNTAX Integer32 (1..2147483647)
+
+
+NoiNotificationType ::= TEXTUAL-CONVENTION
+        STATUS  current
+        DESCRIPTION 
+                 "Specifies the type of the notification. Used to determine the
+                  type of the engty in the alarm log. Mapping according to the 
+                  following rules
+
+                  noiAlarmNew(1) corresponds to
+                  noiAlarmNew NOTIFICATION-TYPE ::= { noiAlarmNotification 1 }
+
+                  noiAlarmCleared (2) corresponds to
+                  noiAlarmCleared NOTIFICATION-TYPE ::= { noiAlarmNotification 2}
+
+                  noiAlarmListRebuild (3) corresponds to
+                  noiAlarmListRebuild NOTIFICATION-TYPE ::= { noiAlarmNotification 3}
+
+                  noiAlarmListRebuildInitiated (4) corresponds to
+                  noiAlarmListRebuildInitiated NOTIFICATION-TYPE ::= { noiAlarmNotification 4}
+
+                  noiAlarmChanged (5) corresponds to
+                  noiAlarmChanged NOTIFICATION-TYPE ::={noiAlarmNotification 5}
+
+                  noiAlarmAckStateChanged (6) corresponds to
+                  noiAlarmAckStateChanged NOTIFICATION-TYPE ::= { noiAlarmNotification 6}
+                  "
+        SYNTAX INTEGER {
+                noiAlarmNew(1),
+                noiAlarmCleared (2),
+                noiAlarmListRebuild (3),
+                noiAlarmListRebuildInitiated (4),
+                noiAlarmChanged (5),
+                noiAlarmAckStateChanged (6) }
+
+
+NoiPerceivedSeverity ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION        
+                "Perceived severity defines the severity level of the fault
+                 Possible values are specified in ITU 
+                 An alarm notification must not use the value cleared. A 
+                 clear alarm notification must use the value cleared.
+                 recommendation X.733. The value indeterminate(0)
+                 is not recommended to be used within the scope of this
+                 interface."
+        SYNTAX INTEGER {
+                critical(1),
+                major(2),
+                minor(3),
+                warning(4),
+                cleared(5),
+                indeterminate(0)}
+
+
+NoiProbableCause ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION        
+                "Probable cause is used to qualify the probable cause
+                of the alarm in a Network Element. The and provides 
+                further information than the event type. 
+                 Supported values are specified by 3GPP. 
+                Indeterminate is a NE3S extension and the agent shall
+                assign this value indeterminate to indicate that the 
+                ProbableCause is not used."
+        SYNTAX INTEGER {
+                -- The following values are defined in 3GPP
+                indeterminate(0),
+                alarmIndicationSignal (1),
+                callSetupFailure (2),
+                degradedSignalM3100 (3),
+                farEndReceiverFailure (4),
+                framingErrorM3100 (5),
+                lossOfFrame (6),
+                lossOfPointer (7),
+                lossOfSignal (8),
+                payloadTypeMismatch (9),
+                transmissionError (10),
+                remoteAlarmInterface (11),
+                excessiveBitErrorRate (12),
+                pathTraceMismatch (13),
+                unavailable (14),
+                signalLabelMismatch (15),
+                lossOfMultiFrame (16),
+                communicationsReceiveFailure (17),
+                communicationsTransmitFailure (18),
+                modulationFailure (19),
+                demodulationFailure (20),
+                backPlaneFailure (51),
+                dataSetProblem (52),
+                equipmentIdentifierDuplication (53),
+                externalDeviceProblem (54),
+                lineCardProblem (55),
+                multiplexerProblemM3100 (56),
+                neIdentifierDuplication (57),
+                powerProblemM3100 (58),
+                processorProblemM3100 (59),
+                protectionPathFailure (60),
+                receiverFailureM3100 (61),
+                replaceableUnitMissing (62),
+                replaceableUnitTypeMismatch (63),
+                synchronisationSourceMismatch (64),
+                terminalProblem (65),
+                timingProblemM3100 (66),
+                transmitterFailureM3100 (67),
+                trunkCardProblem (68),
+                replaceableUnitProblem (69),
+                realTimeClockFailure(70),
+                protectionMechanismFailure (81),
+                protectionResourceFailure (82),
+                airCompressorFailure (101),
+                airConditioningFailure (102),
+                airDryerFailure (103),
+                batteryDischarging (104),
+                batteryFailure (105),
+                commericalPowerFailure (106),
+                coolingFanFailure (107),
+                engineFailure (108),
+                fireDetectorFailure (109),
+                fuseFailure (110),
+                generatorFailure (111),
+                lowBatteryThreshold (112),
+                pumpFailureM3100 (113),
+                rectifierFailure (114),
+                rectifierHighVoltage (115),
+                rectifierLowFVoltage (116),
+                ventilationSystemFailure (117),
+                enclosureDoorOpenM3100 (118),
+                explosiveGas (119),
+                fire (120),
+                flood (121),
+                highHumidity (122),
+                highTemperature (123),
+                highWind (124),
+                iceBuildUp (125),
+                intrusionDetection (126),
+                lowFuel (127),
+                lowHumidity (128),
+                lowCablePressure (129),
+                lowTemperature (130),
+                lowWater (131),
+                smoke (132),
+                toxicGas (133),
+                externalPointFailure (136), 
+                storageCapacityProblemM3100 (151),
+                memoryMismatch (152),
+                corruptDataM3100 (153),
+                outOfCpuCycles (154),
+                softwareEnvironmentProblem (155),
+                softwareDownloadFailure (156),
+                lossOfRealTime (157),
+                reInitialized (158),
+                excessiveErrorRate (203),
+                adapterError (301),
+                applicationSubsystemFailure (302),
+                bandwidthReduction (303),
+                communicationProtocolError (305),
+                communicationSubsystemFailure (306),
+                configurationOrCustomizingError (307),
+                congestion (308),
+                cpuCyclesLimitExceeded (310),
+                dataSetOrModemError (311),
+                dtedceInterfaceError (313),
+                equipmentMalfunction (315),
+                excessiveVibration (316),
+                fileError (317),
+                heatingOrVentilationOrCoolingSystemProblem (321),
+                humidityUnacceptable (322),
+                inputOutputDeviceError (323),
+                inputdeviceError (324),
+                lanError (325),
+                leakDetection (326),
+                localNodeTransmissionError (327),
+                materialSupplyExhausted (330),
+                outOfMemory (332),
+                outputDeviceError (333),
+                performanceDegraded (334),
+                pressureUnacceptable (336),
+                queueSizeExceeded (339),
+                receiveFailure (340),
+                remoteNodeTransmissionError (342),
+                resourceAtOrNearingCapacity (343),
+                responseTimeExcessive (344),
+                retransmissionRateExcessive (345),
+                softwareError (346),
+                softwareProgramAbnormallyTerminated (347),
+                softwareProgramError (348),
+                temperatureUnacceptable (350),
+                thresholdCrossed (351),
+                toxicLeakDetected (353),
+                transmitFailure (354),
+                underlyingResourceUnavailable (356),
+                versionMismatch (357),
+                aBisToBtsInterfaceFailure (501),
+                aBisToTrxInterfaceFailure (502),
+                antennaProblem (503),
+                batteryBreakdown (504),
+                batteryChargingFault (505),
+                clockSynchronisationProblem (506),
+                combinerProblem (507),
+                diskProblem (508),
+                excessiveReceiverTemperature (510),
+                excessiveTransmitterOutputPower (511),
+                excessiveTransmitterTemperature (512),
+                frequencyHoppingDegraded (513),
+                frequencyHoppingFailure (514),
+                frequencyRedefinitionFailed (515),
+                lineInterfaceFailure (516),
+                linkFailure (517),
+                lossOfSynchronisation (518),
+                lostRedundancy (519),
+                mainsBreakdownWithBatteryBackup (520),
+                mainsBreakdownWithoutBatteryBackup (521),
+                powerSupplyFailure (522),
+                receiverAntennaFault (523),
+                receiverMulticouplerFailure (525),
+                reducedTransmitterOutputPower (526),
+                signalQualityEvaluationFault (527),
+                timeslotHardwareFailure (528),
+                transceiverProblem (529),
+                transcoderProblem (530),
+                transcoderOrRateAdapterProblem (531),
+                transmitterAntennaFailure (532),
+                transmitterAntennaNotAdjusted (533),
+                transmitterLowVoltageOrCurrent (535),
+                transmitterOffFrequency (536),
+                databaseInconsistency (537),
+                fileSystemCallUnsuccessful (538),
+                inputParameterOutOfRange (539),
+                invalidParameter (540),
+                invalidPointer (541),
+                messageNotExpected (542),
+                messageNotInitialised (543),
+                messageOutOfSequence (544),
+                systemCallUnsuccessful (545),
+                timeoutExpired (546),
+                variableOutOfRange (547),
+                watchDogTimerExpired (548),
+                coolingSystemFailure (549),
+                externalEquipmentFailure (550),
+                externalPowerSupplyFailure (551),
+                externalTransmissionDeviceFailure (552),
+                reducedAlarmReporting (561),
+                reducedEventReporting (562),
+                recucedLoggingCapability (563),
+                systemResourcesOverload (564),
+                broadcastChannelFailure (565),
+                callEstablishmentError (566),
+                invalidMessageReceived (567),
+                invalidMsuReceived (568),
+                lapdLinkProtocolFailure (569),
+                localAlarmIndication (570),
+                remoteAlarmIndication (571),
+                routingFailure (572),
+                ss7ProtocolFailure (573),
+                transmissionFailure (574),
+                authenticationFailure (701),
+                breachOfConfidentiality (702),
+                cableTamper (703),
+                delayedInformation (704),
+                denialOfService (705),
+                duplicateInformation (706),
+                informationMissing (707),
+                informationModificationDetected (708),
+                informationOutOfSequence (709),
+                keyExpired (711),
+                nonRepudiationFailure (712),
+                outOfHoursActivity (713),
+                outOfService (714),
+                proceduralError (715),
+                unauthorizedAccessAttempt (716),
+                unexpectedInformation (717),
+                unspecifiedReason (718)}
+
+NoiSpecificProblem ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION        
+                 "The specific problem provides further qualification
+                 of the alarm than probable cause.
+                 It shall be used to classify the fault situation in 
+                 the Network Element.
+                 Specific problem represents a fault specific integer
+                 value which shall be unique within the context of the
+                 Network Element. The Network Element shall not use the
+                 same specific problem for two distinct fault situations."
+        SYNTAX Integer32 (1..2147483647)
+
+
+NoiSystemDistinguishedName ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT "400t"
+        STATUS current
+        DESCRIPTION
+                 "The System Distinguished Name (SDN) identified the alarming object representing the resource where the fault occurs.
+                 The SDN represents the unique Distinguished Name of 
+                 the instance within the scope of the system or Network
+                 Element (sometimes referred to as Local Distinguished 
+                 Name).
+                 The required format is according to Nokia Distinguished Name syntax, for example SMSC-South/LNK-1"
+        SYNTAX OCTET STRING (SIZE (0..1200))
+
+NoiAlarmUUID ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT "384t"
+        STATUS current
+        DESCRIPTION
+                 "The Alarm Univerally Unique Identifier is an optional unique identifier of the alarm instance across different agents. Maximum length is 128 characters."
+        SYNTAX OCTET STRING (SIZE (0..384))
+
+
+
+END
+
+
+</codeblock>
+</fig>
+</section>
+</conbody></concept>

@@ -1,0 +1,506 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-aggre_view"><title>Aggregate View</title><conbody>
+<section><title>Overview</title>
+<p>An aggregate view aggregates all resource information from all entities of the same type (like buckets, counters).</p>
+<p>For information on support of <systemoutput>Send-SNR</systemoutput> action and QoS handling when AV is exhausted or updated, see the <!--xref URI: c-Rating_and_Charging.xml#SNRaction--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-SNRaction"/> section.</p>
+</section>
+<section><title>Configuration</title>
+<p>Log into the SM GUI and navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol>
+    &gt; <uicontrol>COMMON</uicontrol> tab and select <uicontrol>Aggregate View</uicontrol> from the
+    hamburger menu ( <!--MMO resource relative URI: ../../Global_Configurations/Graphics/hamburgermenu_default.png-->
+    <image href="../images/img9yz-09126-ug01-pczza-sp1-hamburgermenu_default.png" scale="40"/> ). To
+    define a new aggregate view, click <!--MMO resource relative URI: ../Graphics/Release_18.0/Add_button_default.png-->
+    <image href="../images/img9yz-09126-ug01-pczza-sp1-add_button_default.png" scale="45"/> to add
+    the basic details as described in the following table.</p>
+<table pgwide="1" colsep="1" rowsep="1">
+    <title>Parameters for aggregate view</title>
+    <tgroup cols="4">
+     <colspec colname="col1"/>
+     <colspec colname="COLSPEC2"/>
+     <colspec colname="COLSPEC1"/>
+     <colspec colname="col2"/>
+     <thead>
+      <row>
+       <entry>
+        <p>Parameter</p>
+       </entry>
+       <entry>
+        <p>Description</p>
+       </entry>
+       <entry>
+        <p>Field type</p>
+       </entry>
+       <entry>
+        <p>Mandatory/Optional</p>
+       </entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry> Name </entry>
+       <entry> Identifier for uniquely identification of aggregate view. </entry>
+       <entry> String </entry>
+       <entry> Mandatory </entry>
+      </row>
+      <row>
+       <entry> Unit Type </entry>
+       <entry> Unit type for the aggregate view. </entry>
+       <entry>
+        <p>Enum</p>
+        <p>Select the required unit type.</p>
+       </entry>
+       <entry> Mandatory </entry>
+      </row>
+      <row>
+       <entry> Application Type </entry>
+       <entry> Application type of aggregate view. </entry>
+       <entry>
+        <p>Enum</p>
+        <p>Only Charging is supported currently.</p>
+       </entry>
+       <entry> Mandatory </entry>
+      </row>
+      <row>
+       <entry> Description </entry>
+       <entry> Description of the aggregate view. </entry>
+       <entry> String </entry>
+       <entry> Optional </entry>
+      </row>
+      <row>
+       <entry> Security Domain </entry>
+       <entry> Indicates the security domain associated with the aggregate view. </entry>
+       <entry> Select the required security domain from the predefined security domains in the
+        drop-down list. </entry>
+       <entry> Optional </entry>
+      </row>
+      <row>
+       <entry> Aggregate Type </entry>
+       <entry>
+        <p>Aggregate type of aggregate view.</p>
+        <p>The supported values are as follows:</p>
+        <ul>
+         <li>
+          <p>
+           <uicontrol>Charging Service</uicontrol>: Aggregate bucket defined in AV.</p>
+         </li>
+         <li>
+          <p>
+           <uicontrol>Charging Service and CAP</uicontrol>: Aggregate bucket and cap of device-group
+           counter for shared bucket on group defined in AV.</p>
+         </li>
+         <li>
+          <p>
+           <uicontrol>Counter</uicontrol>: Counter defined in AV.</p>
+         </li>
+        </ul>
+       </entry>
+       <entry> Enum </entry>
+       <entry> Mandatory </entry>
+      </row>
+      <row>
+       <entry> Charging Services </entry>
+       <entry>
+        <p>Contains the list of Charging Service entity IDs corresponding to the aggregate type.
+         Only the created CS can be provisioned in the AV.</p>
+        <p>If not selected, then it means that all the charging services with same unit type can be
+         aggregated.</p>
+       </entry>
+       <entry> List &lt;String&gt; </entry>
+       <entry> Optional </entry>
+      </row>
+      <row>
+       <entry> Device Group Counters </entry>
+       <entry>
+        <p>This field is enabled when the aggregate type Charging Service and CAP is selected.
+         Indicates a device counter attached to a group.</p>
+        <p>If not selected, then it means that all the device group counters with same unit type can
+         be aggregated.</p>
+       </entry>
+       <entry> List &lt;String&gt; </entry>
+       <entry> Optional </entry>
+      </row>
+      <row>
+       <entry> Counter Types </entry>
+       <entry>
+        <p>This field is enabled and applicable only when counter is selected for Aggregate Type. If
+         not selected, it means ALL, that is, all the counters with same unit type can be
+         aggregated.</p>
+        <p>The supported values are as follows:</p>
+        <ul>
+         <li>
+          <p>
+           <uicontrol>SUBSCRIPTION</uicontrol>: Counter defined in charging service.</p>
+         </li>
+         <li>
+          <p>
+           <uicontrol>DEVICE</uicontrol>: Aggregate the device counter.</p>
+         </li>
+         <li>
+          <p>
+           <uicontrol>DEVICE_GROUP</uicontrol>: Aggregate the device-group counter.</p>
+         </li>
+         <li>
+          <p>
+           <uicontrol>GROUP</uicontrol>: Aggregate the group counter.</p>
+         </li>
+        </ul>
+       </entry>
+       <entry> Enum </entry>
+       <entry> Optional </entry>
+      </row>
+      <row>
+       <entry> Threshold Profile Groups </entry>
+       <entry> List of threshold profile group Id list used in Rating logic to send notifications,
+        SNR. Only the created TPG can be provisioned in the AV. </entry>
+       <entry> List &lt;String&gt; </entry>
+       <entry> Optional </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+<p>
+<uicontrol>Aggregate view - instance</uicontrol>
+</p>
+<table pgwide="1" colsep="1" rowsep="1">
+    <title>Parameters for aggregate view - instance</title>
+    <tgroup cols="4">
+     <colspec colname="col1"/>
+     <colspec colname="COLSPEC2"/>
+     <colspec colname="COLSPEC1"/>
+     <colspec colname="col2"/>
+     <thead>
+      <row>
+       <entry>
+        <p>Parameter</p>
+       </entry>
+       <entry>
+        <p>Description</p>
+       </entry>
+       <entry>
+        <p>Field type</p>
+       </entry>
+       <entry>
+        <p>Mandatory/Optional</p>
+       </entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry> InstanceId </entry>
+       <entry> Unique ID. </entry>
+       <entry> String </entry>
+       <entry> Mandatory </entry>
+      </row>
+      <row>
+       <entry> defName </entry>
+       <entry> Name of the aggregate view instance. </entry>
+       <entry> String </entry>
+       <entry>
+        <p>Mandatory for Aggregate View instance.</p>
+        <p>Aggregate view definition taken at the time of creation.</p>
+        <p> Read-only and non-modifiable.</p>
+       </entry>
+      </row>
+      <row>
+       <entry> deviceGrpCounters </entry>
+       <entry> List of names of device group counters. </entry>
+       <entry> List&lt;String&gt; </entry>
+       <entry> Optional </entry>
+      </row>
+      <row>
+       <entry> counterTypes </entry>
+       <entry> Counter types aggregated when aggregateType is selected as COUNTER. </entry>
+       <entry> String </entry>
+       <entry> Optional </entry>
+      </row>
+      <row>
+       <entry> UnitType </entry>
+       <entry> Identifies the type of unit. </entry>
+       <entry> String </entry>
+       <entry>
+        <p>Mandatory for Aggregate View instance. </p>
+        <p>Aggregate view definition taken at the time of creation.</p>
+        <p> Read-only and non-modifiable.</p>
+       </entry>
+      </row>
+      <row>
+       <entry> CreationTime </entry>
+       <entry> The time stamp of when this aggregate view was created. The value is automatically
+        generated. </entry>
+       <entry> Long </entry>
+       <entry>
+        <p>Mandatory for Aggregate View instance. </p>
+        <p>Linux timestamp taken at the time of creation.</p>
+        <p> Read-only and non-modifiable.</p>
+       </entry>
+      </row>
+      <row>
+       <entry> applicationType </entry>
+       <entry> Indicates the type of application such as Charging. </entry>
+       <entry> ApplicationType </entry>
+       <entry>
+        <p>Mandatory for Aggregate View instance. </p>
+        <p>Aggregate view definition taken at the time of creation.</p>
+        <p> Read-only and non-modifiable.</p>
+       </entry>
+      </row>
+      <row>
+       <entry> aggregateType </entry>
+       <entry> Indicates the aggregate type such as Charging Service. </entry>
+       <entry> AggregateType </entry>
+       <entry>
+        <p>Mandatory for Aggregate View instance. </p>
+        <p>Aggregate view definition taken at the time of creation.</p>
+        <p> Read-only and non-modifiable.</p>
+       </entry>
+      </row>
+      <row>
+       <entry> aggregateList </entry>
+       <entry> Contains the charging service IDs. </entry>
+       <entry> List&lt;String&gt; </entry>
+       <entry>
+        <p>Optional for Aggregate View instance. </p>
+        <p>Aggregate view definition taken at the time of creation.</p>
+        <p> Read-only and non-modifiable.</p>
+       </entry>
+      </row>
+      <row>
+       <entry> InitialValue </entry>
+       <entry> The initial value of the bucket/bucket-cap/counter. </entry>
+       <entry> BigDecimal </entry>
+       <entry>
+        <p>Mandatory for Aggregate View instance. </p>
+        <p>Set aggregate initial value of same kind of bucket/bucket-cap/counter at time of
+         creation.</p>
+        <p> Read-only and non-modifiable.</p>
+       </entry>
+      </row>
+      <row>
+       <entry> CurrentValue </entry>
+       <entry> The current value of the bucket/bucket-cap/counter. </entry>
+       <entry> BigDecimal </entry>
+       <entry>
+        <p>Mandatory</p>
+        <p>Saved as long in DB. It is set same as initial value at the time of creation and can be
+         updated to any positive value.</p>
+        <p>Set as "0" when no value is given in update request.</p>
+       </entry>
+      </row>
+      <row>
+       <entry> UnusedValue </entry>
+       <entry> The unused value of the bucket/bucket-cap/counter. </entry>
+       <entry> BigDecimal </entry>
+       <entry>
+        <p>Mandatory</p>
+        <p>Saved as long in DB. It is set same as initial value at the time of creation and can be
+         updated to any positive value.</p>
+        <p>Set as "0" when no value is given in update request.</p>
+       </entry>
+      </row>
+      <row>
+       <entry> InitialCOBVal </entry>
+       <entry> The initial value of carry-over bucket. </entry>
+       <entry> BigDecimal </entry>
+       <entry>
+        <p>Saved as long in DB. Mandatory for Aggregate View instance.</p>
+        <p>Set aggregate initial value from same kind of carry-over bucket instances at time of
+         creation.</p>
+        <p> Read-only and non-modifiable.</p>
+       </entry>
+      </row>
+      <row>
+       <entry> CurrCOBVal </entry>
+       <entry> The current value of carry-over bucket. </entry>
+       <entry> BigDecimal </entry>
+       <entry>
+        <p>Mandatory</p>
+        <p>Saved as long in DB. It is set same as initial carry-over bucket value at the time of
+         creation and can be updated to any positive value.</p>
+        <p>Set as "0" when no value is given in update request.</p>
+       </entry>
+      </row>
+      <row>
+       <entry> UnusedCOBVal </entry>
+       <entry> The unused value of carry-over bucket. </entry>
+       <entry> BigDecimal </entry>
+       <entry>
+        <p>Mandatory</p>
+        <p>Saved as long in DB. It is set same as initial carry-over bucket value at the time of
+         creation and can be updated to any positive value.</p>
+        <p>Set as "0" when no value is given in update request.</p>
+       </entry>
+      </row>
+      <row>
+       <entry> thresholdProfileGroupIdList </entry>
+       <entry> The list of TPG Id. </entry>
+       <entry> List&lt;String&gt; </entry>
+       <entry>
+        <p>Optional</p>
+        <p>Aggregate view definition taken at the time of creation.</p>
+        <p> Read-only and non-modifiable.</p>
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+<note>
+<p>The Aggregate view entity - instance cannot be modified through SM GUI. Some of the parameters listed in the table are linked to the calculations performed by the internal service logic.</p>
+</note>
+</section>
+<section><title>Actions associated with an aggregate view</title>
+<table pgwide="1" colsep="1" rowsep="1">
+    <tgroup cols="2">
+     <colspec colname="col1" colwidth="1*"/>
+     <colspec colname="col2" colwidth="1.44*"/>
+     <thead>
+      <row>
+       <entry>
+        <p>Action</p>
+       </entry>
+       <entry>
+        <p>Description</p>
+       </entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry> Create </entry>
+       <entry> Used to create an aggregate view entity in database by providing the mandatory and
+        optional parameters. </entry>
+      </row>
+      <row>
+       <entry> Read </entry>
+       <entry> Used to display the aggregate view entity per the data retrieved from database.
+       </entry>
+      </row>
+      <row>
+       <entry> Update </entry>
+       <entry> Used to update a particular aggregate view entity in database. </entry>
+      </row>
+      <row>
+       <entry> Delete </entry>
+       <entry> Used to delete a particular aggregate view entity from database. </entry>
+      </row>
+      <row>
+       <entry> addAVsToDevice </entry>
+       <entry> Used to attach a list of AVs as well as a single AV to a device. </entry>
+      </row>
+      <row>
+       <entry> addAVsToGroup </entry>
+       <entry> Used to attach a list of AVs as well as a single AV to a group. </entry>
+      </row>
+      <row>
+       <entry> removeAVsFromDevice </entry>
+       <entry> Used to remove a list of AVs as well as a single AV from a device. </entry>
+      </row>
+      <row>
+       <entry> removeAVsFromGroup </entry>
+       <entry> Used to remove a list of AVs as well as a single AV from a group. </entry>
+      </row>
+      <row>
+       <entry> deleteAVInstWhileDeletingDevice </entry>
+       <entry> Used to delete all the AV instances corresponding to that device when a device is
+        removed. </entry>
+      </row>
+      <row>
+       <entry> deleteAVInstWhileDeletingGroup </entry>
+       <entry> Used to delete all the AV instances corresponding to that group when a group is
+        removed. </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+<p>Following are the actions associated with the AV instance.<table pgwide="1" colsep="1" rowsep="1">
+     <title>Aggregate View - instance</title>
+     <tgroup cols="2">
+      <colspec colname="col1" colwidth="1*"/>
+      <colspec colname="col2" colwidth="1.3*"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Action</p>
+        </entry>
+        <entry>
+         <p>Description</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> Read </entry>
+        <entry> Used to read an aggregate view instance from database by providing the mandatory and
+         optional parameters. AggregateViewInstance ID is the mandatory parameter. </entry>
+       </row>
+       <row>
+        <entry> getAvInstancesByDeviceId </entry>
+        <entry> Used to get AV instance list attached to a device. </entry>
+       </row>
+       <row>
+        <entry> getAvInstancesByGroupId </entry>
+        <entry> Used to get AV instance list attached to a group. </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table></p>
+<note>
+<p>These actions are valid for internal purposes only. It is not accessible through the SM GUI for operators.</p>
+</note>
+</section>
+<section><title>AV threshold variables</title>
+<p>The AV threshold variables are <varname>AV-Def-Name</varname>, <varname>AV-Unused-Value</varname>, <varname>AV-Current-Value</varname> as shown in the following figure.</p>
+<fig>
+    <!--MMO resource relative URI: ../Graphics/Release_18.9/AV_Threshold_default.png-->
+    <image href="../images/img9yz-09126-ug01-pczza-sp1-av_threshold_default.png" scale="40"/>
+   </fig>
+</section>
+<section><title>Examples</title>
+<sectiondiv>
+<p><b>Example 1: AV configuration for device</b></p>
+<p>Perform the following steps to configure an AV for a device using the SM GUI:</p><ol>
+<li>
+<p>Create a charging service (CS1) with data buckets - <varname>Bucket101</varname> of 100 byte and <varname>Bucket102</varname> of 200 bytes. Use the <uicontrol>ADDBUCKET</uicontrol> option to add multiple buckets in the <uicontrol>Charging Services</uicontrol> entity.</p>
+</li>
+<li>
+<p>Create a bundle (NokiaBundle) and link the charging service to it. </p>
+</li>
+<li>
+<p>Create an Aggregate View (AV101) and attach the charging service to it, to aggregate the buckets. </p>
+</li>
+<li>
+<p>Create an account (Acc1) to associate with a device.</p>
+</li>
+<li>
+<p>Create a device (iPhone) and attach the aggregate view and subscription (NokiaBundle) to it.</p>
+</li>
+</ol>
+<p>The following figure shows the device overview which displays the bundles linked to the device:</p>
+<fig>
+     <!--MMO resource relative URI: ../Graphics/Release_18.7/DeviceOverview1_default.png-->
+     <image href="../images/img9yz-09126-ug01-pczza-sp1-deviceoverview1_default.png" scale="40"/>
+    </fig>
+<p>The following figure shows the device overview which displays the aggregate view of the device:</p>
+<fig>
+     <!--MMO resource relative URI: ../Graphics/Release_18.7/DeviceOverview2_default.png-->
+     <image href="../images/img9yz-09126-ug01-pczza-sp1-deviceoverview2_default.png" scale="40"/>
+    </fig>
+<p>Here, the data buckets are consolidated in the aggregate view, that is, 100 + 200 = 300 bytes.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 2: Account overview of a device linked with AV</b></p>
+<p>The following figure shows the account overview of an iPhone device subscribed to a bundle and linked to an aggregate view.</p>
+<fig>
+     <!--MMO resource relative URI: ../Graphics/Release_18.7/AVSMAccount_default.png-->
+     <image href="../images/img9yz-09126-ug01-pczza-sp1-avsmaccount_default.png" scale="40"/>
+    </fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 3: Group overview of a group linked with AV</b></p>
+<p>The following figure shows the group overview of a group subscribed to a bundle and linked to an aggregate view.</p>
+<fig>
+     <!--MMO resource relative URI: ../Graphics/Release_18.7/AVGroup_default.png-->
+     <image href="../images/img9yz-09126-ug01-pczza-sp1-avgroup_default.png" scale="40"/>
+    </fig>
+</sectiondiv>
+</section>
+</conbody></concept>

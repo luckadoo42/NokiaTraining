@@ -1,0 +1,687 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e238190"><title>Call scenarios for Event Charging with Unit Reservation calls</title><conbody>
+<section><title>Call controller end-to-end SMS call</title>
+<p>Consider that call controller uses a credit request profile and PDF rules to determine <i>CallType</i>, <i>subCallType</i>, and <i>Roaming</i> status. The call controller interface accepts and processes the call from the network, and then interfaces directly with the Rating Engine where rating rules determine the applicable charging service. The Rating Engine uses applicability conditions and tariffs to charge from a bucket using more PDF rules.</p>
+<p>After processing the CCR message, call controller retrieves the actions from the Rating Engine and constructs a CCA message by populating its GSU, thresholds, and VT for each MSCC in the MSCC list from the CCR message.</p>
+<p>The device lifecycle is invoked on device attached. For CCR-E or CCR-I message with a successful command result code, the call controller <i>sessionManager</i> notifies the <i>lifeCycleManager</i> to handle the state transition before sending the response with CCA message.</p>
+<p>In this example, following CCR-I contains the AVPs available for ECUR for the destination host or
+    realm and session ID (pcef1.diam.originRealm1.com;343039;1521266195) on the Gy and Ro
+     interface:<table colsep="1" id="useofcallcontrolavpsiec-6629d81d" pgwide="1" rowsep="1">
+     <title>Use of call control AVPs ECUR</title>
+     <tgroup cols="4" colsep="1">
+      <colspec colname="COLSPEC0" colnum="1"/>
+      <colspec colname="1" colnum="2"/>
+      <colspec colname="2" colnum="3"/>
+      <colspec colname="3" colnum="4"/>
+      <thead>
+       <row>
+        <entry>
+         <p>First level AVP name</p>
+        </entry>
+        <entry colname="1">
+         <p>Second level AVP name</p>
+        </entry>
+        <entry colname="2">
+         <p>Lowest level AVP name</p>
+        </entry>
+        <entry colname="3">
+         <p>Example values</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> Session-Id </entry>
+        <entry> - </entry>
+        <entry> - </entry>
+        <entry> pcef1.diam.originRealm1.com;343039;1521266195 </entry>
+       </row>
+       <row>
+        <entry> Origin-Host </entry>
+        <entry> - </entry>
+        <entry> - </entry>
+        <entry> pcef1.diam.originRealm1.com </entry>
+       </row>
+       <row>
+        <entry> Origin-Realm </entry>
+        <entry> - </entry>
+        <entry> - </entry>
+        <entry> originRealm1.com </entry>
+       </row>
+       <row>
+        <entry> Destination-Realm </entry>
+        <entry> - </entry>
+        <entry> - </entry>
+        <entry> jRealm </entry>
+       </row>
+       <row>
+        <entry> Auth-Application-Id </entry>
+        <entry colname="1"> - </entry>
+        <entry colname="2"> - </entry>
+        <entry colname="3"> 4 </entry>
+       </row>
+       <row>
+        <entry> Service-Context-Id </entry>
+        <entry> - </entry>
+        <entry> - </entry>
+        <entry> 32274@3gpp.org </entry>
+       </row>
+       <row>
+        <entry> CC-Request-Number </entry>
+        <entry> - </entry>
+        <entry> - </entry>
+        <entry> 0 </entry>
+       </row>
+       <row>
+        <entry> CC-Request-Type </entry>
+        <entry> - </entry>
+        <entry> - </entry>
+        <entry> 1 (INITIAL_REQUEST) </entry>
+       </row>
+       <row>
+        <entry> Origin-State-Id </entry>
+        <entry> - </entry>
+        <entry> - </entry>
+        <entry> 1473342807 </entry>
+       </row>
+       <row>
+        <entry> Event-Timestamp </entry>
+        <entry> - </entry>
+        <entry> - </entry>
+        <entry> Sep 8, 2016 1:53:31 PM </entry>
+       </row>
+       <row>
+        <entry morerows="1"> Subscription-Id </entry>
+        <entry> Subscription-Id-Data </entry>
+        <entry> - </entry>
+        <entry> 390000000000001 and Grouped Value 2 </entry>
+       </row>
+       <row>
+        <entry> Subscription-Id-Type </entry>
+        <entry> - </entry>
+        <entry>
+         <p>IMSI</p>
+         <p>E.164</p>
+        </entry>
+       </row>
+       <row>
+        <entry> Multiple-Services-Indicator </entry>
+        <entry> - </entry>
+        <entry> - </entry>
+        <entry> 1 (MULTIPLE_SERVICES_SUPPORTED) </entry>
+       </row>
+       <row>
+        <entry> service-context-Id </entry>
+        <entry> - </entry>
+        <entry> - </entry>
+        <entry> 32274@3gpp.org </entry>
+       </row>
+       <row>
+        <entry> User-Name </entry>
+        <entry> - </entry>
+        <entry> - </entry>
+        <entry> - </entry>
+       </row>
+       <row>
+        <entry> CC-Correlation-Id </entry>
+        <entry colname="1"> - </entry>
+        <entry colname="2"> - </entry>
+        <entry colname="3"> &gt; </entry>
+       </row>
+       <row>
+        <entry> Termination-Cause </entry>
+        <entry> - </entry>
+        <entry> - </entry>
+        <entry> 5 </entry>
+       </row>
+       <row>
+        <entry morerows="1"> User-Equipment-Info </entry>
+        <entry> User-Equipment-Info-Type </entry>
+        <entry> - </entry>
+        <entry> 0 (IMEISV) </entry>
+       </row>
+       <row>
+        <entry> User-Equipment-Info-Value </entry>
+        <entry> - </entry>
+        <entry> 4970686f6e65 (iPhone) </entry>
+       </row>
+       <row>
+        <entry morerows="8"> Multiple-Services-Credit-Control </entry>
+        <entry morerows="5"> Requested-Service-Unit </entry>
+        <entry> CC-Time </entry>
+        <entry> 10 </entry>
+       </row>
+       <row>
+        <entry> CC-Money </entry>
+        <entry> Unit-Value, Currency-Code </entry>
+       </row>
+       <row>
+        <entry> CC-Total-Octets </entry>
+        <entry> 225 </entry>
+       </row>
+       <row>
+        <entry> CC-Input-Octets </entry>
+        <entry> 200 </entry>
+       </row>
+       <row>
+        <entry> CC-Output-Octets </entry>
+        <entry> 25 </entry>
+       </row>
+       <row>
+        <entry> CC-Service-Specific-Units </entry>
+        <entry> 1 </entry>
+       </row>
+       <row>
+        <entry> Service-Identifier </entry>
+        <entry> - </entry>
+        <entry> 121 </entry>
+       </row>
+       <row>
+        <entry> Rating-Group </entry>
+        <entry> - </entry>
+        <entry> 8 </entry>
+       </row>
+       <row>
+        <entry> Reporting-Reason </entry>
+        <entry> - </entry>
+        <entry> 8 (POOL_EXHAUSTED) </entry>
+       </row>
+       <row>
+        <entry morerows="8"> Service-Information </entry>
+        <entry morerows="7">
+         <p>PS-Information</p>
+         <p>(based on 32.274, sub set of 32.299)</p>
+        </entry>
+        <entry> User-Equipment-Info </entry>
+        <entry> - </entry>
+       </row>
+       <row>
+        <entry> User-Equipment-Info-Type </entry>
+        <entry> 0 (IMEISV) </entry>
+       </row>
+       <row>
+        <entry> User-Equipment-Info-Value </entry>
+        <entry> 01010101 </entry>
+       </row>
+       <row>
+        <entry> 3GPP-User-Location-Info </entry>
+        <entry> - </entry>
+       </row>
+       <row>
+        <entry> 3GPP-RAT-Type </entry>
+        <entry> 6 (EUTRAN) </entry>
+       </row>
+       <row>
+        <entry> 3GPP-MS-TimeZone </entry>
+        <entry> 1100 (GMT + 2 hours 45 minutes No Adjustment) </entry>
+       </row>
+       <row>
+        <entry>
+         <p>PDP-Address</p>
+         <p>PDP-Address Family </p>
+         <p>PDP-Address Address</p>
+        </entry>
+        <entry>
+         <p>–PDP-Address Family = 1 (IPv4)</p>
+         <p>–PDP-Address Address = 94.1.21.1.1</p>
+        </entry>
+       </row>
+       <row>
+        <entry> 3GPP-SGSN-MCC-MNC </entry>
+        <entry> 302720 </entry>
+       </row>
+       <row>
+        <entry> SMS-Information </entry>
+        <entry>
+         <p>Client-Address</p>
+         <p>Client-Address Family</p>
+         <p>Client-Address Address</p>
+        </entry>
+        <entry>
+         <p>Client-Address Family = 1 (IPv4)</p>
+         <p>Client-Address Address = 94.1.21.1.2</p>
+        </entry>
+       </row>
+       <row>
+        <entry morerows="8"> Service-Information (continued) </entry>
+        <entry morerows="1"> Originating-SCCP-Address </entry>
+        <entry> Originating-SCCP-Address Family </entry>
+        <entry> 1 (IPv4) </entry>
+       </row>
+       <row>
+        <entry> Originating-SCCP-Address Address </entry>
+        <entry> 94.1.21.1.3 </entry>
+       </row>
+       <row>
+        <entry morerows="4"> Originator-Received-Address </entry>
+        <entry> Address-Type </entry>
+        <entry> 2 (IPv4 Address) </entry>
+       </row>
+       <row>
+        <entry> Address-Data </entry>
+        <entry> 94.21.1.4 </entry>
+       </row>
+       <row>
+        <entry> Address-Domain </entry>
+        <entry/>
+       </row>
+       <row>
+        <entry> Domain-Name </entry>
+        <entry> vfit.com </entry>
+       </row>
+       <row>
+        <entry> 3GPP-IMSI-MCC-MNC </entry>
+        <entry> 310015 </entry>
+       </row>
+       <row>
+        <entry morerows="1"> SMSC-Address </entry>
+        <entry> SMSC-Address Family </entry>
+        <entry> 1 (IPv4) </entry>
+       </row>
+       <row>
+        <entry> SMSC-Address Address </entry>
+        <entry> 94.1.21.1.5 </entry>
+       </row>
+       <row>
+        <entry morerows="6"> Service-Information (continued) </entry>
+        <entry> SM-Message-Type </entry>
+        <entry/>
+        <entry> 0 (SUBMISSION) </entry>
+       </row>
+       <row>
+        <entry morerows="3"> Originator-Interface </entry>
+        <entry> Interface-Id </entry>
+        <entry> mobile </entry>
+       </row>
+       <row>
+        <entry> Interface-Port </entry>
+        <entry> 8999 </entry>
+       </row>
+       <row>
+        <entry> Interface-Text </entry>
+        <entry> SMSTEXT </entry>
+       </row>
+       <row>
+        <entry> Interface-Type </entry>
+        <entry> 1 (MOBILE_ORIGINATING) </entry>
+       </row>
+       <row>
+        <entry morerows="1"> Recipient Info </entry>
+        <entry>
+         <p>Destination interfaces:</p>
+         <ul>
+          <li>
+           <p>Interface-Id</p>
+          </li>
+          <li>
+           <p>Interface-Port</p>
+          </li>
+          <li>
+           <p>Interface-Text</p>
+          </li>
+          <li>
+           <p>Interface-Type</p>
+          </li>
+         </ul>
+        </entry>
+        <entry>
+         <p>Destination interfaces (example)</p>
+         <ul>
+          <li>
+           <p>Interface-Id = mobile</p>
+          </li>
+          <li>
+           <p>Interface-Port = 8999</p>
+          </li>
+          <li>
+           <p>Interface-Text = SMSTEXT</p>
+          </li>
+          <li>
+           <p>Interface-Type = 1 (MOBILE_ORIGINATING)</p>
+          </li>
+         </ul>
+        </entry>
+       </row>
+       <row>
+        <entry>
+         <p>Recipient-Address</p>
+         <p>Address-Type </p>
+        </entry>
+        <entry> 2 (IPv4 Address) </entry>
+       </row>
+       <row>
+        <entry morerows="6"> Service-Information (continued) </entry>
+        <entry morerows="6"/>
+        <entry> Address-Data </entry>
+        <entry> 94.21.1.6 </entry>
+       </row>
+       <row>
+        <entry> Address-Domain </entry>
+        <entry/>
+       </row>
+       <row>
+        <entry>
+         <p>Domain-Name</p>
+         <p>3GPP-IMSI-MCC-MNC</p>
+         <p>Addressee-Type</p>
+        </entry>
+        <entry>
+         <p>Example values:</p>
+         <ul>
+          <li>
+           <p>Domain-Name = vfit.com;</p>
+          </li>
+          <li>
+           <p>3GPP-IMSI-MCC-MNC = 310015</p>
+          </li>
+          <li>
+           <p>Addressee-Type = 0 (TO)</p>
+          </li>
+         </ul>
+        </entry>
+       </row>
+       <row>
+        <entry>
+         <p>Recipient-Received-Address</p>
+         <p>Address-Type </p>
+        </entry>
+        <entry> Address-Type = 2 (IPv4 Address) </entry>
+       </row>
+       <row>
+        <entry> Address-Data </entry>
+        <entry> Address-Data = 94.21.1.7 </entry>
+       </row>
+       <row>
+        <entry> Address-Domain </entry>
+        <entry/>
+       </row>
+       <row>
+        <entry>
+         <p>Domain-Name</p>
+         <p>3GPP-IMSI-MCC-MNC </p>
+        </entry>
+        <entry>
+         <p>Domain-Name = vfit.com</p>
+         <p>3GPP-IMSI-MCC-MNC = 310015</p>
+        </entry>
+       </row>
+       <row>
+        <entry morerows="2"> Service-Information (continued) </entry>
+        <entry morerows="2"/>
+        <entry>
+         <p>Recipient-SCCP-Address</p>
+         <p>SMSC-Address Family </p>
+        </entry>
+        <entry> SMSC-Address Family = 1 (IPv4) </entry>
+       </row>
+       <row>
+        <entry> SMSC-Address Address </entry>
+        <entry> SMSC-Address Address = 94.1.21.1.8 </entry>
+       </row>
+       <row>
+        <entry> SM-Protocol-ID </entry>
+        <entry> 00000004 </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table></p>
+<p>The Call Type is processed from the credit request profile as SMS and generates the following
+    rule tables within the contexts of call controller and CCR-I:<table pgwide="1" colsep="1"
+     rowsep="1">
+     <tgroup cols="2">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <thead>
+       <row>
+        <entry>
+         <p>If...</p>
+        </entry>
+        <entry>
+         <p>Then...</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry>
+         <p>
+          <i>Rule table 1:</i>
+         </p>
+         <p>
+          <userinput>GY_MESSAGE. Service-Context-Id</userinput> == <varname>32274@3gpp.org</varname>
+         </p>
+        </entry>
+        <entry>
+         <userinput>CALL_RESULT.Default-Roaming-Decision</userinput> =
+          <varname>RoamingDecision.HOME</varname>
+        </entry>
+       </row>
+       <row>
+        <entry>
+         <p>
+          <i>Rule table 2:</i>
+         </p>
+         <p>
+          <userinput>GY_MESSAGE. Multiple-Services-Credit-Control.Rating-Group</userinput> ==
+           <varname>8</varname>
+         </p>
+        </entry>
+        <entry>
+         <userinput>CALL_RESULT.Call-Sub-Type</userinput> = <varname>CallSubType.SMS_MO</varname>
+        </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table></p>
+<p>When the credit request profile based rules are evaluated, the <i>Call Type</i> is processed and the rule tables are matched to configure the <i>Roaming Status</i> as <varname>HOME</varname> and the <i>call-Sub-Type</i> as <varname>SMS-MO</varname> indicating a mobile SMS message, which means the <i>CALL_RESULT ResultContext</i> are returned as the following policy decision results:</p><ul>
+<li>
+<p>
+<userinput>CALL_RESULT.Default-Roaming-Decision</userinput> = <varname>HOME</varname>
+</p>
+</li>
+<li>
+<p>
+<userinput>CALL_RESULT.Call-Sub-Type</userinput> = <varname>SMS_MO</varname>
+</p>
+</li>
+</ul>
+<p>Call controller processes the CCR using the <i>service Id</i> to request a number of units for the call as follows:</p><ul>
+<li>
+<p>
+<userinput>requestedUnit</userinput>
+</p>
+</li>
+<li>
+<p>
+<userinput>TIME:10</userinput>
+</p>
+</li>
+<li>
+<p>
+<userinput>TVOL:225</userinput>
+</p>
+</li>
+<li>
+<p>
+<userinput>IVOL:200</userinput>
+</p>
+</li>
+<li>
+<p>
+<userinput>OVOL:25</userinput>
+</p>
+</li>
+<li>
+<p>
+<userinput>SERVICE_SPECIFIC:1</userinput>
+</p>
+</li>
+</ul>
+<p>A call context is created for the session <varname>pcef1.diam.originRealm1.com;343039;1521266195</varname> triggering a call to the Rating Engine to get a rating request for the session. Upon evaluating and matching the <uicontrol>Rating Rule</uicontrol> table, <varname>Applicability Condition_SMS_1</varname> (the third rule table), a value of true is added for the <systemoutput>RATING.Charging-Service-Applicable</systemoutput> action.</p>
+<p>The <uicontrol>Rating Rule</uicontrol> table in the Rating Engine evaluates how a call is charged by matching a rule that adds a tariff action to select a value from the <i>SMSbucket</i>. The bucket balance is checked and if there is enough in the bucket balance, then the amount requested is deducted and reserved. A response is then updated with the granted service units as requested in a CCA message.</p>
+<p>The CCA contains the given AVPs for the destination host/realm and session id (<varname>pcef1.diam.originRealm1.com;343039;1521266195</varname>) on the Gy and Ro interface:</p><ul>
+<li>
+<p>
+<i>Result-Code with Value(s):2001</i>
+</p>
+</li>
+<li>
+<p>
+<i>CC-Request-Type with Value(s):1</i>
+</p>
+</li>
+<li>
+<p>
+<i>CC-Request-Number with Value(s):0</i>
+</p>
+</li>
+<li>
+<p>
+<i>Multiple-Services-Credit-Control with Value(s): Grouped Value 1</i>
+</p>
+</li>
+<li>
+<p>
+<i>Granted-Service-Unit with Value(s): Grouped Value 1</i>
+</p>
+</li>
+<li>
+<p>
+<i>CC-Time with Value(s):0</i>
+</p>
+</li>
+<li>
+<p>
+<i>CC-Money = Unit Value=1, Currency Code=Euro</i>
+</p>
+</li>
+<li>
+<p>
+<i>CC-Total-Octets with Value(s):0</i>
+</p>
+</li>
+<li>
+<p>
+<i>CC-Input-Octets with Value(s):0</i>
+</p>
+</li>
+<li>
+<p>
+<i>CC-Output-Octets with Value(s):0</i>
+</p>
+</li>
+<li>
+<p>
+<i>CC-Service-Specific-Units with Value(s):1</i>
+</p>
+</li>
+<li>
+<p>
+<i>Service-Identifier with Value(s):121</i>
+</p>
+</li>
+<li>
+<p>
+<i>Rating-Group with Value(s):8</i>
+</p>
+</li>
+<li>
+<p>
+<i>Result-Code with Value(s):2001</i>
+</p>
+</li>
+<li>
+<p>
+<i>Validity-Time with Value(s):10</i>
+</p>
+</li>
+<li>
+<p>
+<i>Credit-Control-Failure-Handling with Value(s):0</i>
+</p>
+</li>
+<li>
+<p>
+<i>CC-Session-Failover with Values(s):0</i>
+</p>
+</li>
+</ul>
+</section>
+<section><title>Call Controller failure handling</title>
+<p>A call controller supports the <i>Credit-Control-Failure-Handling</i> AVP in the CCA (Initial and Update) and <i>CC-Session-Failover</i> in the CCA (Initial and Update) through RSV.</p>
+<note>
+<p>
+<i>CCFH</i> and <i>CCSF</i> AVPs are not supported at MSCC level, and are supported at root level only. Therefore, rules cannot be applied at MSCC level for <i>CCFH</i> and <i>CCSF</i> AVPs, and, <i>CCFH</i> and <i>CCSF</i> AVPs are not applicable for IEC calls.</p>
+</note>
+<sectiondiv>
+<p><b>Credit-Control-Failure-Handling AVP</b></p>
+<p>The NCC application supports the following values of the <i>Credit-Control-Failure-Handling</i>
+     AVP in a CCA message:</p><ul>
+<li>
+<p>
+<varname>TERMINATE (0)</varname>
+</p>
+</li>
+<li>
+<p>
+<varname>CONTINUE (1)</varname>
+</p>
+</li>
+<li>
+<p>
+<varname>RETRY_AND_TERMINATE (2)</varname>
+</p>
+</li>
+<li>
+<p>
+<varname>IGNORE (3)</varname>
+</p>
+</li>
+</ul>
+<p>NCC performs the following logic based on the values set:</p><ul>
+<li>
+<p>If the value of <i>CCFH</i> AVP is configured as <varname>IGNORE</varname> in active RSV, then <i>CCFH</i> AVP is not returned in CCA message.</p>
+</li>
+<li>
+<p>If the value is <varname>NULL</varname>, then <i>CCFH</i> AVP is returned in CCA message as <varname>TERMINATE</varname>.</p>
+</li>
+</ul>
+<p>The values of CCFH can be configured as an output of the rule as shown in the following figure. To do this, log into the SM GUI and navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> &gt; <uicontrol>Charging</uicontrol> tab and select <uicontrol>Rules and Variables</uicontrol> from the drop-down list.</p>
+<fig>
+     <title>CCFH sample </title>
+     <!--MMO resource relative URI: ../Graphics/Release_18.5/CCFH1_default.png-->
+     <image href="../images/img9yz-09126-ug01-pczza-sp1-ccfh1_default.png" scale="80"/>
+    </fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>CC-Session-Failover AVP</b></p>
+<p>The <i>CC-Session-Failover</i> AVP contains information about whether moving the credit-control message stream to a backup server during an ongoing credit-control session is supported. It can have either of the following values:</p><ul>
+<li>
+<p>
+<varname>FAILOVER_NOT_SUPPORTED (0)</varname>
+</p>
+</li>
+<li>
+<p>
+<varname>FAILOVER_SUPPORTED(1)</varname>
+</p>
+</li>
+<li>
+<p>
+<varname>IGNORE (2)</varname>
+</p>
+</li>
+</ul>
+<p>The value of this AVP is selected while processing an active RSV. If the value is configured as <varname>IGNORE</varname> or the default parameter is missing in the active RSV, then the <i>CCSF</i> AVP is not returned in a CCA message.</p>
+<p>The values of the <i>CCSF</i> AVP can be configured as an output of the rule as shown in the
+     following figure. To do this, log into the SM GUI and navigate to <uicontrol>Policy &amp;
+      Charging Configuration</uicontrol> &gt; <uicontrol>Charging</uicontrol> tab and select
+      <uicontrol>Rules and Variables</uicontrol> from the drop-down list.<fig>
+      <title>CCSF sample</title>
+      <!--MMO resource relative URI: ../Graphics/Release_18.5/CCSF_default.png-->
+      <image href="../images/img9yz-09126-ug01-pczza-sp1-ccsf_default.png" scale="80"/>
+     </fig></p>
+</sectiondiv>
+</section>
+</conbody></concept>

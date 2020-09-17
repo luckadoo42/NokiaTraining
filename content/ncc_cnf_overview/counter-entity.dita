@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+		<concept id="id9YZ-09018-UG00-PCZZA-d1e13997"><title>Counter entity</title><conbody>
+
+<section><title>Overview</title>
+
+<p>A counter accumulates the value of defined usage type that can be used against the defined threshold value. A specific action is taken on the basis of the accumulated usage type value, such as sending notification to subscribers.</p>
+<p>Counters track the consumption of charging services and bucket types associated with the specific charging services.</p>
+<p>Following are the types of counters:</p><ul>
+
+<li>
+<p>
+<i>Device counter</i>: A counter attached to a device.</p>
+</li>
+<li>
+<p>
+<i>Device group counter</i>: A device counter attached to a group.</p>
+</li>
+<li>
+<p>
+<i>Group counter</i>: A counter attached to a group.</p>
+</li>
+<li>
+<p>
+<i>Subscription counter</i>: A counter attached to a subscription and limited to consumption by attached subscription only.</p>
+</li>
+<li>
+<p>
+<i>Multi-bundle counter</i>: A counter is updated across all subscriptions attached to a device.</p>
+</li>
+</ul>
+<p>Consider the following points during subscription creation or removing a subscription from a device or group:</p><ul>
+
+<li>
+<p>During subscription creation, the information related to the charging service counters are stored in the entity counter instance. In case of no-charge, the charging service counters are enabled and the subscription counters count the usage and the usage type counters are updated.</p>
+</li>
+<li>
+<p>If a subscription is removed from a device or group in between the reservation and commit, then it is recommended that the delete subscription action moves the device or group subscription to barred or final state before executing the <i>Delete Entity</i> action.</p>
+<p>If the lifecycle timers are configured after the barred or final state, then the lifecycle timer value must be greater than the maximum <i>VT</i>. This ensures that no reservation is available from the subscription removed from a device or group.</p>
+<p>
+<b>Note</b>: It is highly recommended that removing a subscription from a device or group is performed when the subscription is in a barred or final state and configure the lifecycle timer value greater than the maximum <i>VT</i>. Otherwise, the ongoing charging related to the removed subscription reports issues and results in call failure.</p>
+</li>
+<li>
+<p>In cases of no-charge and charging from a bucket or account associated with a device or group, if a subscription associated with a device or group is removed in between a reservation and commit, then the subscription counter instances get deleted. However, device counter, group counter, or device group counter remain in the database without affecting the call charging.</p>
+</li>
+</ul>
+</section>
+</conbody></concept>

@@ -1,0 +1,521 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e28451"><title>Pending lifecycle renewal</title><conbody>
+<section><title>Overview</title>
+<p>The two types of lifecycle, <i>Entity</i> and <i>Periodic</i>, supported by the NCC system can
+                have timer transitions configured with them, which are managed and triggered using
+                audit. If multiple timer transitions are planned to be executed at the same time
+                (for example, multiple subscription renewals planned for midnight or non-business
+                hours), then there is a probability of delay in these timer transitions due to
+                processing delay or audit overload. These delayed timer transitions are referred to
+                as pending lifecycles that can impact the subscriber, which directly depends on the
+                amount of delay.</p>
+<p>To resolve the issue faced by a subscriber due to pending lifecycles, as soon as the NCC system
+                receives an API request or Diameter call for an entity that has a lifecycle pending
+                for renewal, the NCC system first executes the renewal of these pending lifecycles
+                before processing the Diameter or API request.</p>
+<p>For example, if the NCC system receives a Diameter request for a device and that device has
+                multiple device subscriptions pending for renewal, then these renewals are
+                immediately executed before processing the Diameter request.</p>
+<note type="attention">
+<p>It is recommended to avoid any of the complex configuration as the ones mentioned in the following scenarios:</p><ul>
+<li>
+<p>A single device is a part of multiple groups.</p>
+</li>
+<li>
+<p>A device or group has subscriptions, which are linked to multiple accounts.</p>
+</li>
+<li>
+<p>A single account is used to sponsor the subscriptions for multiple devices and all pending device subscriptions are renewed using the account lifecycle.</p>
+<p>
+<b>Note:</b> Nokia recommends to have one-to-one relationship between device or group and account or vice-versa. The impact on performance is cumulative in case of one device or group having a relation with more than one account.</p>
+</li>
+</ul>
+</note>
+<p>The pending lifecycle events are executed in the following sequence:</p><ul>
+<li>
+<p>Pending Entity Lifecycle (ELC) execution of a device, group, account, and subscription.</p>
+</li>
+<li>
+<p>Pending Periodic Lifecycle (PLC) execution of an account, which is linked to device and group subscriptions.</p>
+</li>
+<li>
+<p>Pending PLC execution of group subscription.</p>
+</li>
+<li>
+<p>Pending PLC execution of device subscription.</p>
+</li>
+</ul>
+<sectiondiv>
+<p><b>Additional information</b></p>
+<p>Following are some important points related to the pending lifecycle renewal feature:</p><ul>
+<li>
+<p>While identifying the pending lifecycle events, the timezone of an account is considered for the time comparison.</p>
+</li>
+<li>
+<p>Multi-timezone is implemented only for ELC and PLC of an account, which is linked to device and group subscriptions.</p>
+</li>
+<li>
+<p>The multi-timezone is applicable for both Diameter and provisioning interface.</p>
+</li>
+<li>
+<p>The <i>SendSNR</i> action inside the lifecycle also impacts the performance and its impact depends on the number of devices targeted for the <i>SendSNR</i> action.</p>
+</li>
+<li>
+<p>In case of southbound call, if any trigger is executed and no action is taken but the lifecycle state changes, then there is no EDR or CDR generated.</p>
+</li>
+<li>
+<p>While configuring a device ELC, if you use the <i>Device Attachment Event</i> as timed transition, then it also gets generated during the call and therefore, gets triggered twice.</p>
+</li>
+<li>
+<p>This feature is only supported through Gy interface and not through PCRF Gx interface.</p>
+</li>
+<li>
+<p>With entity modification approach in all lifecycle entities, the pending lifecycle trigger feature comes into picture only after one successful transition execution through Audit.</p>
+</li>
+<li>
+<p>In case of few exception, all triggered entities may be rolled back.</p>
+</li>
+<li>
+<p>Currently, Audit database is not in same lock as in entity database. Hence, in case of rollback, there may be inconsistency issues between the two.</p>
+</li>
+</ul>
+<note>
+<p>If the Delete Entity/Delete Subscription actions are configured along with time delay and the lifecycle state is not changed, it results in a dangling TEM entry in the database.</p>
+</note>
+</sectiondiv>
+</section>
+<section id="plccntrreset"><title>Pending counter reset logic</title>
+<p>If there are counters pending to be reset in the TEM queue, then these can be added to the execution queue by setting the application preference <b>Pending Lifecycle Renewal</b> to 1. </p>
+<p>If this application preference is set to 1, then NCC checks for whether a counter is pending or
+                not. If it is pending, the counter is reset, threshold is evaluated, and a new entry
+                is made in TEM.</p>
+<p>For details about counter reset, see <!--xref URI: c-Rating_and_Charging.xml#dbwira--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-dbwira"/>.</p>
+<sectiondiv>
+<p><b>On-call</b></p>
+<p>The following types of counters are considered for on-call pending counter reset:</p><ol>
+<li>
+<p>Device Counter</p>
+</li>
+<li>
+<p>Device Subscription Counter</p>
+</li>
+<li>
+<p>Group Counter</p>
+</li>
+<li>
+<p>Group Subscription Counter</p>
+</li>
+<li>
+<p>Device Group Counter</p>
+</li>
+</ol>
+<note>
+<p>The list of Group and Device is same for both pending lifecycle and counter.</p>
+</note>
+</sectiondiv>
+<sectiondiv>
+<p><b>API</b></p>
+<p>For Device-centric APIs mentioned in <!--xref URI: #apiPLSR--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-d1e28451/apiPLSR"/>, the reset of following pending counters are executed:</p><ol>
+<li>
+<p>Device Counter</p>
+</li>
+<li>
+<p>Device Subscription Counter</p>
+</li>
+<li>
+<p>Device Group Counter</p>
+</li>
+</ol>
+<p>For Group-centric APIs mentioned in <!--xref URI: #apiPLSR--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-d1e28451/apiPLSR"/>, the reset of following pending counters are executed: </p><ol>
+<li>
+<p>Group Counter</p>
+</li>
+<li>
+<p>Group Subscription Counter</p>
+</li>
+</ol>
+</sectiondiv>
+</section>
+<section><title>Example</title>
+<p>Consider a device <i>D1</i> associated with an account <i>A1</i> and a group. The device D1 has a pending device subscription <i>S1</i>. Also, the group is associated with the account <i>A1</i> and pending group subscription <i>Sg</i>.</p>
+<p>The group is further associated with 9 more devices (<i>D2</i>, <i>D3</i>,.....<i>D10</i>) and account <i>A1</i>) and pending device subscription (<i>S2</i>, <i>S3</i>,.......<i>S10</i>) respectively.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_19.6/Pending_lifecycle_renewal_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-pending_lifecycle_renewal_default.png"/>
+</fig>
+<sectiondiv>
+<p><b>Pending lifecycle renewal on receiving a Diameter call for a DEVICE</b></p>
+<p>When the NCC system receives a Diameter call for the device <i>D1</i>, it first triggers pending
+                    ELC of <i>D1</i>, group associated with <i>D1</i>, <i>A1</i>, <i>S1</i> and
+                        <i>Sg</i> followed by the triggering of pending PLC of <i>A1</i>, <i>Sg</i>,
+                    and then <i>S1</i> before processing the Diameter request.</p>
+<note>
+<p>The pending device subscription (<i>S2</i>, <i>S3</i>,.......<i>S10</i>) of other devices are
+                        triggered only when the NCC system receives a Diameter call for that
+                        specific device.</p>
+</note>
+</sectiondiv>
+<sectiondiv>
+<p><b>Pending lifecycle renewal for a GROUP centric API</b></p>
+<p>When the NCC system receives an API request for the group, then it first triggers the pending ELC
+                    of that group, <i>Sg</i>, and <i>A1</i> followed by the triggering of pending
+                    PLC of <i>A1</i> and <i>Sg</i>.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Pending lifecycle renewal for an ACCOUNT centric API</b></p>
+<p>When the NCC system receives an API request for the account <i>A1</i>, then it first triggers the
+                    pending ELC of <i>A1</i>, subscription attached to account (<i>S2</i>,
+                    <i>S3</i>, ....... <i>S10</i>, <i>Sg</i>), then <i>D1</i>, <i>D2</i>, ...,
+                        <i>D10</i> and group attached to <i>Sg</i>. Next, it executes the renewal of
+                    pending PLCs of account followed by the subscriptions (<i>S1</i>, <i>S2</i> ...
+                        <i>S10</i>, <i>Sg</i>) attached to that account.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Pending lifecycle renewal when counters are pending</b></p><ol>
+<li>
+<p>Create a counter and attach it with a device whose periodic cycle is for 2 hours. For example, if it is created at 10:00 am and it needs to be reset after 2 hours, then it is reset at 12:00 pm.</p>
+</li>
+<li>
+<p>However, due to heavy load at 12:00 pm, the counter was not reset.</p>
+</li>
+<li>
+<p>If a call comes that time from that device then the counter is reset with the call execution and change the next cycle in TEM to 2 pm (12:00 pm + 2 hours).</p>
+</li>
+</ol>
+</sectiondiv>
+</section>
+<section id="apiPLSR"><title>APIs affected by pending lifecycle renewal</title>
+<p>Following APIs trigger the pending lifecycle renewal feature:<table pgwide="1" colsep="1"
+                    rowsep="1">
+                    <tgroup cols="2">
+                        <colspec colname="col1"/>
+                        <colspec colname="col2"/>
+                        <thead>
+                            <row>
+                                <entry>
+                                    <p>SM API</p>
+                                </entry>
+                                <entry>
+                                    <p>Device centric/ Group centric/ Account centric</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry> PUT/services/ServiceManager/addDeviceCounter/Counter </entry>
+                                <entry> Device centric </entry>
+                            </row>
+                            <row>
+                                <entry> PUT/services/ServiceManager/addDeviceGroupCounter/Counter </entry>
+                                <entry> Group centric </entry>
+                            </row>
+                            <row>
+                                <entry> PUT/services/ServiceManager/addGroupCounter/Counter </entry>
+                                <entry> Group centric </entry>
+                            </row>
+                            <row>
+                                <entry> PUT/services/ServiceManager/removeDeviceCounter/Counter </entry>
+                                <entry> Device centric </entry>
+                            </row>
+                            <row>
+                                <entry> PUT/services/ServiceManager/removeDeviceGroupCounter/Counter </entry>
+                                <entry>
+                                    <p>Device centric</p>
+                                    <p>Group centric</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> PUT/services/ServiceManager/removeGroupCounter/Counter </entry>
+                                <entry> Group centric </entry>
+                            </row>
+                            <row>
+                                <entry> POST/services/ServiceManager/transferUnits/GiftingService </entry>
+                                <entry> Device centric </entry>
+                            </row>
+                            <row>
+                                <entry> POST/services/ServiceManager/updateTime/LifeCycle </entry>
+                                <entry>
+                                    <p>Device centric</p>
+                                    <p>Group centric</p>
+                                    <p>Account centric</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> PUT/services/ServiceManager/sendSNR/SySession </entry>
+                                <entry> Device centric </entry>
+                            </row>
+                            <row>
+                                <entry> POST/services/ServiceManager/create/SySession </entry>
+                                <entry> Device centric </entry>
+                            </row>
+                            <row>
+                                <entry> PUT/services/ServiceManager/update/SySession </entry>
+                                <entry> Device centric </entry>
+                            </row>
+                            <row>
+                                <entry> GET/services/ServiceManager/getData/SySession </entry>
+                                <entry> Device centric </entry>
+                            </row>
+                            <row>
+                                <entry> DELETE/services/ServiceManager/delete/SySession </entry>
+                                <entry> Device centric </entry>
+                            </row>
+                            <row>
+                                <entry> GET/services/ServiceManager/subscriber/getData/AVInstance </entry>
+                                <entry>
+                                    <p>Device centric</p>
+                                    <p>Group centric</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> PUT/services/ServiceManager/subscriber/update/BucketInstance </entry>
+                                <entry>
+                                    <p>Device centric</p>
+                                    <p>Group centric</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    GET/services/ServiceManager/subscriber/getData/BucketInstance </entry>
+                                <entry>
+                                    <p>Device centric</p>
+                                    <p>Group centric</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    GET/services/ServiceManager/subscriber/getData/EntityCounterInstance </entry>
+                                <entry>
+                                    <p>Device centric</p>
+                                    <p>Group centric</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> DELETE/services/ServiceManager/subscriber/delete/Device </entry>
+                                <entry> Device centric </entry>
+                            </row>
+                            <row>
+                                <entry> DELETE/services/ServiceManager/subscriber/delete/Account </entry>
+                                <entry> Account centric </entry>
+                            </row>
+                            <row>
+                                <entry> DELETE/services/ServiceManager/subscriber/delete/Group </entry>
+                                <entry> Group centric </entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    PUT/services/ServiceManager/subscriber/updateCustomData/Device </entry>
+                                <entry> Device centric </entry>
+                            </row>
+                            <row>
+                                <entry> GET/services/ServiceManager/subscriber/getData/Group </entry>
+                                <entry> Group centric </entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    PUT/services/ServiceManager/subscriber/update/setaccountbalance/Account </entry>
+                                <entry> Account centric </entry>
+                            </row>
+                            <row>
+                                <entry> GET/services/ServiceManager/subscriber/getData/Device </entry>
+                                <entry> Device centric </entry>
+                            </row>
+                            <row>
+                                <entry> GET/services/ServiceManager/subscriber/getData/Account </entry>
+                                <entry> Account centric </entry>
+                            </row>
+                            <row>
+                                <entry> POST/services/ServiceManager/subscriber/create/Device </entry>
+                                <entry> Device centric </entry>
+                            </row>
+                            <row>
+                                <entry> PUT/services/ServiceManager/subscriber/silentModify/Account </entry>
+                                <entry> Account centric </entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    PUT/services/ServiceManager/subscriber/updateCustomData/Account </entry>
+                                <entry> Account centric </entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    PUT/services/ServiceManager/subscriber/updateCustomData/Group </entry>
+                                <entry> Group centric </entry>
+                            </row>
+                            <row>
+                                <entry> PUT/services/ServiceManager/subscriber/silentModify/Group </entry>
+                                <entry> Group centric </entry>
+                            </row>
+                            <row>
+                                <entry> PUT/services/ServiceManager/subscriber/update/rename/Device </entry>
+                                <entry> Device centric </entry>
+                            </row>
+                            <row>
+                                <entry> PUT/services/ServiceManager/subscriber/update/rename/Account </entry>
+                                <entry> Account centric </entry>
+                            </row>
+                            <row>
+                                <entry> PUT/services/ServiceManager/subscriber/update/rename/Group </entry>
+                                <entry> Group centric </entry>
+                            </row>
+                            <row>
+                                <entry> PUT/services/ServiceManager/subscriber/update/Group </entry>
+                                <entry> Group centric </entry>
+                            </row>
+                            <row>
+                                <entry> POST/services/ServiceManager/subscriber/create/Account </entry>
+                                <entry> Account centric </entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    PUT/services/ServiceManager/subscriber/update/adjustbalance/Account </entry>
+                                <entry> Account centric </entry>
+                            </row>
+                            <row>
+                                <entry> PUT/services/ServiceManager/subscriber/update/Account </entry>
+                                <entry> Account centric </entry>
+                            </row>
+                            <row>
+                                <entry> PUT/services/ServiceManager/subscriber/configure/Device </entry>
+                                <entry> Device centric </entry>
+                            </row>
+                            <row>
+                                <entry> PUT/services/ServiceManager/subscriber/configure/Group </entry>
+                                <entry> Group centric </entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    PUT/services/ServiceManager/subscriber/update/addadministrator/Account </entry>
+                                <entry> Account centric </entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    PUT/services/ServiceManager/subscriber/update/removeadministrator/Account </entry>
+                                <entry> Account centric </entry>
+                            </row>
+                            <row>
+                                <entry> PUT/services/ServiceManager/subscriber/silentModify/Device </entry>
+                                <entry> Device centric </entry>
+                            </row>
+                            <row>
+                                <entry> POST/services/ServiceManager/subscriber/create/Group </entry>
+                                <entry> Group centric </entry>
+                            </row>
+                            <row>
+                                <entry> PUT/services/ServiceManager/subscriber/update/Device </entry>
+                                <entry> Device centric </entry>
+                            </row>
+                            <row>
+                                <entry> GET/services/ServiceManager/subscriber/getbyidentity/Device </entry>
+                                <entry> Device centric </entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    GET/services/ServiceManager/subscriber/getExtendedDevice/Device </entry>
+                                <entry> Device centric </entry>
+                            </row>
+                            <row>
+                                <entry> POST/services/ServiceManager/subscriber/silentCreate/Device </entry>
+                                <entry> Device centric </entry>
+                            </row>
+                            <row>
+                                <entry> DELETE/services/ServiceManager/subscriber/forcedelete/Device </entry>
+                                <entry> Device centric </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table></p>
+<p>Following are the use cases for the northbound (provisioning APIs) for this feature:</p><ol>
+<li>
+<p>
+<b>CREATE</b>
+</p><ul>
+<li>
+<p>A <userinput>CREATE</userinput> request of group, account, or device is triggered from the REST API or GUI.</p>
+</li>
+<li>
+<p>The reload operation is triggered after creating a group, account, or device.</p>
+</li>
+<li>
+<p>If the pending lifecycle renewal feature is disabled, then the creation is done successfully.</p>
+</li>
+<li>
+<p>If the pending lifecycle renewal feature is enabled, then the creation is done successfully. If there are any other group, account, or device attached to the newly created entity and there are any pending subscriptions to be renewed for them, then the subscription renewal is triggered.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<b>READ</b>
+</p><ul>
+<li>
+<p>A <userinput>GET</userinput> request of group, account, or device is triggered from the REST API or GUI.</p>
+</li>
+<li>
+<p>If the pending lifecycle renewal feature is disabled, then the get request is executed successfully.</p>
+</li>
+<li>
+<p>If the pending lifecycle renewal feature is enabled, and:</p>
+<p>- The <i>detailedQuery</i> parameter in the get request is false, then the get request is successfully executed.</p>
+<p>- The <i>detailedQuery</i> parameter in the get request is true, then the get request is successfully executed. If there are any pending subscriptions to be renewed for the triggering entity, then these pending subscriptions are executed and the get request is replied with fresh data.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<b>UPDATE</b>
+</p><ul>
+<li>
+<p>An <userinput>UPDATE</userinput> request of group, account, or device is triggered from the REST API or GUI.</p>
+</li>
+<li>
+<p>If the pending lifecycle renewal feature is disabled, then the update request is executed successfully.</p>
+</li>
+<li>
+<p>If the pending lifecycle renewal feature is enabled and there are any pending subscriptions to be renewed for the triggering entity, then the pending subscriptions are executed but the update request fails with an error message <systemoutput>SUBSCRIBER_RELOAD_REQUEST_FAILED:Request can't be performed as data is being refreshed. Request needs to be sent again considering updated data</systemoutput>. This is done because whenever the pending subscriptions are executed, the data is updated in the database. Therefore, executing the update request received brings the data into inconsistent state and thus, it fails.</p>
+</li>
+<li>
+<p>If the pending lifecycle renewal feature is enabled and there are no pending subscriptions to be renewed, then the <userinput>UPDATE</userinput> request is executed successfully.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<b>DELETE</b>
+</p><ul>
+<li>
+<p>An <userinput>DELETE</userinput> request of group, account, or device is triggered from the REST API or GUI.</p>
+</li>
+<li>
+<p>The reload operation is triggered before deleting a group, account, or device.</p>
+</li>
+<li>
+<p>If the pending lifecycle renewal feature is disabled, then the deletion is done successfully.</p>
+</li>
+<li>
+<p>If the pending lifecycle renewal feature is enabled, then the deletion is done successfully. If there are any other group, account, or device attached to the newly created entity and there are any pending subscriptions to be renewed for them, then its subscription renewal is triggered.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<b>GIFTING API</b>
+</p><ul>
+<li>
+<p>A <i>Gifting</i> API is triggered from the REST API or GUI.</p>
+</li>
+<li>
+<p>If the pending lifecycle renewal featured is enabled and there are any pending subscriptions to be renewed for the triggering entity and all are executed successfully, then the <i>Gifting API</i> request is executed successfully.</p>
+</li>
+<li>
+<p>If the pending lifecycle renewal featured is enabled and there are no pending subscriptions to be renewed, then the <i>Gifting</i> API is executed successfully.</p>
+</li>
+<li>
+<p>If feature is enabled and there are any pending subscriptions to be renewed for the triggering entity but only few are executed successfully, then the <i>Gifting API</i> request is failed. If feature is enabled and there are any pending subscriptions to be renewed for the triggering entity but none are executed successfully, then the <i>Gifting API</i> is failed.</p>
+</li>
+</ul>
+</li>
+</ol>
+</section>
+</conbody></concept>

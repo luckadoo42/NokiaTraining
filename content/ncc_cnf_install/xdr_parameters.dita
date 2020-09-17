@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="sps_parameters_configurations">
+    <title>XDR parameters</title>
+    <conbody>
+        <p>This section describes how to configure cross-datacenter replication (XDR) parameters in
+            the SPS Helm chart.</p>
+        <p>The following is the example of the configuration of the <codeph>topologydata</codeph>
+            and <codeph>xdrproxy</codeph> sub-charts.</p>
+        <codeblock>#Set this to the siteid within the topology you are currently
+  #deploying.
+  spssiteid: 2
+ 
+ 
+  # The topologydata section example can be found in the README.md
+  # (helm get readme CHARTLOCATION)
+  topologydata:
+   config:
+    topology:
+      spspartition:
+        - id: 1
+          name: ME2-ME4
+          siteids: [2,4]
+      spssite:
+        - id: 1
+          location: Ottawa-SM1
+          matesite: 3
+          name: SPS-SM1
+          oamipaddress: sm1.dyn.nesc.nokia.net
+          oamport: 30080
+          oamprotocol: http
+          originhost: ""
+          originrealm: ""
+          primarysmsite: false
+          trafficipaddress: sm1.dyn.nesc.nokia.net
+          trafficport: 30080
+          trafficprotocol: http
+          types: ["SPS-SM"]
+          xdr:
+            externalips:
+              - 138.120.33.14
+              - 138.120.33.15
+            externalport: 3008
+        - id: 2
+          location: Ottawa-ME2
+          matesite: 4
+          name: SPS-ME2
+          oamipaddress: me2.dyn.nesc.nokia.net
+          oamport: 30081
+          oamprotocol: http
+          originhost: cnfme2
+          originrealm: realm
+          primarysmsite: false
+          trafficipaddress: me2.dyn.nesc.nokia.net
+          trafficport: 30081
+          trafficprotocol: http
+          types: ["SPS-Policy", "SPS-Charging", "SPS-Notification", "SPS-CE"]
+          xdr:
+            externalips:
+              - 138.120.33.14
+              - 138.120.33.15
+            externalport: 3009
+        - id: 3
+          location: Montreal-SM3
+          matesite: 1
+          name: SPS-SM3
+          oamipaddress: sm3.dyn.nesc.nokia.net
+          oamport: 30080
+          oamprotocol: http
+          originhost: ""
+          originrealm: ""
+          primarysmsite: false
+          trafficipaddress: sm3.dyn.nesc.nokia.net
+          trafficport: 30080
+          trafficprotocol: http
+          types: ["SPS-SM"]
+          xdr:
+            externalips:
+              - 138.12.330.141
+            externalport: 3008
+        - id: 4
+          location: Montreal-ME4
+          matesite: 2
+          name: SPS-ME4
+          oamipaddress: me4.dyn.nesc.nokia.net
+          oamport: 30081
+          oamprotocol: http
+          originhost: cnfme4
+          originrealm: realm
+          primarysmsite: false
+          trafficipaddress: me4.dyn.nesc.nokia.net
+          trafficport: 30081
+          trafficprotocol: http
+          types: ["SPS-Policy", "SPS-Charging", "SPS-Notification", "SPS-CE"]
+          xdr:
+            externalips:
+              - 138.12.330.141
+            externalport: 3009
+ 
+ 
+#
+#Product subchart settings.
+#
+#The default configuration is for IG
+#Read below to see which components to enable/disable
+#for ME-only or SM-only deployments
+ 
+aerospike:   &lt;&lt;&lt;=== Please refer to the sub-section titled Sizing (on the current
+                    Confluence page under the section Namespaces) where it lists
+                    for SM and ME all the values to be used in this section.
+ 
+ 
+# This section is required if Aerospike geo-replication is applicable
+xdrproxy:
+  enabled: true
+ 
+  # The external IP address(es) assigned to the load balancer for incoming
+  # XDR traffic.
+  externalIPs:
+    - "138.120.33.14"
+    - "138.120.33.15"
+  # The Port number assigned to the load balancer for incoming XDR traffic. Default
+  # is 3008, assign appropriate port number to avoid conflicts.
+  externalPort: 3009
+ 
+  # The content of the config-file used by the aerospike-xdr-proxy container.
+  # Check the documentations from Aerospike, tune the parameters in accordance
+  # with the anticipated average throughput and latency.
+  configFile:
+    service:
+      io-threads: 4
+      worker-threads: 4
+    aerospike:
+      performance:
+        event-loop-size: 4
+    logging:
+      enable-console-logging: true
+      ticker-interval: 10
+      levels:
+        root: info
+ 
+  # Increase resources on xdrproxy pods so geo/XDR works.
+    jvmheap: 3072
+  resources:
+    requests:
+      cpu: 4
+      memory: "4Gi"
+    limits:
+      cpu: 4
+      memory: "4Gi"</codeblock>
+        <codeblock>xdr {
+  dc spssite1 {
+    connector true
+    node-address-port 138.120.33.14 3008
+    node-address-port 138.120.33.15 3008
+    namespace dsc {
+    }
+    namespace dscglobal {
+    }
+    namespace spspd1 {
+    }
+  }
+}</codeblock>
+    </conbody>
+</concept>

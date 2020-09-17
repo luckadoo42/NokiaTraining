@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e3698"><title>Gy interface</title><conbody>
+<section><title>Overview</title>
+<p>The Gy interface between OCS and PCEF allows online credit control for service data flow-based charging. It follows a mechanism where the online client (in OCS represented by CTF) requests resource allocation and reports credit control information, such as IEC, ECUR, and SCUR to OCS. The RAR message flows at the Gy interface, that is, between OCS and PCEF.</p>
+<fig>
+<title>Gy reference point</title>
+<!--MMO resource relative URI: ../Graphics/Release_17.8/Gy_reference_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-gy_reference_default.png"/>
+</fig>
+<p>PCEF is the functional element that encompasses policy enforcement and flow-based charging functionalities. This functional entity is located at the gateway (PGW). It provides control over the user plane traffic handling at the gateway and its QoS, and provides service data flow detection and counting as well as online and offline charging interactions.</p>
+<p>The Rx interface acts as an intra-domain or inter-domain interface. One PCRF serves more than one AF and one given AF may interact with a number of PCRFs. It interacts with only a single PCRF based on an AF session.</p>
+</section>
+<section><title>Credit-Control messages</title>
+<p>This section defines new Diameter message <uicontrol>Command Code</uicontrol> values supported by all Diameter implementations that conform to this specification.</p>
+<p>The command codes are as follows:</p>
+<fig>
+<codeblock>Command-Name         Abbreviation  Code    Reference
+-----------------------------------------------------
+Credit-Control-Request   CCR        272      1.1
+Credit-Control-Answer    CCA        272      1.2</codeblock>
+</fig>
+<sectiondiv>
+<p><b>Credit-Control-Request (CCR) command</b></p>
+<p>The Credit-Control-Request message (CCR) is indicated by the <uicontrol>Command Code</uicontrol> field set to <varname>272</varname> and the <i>R</i> bit set in the <uicontrol>Command Flag</uicontrol> field. It is used between the Diameter credit-control client and the credit-control server to request credit authorization for a given service. The <uicontrol>Auth-Application-Id</uicontrol> must be set to <varname>4</varname> indicating the Diameter credit-control application.</p>
+<fig>
+<title>Format of CCR command</title>
+<codeblock>&lt;Credit-Control-Request&gt; ::= &lt; Diameter Header: 272, REQ, PXY &gt;
+                                   &lt; Session-Id &gt;
+                                   { Origin-Host }
+                                   { Origin-Realm }
+                                   { Destination-Realm }
+                                   { Auth-Application-Id }
+                                   { Service-Context-Id }
+                                   { CC-Request-Type }
+                                   { CC-Request-Number }
+                                   [ Destination-Host ]
+                                   [ User-Name ]
+                                   [ CC-Sub-Session-Id ]
+                                   [ Acct-Multi-Session-Id ]
+                                   [ Origin-State-Id ]
+                                   [ Event-Timestamp ]
+                                  *[ Subscription-Id ]
+                                   [ Service-Identifier ]
+                                   [ Termination-Cause ]
+                                   [ Requested-Service-Unit ]
+                                   [ Requested-Action ]
+                                  *[ Used-Service-Unit ]
+                                   [ AoC-Request-Type ]
+                                   [ Multiple-Services-Indicator ]
+                                  *[ Multiple-Services-Credit-Control ]
+                                  *[ Service-Parameter-Info ]
+                                   [ CC-Correlation-Id ]
+                                   [ User-Equipment-Info ]
+                                  *[ Proxy-Info ]
+                                  *[ Route-Record ]
+                                   [ Service-Information ]
+                                  *[ AVP ]
+</codeblock>
+</fig>
+<fig>
+<title>Format of 3GPP supported CCR command</title>
+<codeblock>&lt;Credit-Control-Request&gt; ::= &lt; Diameter Header: 272, REQ, PXY &gt;
+                                   &lt; Session-Id &gt;
+                                   { Origin-Host }
+                                   { Origin-Realm }
+                                   { Destination-Realm }
+                                   { Auth-Application-Id }
+                                   { Service-Context-Id }
+                                   { CC-Request-Type }
+                                   { CC-Request-Number }
+                                   [ Destination-Host ]
+                                   [ User-Name ]
+                                   [ Origin-State-Id ]
+                                   [ Event-Timestamp ]
+                                  *[ Subscription-Id ]
+                                   [ Termination-Cause ]
+                                   [ Requested-Action ]
+                                   [ AoC-Request-Type ]
+                                   [ Multiple-Services-Indicator ]
+                                  *[ Multiple-Services-Credit-Control ]
+                                   [ CC-Correlation-Id ]
+                                   [ User-Equipment-Info ]
+                                  *[ Proxy-Info ]
+                                  *[ Route-Record ]
+                                   [ Service-Information ]
+                                  *[ AVP ]
+</codeblock>
+</fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>Credit-Control-Answer (CCA) command</b></p>
+<p>The Credit-Control-Answer message (CCA) is indicated by the <uicontrol>Command Code</uicontrol> field set to <varname>272</varname> and the <i>R</i> bit cleared in the <uicontrol>Command Flag</uicontrol> field. It is used between the credit-control server and the Diameter credit-control client to acknowledge a CCR command.</p>
+<fig>
+<title>Format of CCA command</title>
+<codeblock>&lt;Credit-Control-Answer&gt; ::= &lt; Diameter Header: 272, PXY &gt;
+                                  &lt; Session-Id &gt;
+                                  { Result-Code }
+                                  { Origin-Host }
+                                  { Origin-Realm }
+                                  { Auth-Application-Id }
+                                  { CC-Request-Type }
+                                  { CC-Request-Number }
+                                  [ User-Name ]
+                                  [ CC-Session-Failover ]
+                                  [ CC-Sub-Session-Id ]
+                                  [ Acct-Multi-Session-Id ]
+                                  [ Origin-State-Id ]
+                                  [ Event-Timestamp ]
+                                  [ Granted-Service-Unit ]
+                                 *[ Multiple-Services-Credit-Control ]
+                                  [ Cost-Information ]
+                                  [ Low-Balance-Indication ]
+                                  [ Remaining-Balance]
+                                  [ Final-Unit-Indication ]
+                                  [ Check-Balance-Result ]
+                                  [ Credit-Control-Failure-Handling ]
+                                  [ Direct-Debiting-Failure-Handling ]
+                                  [ Validity-Time]
+                                 *[ Redirect-Host]
+                                  [ Redirect-Host-Usage ]
+                                  [ Redirect-Max-Cache-Time ]
+                                 *[ Proxy-Info ]
+                                 *[ Route-Record ]
+                                  [ Failed-AVP ]
+                                  [ Service-Information ]
+                                 *[ AVP ]
+
+</codeblock>
+</fig>
+<fig>
+<title>Format of 3GPP supported CCA command</title>
+<codeblock>&lt;Credit-Control-Answer&gt; ::= &lt; Diameter Header: 272, PXY &gt;
+                                  &lt; Session-Id &gt;
+                                  { Result-Code }
+                                  { Origin-Host }
+                                  { Origin-Realm }
+                                  { Auth-Application-Id }
+                                  { CC-Request-Type }
+                                  { CC-Request-Number }
+                                  [ CC-Session-Failover ]
+                                 *[ Multiple-Services-Credit-Control ]
+                                  [ Cost-Information ]
+                                  [ Low-Balance-Indication ]
+                                  [ Remaining-Balance]
+                                  [ Credit-Control-Failure-Handling ]
+                                  [ Direct-Debiting-Failure-Handling ]
+                                 *[ Redirect-Host]
+                                  [ Redirect-Host-Usage ]
+                                  [ Redirect-Max-Cache-Time ]
+                                 *[ Proxy-Info ]
+                                 *[ Route-Record ]
+                                  [ Failed-AVP ]
+                                  [ Service-Information ]
+                                 *[ AVP ]
+
+</codeblock>
+</fig>
+</sectiondiv>
+</section>
+<section><title>RAR messages</title>
+<p>The following messages are supported by RAR:</p><ul>
+<li>
+<p><xref href="#id9yz-09126-ug01-pczza-sp1-d1e3698/RAR" format="dita"/>
+          </p>
+</li>
+<li>
+<p><xref href="#id9yz-09126-ug01-pczza-sp1-d1e3698/RAA" format="dita"/>
+          </p>
+</li>
+</ul></section>
+  <section id="RAR"><title>Re-Auth-Request command</title>
+<p>The Re-Auth-Request (RAR) is indicated by the <uicontrol>Command Code</uicontrol> field set to <varname>258</varname>  and the <i>R</i> bit set to <varname>true</varname> in the <uicontrol>Command Flag</uicontrol> field. This is sent by any server to the access device providing the session service to request re-authentication and re-authorization of the user.</p>
+<fig>
+<title>Format of RAR command</title>
+<codeblock> &lt;RAR&gt;  ::= &lt; Diameter Header: 258, REQ, PXY &gt;
+                    &lt; Session-Id &gt;
+                    { Origin-Host }
+                    { Origin-Realm }
+                    { Destination-Realm }
+                    { Destination-Host }
+                    { Auth-Application-Id }
+                    { Re-Auth-Request-Type }
+                    [ User-Name ]
+                    [ Origin-State-Id ]
+                  * [ Proxy-Info ]
+                  * [ Route-Record ]
+                    [ CC-Sub-Session-Id ]
+                    [ G-S-U-Pool-Identifier ]
+                    [ Service-Identifier ]
+                    [ Rating-Group ]
+                  * [ AVP ]
+</codeblock>
+</fig>
+<fig>
+<title>Format of 3GPP supported RAR command</title>
+<codeblock> &lt;RAR&gt;  ::= &lt; Diameter Header: 258, REQ, PXY &gt;
+                    &lt; Session-Id &gt;
+                    { Origin-Host }
+                    { Origin-Realm }
+                    { Destination-Realm }
+                    { Destination-Host }
+                    { Auth-Application-Id }
+                    { Re-Auth-Request-Type }
+                    [ User-Name ]
+                    [ Origin-State-Id ]
+                  * [ Proxy-Info ]
+                  * [ Route-Record ]
+                    [ G-S-U-Pool-Identifier ]
+                    [ Service-Identifier ]
+                    [ Rating-Group ]
+                  * [ AVP ]
+</codeblock>
+</fig>
+</section>
+  <section id="RAA"><title>Re-Auth-Answer command</title>
+<p>The Re-Auth-Answer (RAA) is indicated by the <uicontrol>Command Code</uicontrol> field set to <varname>258</varname> and the <i>R</i> bit of the message flag is set to <varname>false</varname>. This is sent in response to the RAR. The <i>Result-Code</i> AVP is mandatory in RAA. Also, a successful RAA message must be followed by an application-specific authentication and authorization message. </p>
+<fig>
+<title>Format of RAA command</title>
+<codeblock>&lt;RAA&gt;  ::= &lt; Diameter Header: 258, PXY &gt;
+                    &lt; Session-Id &gt;
+                    { Result-Code }
+                    { Origin-Host }
+                    { Origin-Realm }
+                    [ User-Name ]
+                    [ Origin-State-Id ]
+                    [ Error-Message ]
+                    [ Error-Reporting-Host ]
+                    [ Failed-AVP ]
+                  * [ Redirect-Host ]
+                    [ Redirect-Host-Usage ]
+                    [ Redirect-Max-Cache-Time ]
+                  * [ Proxy-Info ]
+                    [ CC-Sub-Session-Id ]
+                    [ G-S-U-Pool-Identifier ]
+                    [ Service-Identifier ]
+                    [ Rating-Group ]
+                  * [ AVP ]</codeblock>
+</fig>
+<fig>
+<title>Format of 3GPP supported RAA command</title>
+<codeblock>&lt;RAA&gt;  ::= &lt; Diameter Header: 258, PXY &gt;
+                    &lt; Session-Id &gt;
+                    { Result-Code }
+                    { Origin-Host }
+                    { Origin-Realm }
+                    [ User-Name ]
+                    [ Origin-State-Id ]
+                    [ Error-Message ]
+                    [ Error-Reporting-Host ]
+                    [ Failed-AVP ]
+                  * [ Redirect-Host ]
+                    [ Redirect-Host-Usage ]
+                    [ Redirect-Max-Cache-Time ]
+                  * [ Proxy-Info ]
+                  * [ AVP ]</codeblock>
+</fig>
+</section>
+<section><title>Diameter result codes</title>
+<table pgwide="1" colsep="1" rowsep="1">
+        <title>Diameter result codes - RAR</title>
+        <tgroup cols="3">
+          <colspec colname="COLSPEC1"/>
+          <colspec colname="COLSPEC2"/>
+          <colspec colname="col1"/>
+          <thead>
+            <row>
+              <entry>
+                <p>Result Code</p>
+              </entry>
+              <entry>
+                <p>Value</p>
+              </entry>
+              <entry>
+                <p>Description</p>
+              </entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>
+                <systemoutput>DIAMETER_SUCCESS</systemoutput>
+              </entry>
+              <entry> 2001 </entry>
+              <entry> The call is successfully executed. </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+</section>
+    <section id="section_ftw_nc2_pmb"><title>Provisioning realm based routes</title><p>To provision
+        realm based routes from SM for last used Drouter and alternate Drouters for routing Diameter
+        outbound messages (RAR, ASR, SNR), log in to SM GUI and click <b>Diameter/HTTP
+          Configuration</b> > <b>ROUTING</b> tab. Following figure has sample values: </p><fig
+        id="fig_s44_122_pmb">
+        <title>Realm based route</title>
+        <image placement="break" href="../images/realm_based_routes.png" id="image_t44_122_pmb"
+          scale="50"/>
+      </fig>Here, the <b>Next Hop</b> field value is the FQDN of Drouter. <b>Destination Realm</b>
+      is the realm of p-gateway. <p>All routes for alternate Drouters must be of the same priority
+        as that of primary route (route for last used Drouter saved in the corresponding
+        session).</p><p>The realm based route shown in the preceding figure is applicable for RAR
+        and ASR over Gy interface. It is possible to use the same route for SNR over Sy interface or
+        you can have a different route for SNR messages if Drouter used is different for Sy
+        session.</p><p>You must configure the Diameter peer for Drouters to use Diameter routes for
+        primary and alternate Drouters. Diameter peers can be static or dynamic.</p></section>
+<section><title>One-NDS device and group bucket write-back configuration</title>
+<p>Perform the following steps to enable device and group bucket write-back (from NCC to LDAP
+        sever):</p>
+<note><ul>
+<li>
+<p>One-NDS must be configured as an external SPR.</p>
+</li>
+<li>
+<p>If both device and group write-back are configured in RSV and charging is done from both device and group subscriptions, then data for both entities are written back in the same request.</p>
+</li>
+<li>
+<p>NCC does not support custom data with multiple values.</p>
+</li>
+</ul>
+</note>
+<fig>
+<title>Sample rule for device and group write-back</title>
+<!--MMO resource relative URI: ../Graphics/Release_18.9/f-Writeback_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-f-writeback_default.png"/>
+</fig>
+<sectiondiv>
+<p><b>Configuring device write-back</b></p><ol>
+<li>
+<p>Create or update an RSV in charging.</p>
+</li>
+<li>
+<p>Configure action <systemoutput>SPR_DEVICE.Usage-Services</systemoutput> in the <i>GY_POST_PROCESSING</i> trigger.</p>
+</li>
+<li>
+<p>Subscription is attached to the device in One-NDS from which usage has to be done.</p>
+</li>
+<li>
+<p>Create a subscription bundle and a charging service on NCC.</p>
+</li>
+<li>
+<p>Execute a Gy call.</p>
+</li>
+</ol>
+</sectiondiv>
+<sectiondiv>
+<p><b>Configuring group write-back</b></p><ol>
+<li>
+<p>Create or update an RSV in charging.</p>
+</li>
+<li>
+<p>Configure action <systemoutput>SPR_GROUP.Usage-Services</systemoutput> in <i>GY_POST_PROCESSING</i> trigger.</p>
+<p>
+<b>Note:</b> A device is associated to a single group, to which the subscription is associated.</p>
+</li>
+<li>
+<p>Subscription is attached to the group in One-NDS from which data usage has to be done.</p>
+</li>
+<li>
+<p>Create a subscription bundle and a charging service on NCC.</p>
+</li>
+<li>
+<p>Execute a Gy call.</p>
+</li>
+</ol>
+</sectiondiv>
+</section>
+<section><title>Service-Context-Id AVP</title>
+<p>The <i>Service-Context-Id</i> AVP is defined in IETF RFC 4006 [402]. It is of type <varname>UTF8String</varname> and contains a unique identifier of the Diameter credit-control service-specific document that applies to the request. This is an identifier allocated by the service provider or operator, by the service element manufacturer or by a standardization body and must uniquely identify a given Diameter credit-control service-specific document. For offline charging, this identifies the service-specific document ('middle tier' TS) on which associated CDRs should based.</p>
+<p>The format of the <i>Service-Context-Id</i> is:</p>
+<fig>
+<codeblock>"extensions".MNC.MCC."Release"."service-context" "@" "domain"</codeblock>
+</fig>
+<p>Following 3GPP-specific values for <i>service-context</i>, <i>@</i>, and <i>domain</i> are
+        supported in NCC:</p><ul>
+<li>
+<p>For PS charging:</p>
+<p>
+<varname>32251@3gpp.org</varname> (GY)</p>
+</li>
+<li>
+<p>For IMS charging:</p>
+<p>
+<varname>32260@3gpp.org</varname> (IMS)</p>
+</li>
+<li>
+<p>For MMS service charging:</p>
+<p>
+<varname>32270@3gpp.org</varname> (MMS)</p>
+</li>
+<li>
+<p>For SMS service charging:</p>
+<p>
+<varname>32274@3gpp.org</varname> (SMS)</p>
+</li>
+</ul>
+</section>
+</conbody></concept>

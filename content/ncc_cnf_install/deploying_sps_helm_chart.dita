@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="creating_a_chart_values_input_file">
+  <title>Deploying SPS Helm chart</title>
+  <taskbody>
+    <context><p>This procedure provides instructions on how to deploy the SPS Helm chart for a CNF
+        of any type.</p><p>The input for the SPS Helm chart is described within the chart itself in
+        the <filepath>readme</filepath> and <filepath>values</filepath> files. </p><p>The
+          <filepath>readme</filepath> file provides additional information about the parameters. To
+        view this file, enter:</p><p>
+        <codeblock>helm show readme sps-helm-candidates/sps --version $CHART_VERSION</codeblock>
+      </p><p>The SPS Values files are specific to SM, ME, and IG CNFs. To view the file, enter:</p><p>
+        <codeblock>helm show values sps-helm-candidates/sps --version $CHART_VERSION</codeblock>
+      </p>For more information about the <codeph>topology</codeph> and <codeph>aerospike</codeph>
+      parameters, see the following sections:<ul id="ul_op5_vfc_bmb">
+        <li><xref href="parameters.dita"/></li>
+        <li><xref href="aerospike_parameters.dita"/></li>
+      </ul>.</context>
+    <steps>
+      <step>
+        <cmd>Ensure that you are working in the CNF's directory.</cmd>
+      </step>
+      <step>
+        <cmd>Create an input file based on the CNF type as follows:</cmd>
+        <info>If the CNF is IG,
+          enter:<codeblock>cat &lt;&lt;EOF > values_sps_${SITE_TYPE}.yaml
+installManagedElement: true
+installServiceManager: true
+
+global:
+  # Set the registry to the desired value:
+  registry4: "sps-docker-candidates.repo.lab.pl.alcatel-lucent.com/sps"
+  enableExternalSPR: true
+  serviceAccountName: sps-sa-external
+  #podNamePrefix: ${POD_NAME_PREFIX}
+  #containerNamePrefix: ${CONTAINER_NAME_PREFIX}
+  istio:
+    version: ${ISTIO_VERSION}
+    enabled: true
+    mtls:
+      enabled: true
+    egress:
+      restricted: true
+    gateway:
+      name: ckey-ckey-gw # ckey already created the gateway object, you are connecting to it
+      selector:
+        istio: ${NAMESPACE}  #specify the tag on the istio-ingress-gateway for this namespace (by default, set to same value as namespace)
+      tls: # these settings are used for the diameter gateway
+        enabled: true 
+  
+  # To enable the integration of SPS with Keycloak, set enabled to true and set the following properties:
+  # Use the same Domain name of SM as keycloak and SM use the same ingress gateway and namespace.
+  keycloak:
+    enabled: true
+    url: "https://${FQDN}/auth"
+    realm: "sps-auth"
+    resource: "spssm"
+    adminUser: "admin"
+    adminPassword: "admin"
+    sslRequired: "external"
+    egressSecretName: "istio.default" # As using Istio with Nokia CA certificates, use istio.&lt;serviceaccount> secret holding the root CA and cert-chain pem certificates.
+
+  # Optional:
+  diameter:
+    originhost: ${DIAMETER_ORIGIN_HOST}
+    originrealm: ${DIAMETER_ORIGIN_REALM}
+  # id for the site where installed. This will be used in a global.topologydata.config.topology.spssite.id
+  spssiteid: ${SITE_ID}
+
+# Starting with SPS_20_9_I190, the iohd gateway can support 'TLS in the open state' diameter connections.
+# To leverage this functionality the 'insecure' port must be configured.
+iohd:
+  exposeInsecure: true
+EOF</codeblock></info>
+        <info>If the CNF is SM,
+          enter:<codeblock>cat &lt;&lt;EOF > values_sps_${SITE_TYPE}.yaml
+# Set installManagedElement: false if installing SM
+installManagedElement: false
+installServiceManager: true
+ 
+global:
+  # Set the registry to the desired value:
+  registry4: "sps-docker-candidates.repo.lab.pl.alcatel-lucent.com/sps"
+   
+  serviceAccountName: sps-sa-external
+  #podNamePrefix: ${POD_NAME_PREFIX}
+  #containerNamePrefix: ${CONTAINER_NAME_PREFIX}
+  istio:
+    version: ${ISTIO_VERSION}
+    enabled: true
+    mtls:
+      enabled: true
+    egress:
+      restricted: true
+    gateway:
+      name: ckey-ckey-gw #use the existing istio gateway object created by CKEY
+      selector:
+        istio: ${NAMESPACE}  #specify the tag on the istio-ingress-gateway for this namespace (by default, set to same value as namespace)
+      tls:
+        enabled: true
+   
+  # To enable the integration of SPS with Keycloak, set enabled to true and set the following properties:
+  # Use the same Domain name of SM as keycloak and SM use the same ingress gateway and namespace.
+  keycloak:
+    enabled: true
+    url: "https://${FQDN}/auth"
+    realm: "sps-auth"
+    resource: "spssm"
+    adminUser: "admin"
+    adminPassword: "admin"
+    sslRequired: "external"
+    egressSecretName: "istio.default" # As using Istio with Nokia CA certificates, use istio.&lt;serviceaccount> secret holding the root CA and cert-chain pem certificates.
+ 
+  # id for the site where installed. This will be used in a global.topologydata.config.topology.spssite.id
+  spssiteid: ${SITE_ID}
+ 
+EOF</codeblock></info>
+        <info>If the CNF is ME,
+          enter:<codeblock>cat &lt;&lt;EOF > values_sps_${SITE_TYPE}.yaml
+# Set installServiceManager: false if installing ME
+installManagedElement: true
+installServiceManager: false
+
+global:
+  # Set the registry to the desired value:
+  registry4: "sps-docker-candidates.repo.lab.pl.alcatel-lucent.com/sps"
+  enableExternalSPR: true
+  serviceAccountName: sps-sa-external
+  #podNamePrefix: ${POD_NAME_PREFIX}
+  #containerNamePrefix: ${CONTAINER_NAME_PREFIX}
+  istio:
+    version: ${ISTIO_VERSION}
+    enabled: true
+    mtls:
+      enabled: true
+    egress:
+      restricted: true
+    gateway:
+      name: cvea-me-cvea-vagt-agent-gateway # use the existing istio gateway object created by CVEA
+      selector:
+        istio: ${NAMESPACE} # specify the tag on the istio-ingress-gateway for this namespace (by default, set to same value as namespace)
+      tls:
+        enabled: true
+  
+  # Disable keycloak for ME
+  keycloak:
+    enabled: false
+
+  diameter:
+    originhost: ${DIAMETER_ORIGIN_HOST}
+    originrealm: ${DIAMETER_ORIGIN_REALM}
+  # id for the site where installed. This will be used in a global.topologydata.config.topology.spssite.id
+  spssiteid: ${SITE_ID}
+
+# Optional:
+# Starting with SPS_20_9_I190, the iohd gateway can support 'TLS in the open state' diameter connections.
+# To leverage this functionality the 'insecure' port must be configured.
+iohd:
+  exposeInsecure: true
+EOF</codeblock></info>
+      </step>
+      <step>
+        <cmd>Edit the input file as needed.</cmd>
+      </step>
+      <step>
+        <cmd>Update the <codeph>StorageClassName</codeph> in the SPS Helm chart to match the system
+          capability:</cmd>
+        <info>To list the storage classes available on your Kubernetes,
+              enter:<codeblock>kubectl get sc</codeblock><p><b>Expected
+          outcome</b></p><codeblock>NAME                           PROVISIONER                    AGE
+cinder-az-nova (default)       kubernetes.io/cinder           65m
+cinder-az-nova-xfs             kubernetes.io/cinder           65m
+cinder-tripleo-ceph-nova       kubernetes.io/cinder           65m
+cinder-tripleo-ceph-nova-xfs   kubernetes.io/cinder           65m
+local-storage                  kubernetes.io/no-provisioner   65m</codeblock></info>
+      </step>
+      <step>
+        <cmd>Create a Resource Sizing file by entering:</cmd>
+        <info>
+          <codeblock>if [[ -e ../configuration-examples/sizing/sizing_sps_lab.yaml ]]; then
+ cp ../configuration-examples/sizing/sizing_sps_lab.yaml .
+else
+ cp ../configuration-examples/sizing/lab/sizing_sps_lab.yaml .
+fi
+OVERRIDE_FILES="values_sps_${SITE_TYPE}.yaml sizing_sps_lab.yaml"</codeblock>
+        </info>
+      </step>
+      <step>
+        <cmd>If the CNF is a geo-redundant NCC site, upate the sizing parameters in
+            <codeph>aerospike</codeph> and <codeph>xdrproxy</codeph> sections using <xref
+            href="resource_sizing_for_geo_redundant_cnfs.dita"/>.</cmd>
+      </step>
+      <step>
+        <cmd>If needed, enable Backup and Restore by entering:</cmd>
+        <info>
+          <codeblock>cp ../configuration-examples/feature_sps_cbur_enable.yaml .
+OVERRIDE_FILES="$OVERRIDE_FILES feature_sps_cbur_enable.yaml"</codeblock>
+        </info>
+      </step>
+      <step>
+        <cmd>Merge the Override files by entering:</cmd>
+        <info>
+          <codeblock>cp ../topology.yaml .
+OVERRIDE_FILES="$OVERRIDE_FILES topology.yaml"
+docker run --rm -v ${PWD}:/workdir:z registry1-docker-io.repo.lab.pl.alcatel-lucent.com/mikefarah/yq yq m -x $OVERRIDE_FILES > ${SITE_TYPE}${SITE_ID}_sps.yaml</codeblock>
+        </info>
+      </step>
+      <step>
+        <cmd>Install the SPS Helm chart by entering:</cmd>
+        <info>
+          <codeblock>wget https://repo.lab.pl.alcatel-lucent.com/sps-generic-candidates/spsmainbuild/${BUILD_VERSION}/sps-chart-${CHART_VERSION}.tgz
+helm upgrade --install ${SITE_TYPE} sps-chart-${CHART_VERSION}.tgz -n $NAMESPACE -f ${SITE_TYPE}${SITE_ID}_sps.yaml --wait --timeout=1200s</codeblock>
+        </info>
+      </step>
+      <step>
+        <cmd>Test the installation by entering:</cmd>
+        <info>
+          <codeblock>helm3 test -n ${NAMESPACE} ${SITE_TYPE}</codeblock>
+        </info>
+      </step>
+      <step>
+        <cmd>If the CNF is SM or IG, access the SM console and when redirected to the Web SSO, log
+          in using the appropriate credentials.</cmd>
+      </step>
+    </steps>
+  </taskbody>
+</task>

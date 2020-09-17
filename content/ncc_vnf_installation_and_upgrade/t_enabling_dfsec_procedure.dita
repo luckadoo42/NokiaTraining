@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+		<task id="id9YZ-09018-IN00-RJZZA-d1e11275"><title>Enabling DFSEC procedure</title><taskbody>
+		<context id="context_qr4_rn3_jlb">To enable DFSEC: </context><steps>
+
+<step><cmd>Log in to the IOHO as the “root” user.</cmd><info/></step>
+<step><cmd>Restart keycloak service using following command on both IOHO nodes:</cmd><info><p>
+<codeph>systemctl restart keycloak</codeph>
+</p></info></step>
+<step><cmd>Ensure that Keycloak, Maxscale, and MariaDB are running on both IOHOs, using the following commands:</cmd><info><p>
+<codeph>systemctl status app-mariadb </codeph>
+</p><p>
+<codeph>systemctl status app-maxscale</codeph>
+</p><p>
+<codeph>systemctl status keycloak</codeph>
+</p><p>In all of the above commands, the O/P service is shown as active/running.</p></info></step>
+<step><cmd>Navigate to: /opt/tpa/sbin</cmd><info/></step>
+<step><cmd>Execute the following script on the Active IOHO only.</cmd><info><p>
+<codeph>/opt/tpa/sbin/importKeycloakSettings</codeph>
+</p><p>If the script runs successfully on the IOHO, the realm and user are successfully created. </p><p>If this script is run on the second site of a geo-pair, the expected output is as follows:</p><p>
+<systemoutput>CKEY settings are already imported, skipping this script.</systemoutput>
+</p></info></step>
+<step>
+				<cmd>Log in to the CKEY GUI: <xref format="html" scope="external"
+						href="https://%3CIOHO%20VIP%3E:8666/auth/admin">https://&lt;IOHO
+						VIP&gt;:8666/auth/admin</xref>
+				</cmd>
+				<info>
+					<p>Use the CKEY admin credentials. Contact Nokia for the credentials. The IOHO VIP is the SM
+						GUI IP.</p>
+				</info>
+			</step>
+<step><cmd>Check if the sps-auth realm is created (On the top left of the GUI, hover over the realm drop down, you will be able to see two realms Master and Sps-auth).</cmd><info/></step>
+<step><cmd>Select sps-auth and then go to the “Users” menu option, click on “View All Users”, smadmin must be visible there.</cmd><info/></step>
+<step><cmd>Execute the following script on both the IOHO nodes: </cmd><info><p>
+<codeph>/opt/tpa/sbin/importSPSKeystore</codeph>
+</p></info></step>
+<step><cmd>Go to the standby IOHO node, and navigate to: /opt/tpa/sbin and then execute:</cmd><info><p>
+<codeph>ha add ckey-ha-plugin /opt/tpa/sbin/ckey-ha-plugin</codeph>
+</p></info></step>
+<step><cmd>Log in to each SM App node as the “tpaadmin” user to enable the Keycloak using the following:</cmd>
+				<substeps id="substeps_xcm_4p3_jlb">
+					<substep>
+						<cmd>Stop the TPA server using the following command:</cmd>
+						<info>
+							<p>
+								<codeph>TPA_control stop</codeph>
+							</p>
+						</info>
+					</substep>
+					<substep>
+						<cmd>Navigate to: /opt/tpa/osgi/instance</cmd>
+						<info/>
+					</substep>
+					<substep>
+						<cmd>Execute the following command:</cmd>
+						<info>
+							<p>
+								<codeph>mv  keycloak.cfg.disabled  keycloak.cfg</codeph>
+							</p>
+						</info>
+					</substep>
+					<substep>
+						<cmd>Check for the following line in the
+								<i>/opt/tpa/osgi/instance/webagent.override.descriptor.properties</i>
+							file:  </cmd>
+						<info>
+							<p>“com.nokia.tpapps.servicemanager-gui:/opt/SPS_20_3_R1/osgi/instance/keycloak/keycloak.gui.web.xml” </p>
+							<p>If the line is present and commented out, uncomment the line.</p>
+							<p>If the line is not present, add the line at the end of the file.</p>
+						</info>
+					</substep>
+					<substep>
+						<cmd>Start the TPA server using command: TPA_contol start. </cmd>
+						<info/>
+					</substep>
+					<substep>
+						<cmd>Ensure the SM App node is UP before proceeding to the next SM APP node.
+							This can be verified as follows:</cmd>
+						<info>
+							<p>-Tail the logs using the command: "tail -f
+								/opt/tpa/logs/SPSServer.log | grep -i jersey"</p>
+							<p>-Wait until the following line appears in the logs: "Jersey is now
+								Ready Starting Web Traffic now".</p>
+						</info>
+					</substep>
+					<substep>
+						<cmd>Repeat steps “a” to “f” in all SM APP nodes, one by one.</cmd>
+						<info/>
+					</substep>
+					<substep>
+						<cmd>This step is only required if you have defined some Users and roles
+							(other than smadmin/administrator) in the SM. </cmd>
+						<info>
+							<p>Execute the User migration script from any of the SM app nodes. The
+								script only needs to be executed once. </p>
+							<p>
+								<codeph>/opt/tpa/sbin/startMigration.sh</codeph>
+							</p>
+						</info>
+					</substep>
+					<substep>
+						<cmd>This step is only required if you have defined some Users and roles
+							(other than smadmin/administrator) in the SM. </cmd>
+						<info>
+							<p>Verify the Users and Roles from the KeyCloak GUI:<xref format="html"
+									scope="external" href="https://%3CIOHO%20VIP%3E:8666/auth/admin"
+									>https://&lt;IOHO VIP&gt;:8666/auth/admin</xref>
+							</p>
+							<p>Use the CKEY admin credentials. The IOHO VIP is the SM GUI IP.</p>
+							<p>Select sps-auth and then go to the “Users” menu option, click on
+								“View All Users” and check that all users are visible there.</p>
+							<p>Select sps-auth and then go to the “Roles” menu option, and check
+								that all roles are visible there.</p>
+						</info>
+					</substep>
+					<substep>
+						<cmd>This step is only required if you have defined some Users and roles
+							(other than smadmin/administrator) in the SM. </cmd>
+						<info>
+							<p>Verify that all APIs and GUIs are working fine without DFSEC, as
+								DFSEC is not yet enabled.</p>
+						</info>
+					</substep>
+					<substep>
+						<cmd>Set the Password of the migrated users from the Keycloak UI (See
+								<!--xref URI: #userauthpassword--><xref
+								keyref="id9YZ-09018-IN00-RJZZA-userauthpassword"/>). The new
+							password should be the same as it was before the upgrade to avoid any
+							traffic impact from that user.</cmd>
+						<info/>
+					</substep>
+					<substep>
+						<cmd>Return to step 6 of the primary procedure (<i>To upgrade the NCC</i>),
+							to update the persisted version on the SM VNF, after you have completed
+							the “Configuring user authentication and password policies” procedure
+							for each user.</cmd>
+						<info/>
+					</substep>
+				</substeps></step>
+</steps>
+</taskbody></task>

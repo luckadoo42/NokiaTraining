@@ -1,0 +1,744 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-counter_entity"><title>Counters</title><conbody>
+<section><title>Overview</title>
+<p>A counter accumulates the value of defined usage type used against the defined threshold value. A specific action is taken on the basis of the accumulated usage type value, such as sending notification to subscribers.</p>
+<p>Counters track the consumption of charging services, main balance/no charge, and bucket types associated with the specific charging services.</p>
+<p>Following are the types of counters:</p><ul>
+<li>
+<p>
+<i>Device counter</i>: A counter attached to a device.</p>
+</li>
+<li>
+<p>
+<i>Device group counter</i>: A device counter attached to a group.</p>
+</li>
+<li>
+<p>
+<i>Group counter</i>: A counter attached to a group.</p>
+</li>
+<li>
+<p>
+<i>Subscription counter</i>: A counter attached to a subscription and limited to consumption by attached subscription only.</p>
+</li>
+<li>
+<p>
+<i>Multi-bundle counter</i>: A counter that is updated across all subscriptions attached to a device.</p>
+<p>
+<b>Note:</b> Multi-bundle counter follows the lifecycle of the associated subscription, and resets or accumulates as per the lifecycle of that subscription. If the subscription is barred, then the multi-bundle counter of that subscription is not updated and the multi-bundle counter of that subscription is reset only when the subscription is reset as well.</p>
+</li>
+</ul>
+<p>The following points are considered during a subscription creation or removing a subscription from a device or group:</p><ul>
+<li>
+<p>During subscription creation, the information related to the charging service counters are stored in the entity counter instance. In case of no-charge, the charging service counters are enabled and the subscription counters count the usage and the usage type counters are updated.</p>
+</li>
+<li>
+<p>If a subscription is removed from a device or group in between the reservation and commit, then it is recommended that the delete subscription action moves the device or group subscription to barred or final state before executing the <i>Delete Entity</i> action.</p>
+<p>If the lifecycle timers are configured after the barred or final state, then the lifecycle timer value must be greater than the maximum <i>VT</i>. This ensures that no reservation is available from the subscription removed from a device or group.</p>
+<p>For information on state and timer parameters related to a subscription lifecycle, refer to <!--xref URI: c-LifeCycles.xml#Lifecycleparameters--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-Lifecycleparameters"/>.</p>
+<p>
+<b>Note</b>: It is highly recommended that removing a subscription from a device or group is performed when the subscription is in a barred or final state and configure the lifecycle timer value greater than the maximum <i>VT</i>. Otherwise, the ongoing charging related to the removed subscription reports issues and results in call failure.</p>
+</li>
+<li>
+<p>In cases of no-charge and charging from a bucket or account associated with a device or group, if a subscription associated with a device or group is removed in between a reservation and commit, then the subscription counter instances get deleted. However, device counter, group counter, or device group counter remain in the database without affecting the call charging.</p>
+</li>
+</ul>
+</section>
+<section><title>Configuration</title>
+<p>Log into the Service Manager Graphical User Interface (SM GUI), navigate to <uicontrol>Policy
+     &amp; Charging Configuration</uicontrol> &gt; <uicontrol>COMMON</uicontrol> tab and select
+     <uicontrol>Counters</uicontrol> from the hamburger menu ( <!--MMO resource relative URI: ../../Global_Configurations/Graphics/hamburgermenu_default.png-->
+    <image href="../images/img9yz-09126-ug01-pczza-sp1-hamburgermenu_default.png" scale="40"/> ). To
+    define a new counter, click <!--MMO resource relative URI: ../Graphics/Release_18.0/Add_button_default.png-->
+    <image href="../images/img9yz-09126-ug01-pczza-sp1-add_button_default.png" scale="45"/> to add
+    the basic details as described in the given table:</p>
+<sectiondiv>
+<p><b>Basic Details</b></p>
+<table pgwide="1" colsep="1" rowsep="1">
+     <title>Parameters for counter</title>
+     <tgroup cols="4">
+      <colspec colname="col1" colwidth="1.1*"/>
+      <colspec colname="col2" colwidth="2.89*"/>
+      <colspec colname="col3" colwidth="1.32*"/>
+      <colspec colname="col4" colwidth="1*"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Parameter</p>
+</entry>
+        <entry>
+         <p>Description</p>
+</entry>
+        <entry>
+         <p>Field type</p>
+</entry>
+        <entry>
+         <p>Mandatory/ Optional</p>
+</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry>Counter Name</entry>
+        <entry>This parameter indicates a unique name of the counter.</entry>
+        <entry>String</entry>
+        <entry>Mandatory</entry>
+       </row>
+       <row>
+        <entry rowsep="1"> Unit Type</entry>
+        <entry rowsep="1">
+         <p>This parameter indicates the type of unit associated with the counter.</p>
+         <p>For more information on unit type, see the
+           <!--xref URI: c-Service_Model.xml#REUnitType--><xref
+           keyref="id9YZ-09126-UG01-PCZZA-SP1-REUnitType"/>
+         </p>
+</entry>
+        <entry rowsep="1">
+         <p>Enum</p>
+         <p>Select the required unit type from the predefined set of values in the drop-down
+          list.</p>
+</entry>
+        <entry rowsep="1"> Mandatory</entry>
+       </row>
+       <row>
+        <entry>Counter Type</entry>
+        <entry>
+         <p>This parameter indicates the counter type. The given values of counter types are
+          supported:</p>
+         <ul>
+          <li>
+           <p>
+            <varname>USAGE</varname>: indicating the usage counter.</p>
+          </li>
+          <li>
+           <p>
+            <varname>COST</varname>: indicating the cost counter. For example, if the CounterType is
+             <varname>COST</varname>, an SMS is sent by the user, and the cost of an SMS is 1
+            dollar, then the cost counter is incremented.</p>
+          </li>
+         </ul>
+</entry>
+        <entry>
+         <p>Enum</p>
+         <p>Select the required counter type from the predefined counter types in the drop-down
+          list.</p>
+</entry>
+        <entry>Mandatory</entry>
+       </row>
+       <row>
+        <entry>Counter Scope</entry>
+        <entry>
+         <p>This parameter indicates the scope of the counter. The supported values are as
+          follows:</p>
+         <ul>
+          <li>
+           <p>
+            <varname>All</varname>: Scope is to monitor all counters in hierarchy.</p>
+          </li>
+          <li>
+           <p>
+            <varname>Self</varname>: Scope is to monitor the usage or call of device or group to
+            which the counter is attached.</p>
+          </li>
+          <li>
+           <p>
+            <varname>Hierarchy</varname>: Scope is to monitor the all counters in the hierarchy
+            except the usage or call of the device or group attached to the counter.</p>
+           <p>That is, <varname>Hierarchy</varname> equals <varname>All</varname> -
+             <varname>Self</varname>.</p>
+          </li>
+          <li>
+           <p>
+            <varname>Multi Bundle</varname>: This refers to those types of counters that are updated
+            across all subscriptions attached to a device.</p>
+          </li>
+          <li>
+           <p>
+            <varname>Subscription</varname>: This refers to those counters attached to a
+            subscription and limited to consumption by attached subscription only.</p>
+          </li>
+         </ul>
+</entry>
+        <entry>
+         <p>Enum</p>
+         <p>Select the required counter scope from the predefined counter scopes in the drop-down
+          list.</p>
+</entry>
+        <entry>Mandatory</entry>
+       </row>
+       <row>
+        <entry rowsep="0" morerows="2"> Counter Consumption Type</entry>
+        <entry rowsep="0"> This parameter indicates the consumption type such as bucket.</entry>
+        <entry rowsep="0"> Enum</entry>
+        <entry rowsep="0"> Mandatory</entry>
+       </row>
+       <row>
+        <entry rowsep="0">
+         <p>The supported values are as follows:</p>
+         <ul>
+          <li>
+           <p>
+            <varname>All</varname>: The counter is incremented when the consumption is done through
+            any of the entities. For example, Bucket, Counter, Account or Charging Service.</p>
+          </li>
+          <li>
+           <p>
+            <varname>Bucket</varname>: The counter is incremented when the consumption is done only
+            through the bucket.</p>
+          </li>
+          <li>
+           <p>
+            <varname>Counter</varname>: The counter is incremented when the consumption is done only
+            through the counter.</p>
+          </li>
+          <li>
+           <p>
+            <varname>Account</varname>: The counter is incremented when the consumption is done only
+            through an account.</p>
+          </li>
+          <li>
+           <p>
+            <varname>Charging Service</varname>: The counter is incremented when the consumption is
+            done only through the charging service.</p>
+          </li>
+         </ul>
+</entry>
+        <entry rowsep="0"> Select the required counter consumption type from the predefined counter
+         consumption types in the drop-down list.</entry>
+        <entry rowsep="0"/>
+       </row>
+       <row>
+        <entry>
+         <b>Note</b>: If the Counter Consumption Type is <varname>All</varname>, then the Counter
+         Consumption List must be empty.</entry>
+        <entry/>
+        <entry/>
+       </row>
+       <row>
+        <entry>Bucket Type</entry>
+        <entry>
+         <p>When Bucket is selected as counter consumption type, Bucket type field appears that
+          provide the following list:</p>
+         <ul>
+          <li>
+           <p>All Buckets</p>
+          </li>
+          <li>
+           <p>Main Only</p>
+          </li>
+          <li>
+           <p>Carryover Only</p>
+          </li>
+         </ul>
+         <p>Based on the selection made, NCC performs the following logic:</p>
+         <ul id="ul_mqs_3c1_zmb">
+          <li>
+           <p>
+            <i>Counter Consumption Type</i> is selected as <varname>Bucket</varname> with
+             <varname>All buckets</varname> option selected. Counter counts from both main bucket
+            and carryover bucket. Hence Cap applied is on cumulative usage.</p>
+          </li>
+          <li>
+           <p>
+            <i>Counter Consumption Type</i> is selected as <varname>Bucket</varname> and
+             <varname>Main Only</varname> option is selected. Counter counts from the main bucket
+            only. Hence Cap is applied on usage from bucket.</p>
+          </li>
+          <li>
+           <p>
+            <i>Counter Consumption Type</i> is selected as <varname>Bucket</varname> and
+             <varname>Carryover Only</varname> option is selected. Counter counts from Carry over
+            bucket only. Hence Cap is applied on usage from Carry over bucket.</p>
+          </li>
+         </ul>
+</entry>
+        <entry>ENUM</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>Counter Consumption List</entry>
+        <entry>
+         <p>This parameter monitors the usage or call of either bucket, counter, charging service or
+          account.</p>
+         <p>
+          <b>Note</b>: Duplicate buckets can be added to the counter consumption list.</p>
+         <p>For a prepaid bundle, Bundle1, with data as the charging service and bucket B1, the
+           <i>Counter ConsumptionList</i> is updated as <varname>Bundle1.Data.B1</varname>. </p>
+         <p>Similarly, the <i>Counter ConsumptionList</i> is updated as follows for other
+          Consumption Types:</p>
+         <ul id="ul_omn_gd1_zmb">
+          <li>
+           <p>For COUNTER: <codeph>&lt;Bundle_name&gt;.&lt;CS_name&gt;.&lt;Counter_name&gt;</codeph>
+           </p>
+          </li>
+          <li>
+           <p>For CHARGING_SERVICE: <codeph>&lt;Bundle_name&gt;.&lt;CS_name&gt;.</codeph>
+           </p>
+          </li>
+          <li>
+           <p>For BUCKET: <codeph>&lt;Bundle_Name&gt;.&lt;CS_Name&gt;.&lt;Bucket_Name&gt;</codeph>
+           </p>
+          </li>
+         </ul>
+</entry>
+        <entry>List&lt;String&gt;</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>OCS Policy Counter</entry>
+        <entry>
+         <p>This parameter indicates the value for the <i>PolicyCounter</i> flag is dependent on the
+          given conditions:</p>
+         <ul>
+          <li>
+           <p>
+            <varname>True</varname>: If the current interface is the Sy interface. If this check box
+            is checked.</p>
+          </li>
+          <li>
+           <p>
+            <varname>False</varname>: If the current interface is Gy interface. If this check box is
+            unchecked.</p>
+          </li>
+         </ul>
+         <p>The default value is <varname>False</varname>.</p>
+</entry>
+        <entry>
+         <p>String</p>
+         <p>Select this check box to indicate whether the counter is a policy counter or not.</p>
+</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry rowsep="0"> Resource Based</entry>
+        <entry rowsep="0">
+         <p>This parameter indicates the value for the Resource Based flag. It is only applicable in
+          case of policy counter. This flag distinguishes between the resource and usage
+          counter.</p>
+         <p>
+          <uicontrol>Note:</uicontrol> This flag appears on the SM GUI only when the <uicontrol>OCS
+           Policy Counter</uicontrol> flag check box is selected.</p>
+         <p>A resource based counter depends upon resources, whereas usage counter depends on the
+          quantity of reservation/commit done.</p>
+         <p>This flag is set based on the following conditions:</p>
+         <ul id="ul_yb3_vc1_zmb">
+          <li>
+           <p>True: If this check box is checked.</p>
+          </li>
+          <li>
+           <p>False: If this check box is unchecked.</p>
+          </li>
+         </ul>
+         <p>The default value is False that is by default, the counter is Usage Based Counter.</p>
+         <p>For more details, see <!--xref URI: #rbc--><xref
+           keyref="id9YZ-09126-UG01-PCZZA-SP1-counter_entity/rbc"/>.</p>
+</entry>
+        <entry>Select this check box to indicate whether the counter is a resource
+         counter or not.</entry>
+        <entry>Optional</entry>
+       </row>
+       <row rowsep="1">
+        <entry>Usage Limit</entry>
+        <entry>
+         <p>This parameter defines the usage limit applied per counter within a bundle, that is
+          charging service.</p>
+         <p>If this parameter is defined, then percentage type thresholds are allowed in the
+          Thresholds Profile Group IDs parameter with a symbolic end limit as usage limit.</p>
+         <p>Following are the important points to note:</p>
+         <ul>
+          <li>
+           <p>A same counter definition ID in different bundles can have different usage limits.</p>
+          </li>
+          <li>
+           <p>If percentage thresholds are to be used or the overage limit is to be defined for the
+            counter, then you must define the usage limit for the counter.</p>
+          </li>
+         </ul>
+        </entry>
+        <entry>Big decimal</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>Threshold Profile Group IDs</entry>
+        <entry>
+         <p>This parameter indicates the IDs of threshold profile group.</p>
+         <p>Following are the important points to note:</p>
+         <ul>
+          <li>
+           <p>Only one policy threshold can be associated with a policy counter.</p>
+          </li>
+          <li>
+           <p>Multiple normal thresholds can be associated with a policy counter.</p>
+          </li>
+         </ul>
+         <p>
+          <b>Note:</b> Percentage type thresholds are allowed only when usage limit is defined.</p>
+</entry>
+        <entry>
+         <p>List&lt;String&gt;</p>
+         <p>Select the required threshold profile group ID from the drop-down list.</p>
+</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>Overage Limit</entry>
+        <entry>
+         <p>This parameter defines the overage usage limit per counter within a bundle. When a
+          counter is selected in a different charging service, this parameter value can be
+          changed.</p>
+         <p>Once, usage limit of the counter is reached, the overage limit is considered and
+          subsequently triggers all threshold actions for the overage block. The overage is applied
+          repetitively to the counter.</p>
+         <p>
+          <b>Note:</b> The overage limit can be defined only when usage limit is defined.</p>
+</entry>
+        <entry>Big decimal</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>Overage Threshold Profile Group IDs</entry>
+        <entry>
+         <p>This parameter indicates the thresholds applied on the overage limit defined in the
+          counter. As overage limit is repetitive in nature, overage thresholds are executed
+          repeatedly.</p>
+         <p>Following are some important points:</p>
+         <ul>
+          <li>
+           <p>Only one policy threshold can be associated with a policy counter.</p>
+          </li>
+          <li>
+           <p>Multiple normal thresholds can be associated with a policy counter.</p>
+          </li>
+         </ul>
+         <p>
+          <b>Note:</b> This parameter is enabled only when overage limit is defined for the
+          counter.</p>
+</entry>
+        <entry>
+         <p>List&lt;String&gt;</p>
+         <p>Select the required threshold profile group ID from the drop-down list.</p>
+</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>Cap IDs</entry>
+        <entry>This parameter indicates the cap IDs.</entry>
+        <entry>List&lt;String&gt;</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>Security Domain</entry>
+        <entry>This parameter indicates the security domain associated with the counter.</entry>
+        <entry>
+         <p>String</p>
+         <p>Select the required security domain from the predefined security domains in the
+          drop-down list.</p>
+</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>Rule Configurations</entry>
+        <entry>
+         <p>This parameter indicates the rules associated with a counter being created.</p>
+         <p>
+          <b>Note:</b> The rules are evaluated only for <varname>Muti-Bundle</varname> type
+          counter.</p>
+</entry>
+        <entry>String</entry>
+        <entry>Optional</entry>
+       </row>
+       <row>
+        <entry>Applicability Condition</entry>
+        <entry>This parameter indicates a rule condition expression evaluated to determine whether
+         the charging service is applicable.</entry>
+        <entry>String</entry>
+        <entry>Optional</entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+</sectiondiv>
+</section>
+<section><title>Actions associated with a counter</title>
+<table pgwide="1" colsep="1" rowsep="1">
+    <tgroup cols="2">
+     <colspec colname="col1" colwidth="1*"/>
+     <colspec colname="col2" colwidth="1.41*"/>
+     <thead>
+      <row>
+       <entry>
+        <p>Action</p>
+       </entry>
+       <entry>
+        <p>Description</p>
+       </entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>Create</entry>
+       <entry>Used to create a counter entity in database by providing the mandatory and optional
+        parameters.</entry>
+      </row>
+      <row>
+       <entry>Read</entry>
+       <entry>Used to display the counter entity per the data retrieved from database.</entry>
+      </row>
+      <row>
+       <entry>Update</entry>
+       <entry>Used to update a particular counter entity in database.</entry>
+      </row>
+      <row>
+       <entry>Delete</entry>
+       <entry>Used to delete a particular counter entity from database.</entry>
+      </row>
+      <row>
+       <entry>AddCounterToDevice</entry>
+       <entry>Used to add a counter to a device.</entry>
+      </row>
+      <row>
+       <entry>AddDeviceCounterToGroup</entry>
+       <entry>
+        <p>Used to add a new attribute, such as <i>List&lt;string&gt;deviceIds</i> as an input.</p>
+        <p>The counters are created only for those devices passed as input in deviceIds and counter
+         definition ID is not added in the counter list available at group level.</p>
+        <p>
+         <b>Note</b>: Check that the device is a part of the required hierarchy.</p>
+       </entry>
+      </row>
+      <row>
+       <entry>AddGroupCounterToGroup</entry>
+       <entry>Used to add a group counter to a group.</entry>
+      </row>
+      <row>
+       <entry>CreateCounterWhileAddingDeviceToGroup</entry>
+       <entry>Used to create the EntityCounterInstances for a device when it is added to the
+        existing group hierarchy having device group counters.</entry>
+      </row>
+      <row>
+       <entry>DeleteCounterWhileDeletingDevice</entry>
+       <entry>Used to delete both the device counters and device group counters.</entry>
+      </row>
+      <row>
+       <entry>DeleteCounterWhileDeletingGroup</entry>
+       <entry>Used to be executed before group delete. It deletes both group counters and device
+        group counters.</entry>
+      </row>
+      <row>
+       <entry>DeleteCounterWhileRemovingDeviceFromGroup</entry>
+       <entry>Used to delete entity counter instances when device is removed from group.</entry>
+      </row>
+      <row>
+       <entry>DeleteCounterWhileRemovingGroupFromGroup</entry>
+       <entry>Used to delete entity counter instances when group is removed from group.</entry>
+      </row>
+      <row>
+       <entry>RemoveCounterFromDevice</entry>
+       <entry>Used to remove a counter from a device.</entry>
+      </row>
+      <row>
+       <entry>RemoveDeviceCounterFromGroup</entry>
+       <entry>Used to remove a device counter from a group.</entry>
+      </row>
+      <row>
+       <entry>RemoveGroupCounterFromGroup</entry>
+       <entry>Used to remove a group counter from a group.</entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+<note>
+<p>These actions are valid for internal purposes only. It is not accessible through the SM GUI for operators</p>
+</note>
+</section>
+<section><title>Examples</title>
+<p>The following examples help to understand the generic functionality of counters:</p>
+<sectiondiv>
+<p><b>Example 1: Counter reservation</b></p>
+<p>
+<b>Preconditions:</b>
+</p><ul>
+<li>
+<p>A subscriber has an iPhone, which is associated with a data counter and the iPhone is subscribed to a device subscription.</p>
+</li>
+<li>
+<p>The device subscription is further associated with another data counter and a data bucket.</p>
+</li>
+</ul>
+<p>
+<b>Post-conditions:</b>
+</p><ul>
+<li>
+<p>When the iPhone initiates a data call with Requested Service Unit (RSU) of 40 MB, then the amount required to complete the call is reserved from the data bucket associated with the device subscription.</p>
+<p>
+<b>Note:</b> If a subscription is removed from the device or group in between a reservation and commit, then it is recommended to move the device or group subscription to barred state. Therefore, no reservation of units is available from that device or group subscription.</p>
+</li>
+<li>
+<p>Both the counters, individual data counter associated with the iPhone and data counter associated with the device subscription, are applicable for the call charges. The current value of the counters remain unchanged while the total reserved value is updated with the value of 40 MB. The counter mapping is updated with session id and reserved values.</p>
+</li>
+<li>
+<p>In the update request, the iPhone has an RSU of 40 MB and Used Service Unit (USU) of 40 MB. In this request, only 40 MB is committed and 40 MB is reserved for the next request. The current value of counters is updated with the committed value while the new attribute is incremented with a value of 40 MB. The counter mapping is also updated with the session id and reserved values.</p>
+</li>
+</ul>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 2: Unsubscribing a device or group subscription in between a reservation and commit</b></p>
+<p>
+<b>Preconditions:</b>
+</p><ul>
+<li>
+<p>A subscriber owns an iPhone subscribed with a device subscription.</p>
+</li>
+<li>
+<p>The device subscription is associated with a data bucket of 500 bytes.</p>
+</li>
+</ul>
+<p>
+<b>Post-conditions:</b>
+</p><ul>
+<li>
+<p>When iPhone initiates a call with an RSU of 10 bytes, the units required to complete the call is reserved from the data bucket.</p>
+</li>
+<li>
+<p>The device subscription is removed from the iPhone. During an update request, an error is received stating that no subscription is attached with the device. An alarm is generated containing the device ID and bucket ID without club ID, and <systemoutput>SUBSCRIPTION_UNSUBSCRIBE</systemoutput> rating error code is received that maps to <systemoutput>5031- Diameter error code</systemoutput>.</p>
+</li>
+</ul>
+</sectiondiv>
+</section>
+<section id="rbc"><title>Resource-based counter</title></section>
+ <section id="snr"><title>SNR handling of resource-based counters in reservation during a call</title>
+<p>For a resource-based counter, the SNR is sent based on the resource used for maximum reservation. Threshold or cap rule is evaluated during reservation to provide <i>Counter Signaling State</i>. Rule evaluation decides the <i>Counter Signaling State</i> based on resource with maximum reservation and/or resource type (Device/Group) to which it belongs. </p>
+<p>Threshold or cap is applied with configuration <uicontrol>Absolute From Start</uicontrol> and value <varname>0</varname> to process <i>Counter Signaling State</i> in every reservation.</p>
+<p>For the threshold or cap evaluation at reservation, the following source context are added into
+     the THRESHOLD_PROFILE context:<table pgwide="1" colsep="1" rowsep="1">
+      <tgroup cols="2">
+       <colspec colname="col2" colwidth="1*"/>
+       <colspec colname="col3" colwidth="1.56*"/>
+       <thead>
+        <row>
+         <entry>
+          <p>Name of context variable</p>
+</entry>
+         <entry>
+          <p>Description</p>
+</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>Charging-Service-Reserve</entry>
+         <entry>Name of the charging service from which the maximum reservation has been done.</entry>
+        </row>
+        <row>
+         <entry>Charging-Service-Reserve-Type</entry>
+         <entry>Name of the resource (DEVICE/GROUP) to which the charging service with maximum
+          reservation belongs.</entry>
+        </row>
+        <row>
+         <entry>Bundle-Name-Reserve</entry>
+         <entry>Name of the bundle from which the maximum reservation has been done.</entry>
+        </row>
+        <row>
+         <entry>Bundle-Reserve-Type</entry>
+         <entry>Name of the resource (DEVICE/GROUP) to which the bundle with maximum reservation
+          belongs.</entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table></p>
+<p>Following are the ways to configure the threshold or cap rule to decide the state based on various conditions, such as <i>Charging-Service-Reserve</i>, <i>Bundle-Reserve</i>, <i>Charging-Service-Reserve-Type</i>, or <i>Bundle-Reserve-Type</i>:</p><ul>
+<li><p>Configuring threshold or cap rule using the <i>Charging-Service</i> or <i>Bundle Names</i> or
+       Types (DEVICE/GROUP).</p>
+      <p>The following figure shows an example of using <i>Charging-Service-Reserve</i> in rule. In
+       the same way it can be used based on <varname>Bundle-Reserve</varname>:</p>
+      <!--MMO resource relative URI: ../Graphics/Release_18.7/ResourceBased1_default.png-->
+      <image href="../images/img9yz-09126-ug01-pczza-sp1-resourcebased1_default.png"/>
+      <p>Similarly, to decide the state based on condition of CS Type
+        (<i>Charge-Service-Reserve-Type</i>), configure threshold or cap rule as shown in the
+       following example. In the same way, it can be used based on the
+       <i>Bundle-Reserve-Type</i>:</p>
+      <!--MMO resource relative URI: ../Graphics/Release_18.7/ResourceBased2_default.png-->
+      <image href="../images/img9yz-09126-ug01-pczza-sp1-resourcebased2_default.png"/>
+     </li>
+<li><p>Configuring threshold or cap rule using complex map.</p>
+      <p>
+       <uicontrol>Example 1:</uicontrol> Configuring the <i>Charging-Service-Reserve</i> with its
+       corresponding state using complex map</p><p>Configure the complex map to have mapping between
+       key (<i>Charging-Service-Reserve</i>) and value (state for particular charging service), to
+       be used in threshold or cap rule.</p><p>The following figure shows an example of a complex
+       map using the <i>Charging-Service-Reserve</i> and corresponding state. In the same way, a
+        <i>Bundle-Reserve</i> can also be configured.</p>
+      <!--MMO resource relative URI: ../Graphics/Release_18.7/Complexmap1_default.jpg-->
+      <image href="../images/img9yz-09126-ug01-pczza-sp1-complexmap1_default.jpg" scale="65"/>
+      <!--MMO resource relative URI: ../Graphics/Release_18.7/Complexmap2_default.jpg-->
+      <image href="../images/img9yz-09126-ug01-pczza-sp1-complexmap2_default.jpg" scale="55"/>
+      <p>To evaluate the state corresponding to <i>Charging-Service-Reserve</i> through Complex Map,
+       configure threshold or Cap rule using Complex Map as shown in the following figure. In the
+       same way, the <i>Bundle-Reserve</i> can be configured.</p>
+      <!--MMO resource relative URI: ../Graphics/Release_18.7/Example_default.png-->
+      <image href="../images/img9yz-09126-ug01-pczza-sp1-example_default.png" scale="55"/>
+      <p>
+       <uicontrol>Example 2:</uicontrol> Configuring the <i>Charging-Service-Reserve</i> and
+        <i>Charging-Service-Reserve-Type</i> with its corresponding state using complex map.</p>
+      <p>Configure the complex map to have a mapping between key (combination of
+        <i>Charging-Service-Reserve</i> and <i>Charging-Service-Reserve-Type</i>) and value (state
+       for particular combination), to be used in the threshold or Cap rule.</p>
+      <p>The following figure shows an example of a complex map using a combination of
+        <i>Charging-Service-Reserve</i> and <i>Charging-Service-Reserve-Type</i> to determine its
+       state. In the same way, the <i>Bundle-Reserve</i> and <i>Bundle-Reserve-Type</i> can be
+       configured.</p>
+      <!--MMO resource relative URI: ../Graphics/Release_18.7/Complexmap3_default.jpg-->
+      <image href="../images/img9yz-09126-ug01-pczza-sp1-complexmap3_default.jpg" scale="50"/>
+      <!--MMO resource relative URI: ../Graphics/Release_18.7/Complexmap4_default.jpg-->
+      <image href="../images/img9yz-09126-ug01-pczza-sp1-complexmap4_default.jpg" scale="50"/>
+      <p>To evaluate state corresponding to combination of <i>Charging-Service-Reserve</i> and
+        <i>Charging-Service-Reserve-Type</i> through complex map, configure threshold or Cap rule
+       using Complex Map as shown in the following figure. In the same way, <i>Bundle-Reserve</i>
+       and <i>Bundle-Reserve-Type</i> can be configured.</p>
+      <!--MMO resource relative URI: ../Graphics/Release_18.7/Complexmap5_default.png-->
+      <image href="../images/img9yz-09126-ug01-pczza-sp1-complexmap5_default.png" scale="50"/>
+     </li>
+</ul>
+<note>
+<p>For resource-based counter, the <i>Pending Policy Counter Info</i> AVP is not sent.</p>
+</note>
+</section>
+ <section><title>SY-SLR SLA handling for resource-based counter</title>
+<p>
+<i>Policy-Counter-State</i> for a resource-based counter is determined from the latest signaling state sent either in SLA or SNR. If the counter is newly added and not in use earlier till the Sy SLR arrives, then <i>Policy-Counter-State</i> is <varname>-99</varname>.</p>
+</section>
+ <section><title>SNR handling of resource-based counters in lifecycle action</title>
+
+<p>Resource counters are provided as input to the <systemoutput>Send-SNR</systemoutput> action. In this case, signaling state given in <systemoutput>Send-SNR</systemoutput> action is compared with state available in the Sy session if counter is present in respective Sy session. If state difference is found, then SNR is sent for counter. If counter state is not provided in SNR action, the latest previous state sent is considered and further compared with respective Sy session.</p>
+</section>
+<section><title>Usage limit on counters</title>
+<p>The Usage Limit (ULI) is the limit of data usage applied on a counter.</p>
+<p>Following two ULI scenarios generate notifications for a subscriber:</p><ul>
+<li>
+<p>
+<i>Notifications generated after the ULI on a counter is reached or exceeded</i>
+</p>
+<p>The instance of reaching the ULI limit on a counter can be referred as the reaching of its usage limit, which is configured as a hard-stop scenario that stops to grant any further quota or it is configured as a soft-stop scenario to provide a notification but continues to grant the quota.</p>
+</li>
+<li>
+<p>
+<i>Notifications generated preceding that usage limit, also referred as Near-ULI or Pre-ULI</i>
+</p>
+<p>The Near-ULI are defined as the near-limit thresholds, which are configured as a percentage of the usage limit on a counter. For example, a 50% percentage threshold can be applied on a counter whose ULI is 5 GB.</p>
+<p>The usage limit is set as per the bundle or charging service with the ability to trigger notifications or other actions when these limits are reached.</p>
+</li>
+</ul>
+<note>
+<p>A same counter definition ID in different bundles can have different ULIs. However, if ULI is not set for a counter (with no threshold applied) or usage limit is set with no hard-stop, then it means that the counter has unlimited usage.</p>
+</note>
+</section>
+<section><title>Overage limit on counters</title>
+<p>The Overage Limit (OLI) is the ability to define an overage usage limit per counter within a bundle and it is applicable only when the usage limit is set and reached. Once, the ULI of a counter is reached, the OLI is considered and it is applied repeatedly.</p>
+<p>The Near-OLI are defined as the near-limit thresholds, which are configured as a percentage of the overage limit on a counter.</p>
+<p>The overage limit is set as per the bundle or charging service with the ability to trigger notifications or other actions when these limits are reached.</p>
+<note>
+<p>The <systemoutput>Send-SNR</systemoutput> action is configured for overage thresholds, which sends an SNR notification only once when the overage limit is reached (as administered by the Sy interface).</p>
+</note>
+<p>For example, if the overage limit is defined as 2 GB for a counter and <systemoutput>Send-SNR</systemoutput> action is configured on 100% of 2 GB in the overage threshold, then an SNR is sent when the overage limit is reached for the first time. After that, the Sy interface administers to not send the SNR for the same signaling state in case it is same as the last successfully sent SNR state.</p>
+</section>
+</conbody></concept>

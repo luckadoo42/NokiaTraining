@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-d1e1683"><title>Events</title><conbody>
+<section><title>Overview</title>
+<p>The Web SSO server provides a defined set of auditing capabilities wherein every single logic action is recorded and stored in the database, and reviewed in the <i>Web SSO Admin Console</i>. There is an event listener Service Provider Interface (SPI) which enables the plugins to listen to the events and perform some action, whereas built-in listeners include a simple log file and is enabled to send an email when an event occurs.</p></section>
+    <section id="EventListener"><title>Event listener</title>
+<p>Event listeners listen for events and perform an action based on that event. The Web SSO server has the following two built-in listeners:</p><ul>
+<li>
+<p>
+<i>Logging Event Listener</i>, which writes to a log file whenever an error event occurs. This event listener is enabled by default. This event listener proves very useful to track the logging for any unauthorized access wherein a user tries to guess the passwords to get into the system. You can parse the log file for <userinput>LOGIN_ERROR</userinput> and extract the IP address of the machine from which unauthorized access was attempted.</p>
+</li>
+<li>
+<p>
+<i>Email Event Listener</i>, which sends an email to the user account when an event occurs. This event listener only supports the following events:</p><ul>
+<li>
+<p>Login error</p>
+</li>
+<li>
+<p>Update password</p>
+</li>
+<li>
+<p>Update TOTP</p>
+</li>
+<li>
+<p>Remove TOTP</p>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+<section><title>Login Events</title>
+<p>Login events occur under one of the following conditions:</p><ul>
+<li>
+<p>When a user logs in successfully to Web SSO server session.</p>
+</li>
+<li>
+<p>When a user enters a wrong password to access the Web SSO server.</p>
+</li>
+<li>
+<p>When a user account is updated on the Web SSO server.</p>
+</li>
+</ul>
+<p>Every single event that happens to a user can be recorded and viewed. By default, no events are stored or viewed in the <i>Web SSO Admin Console</i>. Only error events are logged to the console and server log file.</p>
+<p>The login events can be viewed in the <uicontrol>Login Events</uicontrol> tab under the <uicontrol>Events</uicontrol> option. Login events are used to track the last login of a user, which is shown every time a user logs into the SM. The last login details of a user are saved for 6 months (182 days).</p>
+<table pgwide="1" colsep="1" rowsep="1">
+                <title>Login Event parameters</title>
+                <tgroup cols="2">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Parameter name</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> Time </entry>
+                            <entry> This parameter indicates the time at which a particular event
+                                has been logged. </entry>
+                        </row>
+                        <row>
+                            <entry> Event Type </entry>
+                            <entry>
+                                <p>This parameter indicates whether the event type is
+                                        <varname>LOGIN</varname> depending on the following
+                                    information:</p>
+                                <ul>
+                                    <li>
+                                        <p>When a user has logged in.</p>
+                                    </li>
+                                    <li>
+                                        <p>When a user has registered.</p>
+                                    </li>
+                                    <li>
+                                        <p>When a user has logged out of the current session.</p>
+                                    </li>
+                                    <li>
+                                        <p>An application or client has exchanged a code for a
+                                            token.</p>
+                                    </li>
+                                    <li>
+                                        <p>An application or client has refreshed a token.</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Details </entry>
+                            <entry> This parameter gives information about the client name, user
+                                account, IP address with other information like authentication
+                                method or type related to the logged event. </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+</section>
+<section id="AdminEvents"><title>Admin Events</title>
+<p>The Web SSO server can record any action performed by the admin user for auditing purposes. The <i>Web SSO Admin Console</i> performs administrative functions by invoking on the Web SSO REST interface and audits these REST invocations. The resulting events can then be viewed in the <uicontrol>Admin Events</uicontrol> tab under the <uicontrol>Events</uicontrol> option.</p>
+<table pgwide="1" colsep="1" rowsep="1">
+                <title>Admin Events parameters</title>
+                <tgroup cols="2">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Parameter name</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> Time </entry>
+                            <entry> This parameter indicates the time at which a particular event
+                                has been logged. </entry>
+                        </row>
+                        <row>
+                            <entry> Operation Type </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry> Resource Type </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry> Resource Path </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry> Details </entry>
+                            <entry> If the <uicontrol>Details</uicontrol> column has a
+                                    <uicontrol>Representation</uicontrol> box, then you can click on
+                                that to view the JSON that was sent with that operation. </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<note>
+<p>You can also filter for the events you are interested in by clicking the <uicontrol>Filter</uicontrol> button.</p>
+</note>
+</section>
+<section><title>Configuration</title>
+<p>Given that no events are stored or viewed in the <i>Web SSO Admin Console</i>, you need to enable storage on the Web SSO server. Go to the <uicontrol>Events</uicontrol> option from the left-most drop-down menu and then select the <uicontrol>Config</uicontrol> tab under the <uicontrol>Events</uicontrol> option.</p>
+<table pgwide="1" colsep="1" rowsep="1">
+                <title>Config parameters</title>
+                <tgroup cols="2">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Parameter name</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry nameend="col2" namest="col1">
+                                <b>Events Config</b>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Event Listeners </entry>
+                            <entry>
+                                <p>This parameter allows you to select the event listener you wish
+                                    to enable.</p>
+                                <p>For more information, see the <xref
+                                        href="#id9yz-09126-mt00-rezza-sp2-d1e1683/EventListener"
+                                        format="dita"/> section.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry nameend="col2" namest="col1">
+                                <b>Login Event Settings</b>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Save Events </entry>
+                            <entry> This parameter, when enabled, allows you to start storing events
+                                on the Web SSO server. </entry>
+                        </row>
+                        <row>
+                            <entry> Saved Types </entry>
+                            <entry> This parameter allows you to specify which event types you want
+                                to store in the event store. </entry>
+                        </row>
+                        <row>
+                            <entry> Clear events </entry>
+                            <entry> This parameter allows you to delete all the events in the
+                                database. </entry>
+                        </row>
+                        <row>
+                            <entry> Expiration </entry>
+                            <entry> This parameter allows you to specify the duration for which the
+                                events can be stored in the database. </entry>
+                        </row>
+                        <row>
+                            <entry nameend="col2" namest="col1">
+                                <b>Admin Event Settings</b>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Save Events </entry>
+                            <entry> This parameter allows you to enable the auditing of admin
+                                actions. For more information on admin events, see the <xref
+                                    href="#id9yz-09126-mt00-rezza-sp2-d1e1683/AdminEvents"
+                                    format="dita"/> section. </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+</section>
+</conbody></concept>

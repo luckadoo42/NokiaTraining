@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+		<task id="id9YZ-09018-IN00-RJZZA-Preparing-pAutoSU111"><title>Preparing pAutoSU</title><taskbody id="d1e9221"><context><sectiondiv>
+				<p><b>Overview</b></p>
+				<p>This procedure provides instructions on how to prepare pAutoSU for each site in
+					the deployment.</p>
+				<note>For information on CBAM, see the CloudBand Application Manager (CBAM) documentation
+					referenced in the Nokia Discovery Center by following this link: <xref
+						format="html" scope="external" href="https://doc.networks.nokia.com."
+						>https://doc.networks.nokia.com.</xref><p> </p></note>
+				<note>Ensure the latest patch file (most recently applied) exists in the /appdata/sps/patches
+					directory on the OAME for each VNF prior to upgrading.<p> </p></note>
+			</sectiondiv>To prepare pAutoSU for the site:</context><steps>
+
+<step><cmd>From the CSAR package, retrieve the <filepath>/ansible/files/spsSU/spsSU-sps.tar.gz</filepath> file and copy (using “scp”) the CSAR packages from the VNFGenerator VM to the SU-VM as follows; for example:</cmd><info><ul>
+
+<li>
+<p>For the “TO” Load:</p><ul>
+
+<li>
+<p>scp  Nokia~SPS-IG~19_9_R1_I93~1.0.0_OpenStack.zip </p>
+<p>
+										<xref format="html" scope="external"
+											href="mailto:root@10.76.155.28:/tmp"
+											>mailto:root@10.76.155.28:/tmp</xref>
+									</p>
+</li>
+</ul>
+</li>
+<li>
+<p>For the “FROM” Load:</p><ul>
+
+<li>
+<p>scp  Nokia~SPS-IG~19_6_R2_I146~1.0.0_OpenStack.zip </p>
+<p>
+										<xref format="html" scope="external"
+											href="mailto:root@10.76.155.28:/tmp"
+											>mailto:root@10.76.155.28:/tmp</xref>
+									</p>
+</li>
+</ul>
+</li>
+</ul></info></step>
+<step><cmd>Install pAutoSU on the SU-VM with access to CBAM OAM network:</cmd><info><ul>
+
+<li>
+<p>Extract the pAutoSU package by entering:</p>
+<p>
+<codeph>tar xvzf spsSU-sps.tar.gz</codeph>
+</p>
+</li>
+<li>
+<p>Export pAutoSU by entering:</p>
+<p>
+<codeph>cd spsSU-sps; export AUTO_HOME=$PWD</codeph>
+</p>
+<p>The variable is now:</p>
+<p>$ echo $AUTO_HOME</p>
+<p>/opt/sps/SM_SU/spsSU-sps</p>
+</li>
+<li>
+<p>Install drest package used by pAutoSU by entering:</p>
+<p>
+<codeph>tar xvzf drest-0.9.12.tar.gz; cd drest-0.9.12</codeph>
+</p>
+</li>
+<li>
+<p>As <codeph>root</codeph> user, enter:</p>
+<p>
+<codeph>python setup.py install</codeph>
+</p>
+</li>
+</ul></info></step>
+<step><cmd>If deploying in VMware, go to the next step. Otherwise, set OpenStack environment variables using the procedure <!--xref URI: ../../SPS-InstallationGuide/Topics/t-upgrade-setting-OpenStack-environment-variables.xml#setting-OpenStack-environment-variables--><xref keyref="id9YZ-09018-IN00-RJZZA-setting-OpenStack-environment-variables"/>.</cmd><info/></step>
+<step><cmd>Update the parameter values in the <filepath>vnfm_config.yaml</filepath> file located in  the <b>$AUTO_HOME</b> directory, for example:</cmd><info><ul>
+
+<li>
+<p>vnfmip = 10.76.155.139</p>
+</li>
+<li>
+<p>client = spsclient</p>
+</li>
+<li>
+<p>secret = 3d085257-e7b6-442d-b589-adea699f8ce2</p>
+</li>
+</ul><p>To complete this step and get the correct client ID and secret, you need to read the comments in the vnfm_config.yaml, which in turn points you to the $AUTO_HOME/README.txt under which the "Configure the VNFM" section points you to the procedure: “Locating the Client ID and the Client Secret on Keycloak” in the <i>CloudBand (CBAM) Administrator Guide</i>.</p></info></step>
+			<step>
+				<cmd>When CBAM 19.5 SP2 or CBAM 19.5 SP1 or later version is used, a new temporary
+					state FAILED_TEMP appears if any operation fails. This can be avoided by using
+					"Nokia VNFM API minor versions" section in the <i>CBAM user Guide</i> and then
+					following "Changing CBAM configuration parameters" section in the <i>CloudBand
+						(CBAM) Administrator Guide</i>. </cmd>
+			</step>
+<step><cmd>Copy the FROM load and the TO load CSAR packages to the $AUTO_HOME directory on the SU VM.</cmd><info/></step>
+<step><cmd>Enter:</cmd><info><p>
+<codeph>cd $AUTO_HOME/tools/patchtool</codeph>
+</p></info></step>
+<step><cmd>Enter the following to generate the interim package. The script is used to create the interim_su CSAR package for ISU using inputs that specify the absolute path of the downloaded FROM load package, FROM load version, VNF type, and the absolute path of the TO load package. This script is also used to update or customize the TO load CSAR package with ISU inputs.</cmd><info><note>The script will detect and apply the patch that exists in the OAME of each VNF before the ISU
+						when you perform a backout to the previous version, provided the latest
+						patch file (most recently applied) exists in the /appdata/sps/patches
+						directory on the OAME prior to upgrading. <p/></note><p>
+<codeph>./create-interim-csar -f &lt;the absolute path of the downloaded FROM load package&gt;  -p &lt;VNF type&gt; -r &lt;FROM load version&gt; -t &lt;the absolute path of the TO load package&gt;</codeph>
+</p><p>Where:</p><p>
+<b>-f &lt;file&gt;</b>: Full path of the FROM CSAR package zip file.</p><p>
+<b>-h</b>: Print this help message and exit.</p><p>
+<b>-o &lt;dir&gt;</b>: Output directory full path for the interim_su CSAR package. Default to this script's directory.</p><p>
+<b>-p &lt;product&gt;</b>: Product of sm, me or ig.</p><p>
+<b>-r &lt;release&gt;</b>: The FROM release of SPS, e.g. 19.6, 19.6_sp1, 19.6_sp2, 19.6_sp3, 19.6_sp4, 19.9, or 20.0.</p><p>
+<b>-t &lt;file&gt;</b>: Full path of the TO CSAR package zip file.</p><p>You can enter the following to see the usage and all the options available for this command:</p><p>
+<userinput>./create-interim-csar -h</userinput>
+</p><p>The following are the valid input values for the above command:</p><ul>
+
+<li>
+<p>&lt;FROM load version&gt;: 19.6, 19.6_sp1, 19.6_sp2, 19.6_sp3, 19.6_sp4, 19.9, or 20.0</p>
+</li>
+<li>
+<p>&lt;VNF type&gt;: me, sm, ig</p>
+</li>
+</ul></info></step>
+<step><cmd>Upload the interim package to CBAM using the procedure: <!--xref URI: ../../SPS-InstallationGuide/Topics/t-install-uploading-CSAR-package.xml#Uploading_updated_CSAR--><xref keyref="id9YZ-09018-IN00-RJZZA-Uploading_updated_CSAR"/>.</cmd><info/></step>
+<step>
+				<cmd>Copy the VNF Conf and VNF Extension file and scalable.json file of the TO load
+					version into the <b>$AUTO_HOME</b> directory.</cmd>
+				<info/>
+			</step>
+<step><cmd>In the <filepath>su_config.yaml</filepath> file located in the <b>$AUTO_HOME</b> directory modify the values as shown in the following example. The following is an example of what needs to be done to update the su_config.yaml file with the correct values:</cmd><info><ul>
+						<li>
+							<p>vnfid: Using CBAM GUI select the instantiated FROM VNF and use the
+								VNF Id</p>
+						</li>
+						<li>
+							<p>fromload: Current IBUILD Load. </p>
+						</li>
+						<li>
+							<p>fromRelease: Current stream version.</p>
+						</li>
+						<li>
+							<p>fromVNFDVersion: Using CBAM GUI select the instantiated FROM VNF and
+								use the VNFD Id</p>
+						</li>
+						<li>fromVNFMAPIVersion: the 'cbam api version' field you used in the 'FROM' vnf-conf.json file
+							when you created the 'FROM' vnf package. The value can be '3.3' or
+							'4.0'.</li>
+						<li>
+							<p>toVNFConf: the VNF_CONF file of the TO load version </p>
+						</li>
+						<li>
+							<p>toVNFDExtension: the VNF Extension file of the TO load version</p>
+						</li>
+						<li>toVNFDScalable: the generated scalable.json file of the TO vnf packages</li>
+						<li>
+							<p>convertToImageName: Static Openstack specific parameter always set to
+								‘yes’</p>
+						</li>
+						<li>
+							<p>customFromVNFDVersion: Name of the interim_su package created in step
+								7</p>
+						</li>
+						<li>
+							<p>customToVNFDVersion: Name of the TO CSAR package updated/customized in step 7</p>
+						</li>
+						<li>
+							<p>impactedNodeTypes:</p>
+							<p>SPS_20_0_R1:</p>
+							<p> - auxiliary</p>
+							<p> - cdr</p>
+							<p> - comsvc</p>
+							<p> - db</p>
+							<p> - diameterapp</p>
+							<p> - iohd</p>
+							<p> - ioho</p>
+							<p> - oame</p>
+							<p> - smapp</p>
+							<p>SPS_20_3_R1:</p>
+							<p> - auxiliary</p>
+							<p> - cdr</p>
+							<p> - comsvc</p>
+							<p> - db</p>
+							<p> - diameterapp</p>
+							<p> - iohd</p>
+							<p> - ioho</p>
+							<p> - oame</p>
+							<p> - smapp</p>
+							<p>SPS_20_6_R1:</p>
+							<p> - auxiliary</p>
+							<p> - cdr</p>
+							<p> - comsvc</p>
+							<p> - db</p>
+							<p> - diameterapp</p>
+							<p> - iohd</p>
+							<p> - ioho</p>
+							<p> - oame</p>
+							<p> - smapp</p>
+						</li>
+					</ul></info></step>
+</steps>
+</taskbody></task>

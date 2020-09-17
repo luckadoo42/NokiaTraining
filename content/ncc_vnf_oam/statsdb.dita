@@ -1,0 +1,1166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-statsdb"><title>db-stats tool</title><conbody>
+<section><title>Description</title>
+<p>This command displays DB statistics, including the number of records, memory usage, disk usage, local cluster data migration, and cross site data replication.</p>
+<p>There is a summary view that would be a typical starting point. There are also more verbose views available for drilling further into the per-node statistics.</p>
+<p>This tool can be executed on any OAME node at any time.</p>
+<note>
+<p>Displaying traffic measurements is not part of the capabilities of this tool; they are available via other system tools.</p>
+</note>
+</section>
+<section><title>Syntax</title>
+<codeblock>db-stats -s &lt;set&gt; [-i] [-c] [-o &lt;dir/file&gt;]</codeblock>
+<codeblock>db-stats -v &lt;stat_type&gt; [-s &lt;set&gt;] [-o &lt;dir/file&gt;]</codeblock>
+<codeblock>db-stats -l [-o &lt;dir/file&gt;] </codeblock>
+<table>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+<p>
+<b>Code</b>
+</p>
+</entry>
+<entry>
+<p>
+<b>Description</b>
+</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+<codeblock>No arguments</codeblock>
+</entry>
+<entry>
+Displays usage/help information.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-h</codeblock>
+</entry>
+<entry>
+Displays usage/help information.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-s &lt;set&gt;</codeblock>
+</entry>
+<entry>
+Specifies the set (or table) to display, or all to display statistics for all sets.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-i</codeblock>
+</entry>
+<entry>
+Include a count of total Inactive records (tombstoned).
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-c </codeblock>
+</entry>
+<entry>
+Configuration sets. The output will also include the site/system configuration data sets. This option can be used only with -s all and cannot be used with verbose mode. The results will be different depending on whether it is used on an ME or SM.
+</entry>
+</row>
+<row>
+<entry>
+-l
+</entry>
+<entry>
+Lists Session Counts. The operation may take a while to complete. 
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-o &lt;dir/file&gt;</codeblock>
+</entry>
+<entry>
+Specifies the output directory and filename to append the DB stats output. This is written in append mode to enable a periodically-scheduled running of this command (e.g. daily) to form a historical view. For the current directory, use ./&lt;file&gt;
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-v &lt;stat_type&gt;</codeblock>
+</entry>
+<entry>
+<p>Verbose mode for a given stat type, showing stats for each node in the DB cluster.  </p>
+<p>Note: For large DB clusters, the verbose output may be quite long.</p>
+<p>Stat type may be:</p><ul>
+<li>
+<p>records: Record counts.  When this stat type is used, the -s &lt;set&gt; is also required.</p>
+</li>
+<li>
+<p>memory: Memory and disk usage</p>
+</li>
+<li>
+<p>migrate: Local cluster data migration</p>
+</li>
+<li>
+<p>repl: Cross site data replication</p>
+</li>
+<li>
+<p>all: All of the above stat types, for -s all</p>
+</li>
+</ul>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section><title>Example Output</title>
+<p>The following explains the output of db-stats:</p><ul>
+<li>
+<p>
+<b>Record count summary:</b> Every record appears in the system two times (replication factor is two).  The total unique record counts shown take this into account, and divides the total record counts by the replication factor to display a total unique record count. </p>
+</li>
+<li>
+<p>
+<b>Namespace:</b> The record count summary has column headings for the namespace of the various data sets. </p>
+<p>Namespaces have the following meaning:</p><ul>
+<li>
+<p>
+								<b>spspd&lt;id&gt;: </b> This namespace contains the NCC partitioned
+								data that is replicated to one other SPS site in the network. Each
+								namespace is replicated to a different NCC site.</p>
+</li>
+<li>
+<p>
+								<b>spsglobal: </b> Data in this namespace is replicated to all other
+								NCC in the network. This namespace includes routing/mapping data for
+								locating the Home NCC for any given record.</p>
+</li>
+<li>
+<p>
+								<b>spslocal: </b> Data in this namespace is configured locally on
+								this NCC and is not replicated to any other NCC sites.</p>
+</li>
+<li>
+<p>
+								<b>sps: </b> Data in this namespace is configured on SM and pushed
+								to NCC. It is not replicated to any other NCC sites</p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<b>Unknown:</b> If a database node does not respond to the statistics query, its status is displayed as Unknown. When this happens, the unique record count totals are only approximate.</p>
+</li>
+<li>
+<p>
+<b>Grp:</b>DB nodes are grouped into two groups, with one copy of each record existing in Group 1 and the other copy in Group 2.  This allows one-half of the DB nodes to be taken down by manual action while still providing access to all records.</p>
+</li>
+<li>
+<p>
+<b>Data migration:</b>When a database node cluster changes (e.g. a DB node fails, or a DB node recovers, or a DB node is grown into the system), the database may initiate automatic migration of replicated partitions amongst the DB nodes in this local system to maintain the replication factor and the balance across nodes. During this migration period, the unique record count totals are only approximate and are likely underestimated.</p>
+</li>
+<li>
+<p>
+<b>Data migration, Xmit:</b>Total number of partitions pending to be sent out to others from this node. Will be 0 in a normal steady state.</p>
+</li>
+<li>
+<p>
+<b>Data migration, Rcv:</b>Total number of partitions being received from other nodes at this moment. Will be 0 in a normal steady state.</p>
+</li>
+<li>
+<p>
+<b>Total Unique Records:</b>The number of unique records, which in a normal system in steady state, is equal to the total records divided by the replication factor. (For example, if there are 1,000 total records and the replication factor is 2, then the actual number of unique records is 500, with there being 2 copies of each record.)</p>
+</li>
+<li>
+<p>
+<b>Active Records:</b>The number of unique active records. Active records are the only ones that are visible and accessible to provisioning and application processing. (Active records are those that have not been recently deleted and therefore do not have any temporary tombstone records remaining in the database.)</p>
+</li>
+<li>
+<p>
+<b>Inactive Records:</b>The number of unique inactive records. These are records which have been deleted but for which a tombstone remains in the system.</p>
+</li>
+<li>
+<p>
+						<b>Cross site data replication:</b>This is the replication of data across
+						NCC systems in the operator network. Various metrics are reported for this
+						replication, including:</p>
+<p>
+<b>System metrics:</b>
+</p><ul>
+<li>
+<p>
+<b>Digest log records: </b>Number of records logged into digest log.</p>
+</li>
+<li>
+<p>
+<b>Digest log free %:  </b>Percentage of the digest log free and available for use.</p>
+</li>
+<li>
+<p>
+<b>Digest log relogged: </b>Number of records relogged into the digest log due to temporary issues when attempting to ship.</p>
+</li>
+</ul>
+<p>
+<b>Metrics per remote data center:</b>
+</p><ul>
+<li>
+<p>
+<b>State of the remote DC: </b>Values can include UP, DOWN, INACTIVE, or WINDOW_SHIP</p>
+</li>
+<li>
+<p>
+<b>In flight:</b>Number of records that are in flight (which have been shipped but for which a response from the remote DC has not yet been received).</p>
+</li>
+<li>
+<p>
+<b>Ship ok (K): </b>Number of records that have been successfully shipped, in thousands.</p>
+</li>
+<li>
+<p>
+<b>Ship err dest:</b>Number of errors from the remote destination cluster(s) while shipping records for this DC.  Errors include out-of-space, key-busy, etc.</p>
+</li>
+<li>
+<p>
+<b>Ship err src: </b>Number of client layer errors while shipping records for this DC. Errors include timeout, bad network fd, etc.</p>
+</li>
+<li>
+<p>
+<b>Ship (MB): </b>Number of Megabytes successfully shipped</p>
+</li>
+<li>
+<p>
+<b>Time lag:</b> Time lag for this specific DC.  The timelag represents the time (in seconds) it took the latest successfully shipped record from the moment it was first written at the source until it was successfully shipped to the destination cluster. Another way of saying this is the difference between the current time and the times stamp of the record which was last successfully shipped (each record written at the source is time stamped as it gets written into the replication digestlog). When having multiple destination DCs, this represents the maximum time lag across all those remote DCs. Under normal operations, though, the timelag for each DC will be the same, given that the DB ships records in lock-step. The timelag at each DC would be different when a DC is down or in the CLUSTER_WINDOW_SHIP state. </p>
+</li>
+<li>
+<p>
+								<b>Avg latency: </b>Moving average latency in milliseconds to ship a
+								record to remote NCC sites.</p>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+<section><title>Example:  Normal default db-stats (summary mode)</title>
+<p>This example shows the default summary view of the DB statistics. If any stats look unusual, another db-stats command can be run in verbose mode for the given stats type.</p>
+<fig>
+<codeblock>db-stats -s all 
+
+DB CLUSTER INFO
+-------------------------
+Total DB nodes:         4
+DB nodes responding:    4
+
+ACTIVE RECORDS SUMMARY
+----------------------
+Set               Total   spspd100   spspd101   spspd102   spspd103   
+---------------------------------------------------------------------
+clubInfreq    5,075,450    970,736    702,021    903,098    914,153  
+msisdn               10         10          0          0          0  
+clubDynamic   5,258,152    931,485    905,635    769,526    738,978  
+tem           2,128,712    337,534    423,106    277,482    240,704  
+
+Set (in namespace: dscglobal)        Total
+------------------------------------------
+accountMap                       9,310,499
+imsiDevMap                         999,999
+msisdnDevMap                    25,819,909
+
+Set (in namespace: spsundologs)   Total
+---------------------------------------
+account                          900,999
+
+DB MEMORY AND DISK
+--------------------
+NameSpace                    Total Mem (MB) Free Mem (%) Total      Free 
+                                                         Disk (MB)  Disk (%)
+----------------------------------------------------------------------------
+dsclocal      	Min reported   21,845       99           131,070       99
+              	Max reported   21,845       99           131,070       99
+spspd100      	Min reported   21,845       99           131,070       99
+              	Max reported   21,845       99           131,070       99
+dscglobal     	Min reported   21,845       89           131,070       96
+              	Max reported   21,845       89           131,070       96
+dsc           	Min reported   21,845       99           131,070       99
+              	Max reported   21,845       99           131,070       99
+spspd103      	Min reported   21,845       99           131,070       99
+              	Max reported   21,845       99           131,070       99
+spspd101      	Min reported   21,845       99           131,070       99
+              	Max reported   21,845       99           131,070       99
+spspd102      	Min reported   21,845       99           131,070       99
+              	Max reported   21,845       99           131,070       99
+spsundologs   	Min reported   10          100                 0        0
+              	Max reported   10          100                 0        0
+
+
+LOCAL CLUSTER DATA MIGRATION 
+------------------------------
+Migration in progress   NO
+
+
+CROSS SITE DATA REPLICATION
+-----------------------------
+Digest log records        
+	Min reported          796
+	Max reported         1071
+Digest log free %         
+	Min reported           11
+	Max reported           34
+Digest log relogged       
+	Min reported            0
+	Max reported           30
+
+DC Metrics            sps3      sps2
+------------------------------------
+State                               
+	# UP                    4         2
+	# Other                 0         2
+In flight                           
+	Min reported            0         0
+	Max reported            0         0
+Ship ok (K)                         
+	Min reported            0         0
+	Max reported      3537491   3537491
+Ship err dest                       
+	Min reported            0         0
+	Max reported            0         0
+Ship err src                        
+	Min reported            0         0
+	Max reported            0        30
+Ship (MB)                           
+	Min reported            0         0
+	Max reported          489       489
+Time lag (ms)                       
+	Min reported            0         0
+	Max reported        88844     88844
+Avg latency (ms)                    
+	Min reported            0         0
+	Max reported            0         0</codeblock>
+</fig>
+</section>
+<section><title>Example:  Include inactive record counts </title>
+<fig>
+<codeblock>db-stats -s all -i
+
+DB CLUSTER INFO
+-------------------------
+Total DB nodes:         4
+DB nodes responding:    4
+
+ACTIVE RECORDS SUMMARY
+----------------------
+Set               Total   spspd100   spspd101   spspd102   spspd103 
+-------------------------------------------------------------------
+tem           2,128,712    337,534    423,106    277,482    240,704 
+clubInfreq    5,075,450    970,736    702,021    903,098    914,153   
+clubDynamic   5,258,152    931,485    905,635    769,526    738,978  
+
+Set (in namespace: dscglobal)       Total
+-----------------------------------------
+accountMap                      9,310,499
+imsiDevMap                        999,999
+msisdnDevMap                    5,819,910
+
+INACTIVE (TOMBSTONE) RECORDS SUMMARY
+------------------------------------
+Set           Total   spspd100   spspd101   spspd102   spspd103 
+---------------------------------------------------------------
+tem               0          0          0          0          0  
+clubInfreq        0          0          0          0          0 
+clubDynamic       0          0          0          0          0        
+
+Set (in namespace: dscglobal)   Total
+-------------------------------------
+accountMap                          0
+imsiDevMap                          0
+msisdnDevMap                        0
+
+rest is the same as default.
+</codeblock>
+</fig>
+</section>
+<section><title>Example:  Include the local system/configuration data run on an ME</title>
+<note>
+<p>You must include the -c option in the “db-stats -s all -c” command to make the information viewable.</p>
+</note>
+<fig>
+<codeblock>db-stats -s all -c
+
+DB CLUSTER INFO
+-------------------------
+Total DB nodes:         4
+DB nodes responding:    4
+
+ACTIVE RECORDS SUMMARY
+----------------------
+Set               Total   spspd100   spspd101   spspd102   spspd103  
+-------------------------------------------------------------------
+tem           2,128,712    337,534    423,106    277,482    240,704   
+clubInfreq    5,075,450    970,736    702,021    903,098    914,153    
+clubDynamic   5,258,152    931,485    905,635    769,526    738,978   
+
+Set (in namespace: dscglobal)       Total
+-----------------------------------------
+accountMap                      9,310,499
+imsiDevMap                        999,999
+msisdnDevMap                    5,819,910
+
+Set (in namespace: dsc)        Total
+------------------------------------
+User                               0
+TypeConverter                      0
+SpsRoamingPartners                 1
+SlicingProfile                     0
+AuditBatchAssignment               0
+CategoryOrder                      1
+Group                              0
+SpsHomeNetworkInfo                 1
+GroupAccount                       0
+CounterInstance                    0
+ToolsConfig                        1
+Session                            0
+WNGCongestionAlert                 0
+DdmappsDestination                 0
+AccountUser                        0
+SnmpTarget                         0
+NASProfile                         0
+RestWebServer                      0
+DiameterIdentity                   2
+CounterDefinition                  0
+RxAFSession                        0
+RadiusHostCluster                  0
+PCRFRuleSystemVersion              1
+CmsChassis                         1
+Bucket                             0
+Counter                            0
+OCSSubscriber                      0
+Bundle                             0
+EmailServer                        0
+Subscription                       0
+DiscountDefinition                 0
+SpsRoamingAgreements               1
+EntityCounterInstance              0
+ChargingService                    0
+ComMetric                          0
+DdmappsIdentityMappings            1
+ChargingRulesReloadDetector        1
+NotificationProfile                0
+DdmappsSubscriberGroup             0
+DiamClientCfg                      2
+Device                             0
+NASCluster                         0
+DbChgNotifSubs                     1
+Report                             0
+Account                            0
+SmsServer                          0
+WebServer                          0
+CommonCountableEventTotal          0
+NotifAppData                       0
+UnitType                           0
+ThresholdProfileGroup              0
+CommonCountableEvent               0
+SubscriberDevice                   0
+FloatingIps                        2
+SubscriberUser                     0
+SySession                          0
+DiameterPeer                       1
+TariffPlanDefinition               0
+SessionContainer                   0
+CustomDataDictionary               0
+CustomDataProfile                  0
+XMPPServer                         0
+ExternalSystem                     0
+BucketInstance                     0
+Job                                0
+CmsGeoSite                         1
+UrbanAirshipServer                 0
+ClassOfServiceParameters           0
+DiamRouteDeprioritization          0
+DdmappsIdentityToDestination       0
+DDMIndexedStrKey                   0
+
+Set (in namespace: dsclocal)            Total
+---------------------------------------------
+DiameterConfig                              1
+DiamPeerConnectionProfile                   0
+TPASystem                                   1
+DiamRouteCfg                                2
+DdmappsTopologyHidingConfig                 1
+DdmappsThrottlingProfile                    0
+DDMPluginsCfgCont                           1
+DdmappsRoutingProfile                       0
+DdmappsDownstreamOverloadProfile            0
+DDMLBConfig                                 1
+ComMetricConfig                             1
+DdmappsRoutingConfig                        1
+DiameterLatencyThresholdsProfile            0
+TPAUserRole                                 1
+LifeCycle                                   6
+CommonCountableEventConfigContainer         1
+DDMRuleSystemVersion                        1
+DdmappsOverloadSheddingProfile              0
+DiamPeerCfg                                 3
+DDMGlblVarCfg                               1
+HostRouteCfg                                2
+DiamPeerAddrGrpCfg                          1
+LifeCycleState                             16
+CommonCpuUsageThresholdsProfile             0
+DdmappsOverloadProtectionConfig             1
+DestMonitorConfig                           0
+DdmappsSiteRoutingProfile                   0
+TimePeriod                                  0
+TPAUser                                     1
+DdmappsThrottlingConfig                     1
+DdmappsSLFConfig                            1
+DdmappsMsgValidationConfig                  1
+CommonOverloadConfig                        1
+DiameterMessageCountThresholdsProfile       0
+DiamRouteProfile                            1
+LifeCycleTransition                        21
+DdmappsDownstreamOverloadConfig             1
+DdmappsTracingConfig                        0
+
+Rest is same as default.
+</codeblock>
+</fig>
+</section>
+<section><title>Example:  To show a local summary run on an SM</title>
+<note>
+<p>You must include the -c option in the “db-stats -s all -c” command to make the summary information visible.</p>
+</note>
+<note>
+<p>The summary of the statistics will include the system/configuration data.</p>
+</note>
+<fig>
+<codeblock>db-stats -s all -c
+
+DB CLUSTER INFO
+-------------------------
+Total DB nodes:         4
+DB nodes responding:    4
+
+ACTIVE RECORDS SUMMARY
+----------------------
+N/A, no spspd* namespace has been configured or no data sets for spspd* namespace.
+
+Set (in namespace: dscglobal)       Total
+-----------------------------------------
+DiameterIdentity                      0
+
+Set (in namespace: dsc)        Total
+------------------------------------
+SmOverloadProtectionConfig         0
+NASProfile                         0
+Account                            0
+SmReportService                    2
+SmESMTemplate                      0
+SpsRoamingAgreements               0
+ExternalSystem                     0
+SmTriggerPricePlanMapKeys          1
+SmCampaignSelectionRule            0
+SmTCPServer                        0
+RadiusHostCluster                  0
+SmRestServer                       0
+SmHostDestinationRouteConfig       0
+SpsRoamingPartners                 0
+SmCESubscriber                     0
+SmCategoryOrder                    0
+SmAPIHandlerPolicy                 0
+SmOverloadSheddingProfile          0
+SmChargingRules                    0
+DDMIndexedStrKey                   0
+AuditBatchAssignment               0
+SmDiameterPeerConfig               0
+SmCESubscriberState                0
+SmExecutionFlow                    0
+NASCluster                         0
+SmSoapServer                       0
+SmPeerConnectionProfile            0
+CmsGeoSite                         0
+SmWhiteList                        0
+SmRoutingConfig                    0
+SnmpTarget                         0
+SmCap                              0
+SmChargingService                  0
+SmCEPropertyFile                   5
+Group                              0
+SmCounter                          2
+CounterInstance                    0
+SmArmingPolicy                     0
+SmServiceTag                       0
+ToolsConfig                        0
+SmThresholdProfileGroup            0
+SmSmppServer                       0
+SmExternalSystem                   0
+SmThrottlingConfig                 0
+SmAccount                          0
+SmRoutingProfile                   0
+SmRSRules                          0
+SmService                          0
+SmUsageControlService              0
+SmDiameterRules                    0
+SmHomeNetworkInfo                  0
+DiamRouteDeprioritization          0
+SmSubscription                     0
+SmThresholdProfile                 0
+SmReloadStatus                     0
+CmsChassis                         0
+CommonCountableEvent               0
+SmRoutingPluginConfig              0
+SmSiteRoutingProfile               0
+SmNotificationTemplate             3
+SmESMCustomData                    0
+SmComplexMapEntry                  0
+SmRSExternalSystem                 0
+SmExtSystemRef                     0
+SmTriggerMap                       0
+SmThrottlingProfile                0
+CommonCountableEventTotal          0
+SmPricePlan                        0
+SmCEGroupState                     0
+SubscriberDevice                   0
+SmRouteQualityProfile              0
+SmDevice                           0
+SmCustomData                       0
+SmServiceThresholdPolicy           0
+SmCEGroup                          0
+SmNotificationProfile              0
+SmUser                             0
+SmRadiusServer                     0
+SmRate                             0
+SmDownstreamOverloadProfile        0
+SpsHomeNetworkInfo                 0
+SmComplexMapDefinition             0
+SmTrigger                          0
+SmDownstreamOverloadConfig         0
+SmESMTaskItems                     0
+SmPricePlanMap                     0
+SmOperator                         0
+SmGoogleServer                     0
+ComMetric                          0
+SmTcpIpOutboundServer              0
+SmBundle                           0
+SmDiameterPeerWhiteList            0
+SmMessageValidationConfig          0
+SmUnit                            10
+SmAppleServerRegistration          0
+SmRole                             0
+SmPrivateProfile                   0
+SmCampaign                         0
+SubscriberUser                     0
+SmTracingProfile                   0
+SmLifeCycle                        4
+SmGroup                            0
+SmServiceCategory                  0
+SmPolicyRules                      0
+SmAppPreference                    9
+SmSlicingProfile                   0
+SmServiceOfferSelectionRule        0
+SmDiamPeerAddrGrpCfg               2
+SmExternalBalanceManager           0
+SmSubscriberEntityCount            0
+SmEmailServer                      0
+
+Set (in namespace: dsclocal)            Total
+---------------------------------------------
+DiamRouteProfile                            0
+LifeCycle                                   3
+DiameterMessageCountThresholdsProfile       0
+CustomDataDictionary                        0
+CommonOverloadConfig                        0
+DiamPeerAddrGrpCfg                          0
+SmMEStatus                                  0
+ChargingService                             0
+TPAUserRole                                 0
+Counter                                     0
+LifeCycleTransition                        14
+UnitType                                    0
+CommonCpuUsageThresholdsProfile             0
+DiameterConfig                              0
+SmManagedElement                            0
+CommonCountableEventConfigContainer         0
+TPASystem                                   0
+DDMGlblVarCfg                               0
+SlicingProfile                              0
+UsageControlService                         0
+DiameterLatencyThresholdsProfile            0
+ChargingRulesReloadDetector                 0
+Report                                      0
+Bundle                                      0
+Rate                                        0
+TimePeriod                                  0
+DiamPeerCfg                                 0
+PCRFRulesReloadDetector                     0
+TypeConverter                               0
+DiamPeerConnectionProfile                   0
+Bucket                                      0
+EntityCommonTemplate                        0
+LifeCycleState                             10
+DbChgNotifSubs                              0
+TPAUser                                     0
+DiamPeerStatus                              0
+ThresholdProfileGroup                       0
+CategoryOrder                               0
+
+DB MEMORY AND DISK
+--------------------
+NameSpace                     Total Mem (MB)   Free Mem (%)   Total Disk (MB)   Free Disk (%)
+---------------------------------------------------------------------------------------------
+dsclocal        Min reported   200                        99             1,200              99
+                Max reported   200                        99             1,200              99
+dscglobal       Min reported   10                         99                60             100
+                Max reported   10                         99                60             100
+dsc             Min reported   1,024                      99             6,144              99
+                Max reported   1,024                      99             6,144              99
+spsundologs     Min reported   200                       100                 0               0
+                Max reported   200                       100                 0               0
+
+LOCAL CLUSTER DATA MIGRATION
+------------------------------
+Migration in progress   NO
+
+
+CROSS SITE DATA REPLICATION
+-----------------------------
+N/A, no cross data center replication has been configured</codeblock>
+</fig>
+</section>
+<section><title>Example:  Verbose mode for “records” stat type, for all sets</title>
+<p>This example shows a verbose view of the total records on each DB node.  The record counts are for all data sets in the “spsglobal” namespace and the various “spspd&lt;id&gt;” namespaces.</p>
+<note>
+<p>
+<codeph>db-stats -v records -s all  -c</codeph> is not supported by the db-stats tool where the ‘c’ option is used to list local configuration data records.</p>
+</note>
+<fig>
+<codeblock>db-stats -v records -s all
+
+DB CLUSTER INFO
+-------------------------
+Total DB nodes:         4
+DB nodes responding:    4
+
+ACTIVE RECORDS SUMMARY FOR SET:  all
+
+
+Grp   Node             Total         spsglobal   spsundologs   spspd(all)
+-------------------------------------------------------------------------
+2     135.121.42.126   11,841,714    8,736,179             0    3,105,535
+1     135.121.42.119   12,301,359    9,072,938             0    3,228,421
+1     135.121.42.120   12,190,304    8,992,264             0    3,198,040
+2     135.121.42.121   12,649,949    9,329,023             0    3,320,926
+-------------------------------------------------------------------------
+      Total            48,983,326   36,130,404             0   12,852,922
+
+---------------------------------------------------------------------------------------------
+</codeblock>
+</fig>
+</section>
+<section><title>Example:  Verbose mode for “records” stat type, for a specific set in spsglobal namespace</title>
+<p>This example shows a verbose view of the total records on each DB node.  The record counts are for one specific data set in the “spsglobal” namespace.</p>
+<fig>
+<codeblock>db-stats -v records  -s imsiDevMap 
+
+
+DB CLUSTER INFO
+-------------------------
+Total DB nodes:         4
+DB nodes responding:    4
+
+ACTIVE RECORDS SUMMARY FOR SET: imsiDevMap
+
+
+Grp             Node     Total
+------------------------------
+1     135.121.42.119   250,886
+2     135.121.42.126   241,560
+1     135.121.42.120   249,113
+2     135.121.42.121   258,439
+               Total   999,998
+
+--------------------------------------------------------------------------------------------
+</codeblock>
+</fig>
+</section>
+<section><title>Example:  Verbose mode for “records” stat type, for a specific set in spspd&lt;id&gt; namespace</title>
+<p>This example shows a verbose view of the total records on each DB node.  The record counts are for one specific data set in the “spspd&lt;id&gt;” namespaces.  There can be from 1 to 5 of the spspd&lt;id&gt; namespaces, depending on the network deployment configuration.</p>
+<fig>
+<codeblock>db-stats -v records -s clubDynamic
+
+DB CLUSTER INFO
+-------------------------
+Total DB nodes:         4
+DB nodes responding:    4
+
+ACTIVE RECORDS SUMMARY FOR SET: clubDynamic
+
+Grp          Node       Total   spspd100   spspd101   spspd102   spspd103
+-------------------------------------------------------------------------
+2  135.121.42.126   1,269,352    224,824    218,547    185,849    178,503 
+2  135.121.42.121   1,359,722    240,918    234,270    198,914    190,986   
+1  135.121.42.120   1,306,769    231,486    225,033    191,275    183,632   
+1  135.121.42.119   1,322,304    234,256    227,784    193,487    185,857 
+</codeblock>
+</fig>
+</section>
+<section><title>Example:  Verbose mode for “memory” stat type</title>
+<p>This example shows a verbose view of memory and disk usage for each of the DB nodes in the local cluster.</p>
+<fig>
+<codeblock>db-stats -v memory
+
+DB CLUSTER INFO
+-------------------------
+Total DB nodes:         4
+DB nodes responding:    4
+
+DB MEMORY AND DISK
+-------------------
+Grp   Node          Namespace      Total Mem (MB)   Free    Total    Free                                                                 Mem (%) Disk(MB) Disk (%)
+--------------------------------------------------------------------------
+1     135.121.42.119   dsclocal         21,845       99      131,070     99
+1     135.121.42.119   spspd103         21,845       99      131,070     99
+1     135.121.42.119   spspd102         21,845       99      131,070     99
+1     135.121.42.119   spspd101         21,845       99      131,070     99
+1     135.121.42.119   spspd100         21,845       99      131,070     99
+1     135.121.42.119   dscglobal        21,845       95      131,070     98
+1     135.121.42.119   dsc              21,845       99      131,070     99
+1     135.121.42.120   dsclocal         21,845       99      131,070     99
+1     135.121.42.120   spspd103         21,845       99      131,070     99
+1     135.121.42.120   spspd102         21,845       99      131,070     99
+1     135.121.42.120   spspd101         21,845       99      131,070     99
+1     135.121.42.120   spspd100         21,845       99      131,070     99
+1     135.121.42.120   dscglobal        21,845       95      131,070     98
+1     135.121.42.120   dsc              21,845       99      131,070     99
+2     135.121.42.121   dsclocal         21,845       99      131,070     99
+2     135.121.42.121   spspd103         21,845       99      131,070     99
+2     135.121.42.121   spspd102         21,845       99      131,070     99
+2     135.121.42.121   spspd101         21,845       99      131,070     99
+2     135.121.42.121   spspd100         21,845       99      131,070     99
+2     135.121.42.121   dscglobal        21,845       95      131,070     98
+2     135.121.42.121   dsc              21,845       99      131,070     99
+2     135.121.42.126   dsclocal         21,845       99      131,070     99
+2     135.121.42.126   spspd103         21,845       99      131,070     99
+2     135.121.42.126   spspd102         21,845       99      131,070     99
+2     135.121.42.126   spspd101         21,845       99      131,070     99
+2     135.121.42.126   spspd100         21,845       99      131,070     99
+2     135.121.42.126   dscglobal        21,845       95      131,070     98
+2     135.121.42.126   dsc              21,845       99      131,070     99
+</codeblock>
+</fig>
+</section>
+<section><title>Example:  Verbose mode for “migrate” stat type</title>
+<p>This example shows a verbose view of local cluster data migration for each of the DB nodes.</p>
+<fig>
+<codeblock>db-stats -v migrate
+DB CLUSTER INFO
+-------------------------
+Total DB nodes:         4
+DB nodes responding:    3
+Not responding IP:
+        135.121.42.126
+
+LOCAL CLUSTER DATA MIGRATION
+----------------------------
+Grp   Node                Xmit       Rcv
+----------------------------------------
+1     135.121.42.119         1         0
+1     135.121.42.120         2         0
+2     135.121.42.121         3         2
+      135.121.42.126   Unknown   Unknown
+</codeblock>
+</fig>
+</section>
+<section><title>Example:  Verbose mode for “repl” stat type</title>
+<p>This example shows a verbose view of the cross site data replication as reported by each of the DB nodes.</p>
+<fig>
+<codeblock>db-stats -v repl
+
+DB CLUSTER INFO
+-------------------------
+Total DB nodes:         4
+DB nodes responding:    4
+
+
+CROSS SITE DATA REPLICATION
+---------------------------------------------------------
+Digest Log
+Grp          Node             Records   Free %   Relogged
+---------------------------------------------------------
+1            135.121.42.119      1183        2          0
+1            135.121.42.120       814       33          0
+2            135.121.42.121      1196        1          0
+2            135.121.42.126       934       23          0
+
+
+CROSS SITE DATA REPLICATION
+-----------------------------
+Ship errors: destination
+Grp                        Node             sps3   sps2
+-------------------------------------------------------
+1                          135.121.42.119      0      0
+1                          135.121.42.120      0      0
+2                          135.121.42.121      0      0
+2                          135.121.42.126      0      0
+
+
+Time Lag (ms)
+Grp             Node             sps3   sps2
+--------------------------------------------
+1               135.121.42.119      0      0
+1               135.121.42.120      2      2
+2               135.121.42.121      0      0
+2               135.121.42.126      1      1
+
+
+ship ok(k)
+Grp          Node              sps3    sps2
+-------------------------------------------
+1            135.121.42.119   39245   39245
+1            135.121.42.120   34774   34774
+2            135.121.42.121   37208   37208
+2            135.121.42.126   36402   36402
+
+
+ship errors: source
+Grp                   Node             sps3   sps2
+--------------------------------------------------
+1                     135.121.42.119      0      0
+1                     135.121.42.120      0      0
+2                     135.121.42.121      0      0
+2                     135.121.42.126      0      0
+
+
+State
+Grp     Node                   sps3         sps2
+------------------------------------------------
+1       135.121.42.119   UP   UP
+1       135.121.42.120   UP   UP
+2       135.121.42.121   UP   UP
+2       135.121.42.126   UP   UP
+
+
+Avg latency (ms)
+Grp                Node             sps3   sps2
+-----------------------------------------------
+1                  135.121.42.119      0      0
+1                  135.121.42.120      0      0
+2                  135.121.42.121      0      0
+2                  135.121.42.126      0      0
+
+
+In Flight
+Grp         Node             sps3   sps2
+----------------------------------------
+1           135.121.42.119      0      0
+1           135.121.42.120      0      0
+2           135.121.42.121      0      0
+2           135.121.42.126      0      0
+
+
+ship (MB)
+Grp         Node             sps3   sps2
+----------------------------------------
+1           135.121.42.119      5      5
+1           135.121.42.120      4      4
+2           135.121.42.121      5      5
+2           135.121.42.126      5      5
+</codeblock>
+</fig>
+</section>
+<section><title>Example:  Summary db-stats with one or more DB nodes not responding </title>
+<p>This example shows the default summary view of the DB statistics, when one or more DB nodes did not respond to the data query (e.g. the node may be out-of-service).  The list of non-responding nodes is displayed. </p>
+<fig>
+<codeblock>
+db-stats -s all -i
+
+DB CLUSTER INFO
+-------------------------
+Total DB nodes:         4
+DB nodes responding:    3
+Not responding IP:
+        135.121.42.126
+
+ACTIVE RECORDS SUMMARY
+----------------------
+Set               Total   spspd100   spspd101   spspd102   spspd103  
+-------------------------------------------------------------------
+tem           1,946,925    280,204    418,148    277,090    240,675   
+clubInfreq    4,676,173    805,535    693,711    901,841    914,025   
+clubDynamic   4,851,817    773,336    895,001    768,458    738,864   
+
+Set (in namespace: dscglobal)       Total
+-----------------------------------------
+accountMap                      7,059,289
+imsiDevMap                        758,439
+msisdnDevMap                    4,412,409
+
+INACTIVE (TOMBSTONE) RECORDS SUMMARY
+------------------------------------
+Set           Total   spspd100   spspd101   spspd102   spspd103  
+----------------------------------------------------------------
+tem               0          0          0          0          0     
+clubInfreq        0          0          0          0          0  
+clubDynamic       0          0          0          0          0   
+
+Set (in namespace: dscglobal)   Total
+-------------------------------------
+accountMap                          0
+imsiDevMap                          0
+msisdnDevMap                        0
+
+</codeblock>
+</fig>
+</section>
+<section><title>Example:  Verbose db-stats with one or more DB nodes not responding </title>
+<p>This example shows a verbose view of the DB statistics, when one or more DB nodes did not respond to the data query (e.g. the node may be out-of-service).  The list of non-responding nodes is displayed.   The verbose stats display indicates Unknown stats for the non-responding nodes.</p>
+<fig>
+<codeblock>db-stats -v all
+
+DB CLUSTER INFO
+-------------------------
+Total DB nodes:         4
+DB nodes responding:    3
+Not responding IP:
+        135.121.42.126
+
+
+DB MEMORY AND DISK
+-------------------
+
+Grp   Node             Namespace   Total      Free    Total Disk     Free 
+                                   Mem (MB)   Mem (%) Disk (MB)      Disk (%)
+----------------------------------------------------------------------------
+1     135.121.42.119   dsclocal     21,845     99     131,070              99
+1     135.121.42.119   spspd103     21,845     99     131,070              99
+1     135.121.42.119   spspd102     21,845     99     131,070              99
+1     135.121.42.119   spspd101     21,845     99     131,070              99
+1     135.121.42.119   spspd100     21,845     99     131,070              99
+1     135.121.42.119   dscglobal    21,845     95     131,070              98
+1     135.121.42.119   dsc          21,845     99     131,070              99
+1     135.121.42.120   dsclocal     21,845            131,070              99
+1     135.121.42.120   spspd103     21,845     99     131,070              99
+1     135.121.42.120   spspd102     21,845     99     131,070              99
+1     135.121.42.120   spspd101     21,845     99     131,070              99
+1     135.121.42.120   spspd100     21,845            131,070              99
+1     135.121.42.120   dscglobal    21,845     95     131,070              98
+1     135.121.42.120   dsc          21,845     99     131,070              99
+2     135.121.42.121   dsclocal     21,845     99     131,070              99
+2     135.121.42.121   spspd103     21,845            131,070              99
+2     135.121.42.121   spspd102     21,845     98     131,070              99
+2     135.121.42.121   spspd101     21,845     98     131,070              99
+2     135.121.42.121   spspd100     21,845     98     131,070              99
+2     135.121.42.121   dscglobal    21,845     95     131,070              98
+2     135.121.42.121   dsc          21,845     99     131,070              99
+      135.121.42.126   Unknown     Unknown            Unknown         Unknown
+
+
+LOCAL CLUSTER DATA MIGRATION
+----------------------------
+Grp   Node                Xmit       Rcv
+----------------------------------------
+1     135.121.42.119         3         2
+1     135.121.42.120         4         2
+2     135.121.42.121         5         4
+      135.121.42.126   Unknown   Unknown
+
+
+** These totals are only approximate, as one or more DB nodes did not reply.
+** These totals may be under-estimated, as there are data migrations in progress.
+
+CROSS SITE DATA REPLICATION
+---------------------------------------------------------
+Digest Log
+Grp          Node             Records   Free %   Relogged
+---------------------------------------------------------
+1            135.121.42.119        83       94          0
+1            135.121.42.120        14       99          0
+2            135.121.42.121        96       92          0
+
+
+CROSS SITE DATA REPLICATION
+-----------------------------
+Ship errors: destination
+Grp                        Node             sps3   sps2
+-------------------------------------------------------
+1                          135.121.42.119      0      0
+1                          135.121.42.120      0      0
+2                          135.121.42.121      0      0
+
+
+Time Lag (ms)
+Grp             Node             sps3   sps2
+--------------------------------------------
+1               135.121.42.119      0      0
+1               135.121.42.120      0      0
+2               135.121.42.121      0      0
+
+
+ship ok(k)
+Grp          Node             sps3   sps2
+-----------------------------------------
+1            135.121.42.119     83     83
+1            135.121.42.120     14     14
+2            135.121.42.121     96     96
+
+
+ship errors: source
+Grp                   Node             sps3   sps2
+--------------------------------------------------
+1                     135.121.42.119      0      0
+1                     135.121.42.120      0      0
+2                     135.121.42.121      0      0
+
+
+State
+Grp     Node                   sps3         sps2
+------------------------------------------------
+1       135.121.42.119   UP   UP
+1       135.121.42.120   UP   UP
+2       135.121.42.121   UP   UP
+
+
+Avg latency (ms)
+Grp                Node             sps3   sps2
+-----------------------------------------------
+1                  135.121.42.119      0      0
+1                  135.121.42.120      0      0
+2                  135.121.42.121      0      0
+
+
+In Flight
+Grp         Node             sps3   sps2
+----------------------------------------
+1           135.121.42.119      0      0
+1           135.121.42.120      0      0
+2           135.121.42.121      0      0
+
+
+ship (MB)
+Grp         Node             sps3   sps2
+----------------------------------------
+1           135.121.42.119      0      0
+1           135.121.42.120      0      0
+2           135.121.42.121      0      0
+</codeblock>
+</fig>
+</section>
+<section><title>Example of results with -l option: </title>
+<p>All of the sessions stored in the database of the current site are used for the aggregation. The counts are grouped by primary site ID. </p>
+<fig>
+<codeblock>-sh-4.2$ db-stats -l 
+Date: Wed Sep 19 10:11:30 EDT 2018 
+It may take a while to query and aggregate the session counts. Please wait... 
+Site ID 1*     2
+IP-CAN 9799587 9799587 
+Af 			0 				0 
+Sy 			0 				0 
+Sd 			0 				0 
+S9 			0 				0 
+NASReq 	0 				0 
+Gy 			0 				0</codeblock>
+</fig>
+</section>
+</conbody></concept>

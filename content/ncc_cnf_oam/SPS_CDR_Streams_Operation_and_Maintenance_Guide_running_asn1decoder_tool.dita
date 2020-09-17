@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="SPS_CDR_Streams_Operation_and_Maintenance_Guide_running_asn1decoder_tool">
+<title>Running asn1decoder tool</title>
+<body>
+                
+                <ol>
+            <li>Log in to the sps-streams-oam pod as nokia user.</li>
+            <li>The CDR module stores the CDR files on the dr-eventlink-sftp pod. First you need to
+                get the password to the sftp pod. That can be obtained by running
+                command:<codeblock>echo $SFTP_PASSWORD</codeblock></li>
+            <li>The file to be decoded can then be retrieved by running
+                    command:<codeblock>sftp $SFTP_USER@$SFTP_HOST:/path/to/cdr_file .</codeblock><p>For
+                    example:</p><codeblock>sftp $SFTP_USER@$SFTP_HOST:/cdr/SPS_-_0000000044.20191224_-_1700-0000.CDR .</codeblock></li>
+            <li>Use the following command to decode the CDR
+                    file:<codeblock>asn1decoder path/to/description.asn path/to/cdr_file RootType</codeblock><p>Where
+                    you must define,</p><ul id="ul_kdt_spz_cmb">
+                    <li>the path to the description file containing the ASN.1 schema. The schema is
+                        stored in /home/nokia/description.asn</li>
+                    <li>the path to the CDR file to be decoded</li>
+                    <li>the name of the root type in the encoded file (as defined in the ASN.1
+                        schema). In the default NCC ASN.1 schema, the root type is called SPSRecord,
+                        but the root type can also be found in the description.asn as the name of
+                        the first CHOICE element.</li>
+                </ul><p>Optional parameters:<table frame="all" rowsep="1" colsep="1"
+                        id="table_r4m_wpz_cmb">
+                        <title>Optional parameters</title>
+                        <tgroup cols="2">
+                            <colspec colname="c1" colnum="1" colwidth="1*"/>
+                            <colspec colname="c2" colnum="2" colwidth="1*"/>
+                            <thead>
+                                <row>
+                                    <entry>Parameter</entry>
+                                    <entry>Description</entry>
+                                </row>
+                            </thead>
+                            <tbody>
+                                <row>
+                                    <entry><codeph>-h, --help</codeph></entry>
+                                    <entry>Shows helpful information.</entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>-d, --debug</codeph></entry>
+                                    <entry>Shows debugging information.</entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>-o {yaml}</codeph></entry>
+                                    <entry>Specify output format of the decoded data. Currently,
+                                        only yaml is supported.</entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>-file-header {auto, true, false}</codeph></entry>
+                                    <entry>Specify if the data contains a CDR file header. Default
+                                        is set to detect automatically.</entry>
+                                </row>
+                            </tbody>
+                        </tgroup>
+                    </table></p><p><b>Example:</b></p><codeblock>asn1decoder /home/nokia/description.asn /cdr/SPS01_-_0000000044.20191224_-_1700-0000.CDR SPSRecord</codeblock><p>The
+                    command will print the converted CDR file content to standard out. It can be
+                    redirected into a file by adding <codeph>&gt;
+                        path/to/converted_file.txt</codeph>, for
+                    example:<codeblock>asn1decoder / home/nokia/description.asn /cdr/SPS01_-_0000000044.20191224_-_1700-0000.CDR SPSRecord &gt; /cdr/decoded/SPS01_-_0000000044.20191224_-_1700-0000.CDR.out</codeblock></p><note>The
+                    schema used for decoding CDRs and EDRs in the NCC generic ASN.1 format uses
+                    UTF8String instead of OCTET STRING to make the decoded data more readable. This
+                    is safe as all the values included in the output records in the NCC generic
+                    ASN.1 format are actually string values.</note></li>
+        </ol>
+            </body>
+</topic>

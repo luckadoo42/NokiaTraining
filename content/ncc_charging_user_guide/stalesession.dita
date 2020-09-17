@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-stalesession"><title>Stale session audit</title><conbody>
+<section><title>Overview</title>
+<p>The NCC application maintains three kinds of sessions as follows:</p><ul>
+<li>
+<p>
+<uicontrol>Diameter Gy session</uicontrol>: It is maintained by the Call Controller and identified by the Diameter Session-Id.</p>
+</li>
+<li>
+<p>
+<b>VoLTE IMS Ro session</b>: It is maintained by the Call Controller.</p>
+</li>
+<li>
+<p>
+<uicontrol>Charging session</uicontrol>: It is maintained by the Rating Engine, and identified by the Diameter Session-Id and MSCC Rating-Group or Service-Identifier.</p>
+</li>
+</ul>
+<p>A Diameter Gy session is considered as a stale session if all of the associated charging sessions have expired. When a Diameter Gy session expires, audit initiates a re-authorization service for the expired Gy session by issuing a Re-Auth-Request (RAR) message to the network.</p>
+<p>Audit for VoLTE IMS Ro session clears the stale IMS session along with the corresponding rating session on the expiry of validity time  of MSCC in IMS session. The audit mechanism triggers a RAR message to check the expiry of the IMS session. The session is cleared if the RAA message is unsuccessful and session maintained if the RAA message is received successfully.</p>
+<p>The expiry of a charging session is determined by the value of <i>Validity-Time (VT)</i> AVP
+                present in the <i>Multiple-Services-Credit-Control (MSCC)</i> AVP. However, the VT
+                can be modified through rules in the <uicontrol>Slicing profile</uicontrol> entity
+                using the SM GUI. When a charging session expires, audit initiates a
+                re-authorization service for the expired charging session by issuing RAR message to
+                the network. Unlike the RAR sent for re-authorizing a Gy session which consists of
+                Session-Id only, the RAR sent for charging session has either <i>Rating-Group</i>
+                AVP or <i>Service-Identifier</i> AVP.</p>
+<p>A successful re-authorization (Diameter result code = 2xxx) indicates that the session is active and should not be cleared. Otherwise, the session is cleared.</p>
+<p>The following figure shows the VT variable in the SM GUI:<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_18.5/VT_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-vt_default.png" scale="50"/>
+                </fig></p>
+</section>
+</conbody></concept>

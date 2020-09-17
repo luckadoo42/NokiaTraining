@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="id9YZ-09126-MT00-REZZA-SP2-replication_error_1236"><title>To recover from replication error 1236 after MariaDB failover</title><taskbody id="d1e84724"><context>
+<sectiondiv>
+<p><b>Overview</b></p>
+<p>Whenever the following alarm is raised, you must check the field “Last IO Errno” to see if it contains 1236. This alarm can occur after a MariaDB Master failaover on the IOHO nodes.</p>
+<p>
+<i>sps-sm-1-ioho-0 {"service": "mariadb", "level": "notice", "process": "alarm_lib.py", "alarm":</i>
+</p>
+<p>
+<i>{"task": "notify", "name": "REPL_BROKEN", "text": "Local replication broken", "probable-cause": "306", "key": "3000610", "event-type": "2", "data": "Thread Running (IO,SQL) = (No,Yes), *Last IO Errno=1236*", "id": 3000610, "severity": "minor"}</i>
+</p>
+<p>
+<i>, "host": "sps-sm-1-ioho-0", "version": "1.0", "time": "2019-12-07T19:15:16.850Z", "type": "alarm"}</i>
+</p>
+<p>The following is an example of the error message text: </p>
+<p>
+<i>Error 1236:  Last_IO_Error: Got fatal error 1236 from master when reading data from binary log: 'Error: connecting slave requested to start from GTID 0-121452067-82714, which is not in the master's binlog. Since the master's binlog contains GTIDs with higher sequence numbers, it probably means that the slave has diverged due to executing extra erroneous transactions'</i>
+</p>
+<p>For this procedure, it is important to understand what makes up the Global Transaction ID (GTID). The GTID is a three part number that consists of “domain-serverid-seqno” as follows: </p><ul>
+<li>
+<p>domain = the domain id (always 0 for CMDB)</p>
+</li>
+<li>
+<p>serverid = the server-id of the server from where the transaction originated (typically the Master node in a cluster) </p>
+</li>
+<li>
+<p>seqno = the transaction sequence number (monotonically increasing)</p>
+</li>
+</ul>
+</sectiondiv>
+</context>
+<steps>
+<step><cmd>Log in to the two IOHO nodes as the <b>root</b> user.</cmd><info/></step>
+<step><cmd>Enter the following to determine which of the two nodes is the slave IOHO node.</cmd><info><p>
+<userinput>maxadmin list servers</userinput>
+</p><p>For the ME enter the following command:</p><p>
+<userinput>mariadb_adm --my-role (as the root user)</userinput>
+</p></info></step>
+<step><cmd>Log in to the slave node that is experiencing the 1236 replication error and perform the following:</cmd><info><ul>
+<li>
+<p>Enter:</p>
+<p>
+<codeph>MariaDB [(none)]show slave status\G;</codeph>
+</p>
+<p>Output similar to the following should appear:</p>
+<p>
+<systemoutput>Verify Last_IO_Error shows: </systemoutput>
+</p>
+<p>
+<systemoutput>Last_IO_Errno: 1236 </systemoutput>
+</p>
+<p>
+<systemoutput>Last_IO_Error: Got fatal error 1236 from master when reading data from binary log: 'Error: connecting slave requested to start from GTID 0-121452067-82714, which is not in the master's binlog. Since the master's binlog contains GTIDs with higher sequence numbers, it probably means that the slave has diverged due to executing extra erroneous transactions'</systemoutput>
+</p>
+</li>
+<li>
+<p>Enter the following to find the slave node server Id:</p>
+<p>
+<codeph>MariaDB [(none)]  select @@server_id;</codeph>
+</p>
+<p>Output similar to the following should appear:</p>
+<p>
+<systemoutput>| @@server_id | </systemoutput>
+</p>
+<p>
+<systemoutput>| 121452067 |</systemoutput>
+</p>
+</li>
+</ul></info></step>
+<step><cmd>Log in to the master node as root and enter the following:</cmd><info><p>
+<codeph>MariaDB [(none)]&gt; select @@gtid_binlog_state; </codeph>
+</p><p>Output similar to the following should appear:</p><p>
+<systemoutput>| @@gtid_binlog_state                 |</systemoutput>
+</p><p>
+<systemoutput>| 0-121452067-82713,0-110997169-83060 |</systemoutput>
+</p></info></step>
+<step><cmd>Find the slave binlog gtid that matches the slave server_id from step 3, for example: “0-121452067-82713”.</cmd><info/></step>
+<step><cmd>Log in to the slave node again and place the slave binlog gtid from step 5 in following command where @@GLOBAL.gtid_slave_pos as follows:</cmd><info><p>
+<userinput>MariaDB [(none)]&gt; stop slave; set @@GLOBAL.gtid_slave_pos='0-121452067-82713';CHANGE MASTER TO MASTER_USE_GTID=slave_pos; start slave;</userinput>
+</p><p>Output similar to the following should appear:</p><p>
+<systemoutput>Query OK, 0 rows affected (0.002 sec)</systemoutput>
+</p><p>
+<systemoutput>Query OK, 0 rows affected, 1 warning (0.014 sec)</systemoutput>
+</p><p>
+<systemoutput>Query OK, 0 rows affected (0.004 sec)</systemoutput>
+</p><p>
+<systemoutput>Query OK, 0 rows affected (0.005 sec)</systemoutput>
+</p><p>You may see the following warning message, but it can be ignored:</p><fig>
+<codeblock>MariaDB [(none)]&gt; show warnings;
+-------------------------------------------------------
+| Level   | Code | Message                  
+-----------------------------------------------------------
+| Warning | 1947 | Specified GTID 0-121452067-82713 conflicts with the binary log which contains a more recent GTID 0-121452067-82714. If MASTER_GTID_POS=CURRENT_POS is used, the binlog position will override the new value of @@gtid_slave_pos |
+-----------------------------------------------------------
+ </codeblock>
+</fig></info></step>
+<step><cmd>Enter the following to verify that Slave_IO_Running and Slave_SQL_Running show a status of “Yes”:</cmd><info><p>
+<userinput>MariaDB [(none)]show slave status\G</userinput>
+</p><p>Output similar to the following should appear:</p><p>
+<systemoutput>Slave_IO_Running: Yes </systemoutput>
+</p><p>
+<systemoutput>Slave_SQL_Running: Yes</systemoutput>
+</p></info></step>
+</steps>
+</taskbody></task>

@@ -1,0 +1,547 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-threshold1"><title>Thresholds</title><conbody>
+<section><title>Overview</title>
+<p>Threshold is the usage definition or aggregate view boundary or limit applied to a counter, bucket, or main account balance with a set of associated actions executed upon crossing that boundary or limit.</p>
+<p>A threshold profile group must contain at least one-threshold profile in it. A threshold profile must contain at least one threshold in it.</p>
+<p>The threshold information is defined in a single <uicontrol>Threshold Profile Group</uicontrol> table. Threshold is embedded within the threshold profile which in turn is embedded within the threshold profile group.</p>
+<note>A bucket or counter or AV can refer to zero or more threshold profile groups of the same unit
+    type.<p/></note>
+<p>If there is an over commit, the threshold gets executed twice. This happens when the extra over commit amount is more than the gap to the next threshold value. </p>
+<note type="attention">
+<p>See <xref href="cap.dita#id9yz-09126-ug01-pczza-sp1-cap/capthreshold"/> to understand the
+     difference between threshold and cap.</p>
+</note>
+<p>When a threshold is reached, NCC performs either one or a combination of the following
+    actions:</p><ul>
+<li>
+<p>
+<varname>Notification-Stop</varname>: This action notifies to stop using the resource and switch to the next resource.</p>
+</li>
+<li>
+<p>
+<varname>Notification-Continue</varname>: This action notifies to continue using the same resource.</p>
+</li>
+<li>
+<p>
+<varname>Notification-Reject</varname>: This action notifies and rejects the call.</p>
+</li>
+<li>
+<p>
+<varname>Reject</varname>: This action rejects the call.</p>
+</li>
+<li>
+<p>
+<varname>Send-SNR</varname>: This action notifies to send SNR. The value should be SendSNR.</p>
+</li>
+<li>
+<p>
+<varname>Send-Notification</varname>: This action notifies to send notification to the configured device.</p>
+</li>
+</ul>
+<note>NCC does not read or evaluate threshold actions in case direct debit requests.<p/></note>
+<fig>
+<title>Example for threshold</title>
+<!--MMO resource relative URI: ../Graphics/Release_18.0/Example_for_threshold_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-example_for_threshold_default.png"/>
+</fig>
+<note>Operators define the thresholds.<p/></note>
+<p>For the preceding example, the threshold profile group is defined as follows:</p><ul>
+<li>
+<p>
+<i>Threshold profile group 1</i>: It contains Threshold profile 1, Threshold profile 2, and Threshold profile 3. The unit type is volume.</p>
+</li>
+<li>
+<p>
+<i>Threshold profile 1</i>: It is an absolute type profile that contains the Threshold 1 with a value of 400 MB from bucket. The unit is in MB.</p>
+</li>
+<li>
+<p>
+<i>Threshold profile 2</i>: It is an absolute type profile that contains Threshold 2 with a value of 1 GB from the bucket. The unit is in GB.</p>
+</li>
+<li>
+<p>
+<i>Threshold profile 3</i>: It is a percentage type profile that contains two thresholds - Threshold 3 and Threshold 4.</p>
+</li>
+<li>
+<p>
+<i>Threshold 3</i>: It is defined with a value of 80%.</p>
+</li>
+<li>
+<p>
+<i>Threshold 4</i>: It is defined with a value of 100%.</p>
+</li>
+</ul>
+<p>The bucket of 5 GB refers to the Threshold profile group 1.</p>
+</section>
+<section><title>Configuration</title>
+<p>Log into SM GUI, navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> &gt; <uicontrol>COMMON</uicontrol> tab and select <uicontrol>Thresholds</uicontrol> from the hamburger menu (☰). To define a new threshold, click 
+<!--MMO resource relative URI: ../Graphics/Release_18.0/Add_button_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-add_button_default.png"/>
+ to add the basic details and profile configuration as described in the given table:</p>
+<sectiondiv>
+<p><b>Basic details</b></p>
+<table frame="all" pgwide="1" colsep="1" rowsep="1">
+     <title>Basic details for threshold profile group</title>
+     <tgroup cols="4">
+      <colspec colname="col1"/>
+      <colspec colname="COLSPEC4"/>
+      <colspec colname="col2"/>
+      <colspec colname="col4"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Parameter</p>
+        </entry>
+        <entry>
+         <p>Description</p>
+        </entry>
+        <entry>
+         <p>Options</p>
+        </entry>
+        <entry>
+         <p>Mandatory/Optional</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> Group Name </entry>
+        <entry>
+         <p>The parameter indicates the name of the threshold profile group.</p>
+         <p>The threshold name is appended with <varname>.THRESHOLD</varname> at end of Threshold
+          Profile Group Name while storing in the database.</p>
+        </entry>
+        <entry> String </entry>
+        <entry> Mandatory </entry>
+       </row>
+       <row>
+        <entry> Application Type </entry>
+        <entry>
+         <p>This parameter indicates whether the threshold is configured for Charging or Policy
+          application:</p>
+         <ul>
+          <li>
+           <p>
+            <i>Charging</i>: Source contexts and result contexts for Charging are populated in the
+            subsequent fields for conditions and actions.</p>
+          </li>
+          <li>
+           <p>
+            <i>Policy</i>: Source contexts and result contexts for Policy are populated in the
+            subsequent fields for conditions and actions.</p>
+          </li>
+         </ul>
+        </entry>
+        <entry> Select the required application type from the drop-down list. </entry>
+        <entry> Mandatory </entry>
+       </row>
+       <row>
+        <entry> Kind of Unit </entry>
+        <entry>
+         <p>This parameter indicates the type of the unit that service operators select from a
+          predefined set of values in the drop-down list.</p>
+         <p>
+          <b>Note:</b> When threshold is applied on main account balance, it only accepts
+           <varname>MONEY</varname> as <i>Kind of Unit</i>.</p>
+        </entry>
+        <entry>
+         <p>Select either of the following options from the drop-down list:</p>
+         <ul>
+          <li>
+           <p>TIME</p>
+          </li>
+          <li>
+           <p>VOLUME</p>
+          </li>
+          <li>
+           <p>MONEY</p>
+          </li>
+          <li>
+           <p>UNIT</p>
+          </li>
+         </ul>
+        </entry>
+        <entry> Mandatory </entry>
+       </row>
+       <row>
+        <entry> OCS Policy Threshold </entry>
+        <entry>
+         <p>This parameter indicates whether the threshold is a policy threshold or not.</p>
+         <p>Select this check box to indicate a policy threshold.</p>
+         <p>Deselect the check box to indicate it is not a policy threshold. However, if the flag is
+           <varname>False</varname> and <i>Threshold Rule Action</i> is <i>Send-SNR</i>, then the
+          system forces the user to set the flag to <varname>true</varname> and then threshold is
+          treated as a policy threshold.</p>
+         <p>If a Threshold Profile Group has two thresholds at same value, then the
+           <varname>Send-SNR</varname> action for the second threshold at that value is considered
+          to get the signaling state.</p>
+        </entry>
+        <entry> Select this check box to indicate a policy threshold. </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry> Dynamic Milestone Flag </entry>
+        <entry>
+         <p>This parameter indicates the milestone, which is a percentage type threshold when this
+          parameter is true with the empty rule container.</p>
+         <p>The field value is dependent on either of the following conditions:</p>
+         <ul>
+          <li>
+           <p>
+            <varname>True</varname>: If the flag is <varname>True</varname>, then the threshold
+            profile group is used as a milestone. Select this check box to indicate the threshold
+            profile group is used as a milestone.</p>
+          </li>
+          <li>
+           <p>
+            <varname>False</varname>: If the flag is <varname>False</varname>, then the threshold
+            profile group is not used as a milestone. Deselect this check box to indicate the
+            threshold profile group is not used as a milestone.</p>
+          </li>
+         </ul>
+         <p>
+          <uicontrol>Note:</uicontrol> This flag is only used for dynamic milestone feature, which
+          overrides the slicing reduction function if it is turned on. If the Dynamic Milestone
+          feature is not used, keep it as False to avoid impact to the slicing reduction
+          function.</p>
+        </entry>
+        <entry> Select this check box to indicate the threshold profile group is used as a
+         milestone. </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry> Reservation Threshold </entry>
+        <entry>
+         <p>This parameter indicates whether the threshold must be triggered in case of
+          reservation.</p>
+         <p>The default value is False.</p>
+         <p>Note the following important points related to this field:</p>
+         <ul>
+          <li>
+           <p>Threshold flags like Milestone, Policy based are set to false in case Reservation flag
+            is set.</p>
+          </li>
+          <li>
+           <p>Reservation Threshold is applicable only for Bucket entity currently. This kind of
+            threshold is not allowed to be attached with any other entity like
+            Counter/Account/AV/UCS.</p>
+          </li>
+          <li>
+           <p>Reservation Threshold flag cannot be modified, unless Threshold type (CHARING/POLICY)
+            is not changed.</p>
+          </li>
+          <li>
+           <p>Reservation Threshold flag set has similar implementation in reservation call, as of
+            thresholds with reservation flag unset in commit call. They are also reset during bucket
+            reset/renew.</p>
+          </li>
+         </ul>
+        </entry>
+        <entry> Select this check box if you want to trigger the threshold in case of reservation. </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry> Description </entry>
+        <entry> This parameter provides details related to the threshold profile group entity. </entry>
+        <entry> String </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry> Security Domain </entry>
+        <entry> This parameter indicates the security domain associated with the threshold profile
+         group. </entry>
+        <entry> Select the required security domain from the predefined security domains in the
+         drop-down list. </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry> Applicability Condition </entry>
+        <entry>
+         <p>This field allows you to provide applicability condition for the threshold profile
+          group. This condition is evaluated before applying the threshold profile group.</p>
+         <p>
+          <uicontrol>Note</uicontrol>: The applicability condition is relevant only for Policy.</p>
+        </entry>
+        <entry> - </entry>
+        <entry> Optional </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+</sectiondiv>
+<sectiondiv>
+<p><b>Profile configuration - Percentage</b></p>
+<p>Multiple percentage thresholds can be configured in a percentage threshold profile. Applicability condition can be provided at the percentage threshold profile level. Rules (both applicability conditions and actions) can be defined at the threshold level. If multiple percentage thresholds are defined, then you can change their priority order using the up (
+<!--MMO resource relative URI: ../Graphics/Release_18.5/a_up_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-a_up_default.png"/>
+) and down (
+<!--MMO resource relative URI: ../Graphics/Release_18.5/a_down_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-a_down_default.png"/>
+). These symbols appear at the top-right corner of the threshold pane on mouse-over.</p>
+<fig>
+<title>Percentage profile - summary and applicability condition</title>
+<!--MMO resource relative URI: ../Graphics/Release_18.5/THpercentProfile1_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-thpercentprofile1_default.png"/>
+</fig>
+<fig>
+     <title>Percentage profile - threshold details</title>
+     <!--MMO resource relative URI: ../Graphics/Release_18.5/THpercentProfile2_default.png-->
+     <image href="../images/img9yz-09126-ug01-pczza-sp1-thpercentprofile2_default.png" scale="40"/>
+    </fig>
+<table frame="all" pgwide="1" colsep="1" rowsep="1">
+     <title>Parameters for percentage profile</title>
+     <tgroup cols="2">
+      <colspec colname="col1" colwidth="1*"/>
+      <colspec colname="COLSPEC4" colwidth="1.86*"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Parameter</p>
+        </entry>
+        <entry>
+         <p>Description</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> Applicability Condition </entry>
+        <entry> You can define applicability conditions for the percentage threshold profile. The
+         conditions that appear are different for Charging and Policy applications. This plays an
+         important role in the threshold profile selection. If the applicability conditions are not
+         met, the threshold profile is not considered. </entry>
+       </row>
+       <row>
+        <entry nameend="COLSPEC4" namest="col1"> Click <uicontrol>ADD PERCENTAGE</uicontrol> to add
+         the first (or more) percentage values associated with the threshold profile group. </entry>
+       </row>
+       <row>
+        <entry> (%)* </entry>
+        <entry> This parameter indicates the percentage associated with the threshold profile group.
+        </entry>
+       </row>
+       <row>
+        <entry> Recurring </entry>
+        <entry> This parameter indicates whether the threshold is recurring. </entry>
+       </row>
+       <row>
+        <entry> Rule (conditions and actions) </entry>
+        <entry>
+         <p>This field allows you to provide the rule (both applicability condition and action) for
+          the threshold.</p>
+         <p>Click <uicontrol>ADD ROW</uicontrol> to add another rule for the threshold.</p>
+        </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+</sectiondiv>
+<sectiondiv>
+<p><b>Profile configuration - Absolute</b></p>
+<p>Multiple absolute thresholds can be configured in an absolute threshold profile. Applicability condition can be provided at the absolute threshold profile level. Rules (both applicability conditions and actions) can be defined at the threshold level. If multiple absolute thresholds are defined, then you can change their priority order using the up (
+<!--MMO resource relative URI: ../Graphics/Release_18.5/a_up_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-a_up_default.png"/>
+) and down (
+<!--MMO resource relative URI: ../Graphics/Release_18.5/a_down_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-a_down_default.png"/>
+) symbols. These symbols appear at the top-right corner of the threshold pane on mouse-over.</p>
+<fig>
+<title>Absolute profile - summary and applicability condition</title>
+<!--MMO resource relative URI: ../Graphics/Release_18.5/THabsoluteProfile1_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-thabsoluteprofile1_default.png"/>
+</fig>
+<fig>
+<title>Absolute profile configuration - threshold details</title>
+<!--MMO resource relative URI: ../Graphics/Release_19.3/Absolute_From_Zero_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-absolute_from_zero_default.png"/>
+</fig>
+<table frame="all" pgwide="1" colsep="1" rowsep="1">
+     <title>Parameters for absolute profile</title>
+     <tgroup cols="3">
+      <colspec colname="col1" colwidth="1.65*"/>
+      <colspec colname="COLSPEC3" colwidth="1*"/>
+      <colspec colname="COLSPEC4" colwidth="2.92*"/>
+      <thead>
+       <row>
+        <entry nameend="COLSPEC3" namest="col1">
+         <p>Parameter</p>
+        </entry>
+        <entry>
+         <p>Description</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry nameend="COLSPEC3" namest="col1"> Applicability Condition </entry>
+        <entry>
+         <p>You can define applicability conditions for the absolute threshold profile. If the
+          applicability conditions are not met, the threshold profile is not considered.</p>
+         <p>
+          <uicontrol>Note</uicontrol>: The applicability condition is relevant only for Policy.</p>
+        </entry>
+       </row>
+       <row>
+        <entry nameend="COLSPEC4" namest="col1"> Click <uicontrol>ABSOLUTE FROM START</uicontrol> to
+         add the first (or more) absolute start threshold values associated with the threshold
+         profile group. </entry>
+       </row>
+       <row>
+        <entry morerows="3"> Absolute Start Threshold </entry>
+        <entry> Value* </entry>
+        <entry> This parameter indicates the absolute value of to mark the beginning of threshold
+         defined in the given type. </entry>
+       </row>
+       <row>
+        <entry> Type* </entry>
+        <entry>
+         <p>This parameter indicates the unit of the absolute threshold.</p>
+         <p>Valid values: KByte, GByte, MByte, Byte</p>
+        </entry>
+       </row>
+       <row>
+        <entry> Recurring* </entry>
+        <entry> This parameter indicates whether the threshold is recurring. </entry>
+       </row>
+       <row>
+        <entry> Rule (conditions and actions) </entry>
+        <entry>
+         <p>This parameter provides the rule (both applicability condition and action) for the
+          threshold.</p>
+         <p>Click <uicontrol>ADD ROW</uicontrol> to add another rule for the threshold.</p>
+        </entry>
+       </row>
+       <row>
+        <entry nameend="COLSPEC4" namest="col1">
+         <p>Click <uicontrol>ABSOLUTE FROM END</uicontrol> to add the first (or more absolute end
+          threshold values associated with the threshold profile group).</p>
+         <p>
+          <b>Note:</b> Absolute End Threshold is not available for <uicontrol>Application Type =
+           Policy</uicontrol>.</p>
+        </entry>
+       </row>
+       <row>
+        <entry morerows="3"> Absolute End Threshold </entry>
+        <entry> Value* </entry>
+        <entry> This parameter indicates the absolute value of to mark the end of threshold defined
+         in the given type. </entry>
+       </row>
+       <row>
+        <entry> Type* </entry>
+        <entry>
+         <p>This parameter indicates the unit of the absolute threshold.</p>
+         <p>Valid values: KByte, GByte, MByte, Byte</p>
+        </entry>
+       </row>
+       <row>
+        <entry> Recurring* </entry>
+        <entry> This parameter indicates whether the threshold is recurring. </entry>
+       </row>
+       <row>
+        <entry> Rule (conditions and actions) </entry>
+        <entry>
+         <p>This field allows you to provide the rule (both applicability condition and action) for
+          the threshold.</p>
+         <p>Click <uicontrol>ADD ROW</uicontrol> to add another rule for the threshold.</p>
+        </entry>
+       </row>
+       <row>
+        <entry nameend="COLSPEC4" namest="col1">
+         <p>Click <uicontrol>ABSOLUTE FROM ZERO</uicontrol> to add the first (or more absolute end
+          threshold values associated with the threshold profile group.</p>
+         <p>
+          <b>Note:</b> The <i>ABSOLUTE FROM ZERO</i> threshold is applicable only to main account
+          balance and cannot be a recurring threshold. The threshold applied to main account balance
+          supports both positive and negative values for the <i>ABSOLUTE FROM ZERO</i> threshold
+          type, such as +100 USD or -100 USD.</p>
+        </entry>
+       </row>
+       <row>
+        <entry morerows="2"> Absolute from Zero </entry>
+        <entry> Value </entry>
+        <entry> This parameter indicates the absolute value. Money is the only unit type supported
+         for this profile. </entry>
+       </row>
+       <row>
+        <entry> Use account overage limit </entry>
+        <entry>
+         <p>This check box is available only for the <i>ABSOLUTE FROM ZERO</i> threshold type and is
+          unchecked by default. However, if this check box is checked, then it indicates that the
+           <i>Use account overage limit</i> flag is set to true and the threshold value for the main
+          account balance is set from the account overage value during runtime.</p>
+         <p>
+          <b>Note:</b> If the <i>Use account overage limit</i> flag is set to true, then the user
+          cannot define the threshold value. In a single threshold profile, there can be only one
+          threshold with the <i>Use account overage limit</i> flag set to true.</p>
+        </entry>
+       </row>
+       <row>
+        <entry> Rule (conditions and actions) </entry>
+        <entry>
+         <p>This parameter provides the rule (both applicability condition and action) for the
+          threshold.</p>
+         <p>Click <uicontrol>ADD ROW</uicontrol> to add another rule for the threshold.</p>
+        </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+</sectiondiv>
+<sectiondiv>
+<p><b>Profile configuration - both absolute and percentage</b></p>
+<p>The following figure displays a scenario where both percentage and absolute thresholds are defined. The top tow panes display the thresholds defined along with applicability conditions for percentage and absolute threshold profiles. The priority order for the absolute and percentage threshold profiles can be swapped using the ⇅ symbol.</p>
+<fig>
+     <title>Both absolute and percentage profile - summary and applicability condition</title>
+     <!--MMO resource relative URI: ../Graphics/Release_19.3/AbsolutePercentage_profile_default.png-->
+     <image href="../images/img9yz-09126-ug01-pczza-sp1-absolutepercentage_profile_default.png"
+      scale="65"/>
+    </fig>
+</sectiondiv>
+</section>
+<section><title>Actions associated with a threshold profile group</title>
+<table pgwide="1" colsep="1" rowsep="1">
+    <tgroup cols="2">
+     <colspec colname="col1" colwidth="1*"/>
+     <colspec colname="col2" colwidth="1.7*"/>
+     <thead>
+      <row>
+       <entry>
+        <p>Action</p>
+       </entry>
+       <entry>
+        <p>Description</p>
+       </entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry> Create </entry>
+       <entry> Used to create the threshold profile group entity in database by providing the
+        mandatory and optional parameters. </entry>
+      </row>
+      <row>
+       <entry> Read </entry>
+       <entry> Used to display the threshold profile group entity data fetched from database.
+       </entry>
+      </row>
+      <row>
+       <entry> ThresholdProfileGroupExists </entry>
+       <entry> Used to check if the ThresholdProfileGroup exists in database for the given Id.
+       </entry>
+      </row>
+      <row>
+       <entry> Update </entry>
+       <entry> Used to update a particular threshold profile group entity in database. </entry>
+      </row>
+      <row>
+       <entry> Delete </entry>
+       <entry> Used to delete a particular threshold profile group entity from database. </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+<note>These actions are valid for internal purposes only. It is not accessible through the SM GUI
+    for operators.<p/></note>
+</section>
+</conbody></concept>

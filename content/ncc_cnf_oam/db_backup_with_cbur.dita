@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="db_backup_with_cbur">
+    <title>NCC backup</title>
+    <body>
+        <p>The NCC backup process can be completely automated by enabling CBUR in the values.yaml
+            when installing the NCC chart. A DB backup can also be launched manually, by calling a
+            Rest API provided by Backup and Restore.</p>
+        <section id="section_uby_zvq_smb">
+            <title>Automated backup</title>
+            <p>While installing the SPS helm chart, make sure CBUR is enabled for centralmanagement and csdc.
+                (BrPolicy file for Aerospike backup/restore is present in Admincli chart, not in
+                Aerospike pod.)</p>
+        </section>
+        <section id="section_zgf_cwq_smb">
+            <title>Manual backup</title>
+            <p><b>To manually backup NCC</b><ol id="ol_ctf_fwq_smb">
+                    <li>In centralmanagement, move to the site directory and initialize the variables in the
+                            <codeph>site.conf</codeph>
+                        file.<codeblock>cd &lt;SITE_DIRECTORY>
+. site.conf</codeblock></li>
+                    <li>For OpenShift, the app namspace must be the same as CBUR-master namespace,
+                        or backup and restore will fail.  Here, <codeph>ncms</codeph> is the
+                        CBUR-master
+                            namespace.<codeblock>CBUR_MASTER_NAMESPACE=ncms
+RELEASENAME=sps
+</codeblock><note>The
+                            variables <codeph>NAMESPACE</codeph> and
+                                <codeph>POD_NAME_PREFIX</codeph>, which defines the app namespace
+                            and pod name prefix respectively, are set in the
+                                <codeph>site.conf</codeph> file.</note></li>
+                    <li>It should be checked that a BrPolicy exists before backup with the following
+                        command.<codeblock>kubectl -n $NAMESPACE get br</codeblock></li>
+                    <li>To manually backup, use the following
+                        command:<codeblock>curl -v --header 'Accept: application/json' -X POST http://cbur-master-cbur.$CBUR_MASTER_NAMESPACE.svc.cluster.local:80/v2/helm/release/backup/$NAMESPACE/$RELEASENAME?helm_version=3</codeblock></li>
+                    <li>If <codeph>cbur.backendMode</codeph> mode is "local", then you can see the
+                        backup data in CBUR-master's <codeph>/CBUR_REPO</codeph>. For
+                        example:<codeblock>kubectl -n ncms exec cbur-master-cbur-79c96fd95f-htn4f -- ls -lRh /CBUR_REPO/data/$NAMESPACE/DEPLOYMENT_${POD_NAME_PREFIX}sps-centralmanagement</codeblock></li>
+                </ol></p>
+        </section>
+    </body>
+</topic>

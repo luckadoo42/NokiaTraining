@@ -1,0 +1,2832 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-notiftcp"><title>Notification over TCP/IP network</title><conbody>
+<section><title>Overview</title>
+<p>Notifications can be sent to the operator back-office systems over the TCP/IP interface for further processing.</p>
+<p>To send such notifications, thresholds or cap can be defined. A threshold is a limit applied on a bucket or counter consumption, and an associated set of actions taken upon crossing that limit. A cap is the limit applied by the top-level group to device on its hierarchy resources. It restricts the usage beyond a particular value.</p>
+<p>A threshold along with the threshold rules can be defined based on which the Notification Server executes the associated actions. Notification Server can send notifications for the conditions shown in the following figure. These conditions are applicable to both threshold and cap.<fig>
+<title>TCP/IP notification</title>
+<image href="../images/img9yz-09126-ug01-pczza-sp1-tcpnotification_default.png"/>
+</fig></p>
+<p>For information on configuring the Notification Server to send notification over the TCP/IP
+                network, see the <i>Notification template variables</i> section in the <cite>NCC
+                    Notification Service (NS) User Guide</cite>.</p>
+</section>
+<section><title>Recommendations for feature configuration</title>
+<p>Following points are considered while configuring the TCP/IP notification feature:</p><ul>
+<li>
+<p>Define a single notification action, such as a notification sent to a subscriber over SMS, MMS, email, or TCP/IP notification to a network node.</p>
+</li>
+<li>
+<p>If multiple thresholds are configured within the same tariff plan, then only one threshold action sends the notification to the subscriber; whereas, the other action sends notification to a network node.</p>
+</li>
+<li>
+<p>The TCP/IP notifications are not applicable for IEC calls.</p>
+</li>
+<li>
+<p>The bucket notification is sent only when a resource consumption is done from bucket. For counters, a notification is sent irrespective of whether the counter is incremented through resource consumption of main balance, <i>No-Charge</i>, or bucket.</p>
+</li>
+<li>
+<p>The <uicontrol>Dynamic Notification Custom</uicontrol> flag enables or disables the TCP/IP notification with dynamic variables for bundle or subscription renewal or reset, and resource usage.</p>
+</li>
+<li>
+<p>The recursive thresholds must not be applied for end of limit cases of threshold for counter or bucket.</p>
+</li>
+<li>
+<p>Dynamic milestones are not considered to compute the counter end time and ULI.</p>
+</li>
+<li>
+<p>If ULI is defined in the counter, then the <varname>Percentage</varname> threshold can also be attached to the counter. However, if ULI is not defined, then only thresholds or caps for <varname>Absolute from Start</varname> are attached to counter.</p>
+</li>
+<li>
+<p>The <varname>Absolute from Start</varname> threshold type has a preference over the <varname>Percentage</varname> and <varname>Absolute from End</varname> threshold types while calculating the value of the <uicontrol>Spending Limit Threshold Value</uicontrol>. Also, the <varname>Percentage</varname> type threshold has preference over the <varname>Absolute from End</varname> threshold type while calculating the value of the <uicontrol>Spending Limit Threshold Value</uicontrol>.</p>
+</li>
+<li>
+<p>There is only a single stop or reject in a cap on counter at the end, which means it is recommended not to configure <systemoutput>Notification-Stop</systemoutput> or <systemoutput>Reject</systemoutput> on a counter in between other caps on counter.</p>
+</li>
+<li>
+<p>Class of service and <i>Billing Account Id</i> can be defined either in custom data dictionary or its value is picked from the device context. The priority of value in custom data is higher than the value from the device context.</p>
+</li>
+<li>
+<p>If charging is done from bucket, then two bucket notifications are sent with subsequent sequence number as commit is done twice in database. It is in sync with the existing functionality of bucket.</p>
+</li>
+<li>
+<p>For resource usage on CCR-U/T feature, UNI is hard-coded in rules based on the kind of unit received from network. Therefore, for a counter or bucket of money type, UNI value is still BYTE. </p>
+</li>
+</ul>
+</section>
+<section><title>Configuring notification variables - SM GUI and custom dictionary</title>
+<p>The notification variable names are defined using one of the following ways:</p><ul>
+<li>
+<p>Define notification variable names in rules within the absolute or percentage threshold profiles
+                        in the SM GUI. For more information, see the <xref
+                            href="#id9yz-09126-ug01-pczza-sp1-notiftcp/SMGUI" format="dita"/>.</p>
+</li>
+<li>
+<p>Define notification variable names in rules for post processing of CCR-U/T through SM GUI.</p>
+</li>
+<li>
+<p>Define notification variable names in
+                            <filepath>ChargingCustomRuleAttributeDictionary.xml</filepath> custom
+                        dictionary file located at <filepath>/opt/tpa/conf/sac</filepath>. The
+                        defined notification variable names are then loaded in the absolute or
+                        percentage threshold profiles of SM GUI. For more information, see the <xref
+                            href="#id9yz-09126-ug01-pczza-sp1-notiftcp/Customdictionary"
+                            format="dita"/>.</p>
+</li>
+</ul></section>
+    <section id="SMGUI"><title>Configuring notification variables using SM GUI</title>
+<p>Perform the following steps to configure the notification variables using SM GUI:</p><ol>
+<li>Log into the SM GUI and select <uicontrol>Policy &amp; Charging Configuration</uicontrol>.</li>
+<li>Navigate to <uicontrol>Common</uicontrol> tab and select <uicontrol>Thresholds</uicontrol> from
+                    the left-most hamburger menu (<image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-hamburgermenu_default.png"
+                        scale="40" id="image_ujs_xwf_smb"/> ).</li>
+<li>Create a new threshold or edit an existing threshold.</li>
+<li>The notification variables can be defined in rules within the following threshold profiles:<ul>
+                        <li>
+                            <p>
+                                <i>Percentage</i> threshold</p>
+                        </li>
+                        <li>
+                            <p>
+                                <i>Absolute from start</i> threshold</p>
+                        </li>
+                        <li>
+                            <p>
+                                <i>Absolute from end</i> threshold</p>
+                        </li>
+                        <li>
+                            <p>
+                                <i>Absolute from zero</i> threshold</p>
+                        </li>
+                    </ul></li>
+</ol>
+<note>The <i>Absolute from zero</i> threshold profile is visible only when the <i>KindOfUnit</i> is
+                set as <varname>Money</varname>.</note>
+</section>
+    <section id="Customdictionary"><title>Configuring notification variables using custom dictionary</title>
+<p>The notification variables can be defined in the <filepath>ChargingCustomRuleAttributeDictionary.xml</filepath> custom dictionary file located at <filepath>/opt/tpa/conf/sac</filepath>. Once the notification variables are defined in the custom dictionary, the associated threshold profile in the SM GUI is populated with that notification variable configuration.</p>
+<p>Following is an example of defining notification variables using custom dictionary:<fig>
+<codeblock>&lt;attributeDictionary xmlns="ruleAttributeDictionary"&gt;
+
+    &lt;attribute name="Billing-Account-Id" valueType="StringValueType"&gt;
+        &lt;sourceContext type="RATING_POSTPROCESSING"
+                       objectAccessExpr="getBillingAccId()"&gt;
+            &lt;ruleSet&gt;RATING_POST_PROCESSING&lt;/ruleSet&gt;
+        &lt;/sourceContext&gt;
+        &lt;domain name="CHARGING"/&gt;
+    &lt;/attribute&gt;
+   
+&lt;attribute name="Bucket-Or-Counter-Def-Name" valueType="StringValueType"&gt;
+        &lt;sourceContext type="THRESHOLD_PROFILE"
+                       objectAccessExpr="getBucketOrCounterName()"&gt;
+            &lt;ruleSet&gt;THRESHOLD&lt;/ruleSet&gt;
+        &lt;/sourceContext&gt;
+        &lt;domain name="CHARGING"/&gt;
+    &lt;/attribute&gt;
+
+&lt;attribute name="Notification-Event"
+               valueType="StringValueType"&gt;
+        &lt;sourceContext type="CALL_COMMON"
+                       objectAccessExpr="getNotifEventType()"&gt;
+            &lt;ruleSet&gt;THRESHOLD&lt;/ruleSet&gt;
+            &lt;ruleSet&gt;GY_POST_PROCESSING&lt;/ruleSet&gt;
+            &lt;ruleSet&gt;RATING_POST_PROCESSING&lt;/ruleSet&gt;
+        &lt;/sourceContext&gt;
+        &lt;domain name="CHARGING"/&gt;
+    &lt;/attribute&gt;
+    &lt;/attributeDictionary&gt;
+</codeblock>
+</fig></p>
+</section>
+<section><title>Bucket or counter is about to end</title>
+<p>Notification over TCP/IP network can be sent when a bucket or counter is about to end. Multiple levels of threshold can be defined for a bucket or counter using the notification variables over the TCP/IP interface. The header fields are included in every TCP/IP notification. The dynamic notification variables with notification action can be configured in the threshold rule on the SM GUI. </p>
+<p>The TCP/IP notification sent to a network node to indicate that a bucket or counter is about to
+                end consists of the mandatory header fields mentioned in <xref
+                    href="#id9yz-09126-ug01-pczza-sp1-notiftcp/Headerfields" format="dita"/> and the
+                following notification variables defined in rules. </p>
+<note>The variable names in the notification are configurable. The same variable name must be used
+                in the Notification template in Notification Server as defined in threshold in
+                Charging. For further details on NS configuration, see the <!--XML Resource relative URI: -->
+                <cite>NCC Notification Service (NS) User Guide</cite>.</note>
+<table pgwide="1" colsep="1" rowsep="1">
+                <title>TCP/IP notification variables for bucket about to end case</title>
+                <tgroup cols="5">
+                    <colspec colname="col1" colwidth="1.22*"/>
+                    <colspec colname="col2" colwidth="2.73*"/>
+                    <colspec colname="COLSPEC4" colwidth="3.98*"/>
+                    <colspec colname="col3" colwidth="1*"/>
+                    <colspec colname="col4" colwidth="1.3*"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Parameter</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                            <entry>
+                                <p>Example</p>
+                            </entry>
+                            <entry>
+                                <p>Type</p>
+                            </entry>
+                            <entry>
+                                <p>Mandatory/ Optional</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> APNRTRACT </entry>
+                            <entry>
+                                <p>This variable indicates the account ID of the subscription used
+                                    in the call.</p>
+                                <p>It can also be mapped to a custom data with name such as
+                                        <uicontrol>BillingAccountID</uicontrol> defined in the
+                                    device.</p>
+                            </entry>
+                            <entry>
+                                <p>
+                                    <i>APNRTRACT</i> =
+                                        <varname>SPR_DEVICE.BillingAccountID</varname>
+                                </p>
+                                <p>Or</p>
+                                <p>
+                                    <i>APNRTRACT</i> = <varname>SUBSCRIPTION.Account-Id</varname>
+                                </p>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> COS </entry>
+                            <entry>
+                                <p>This variable indicates the name of the charging service.</p>
+                                <p>It can also be mapped to a custom data with name such as
+                                        <uicontrol>Segment</uicontrol> defined in the device.</p>
+                            </entry>
+                            <entry>
+                                <p>
+                                    <i>COS</i> = <varname>SPR_DEVICE.Segment</varname>
+                                </p>
+                                <p>Or</p>
+                                <p>
+                                    <i>COS</i> =
+                                        <varname>THRESHOLD_PROFILE.Charging-Service</varname>
+                                </p>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> CID </entry>
+                            <entry> This variable indicates the bucket ID for which the threshold
+                                value is defined that triggers a notification. </entry>
+                            <entry>
+                                <i>CID</i> = <varname>THRESHOLD_PROFILE.Bucket-Def-Name</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> PCT </entry>
+                            <entry>
+                                <p>This variable indicates the threshold percentage value. You can
+                                    define multiple threshold percentages in a single threshold
+                                    profile group and the parameters TH0, TH1 and so on to store the
+                                    percentage values. For example, you can create 50% and 20%
+                                    thresholds, then NCC considers it as TH0=50% and TH1=20% and
+                                    this can be passed in the notification variable as follows:</p>
+                                <p>NOTIFICATION.Notification-Variable (“PCT”,
+                                    THRESHOLD_PROFILE.Threshold-Percentage (“TH0”),
+                                    “TCPIP_Notification_TemplateALTNEA”) </p>
+                                <p>NOTIFICATION.Notification-Variable (“PCT”,
+                                    THRESHOLD_PROFILE.Threshold-Percentage (“TH1”),
+                                    “TCPIP_Notification_TemplateALTNEA”)</p>
+                            </entry>
+                            <entry>
+                                <i>PCT</i> =
+                                    <varname>THRESHOLD_PROFILE.Threshold-Percentage</varname>
+                            </entry>
+                            <entry> Big Decimal </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> MDN </entry>
+                            <entry> This variable indicates the MSISDN value or device that triggers
+                                the notification. The variable is the E.164 number configured in the
+                                device. </entry>
+                            <entry>
+                                <i>MDN</i> = <varname>SPR_DEVICE.E164</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> EVT </entry>
+                            <entry>
+                                <p>This variable indicates the notification event ID.</p>
+                                <p>It can be any of these values - <varname>ALTNEA</varname>,
+                                        <varname>ALTNEA1</varname>, or <varname>ALTNEA2</varname>
+                                    used for notification.</p>
+                            </entry>
+                            <entry>
+                                <i>EVT</i> = <varname>“ALTNEA”</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> UNI </entry>
+                            <entry>
+                                <p>This variable indicates the unit of remaining allowance and
+                                    configured as a string value. The service operator ensures that
+                                    the value of this variable matches the unit type of the
+                                    bucket.</p>
+                                <p>The supported values are - TIM for time, BYT for volume, MON for
+                                    money, UNI for unit.</p>
+                            </entry>
+                            <entry>
+                                <i>UNI</i> = <varname>“Money”</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> TIM </entry>
+                            <entry> This variable indicates the Unix timestamp when the notification
+                                is generated. This is the current time period in seconds. </entry>
+                            <entry>
+                                <i>TIM</i> =
+                                    <varname>THRESHOLD_PROFILE.Notification-Generation-Timestamp</varname>
+                            </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> T </entry>
+                            <entry> This variable indicates the time when the notification is
+                                generated for a bucket. It refers to the last three digits or
+                                milliseconds of the Unix timestamp. </entry>
+                            <entry>
+                                <i>T</i> =
+                                    <varname>THRESHOLD_PROFILE.Notification-Generation-Timestamp-Millis</varname>
+                            </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> BAL </entry>
+                            <entry> This variable is the remaining value of the bucket after
+                                committing the used quantities reported in USU. During the
+                                configuration of notification variable for a threshold profile, the
+                                BAL parameter is mapped to the current value of the bucket. </entry>
+                            <entry>
+                                <i>BAL</i> =
+                                    <varname>THRESHOLD_PROFILE.Bucket-Balance-Value</varname>
+                            </entry>
+                            <entry> Double </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> USE </entry>
+                            <entry> This variable indicates the amount used towards the threshold in
+                                bucket and is the current consumption towards bucket. </entry>
+                            <entry>
+                                <i>USE</i> = <varname>THRESHOLD_PROFILE.Current-Used-Value</varname>
+                            </entry>
+                            <entry> Double </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> LNG </entry>
+                            <entry> This variable indicates the language of notification. </entry>
+                            <entry>
+                                <i>LNG</i> = <varname>"ENGLISH"</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<table pgwide="1" colsep="1" rowsep="1">
+                <title>TCP/IP notification variables for counter about to end case</title>
+                <tgroup cols="5">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <colspec colname="COLSPEC4"/>
+                    <colspec colname="col3"/>
+                    <colspec colname="col4"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Parameter</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                            <entry>
+                                <p>Example</p>
+                            </entry>
+                            <entry>
+                                <p>Type</p>
+                            </entry>
+                            <entry>
+                                <p>Mandatory/ Optional</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> APNRTRACT </entry>
+                            <entry>
+                                <p>This variable indicates the account ID of the subscription used
+                                    in the call or device.</p>
+                                <p>It can also be mapped to a custom data with name such as
+                                        <uicontrol>BillingAccountID</uicontrol> defined in the
+                                    device.</p>
+                            </entry>
+                            <entry>
+                                <p>
+                                    <i>APNRTRACT</i> =
+                                        <varname>SPR_DEVICE.BillingAccountID</varname>
+                                </p>
+                                <p>Or</p>
+                                <p>
+                                    <i>APNRTRACT</i> = <varname>SUBSCRIPTION.AccountID</varname>
+                                </p>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> COS </entry>
+                            <entry>
+                                <p>This variable indicates the name of the charging service used in
+                                    the call or device.</p>
+                                <p>It can also be mapped to a custom data with name such as
+                                        <uicontrol>Segment</uicontrol> defined in the device.</p>
+                            </entry>
+                            <entry>
+                                <p>
+                                    <i>COS</i> = <varname>SPR_DEVICE.Segment</varname>
+                                </p>
+                                <p>
+                                    <i>COS</i> =
+                                        <varname>THRESHOLD_PROFILE.Charging-Service</varname>
+                                </p>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> CID </entry>
+                            <entry> This variable indicates the Counter name for which the threshold
+                                value is defined that triggers a notification. </entry>
+                            <entry>
+                                <i>CID</i> = <varname>THRESHOLD_PROFILE.Counter-Def-Name</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> CRT/IT </entry>
+                            <entry> This variable gives the last reset time of the counter instance. </entry>
+                            <entry>
+                                <i>CRT</i> =
+                                    <varname>THRESHOLD_PROFILE.Counter-Reset-Timestamp</varname>
+                            </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> CUT/JT </entry>
+                            <entry> This variable gives the value when a counter instance was
+                                updated by create, read, update, or delete operation, or BCR, that
+                                is, <i>Last Admin Update</i> or <i>Billing Cycle Timestamp</i>. </entry>
+                            <entry>
+                                <i>CUT</i> =
+                                    <varname>THRESHOLD_PROFILE.Counter-Update-Timestamp</varname>
+                            </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry rowsep="0"> PCT </entry>
+                            <entry rowsep="0">
+                                <p>This variable indicates the threshold percentage value and
+                                    follows one of the given criteria:</p>
+                                <ul>
+                                    <li>
+                                        <p>If usage limit and overage limit are not used, then
+                                            counters can only have threshold types, such as
+                                                <varname>Absolute from start</varname>. To calculate
+                                            the percentage of the absolute limit, the maximum limit
+                                            value of counter is the one, which has a threshold
+                                            defined with
+                                                <systemoutput>Notification-Stop</systemoutput> or
+                                                <systemoutput>Reject</systemoutput> action.</p>
+                                        <p>For example, there are two <varname>Absolute from
+                                                start</varname> type thresholds of 900 MB and 1000
+                                            MB defined with
+                                                <systemoutput>Notification-Send</systemoutput> and
+                                                <systemoutput>Notification-Stop</systemoutput> or
+                                                <systemoutput>Reject</systemoutput> action
+                                            respectively. In this case, the threshold percentage is
+                                            calculated as 90% and 100%. If the
+                                                <systemoutput>Notification-Stop</systemoutput> or
+                                                <systemoutput>Reject</systemoutput> action are not
+                                            configured, then PCT is set to <varname>0</varname>. If
+                                            the <systemoutput>Notification-Stop</systemoutput> or
+                                                <systemoutput>Reject</systemoutput> action are
+                                            configured at multiple thresholds on same counter, then
+                                            first one is considered for maximum value of
+                                            counter.</p>
+                                    </li>
+                                    <li>
+                                        <p>If usage limit or overage limit is provided in a counter
+                                            and <varname>Percentage</varname> type threshold is
+                                            being executed, then this variable is mapped to the
+                                            percentage threshold value.</p>
+                                        <p>For example, if a threshold is applied at 90%, then this
+                                            variable is set to <varname>90</varname>. For absolute
+                                            type thresholds, this variable value remains
+                                                <varname>0</varname>.</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry rowsep="0">
+                                <p/>
+                                <ul>
+                                    <li>
+                                        <p>If usage limit and overage limit are not used:</p>
+                                        <p>
+                                            <i>PCT</i> =
+                                                <varname>THRESHOLD_PROFILE.Threshold-Percentage</varname>
+                                        </p>
+                                    </li>
+                                    <li>
+                                        <p>If usage limit or overage limit is provided in a counter
+                                            and <varname>Percentage</varname> type threshold is
+                                            being executed:</p>
+                                        <p>
+                                            <i>PCT</i> =
+                                                <varname>THRESHOLD_PROFILE.Counter-Threshold-Percentage
+                                                (“&lt;ThresholdName”&gt;)</varname>
+                                        </p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry rowsep="0"> Big Decimal </entry>
+                            <entry rowsep="0"> Optional </entry>
+                        </row>
+                        <row>
+                            <entry/>
+                            <entry/>
+                            <entry/>
+                            <entry/>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry> MDN </entry>
+                            <entry> This variable indicates the MSISDN value or device that triggers
+                                the notification. The variable is the E.164 number configured in the
+                                device. </entry>
+                            <entry>
+                                <i>MDN</i> = <varname>SPR_DEVICE.E164</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> EVT </entry>
+                            <entry>
+                                <p>This variable indicates the notification event ID.</p>
+                                <p>It can be any of these values - <varname>ALTNEA</varname>,
+                                        <varname>ALTNEA1</varname>, or <varname>ALTNEA2</varname>
+                                    used for notification. </p>
+                            </entry>
+                            <entry>
+                                <i>EVT</i> = <varname>“ALTNEA”</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> UNI </entry>
+                            <entry>
+                                <p>This variable indicates the unit of remaining allowance and
+                                    configured as a string value. It can be in TIM or BYT. The
+                                    service operator ensures that the value of this variable matches
+                                    the unit type of the counter.</p>
+                                <p>A dedicated UNI string value can be used for money and unit also.
+                                    It can be configured as per need such as MON can be used for
+                                    Money.</p>
+                                <p>The supported values are - TIM for time, BYT for volume, MON for
+                                    money, UNI for unit.</p>
+                            </entry>
+                            <entry>
+                                <i>UNI</i> = <varname>“Money”</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> TIM </entry>
+                            <entry> This variable indicates the Unix timestamp when the notification
+                                is generated. This is the current time period in seconds. </entry>
+                            <entry>
+                                <i>TIM</i> =
+                                    <varname>THRESHOLD_PROFILE.Notification-Generation-Timestamp</varname>
+                            </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> T </entry>
+                            <entry> This variable indicates the time when the notification is
+                                generated for a counter. It refers to the last three digits or
+                                milliseconds of the Unix timestamp. </entry>
+                            <entry>
+                                <i>T</i> =
+                                    <varname>THRESHOLD_PROFILE.Notification-Generation-Timestamp-Millis</varname>
+                            </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> TST </entry>
+                            <entry>
+                                <p>This variable is defined as hard-coded string value, such as
+                                    hard-stop or soft-stop.</p>
+                                <p>OR</p>
+                                <p>This variable can also be mapped to the
+                                        <uicontrol>Action-Type</uicontrol> parameter to give actions
+                                    configured in threshold.</p>
+                            </entry>
+                            <entry>
+                                <p>
+                                    <i>TST</i> = <varname>"Hard Stop"</varname>
+                                </p>
+                                <p>OR</p>
+                                <p>
+                                    <i>TST</i> =
+                                        <varname>THRESHOLD_PROFILE.Action-Type("&lt;ThresholdName&gt;")</varname>
+                                </p>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> BAL </entry>
+                            <entry>
+                                <p>This variable is the remaining allowance to next threshold in
+                                    decimal. </p>
+                                <p>Example: A counter has two thresholds defined at 50% (250 bytes)
+                                    and 80% (400 bytes). Consider that 50% of threshold is crossed
+                                    and the used value stored in counter is 300 bytes. A CCR-U
+                                    request arrives with USU = 50 bytes. In this case, BAL = 50
+                                    bytes and USE = 350 bytes.</p>
+                            </entry>
+                            <entry>
+                                <i>BAL</i> =
+                                    <varname>THRESHOLD_PROFILE.Counter-Current-Value</varname>
+                            </entry>
+                            <entry> Double </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> USE </entry>
+                            <entry> This variable indicates the amount used towards the threshold in
+                                counter. </entry>
+                            <entry>
+                                <i>USE</i> = <varname>THRESHOLD_PROFILE.Current-Used-Value</varname>
+                            </entry>
+                            <entry> Double </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> LNG </entry>
+                            <entry> This variable indicates the language of notification. </entry>
+                            <entry>
+                                <i>LNG</i> = <varname>"ENGLISH"</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<sectiondiv>
+<p><b>Example 1: Bucket is about to end</b></p>
+<p>Bob has an iPhone associated with a data bucket of 500 MB. A threshold is defined at 200 MB. When the bucket value reaches the defined threshold of 200 MB, a notification is sent to Bob. The <varname>Send-Notification</varname> action variable is defined for 200 MB. For this example, configure the following entities:</p>
+<table pgwide="1" colsep="1" rowsep="1">
+                    <tgroup cols="2">
+                        <colspec colname="col1"/>
+                        <colspec colname="col2"/>
+                        <thead>
+                            <row>
+                                <entry>
+                                    <p>Entity</p>
+                                </entry>
+                                <entry>
+                                    <p>Task</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry> Notification server </entry>
+                                <entry> Configure the TCP/IP server. Multiple TCP/IP servers can be
+                                    defined. </entry>
+                            </row>
+                            <row>
+                                <entry> Notification template </entry>
+                                <entry> Define the text to be sent to Bob. </entry>
+                            </row>
+                            <row>
+                                <entry> Notification preferences </entry>
+                                <entry> Create a notification profile. </entry>
+                            </row>
+                            <row>
+                                <entry> Thresholds </entry>
+                                <entry> Create a threshold and define the notification variables
+                                    along with the threshold rules. </entry>
+                            </row>
+                            <row>
+                                <entry> Charging services </entry>
+                                <entry> Create a charging service with 500 MB data bucket. </entry>
+                            </row>
+                            <row>
+                                <entry> Device </entry>
+                                <entry> Create a device and associate it with device lifecycle, set
+                                    the notification profile, and add the bundle subscription.
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> Account </entry>
+                                <entry> Create an account and associate it with the account
+                                    lifecycle. </entry>
+                            </row>
+                            <row>
+                                <entry> Bundles </entry>
+                                <entry> Create a bundle and associate it with the charging service.
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> Lifecycles </entry>
+                                <entry> Create the lifecycles for device, account, bundle. </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+<p>The following figure shows the threshold rule defined in the SM GUI (<uicontrol>Policy &amp; Charging &gt; COMMON &gt; Thresholds</uicontrol>):</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_18.5/Bucketend_TH1_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-bucketend_th1_default.png"
+                        scale="65"/>
+                </fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 2: Counter is about to end</b></p>
+<p>Bob has an iPhone associated with a subscription counter and data bucket of 1 GB and subscribed with a device subscription. The counter accumulates the bucket resources consumed. Threshold is defined at 200 MB, 500 MB, 700 MB on counter along with notification variables in the threshold rule. Notification is sent when the counter value reaches the thresholds defined, that is, notification is sent at 200 MB, 500 MB, 700 MB. <varname>Send-Notification</varname> action variable is defined for 200 MB, 500 MB, 700 MB. For this example, configure the following entities:</p>
+<table pgwide="1" colsep="1" rowsep="1">
+                    <tgroup cols="2">
+                        <colspec colname="col1" colwidth="1*"/>
+                        <colspec colname="col2" colwidth="1.44*"/>
+                        <thead>
+                            <row>
+                                <entry>
+                                    <p>Entity</p>
+                                </entry>
+                                <entry>
+                                    <p>Task</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry> Notification server </entry>
+                                <entry> Configure the TCP/IP server. Multiple TCP/IP servers can be
+                                    defined. </entry>
+                            </row>
+                            <row>
+                                <entry> Notification template </entry>
+                                <entry> Define the text to be sent to Bob. </entry>
+                            </row>
+                            <row>
+                                <entry> Notification preferences </entry>
+                                <entry> Create a notification profile. </entry>
+                            </row>
+                            <row>
+                                <entry> Thresholds </entry>
+                                <entry> Create a threshold and define the notification variables
+                                    along with the threshold rules. </entry>
+                            </row>
+                            <row>
+                                <entry> Charging services </entry>
+                                <entry> Create a charging service with 1 GB data bucket, and usage
+                                    counter. </entry>
+                            </row>
+                            <row>
+                                <entry> Device </entry>
+                                <entry> Create a device and associate it with device lifecycle, set
+                                    the notification profile, and add the bundle subscription.
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> Account </entry>
+                                <entry> Create an account and associate it with the account
+                                    lifecycle. </entry>
+                            </row>
+                            <row>
+                                <entry> Bundles </entry>
+                                <entry> Create a bundle and associate it with the charging service.
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> Lifecycles </entry>
+                                <entry> Create the lifecycles for device, account, bundle. </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+<p>The following figure shows the threshold rules for multiple levels of thresholds defined in the SM GUI (<uicontrol>Policy &amp; Charging &gt; COMMON &gt; Thresholds</uicontrol>):</p>
+<p>Notification at 200 MB:<fig>
+                        <!--MMO resource relative URI: ../Graphics/Release_18.5/Countermultiple1_default.png-->
+                        <image
+                            href="../images/img9yz-09126-ug01-pczza-sp1-countermultiple1_default.png"
+                            scale="65"/>
+                    </fig></p>
+<p>Notification at 500 MB:<fig>
+                        <!--MMO resource relative URI: ../Graphics/Release_18.5/Countermultiple2_default.png-->
+                        <image
+                            href="../images/img9yz-09126-ug01-pczza-sp1-countermultiple2_default.png"
+                            scale="65"/>
+                    </fig></p>
+<p>Notification at 700 MB:<fig>
+                        <!--MMO resource relative URI: ../Graphics/Release_18.5/Countermultiple3_default.png-->
+                        <image
+                            href="../images/img9yz-09126-ug01-pczza-sp1-countermultiple3_default.png"
+                            scale="65"/>
+                    </fig></p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 3: Cap at multiple levels </b></p>
+<p>The following figure shows the notification variables for multi-level cap:</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_18.5/Cap_multilevel_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-cap_multilevel_default.png"
+                        scale="65"/>
+                </fig>
+</sectiondiv>
+</section>
+<section><title>Bucket or counter limit is reached</title>
+<p>Notification can be sent for a bucket or counter when the limit defined is reached or at the end of CCR-U/T request. Whenever a consumption is done from bucket, a notification is sent to the NS with the notification variables (listed in the following table). A counter can accumulate the consumption of bucket resources. A counter limit can be set and on reaching this limit, a notification can be sent. The dynamic notification variables with notification action can be configured in the threshold rule on the SM GUI. </p>
+<p>Multiple notifications can be sent if multiple buckets or counters are used in a call. If two buckets and two counters are used while processing single MSCC, then four notifications are sent for that MSCC. </p>
+<p>The TCP/IP notification sent to a network node to indicate that a bucket or counter limit is
+                reached consists of the mandatory header fields mentioned in <xref
+                    href="#id9yz-09126-ug01-pczza-sp1-notiftcp/Headerfields" format="dita"/> and the
+                following notification variables defined in rules. </p>
+<note>The variable names in the notification are configurable. The same variable name must be used
+                in the Notification template in Notification Server as defined in threshold in
+                Charging. For further details on NS configuration, see the <!--XML Resource relative URI: -->
+                <cite>NOKIA Converged Charging Notification Service (NS) User Guide</cite>.</note>
+<table pgwide="1" colsep="1" rowsep="1">
+                <title>TCP/IP notification variables for bucket limit reached case</title>
+                <tgroup cols="5">
+                    <colspec colname="col1" colwidth="1*"/>
+                    <colspec colname="col2" colwidth="1.13*"/>
+                    <colspec colname="COLSPEC5" colwidth="2.11*"/>
+                    <colspec colname="col3" colwidth="1*"/>
+                    <colspec colname="col4" colwidth="1*"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Parameter</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                            <entry>
+                                <p>Example</p>
+                            </entry>
+                            <entry>
+                                <p>Type</p>
+                            </entry>
+                            <entry>
+                                <p>Mandatory/ Optional</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> APNRTRACT </entry>
+                            <entry>
+                                <p>This variable indicates the account ID of the subscription used
+                                    in the call.</p>
+                                <p>It can also be mapped to a custom data with name such as
+                                        <uicontrol>BillingAccountID</uicontrol> defined in the
+                                    device.</p>
+                            </entry>
+                            <entry>
+                                <p>
+                                    <i>APNRTRACT</i> =
+                                        <varname>SPR_DEVICE.BillingAccountID</varname>
+                                </p>
+                                <p>Or</p>
+                                <p>
+                                    <i>APNRTRACT</i> = <varname>SUBSCRIPTION.AccountID</varname>
+                                </p>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> COS </entry>
+                            <entry>
+                                <p>This variable indicates the name of the charging service.</p>
+                                <p>For example, <varname>ChargingService1</varname>.</p>
+                                <p>It can also be mapped to a custom data with name such as
+                                        <uicontrol>Segment</uicontrol> defined in the device.</p>
+                            </entry>
+                            <entry>
+                                <p>
+                                    <i>COS</i> = <varname>SPR_DEVICE.Segment</varname>
+                                </p>
+                                <p>
+                                    <i>COS</i> =
+                                        <varname>THRESHOLD_PROFILE.Charging-Service</varname>
+                                </p>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> CID </entry>
+                            <entry> This variable indicates the bucket ID for which the threshold
+                                value is defined that triggers a notification. </entry>
+                            <entry>
+                                <i>CID</i> = <varname>THRESHOLD_PROFILE.Bucket-Def-Name</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> PCT </entry>
+                            <entry>
+                                <p>This variable indicates the threshold percentage value.</p>
+                                <p>For absolute threshold, the <i>Percentage of absolute limit</i>
+                                    is calculated and mentioned in the <i>PCT</i> variable. This
+                                    means if the threshold level is set to <varname>900 and the
+                                        bucket initial value is 1000, then it is 90 percent in the
+                                        notification</varname>, then PCT is set to 100 percent.</p>
+                            </entry>
+                            <entry>
+                                <i>PCT</i> =
+                                    <varname>THRESHOLD_PROFILE.Threshold-Percentage</varname>
+                            </entry>
+                            <entry> Big Decimal </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> MDN </entry>
+                            <entry> This variable indicates the MSISDN value or device that triggers
+                                the notification. The variable is the E.164 number configured in the
+                                device. </entry>
+                            <entry>
+                                <i>MDN</i> = <varname>SPR_DEVICE.E164</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> EVT </entry>
+                            <entry> This variable indicates the notification event ID and
+                                    <varname>ALTLMT</varname> is set as the variable value. </entry>
+                            <entry>
+                                <i>EVT</i> = <varname>“ALTLMT"</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> UNI </entry>
+                            <entry> This variable indicates the unit of remaining allowance and
+                                configured as a string value. The service operator ensures that the
+                                value of this variable matches the unit type of the bucket. </entry>
+                            <entry>
+                                <i>UNI</i> = <varname>“Money”</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> TIM </entry>
+                            <entry> This variable indicates the Unix timestamp when the notification
+                                is generated. This is the current time period in seconds. </entry>
+                            <entry>
+                                <i>TIM</i> =
+                                    <varname>THRESHOLD_PROFILE.Notification-Generation-Timestamp</varname>
+                            </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> T </entry>
+                            <entry> This variable indicates the time when the notification is
+                                generated for a bucket. It refers to the last three digits or
+                                milliseconds of the Unix timestamp. </entry>
+                            <entry>
+                                <i>T</i> =
+                                    <varname>THRESHOLD_PROFILE.Notification-Generation-Timestamp-Millis</varname>
+                            </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry rowsep="0"> ULI </entry>
+                            <entry rowsep="0">
+                                <p>This variable indicates the value of maximum limit consumed from
+                                    a bucket balance.</p>
+                                <p>It is the value of the threshold reached in a CCR-U/T. If a
+                                    threshold is not reached, then its value is zero.</p>
+                                <p>If multiple thresholds are crossed in a single request, the value
+                                    of the maximum threshold being crossed is included in ULI. In
+                                    case of percentage threshold, the % value is translated into
+                                    absolute value and included in ULI. </p>
+                            </entry>
+                            <entry rowsep="0">
+                                <i>ULI</i> = <varname>THRESHOLD_PROFILE.Bucket-End-Value</varname>
+                            </entry>
+                            <entry rowsep="0"> Long </entry>
+                            <entry rowsep="0"> Optional </entry>
+                        </row>
+                        <row>
+                            <entry/>
+                            <entry>
+                                <p>Currently, NCC does not support overage on bucket. Therefore,
+                                    this parameter always has Bucket Initial Value. </p>
+                                <p>Do not configure CAP and threshold together. If configured, then
+                                    the latest one is considered.</p>
+                                <p>
+                                    <b>Note</b>: This variable value is automatically generated by
+                                    the NCC system and not specified by the service operator.</p>
+                            </entry>
+                            <entry/>
+                            <entry/>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry> OLI </entry>
+                            <entry>
+                                <p>This variable indicates the overage allowance limit.</p>
+                                <p>Since overage is not supported by NCC, the <i>OLI</i> parameter
+                                    is always set to <varname>zero</varname>.</p>
+                            </entry>
+                            <entry>
+                                <i>OLI</i> = <varname>THRESHOLD_PROFILE.Overage-Allowance</varname>
+                            </entry>
+                            <entry> Double </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> BAL </entry>
+                            <entry> This variables is the remaining value of the bucket after
+                                committing the used quantities reported in USU. During the
+                                configuration of notification variable for a threshold profile, the
+                                BAL parameter is mapped to the current value of the bucket. </entry>
+                            <entry>
+                                <i>BAL</i> =
+                                    <varname>THRESHOLD_PROFILE.Bucket-Balance-Value</varname>
+                            </entry>
+                            <entry> Double </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> USE </entry>
+                            <entry> This variable indicates the amount used towards the threshold in
+                                bucket and has the bucket initial value. </entry>
+                            <entry>
+                                <i>USE</i> = <varname>THRESHOLD_PROFILE.Current-Used-Value</varname>
+                            </entry>
+                            <entry> Double </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> LNG </entry>
+                            <entry> This variable indicates the language of notification. </entry>
+                            <entry>
+                                <i>LNG</i> = <varname>"ENGLISH"</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<table pgwide="1" colsep="1" rowsep="1">
+                <title>TCP/IP notification variables for counter limit reached case</title>
+                <tgroup cols="5">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <colspec colname="COLSPEC4"/>
+                    <colspec colname="col3"/>
+                    <colspec colname="col4"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Parameter</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                            <entry>
+                                <p>Example</p>
+                            </entry>
+                            <entry>
+                                <p>Type</p>
+                            </entry>
+                            <entry>
+                                <p>Mandatory/ Optional</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> APNRTRACT </entry>
+                            <entry>
+                                <p>This variable indicates the account ID of the subscription used
+                                    in the call.</p>
+                                <p>It can also be mapped to a custom data with name, such as
+                                        <uicontrol>BillingAccountID</uicontrol> defined in the
+                                    device.</p>
+                            </entry>
+                            <entry>
+                                <p>
+                                    <i>APNRTRACT</i> =
+                                        <varname>SPR_DEVICE.BillingAccountID</varname>
+                                </p>
+                                <p>Or</p>
+                                <p>
+                                    <i>APNRTRACT</i> = <varname>SUBSCRIPTION.AccountID</varname>
+                                </p>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> COC </entry>
+                            <entry> This variable provides a count of the ongoing overage block as
+                                overage limit keep on repeating multiple times. </entry>
+                            <entry>
+                                <i>COC</i> =
+                                    <varname>THRESHOLD_PROFILE.Counter-Overage-Count</varname>
+                            </entry>
+                            <entry> Integer </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> COS </entry>
+                            <entry>
+                                <p>This variable indicates the name of the charging service.</p>
+                                <p>It can also be mapped to a custom data with name, such as
+                                        <uicontrol>Segment</uicontrol> defined in the device.</p>
+                            </entry>
+                            <entry>
+                                <p>
+                                    <i>COS</i> = <varname>SPR_DEVICE.Segment</varname>
+                                </p>
+                                <p>
+                                    <i>COS</i> =
+                                        <varname>THRESHOLD_PROFILE.Charging-Service</varname>
+                                </p>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> COU </entry>
+                            <entry> This variable gives the overage usage in currently ongoing
+                                overage block. </entry>
+                            <entry>
+                                <i>COU</i> = <varname>THRESHOLD_PROFILE.
+                                    Current-Overage-Usage</varname>
+                            </entry>
+                            <entry> Big decimal </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> CID </entry>
+                            <entry> This variable indicates the counter name for which the threshold
+                                value is defined that triggers a notification. </entry>
+                            <entry>
+                                <i>CID</i> = <varname>THRESHOLD_PROFILE.Counter-Def-Name</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> CRT/IT </entry>
+                            <entry> This variable gives the last reset time of the counter instance. </entry>
+                            <entry>
+                                <i>CRT</i> =
+                                    <varname>THRESHOLD_PROFILE.Counter-Reset-Timestamp</varname>
+                            </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> CUT/JT </entry>
+                            <entry> This variable gives the value when a counter instance was
+                                updated by create, read, update, or delete operation, or BCR, that
+                                is, <i>Last Admin Update</i> or <i>Billing Cycle Timestamp</i>. </entry>
+                            <entry>
+                                <i>CUT</i> =
+                                    <varname>THRESHOLD_PROFILE.Counter-Update-Timestamp</varname>
+                            </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry rowsep="0"> PCT </entry>
+                            <entry rowsep="0">
+                                <p>This variable indicates the threshold percentage value and
+                                    follows one of the given criteria:</p>
+                                <ul>
+                                    <li>
+                                        <p>If usage limit and overage limit are not used, then
+                                            counters can only have threshold types, such as
+                                                <varname>Absolute from start</varname>. To calculate
+                                            the percentage of the absolute limit, the maximum limit
+                                            value of counter is the one, which has a threshold
+                                            defined with
+                                                <systemoutput>Notification-Stop</systemoutput> or
+                                                <systemoutput>Reject</systemoutput> action.</p>
+                                        <p>For example, there are two <varname>Absolute from
+                                                start</varname> type thresholds of 900 MB and 1000
+                                            MB defined with
+                                                <systemoutput>Notification-Send</systemoutput> and
+                                                <systemoutput>Notification-Stop</systemoutput> or
+                                                <systemoutput>Reject</systemoutput> action
+                                            respectively. In this case, the threshold percentage is
+                                            calculated as 90% and 100%. If the
+                                                <systemoutput>Notification-Stop</systemoutput> or
+                                                <systemoutput>Reject</systemoutput> action are not
+                                            configured, then PCT is set to <varname>0</varname>. If
+                                            the <systemoutput>Notification-Stop</systemoutput> or
+                                                <systemoutput>Reject</systemoutput> action are
+                                            configured at multiple thresholds on same counter, then
+                                            first one is considered for maximum value of
+                                            counter.</p>
+                                    </li>
+                                    <li>
+                                        <p>If usage limit or overage limit is provided in a counter
+                                            and <varname>Percentage</varname> type threshold is
+                                            being executed, then this variable is mapped to the
+                                            percentage threshold value.</p>
+                                        <p>For example, if a threshold is applied at 90%, then this
+                                            variable is set to <varname>90</varname>. For absolute
+                                            type thresholds, this variable value remains
+                                                <varname>0</varname>.</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry rowsep="0">
+                                <p/>
+                                <ul>
+                                    <li>
+                                        <p>If usage limit and overage limit are not used:</p>
+                                        <p>
+                                            <i>PCT</i> =
+                                                <varname>THRESHOLD_PROFILE.Threshold-Percentage</varname>
+                                        </p>
+                                    </li>
+                                    <li>
+                                        <p>If usage limit or overage limit is provided in a counter
+                                            and <varname>Percentage</varname> type threshold is
+                                            being executed:</p>
+                                        <p>
+                                            <i>PCT</i> =
+                                                <varname>THRESHOLD_PROFILE.Counter-Threshold-Percentage
+                                                (“&lt;ThresholdName”&gt;)</varname>
+                                        </p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry rowsep="0"> Big Decimal </entry>
+                            <entry rowsep="0"> Optional </entry>
+                        </row>
+                        <row>
+                            <entry/>
+                            <entry/>
+                            <entry/>
+                            <entry/>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry> MDN </entry>
+                            <entry> This variable indicates the MSISDN value or device that triggers
+                                the notification. The variable is the E.164 number configured in the
+                                device. </entry>
+                            <entry>
+                                <i>MDN</i> = <varname>SPR_DEVICE.E164</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> EVT </entry>
+                            <entry>
+                                <p>This variable indicates the notification event ID.</p>
+                                <p>In this case, it is ALTLMT.</p>
+                            </entry>
+                            <entry>
+                                <i>EVT</i> = <varname>“ALTLMT”</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> UNI </entry>
+                            <entry>
+                                <p>This variable indicates the unit of remaining allowance and
+                                    configured as a string value. The service operator ensures that
+                                    the value of this variable matches the unit type of the
+                                    counter.</p>
+                                <p>A dedicated UNI string value can be used for money and unit also.
+                                    It can be configured as per need such as MON can be used for
+                                    Money.</p>
+                                <p>The supported values are - TIM for time, BYT for volume, MON for
+                                    money, UNI for unit.</p>
+                            </entry>
+                            <entry>
+                                <i>UNI</i> = <varname>“Money”</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> TIM </entry>
+                            <entry> This variable indicates the Unix timestamp when the notification
+                                is generated. This is the current time period in seconds. </entry>
+                            <entry>
+                                <i>TIM</i> =
+                                    <varname>THRESHOLD_PROFILE.Notification-Generation-Timestamp</varname>
+                            </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> T </entry>
+                            <entry> This variable indicates the time when the notification is
+                                generated for a counter. It refers to the last three digits or
+                                milliseconds of the Unix timestamp. </entry>
+                            <entry>
+                                <i>T</i> =
+                                    <varname>THRESHOLD_PROFILE.Notification-Generation-Timestamp-Millis</varname>
+                            </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> TOU </entry>
+                            <entry> This variable gives the total usage in overage blocks. </entry>
+                            <entry>
+                                <i>TOU</i> = <varname>THRESHOLD_PROFILE.
+                                    Total-Overage-Usage</varname>
+                            </entry>
+                            <entry> Big decimal </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> TST </entry>
+                            <entry>
+                                <p>This variable is defined as hard-coded string value, such as
+                                    hard-stop or soft-stop.</p>
+                                <p>OR</p>
+                                <p>This variable is mapped to <uicontrol>Action-Type</uicontrol>
+                                    parameter to configure actions in threshold.</p>
+                            </entry>
+                            <entry>
+                                <p>
+                                    <i>TST</i> = <varname>"Hard Stop"</varname>
+                                </p>
+                                <p>OR</p>
+                                <p>
+                                    <i>TST</i> =
+                                        <varname>THRESHOLD_PROFILE.Action-Type("&lt;ThresholdName&gt;")</varname>
+                                </p>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> ULI </entry>
+                            <entry>
+                                <p>If usage limit on a counter is not defined, then this variable
+                                    indicates the maximum limit value, which can be stored in a
+                                    counter. This is an absolute value of counter threshold
+                                    corresponding to the
+                                        <systemoutput>Notification-Stop</systemoutput> or
+                                        <systemoutput>Reject</systemoutput> action.</p>
+                                <p>However, if usage limit on a counter is defined, then this
+                                    variable is also mapped to the prorated usage limit in the
+                                    counter instance.</p>
+                            </entry>
+                            <entry>
+                                <p/>
+                                <ul>
+                                    <li>
+                                        <p>If usage limit on a counter is not defined:</p>
+                                        <p>
+                                            <i>ULI</i> =
+                                                <varname>THRESHOLD_PROFILE.Counter-End-Value</varname>
+                                        </p>
+                                    </li>
+                                    <li>
+                                        <p>If usage limit on a counter is defined:</p>
+                                        <p>
+                                            <i>ULI</i> =
+                                                <varname>THRESHOLD_PROFILE.Counter-Usage-Limit</varname>
+                                        </p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry> Big decimal </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> OLI </entry>
+                            <entry> This variable indicates the overage limit in the counter
+                                instances. </entry>
+                            <entry>
+                                <i>OLI</i> =
+                                    <varname>THRESHOLD_PROFILE.Counter-Overage-Limit</varname>
+                            </entry>
+                            <entry> Big decimal </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> BAL </entry>
+                            <entry>
+                                <p>This variable is the remaining allowance to next threshold in
+                                    decimal. </p>
+                                <p>In this notification, this parameter is set to 0 value.</p>
+                            </entry>
+                            <entry>
+                                <i>BAL</i> =
+                                    <varname>THRESHOLD_PROFILE.Counter-Current-Value</varname>
+                            </entry>
+                            <entry> Double </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> USE </entry>
+                            <entry> This variable indicates the amount used towards the threshold in
+                                counter. </entry>
+                            <entry>
+                                <i>USE</i> = <varname>THRESHOLD_PROFILE.Current-Used-Value</varname>
+                            </entry>
+                            <entry> Double </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> LNG </entry>
+                            <entry> This variable indicates the language of notification. </entry>
+                            <entry>
+                                <i>LNG</i> = <varname>"ENGLISH"</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<p>If multiple overage block are being consumed in a single call, then notification parameter has the current value, count, and overage usage as per the overage block (current or previous) for which threshold is being executed.</p>
+<p>
+<b>For example:</b>
+</p>
+<p>If <i>Usage Limit</i> = <varname>10 GB</varname> and <i>Overage Limit</i> = <varname>1 GB</varname> with threshold notification on 50% and 100% usage; and counter current value changes from <varname>10 GB</varname> to <varname>12.5 GB</varname>. In this case, the threshold notification has three notifications:</p><ol>
+<li>
+<p>On 100% consumption of first overage block (previous), such as on 11 GB usage, with <i>Counter-Current-Value</i> = <varname>11 GB</varname>, <i>Current-Overage-Usage</i> = <varname>1 GB</varname>, <i>Total-Overage-Usage</i> = <varname>1 GB</varname>, and <i>Counter-Overage-Count</i> = <varname>1</varname>.</p>
+</li>
+<li>
+<p>On 100% consumption of second overage block (previous), which is 12 GB usage, with <i>Counter-Current-Value</i> = <varname>12 GB</varname>, <i>Current-Overage-Usage</i> = <varname>1 GB</varname>, <i>Total-Overage-Usage</i> = <varname>2 GB</varname>, and <i>Counter-Overage-Count</i> = <varname>2</varname>
+</p>
+</li>
+<li>
+<p>On 50% consumption of third overage block (current), which means on 12.5 GB usage, with <i>Counter-Current-Value</i> = <varname>12.5 GB</varname>, <i>Current-Overage-Usage</i> = <varname>0.5 GB</varname>, <i>Total-Overage-Usage</i> = <varname>2.5 GB</varname>, and <i>Counter-Overage-Count</i> = <varname>3</varname>
+</p>
+</li>
+</ol>
+<note>If a threshold is created from the SM GUI interface, then the threshold name for different
+                profile types follow a predefined nomenclature, as described below:<ul>
+                    <li>
+                        <p>For <varname>Percentage</varname> type threshold:</p>
+                        <p>
+                            <varname>ThresholdPercent1</varname>,
+                                <varname>ThresholdPercent2</varname>,....</p>
+                    </li>
+                    <li>
+                        <p>For <varname>Absolute from start</varname> type threshold:</p>
+                        <p>
+                            <varname>ThresholdAbsStart1</varname>,
+                                <varname>ThresholdAbsStart2</varname>,...</p>
+                    </li>
+                    <li>
+                        <p>For <varname>Absolute from end</varname> type threshold:</p>
+                        <p>
+                            <varname>ThresholdAbsEndCount1</varname>,
+                                <varname>ThresholdAbsEndCount1</varname>,...</p>
+                    </li>
+                    <li>
+                        <p>For <varname>Absolute from zero</varname> type threshold:</p>
+                        <p>
+                            <varname>ThresholdAbsZeroCount1</varname>,
+                                <varname>ThresholdAbsZeroCount2</varname>,...</p>
+                    </li>
+                </ul><p>For example, if two <varname>Percentage</varname> type thresholds are
+                    defined, then first <varname>Percentage</varname> threshold has threshold name =
+                        <varname>ThresholdPercent1</varname> and second threshold name =
+                        <varname>ThresholdPercent2</varname>.</p></note>
+<p>This same name is given in source context with argument as &lt;ThresholdName&gt;, such as <i>Action-Type</i> and <i>Counter-Threshold-Percentage</i>.</p>
+<fig>
+                <!--MMO resource relative URI: ../Graphics/Release_20.6/Example_snapshot_default.png-->
+                <image href="../images/img9yz-09126-ug01-pczza-sp1-example_snapshot_default.png"
+                    scale="65"/>
+            </fig>
+<sectiondiv>
+<p><b>Example 1: Bucket limit is reached</b></p>
+<p>Bob has an iPhone associated with a data bucket of 10 GB. An absolute threshold is defined to send notification when the bucket limit is reached, that is, the bucket content is exhausted. A data call is made and the data bucket is completely used up. In this case, a notification is sent to Bob with details on the data bucket consumption. For this example, configure the following entities:</p>
+<table pgwide="1" colsep="1" rowsep="1">
+                    <tgroup cols="2">
+                        <colspec colname="col1"/>
+                        <colspec colname="col2"/>
+                        <thead>
+                            <row>
+                                <entry>
+                                    <p>Entity</p>
+                                </entry>
+                                <entry>
+                                    <p>Task</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry> Notification server </entry>
+                                <entry> Configure the TCP/IP server. Multiple TCP/IP servers can be
+                                    defined. </entry>
+                            </row>
+                            <row>
+                                <entry> Notification template </entry>
+                                <entry> Define the text to be sent to Bob. </entry>
+                            </row>
+                            <row>
+                                <entry> Notification preferences </entry>
+                                <entry> Create a notification profile. </entry>
+                            </row>
+                            <row>
+                                <entry> Thresholds </entry>
+                                <entry> Create a threshold and define the notification variables
+                                    along with the threshold rules. </entry>
+                            </row>
+                            <row>
+                                <entry> Charging services </entry>
+                                <entry> Create a charging service with 10 GB data bucket. </entry>
+                            </row>
+                            <row>
+                                <entry> Device </entry>
+                                <entry> Create a device and associate it with device lifecycle, set
+                                    the notification profile, and add the bundle subscription.
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> Account </entry>
+                                <entry> Create an account and associate it with the account
+                                    lifecycle. </entry>
+                            </row>
+                            <row>
+                                <entry> Bundles </entry>
+                                <entry> Create a bundle and associate it with the charging service.
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> Lifecycles </entry>
+                                <entry> Create the lifecycles for device, account, bundle. </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+<p>The following figure shows the threshold rule defined in the SM GUI (<uicontrol>Policy &amp;
+                        Charging &gt; COMMON &gt; Thresholds</uicontrol>):<fig>
+                        <!--MMO resource relative URI: ../Graphics/Release_18.5/Bucketend_limit_default.png-->
+                        <image
+                            href="../images/img9yz-09126-ug01-pczza-sp1-bucketend_limit_default.png"
+                            scale="65"/>
+                    </fig></p>
+<p>The following figure shows the threshold rule defined in the SM GUI for the notification sent on counter limit reached scenario:</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_18.5/Counterlimit_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-counterlimit_default.png"
+                        scale="65"/>
+                </fig>
+<p>The following figure shows the threshold rule defined in the SM GUI for the notification sent on cap limit reached scenario:</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_18.5/Cap_limitreached_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-cap_limitreached_default.png"
+                        scale="55"/>
+                </fig>
+</sectiondiv>
+</section>
+<section><title>Resource usage on each CCR-Update/Terminate</title>
+<p>Notification can be sent to the NS server for a bucket or counter as follows:</p><ul>
+<li>
+<p>Whenever a consumption is done from the bucket, at the end of update and terminate request, a notification is sent with dynamic variables.</p>
+</li>
+<li>
+<p>Whenever a counter value is updated, at the end of update and terminate request, a notification is sent with dynamic variables.</p>
+</li>
+</ul>
+<note>
+<p>Configure the following condition in the rule to avoid CCR-Initial notification:</p>
+<p>
+<systemoutput>if RATING_POSTPROCESSING.Discount-Id present</systemoutput>
+</p>
+</note>
+<p>The TCP/IP notification sent to a network node to indicate that a bucket is consumed consists of
+                the mandatory header fields mentioned in <xref
+                    href="#id9yz-09126-ug01-pczza-sp1-notiftcp/Headerfields" format="dita"/> and the
+                following notification variables:</p>
+<note>
+<p>For further details on NS configuration, see the <cite>NOKIA Converged Charging Notification
+                        Service (NS) User Guide</cite>.</p>
+</note>
+<table pgwide="1" colsep="1" rowsep="1">
+                <title>TCP/IP notification variables for bucket consumption at each CCR-U/T</title>
+                <tgroup cols="5">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <colspec colname="COLSPEC5"/>
+                    <colspec colname="col3"/>
+                    <colspec colname="col4"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Parameter</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                            <entry>
+                                <p>Example</p>
+                            </entry>
+                            <entry>
+                                <p>Type</p>
+                            </entry>
+                            <entry>
+                                <p>Mandatory/ Optional</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> ACT </entry>
+                            <entry>
+                                <p>This variable indicates the account ID of the subscription used
+                                    in the call.</p>
+                                <p>Create a custom data dictionary with Id as
+                                        <uicontrol>BillingAccountID</uicontrol> and content type as
+                                        <uicontrol>DEVICE</uicontrol>. Attach custom data in device
+                                    with key as <uicontrol>BillingAccountID</uicontrol>. Priority of
+                                    custom data is higher.</p>
+                            </entry>
+                            <entry>
+                                <p>
+                                    <i>APNRTRACT</i> =
+                                        <varname>RATING_POSTPROCESSING.Billing-Account-Id</varname>
+                                </p>
+                                <p>Or</p>
+                                <p>
+                                    <i>APNRTRACT</i> = <varname>SUBSCRIPTION.AccountID</varname>
+                                </p>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> APNTRCOS </entry>
+                            <entry>
+                                <p>This variable indicates the name of the charging service.</p>
+                                <p>Create a custom data dictionary with Id as
+                                        <uicontrol>Segment</uicontrol> and content type as
+                                        <uicontrol>DEVICE</uicontrol>. Attach custom data in device
+                                    with key as <uicontrol>Segment</uicontrol>. Priority of custom
+                                    data is higher.</p>
+                            </entry>
+                            <entry>
+                                <p>
+                                    <i>COS</i> =
+                                        <varname>RATING_POSTPROCESSING.Class-Of-Service</varname>
+                                </p>
+                                <p>
+                                    <i>COS</i> =
+                                        <varname>THRESHOLD_PROFILE.Charging-Service</varname>
+                                </p>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> BUNDLE </entry>
+                            <entry> This variable indicates the name of the bundle. </entry>
+                            <entry>
+                                <i>BUNDLE</i> = <varname>RATING_POSTPROCESSING.Bundle-Name</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> CID </entry>
+                            <entry> This variable indicates the discount ID. It is the ID of the
+                                bucket for which notification is sent. </entry>
+                            <entry>
+                                <i>CID</i> = <varname>RATING_POSTPROCESSING.Discount-Id</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> CIDABYUSE </entry>
+                            <entry> This variable indicates the bucket value. If there is a
+                                carry-over bucket used in the call, the value of CV is the sum of
+                                main bucket value and carry-over bucket value. </entry>
+                            <entry>
+                                <i>CIDABYUSE</i> =
+                                    <varname>RATING_POSTPROCESSING.Current-Value</varname>
+                            </entry>
+                            <entry> BigDecimal </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> CRT </entry>
+                            <entry> This variable indicates the bucket reset timestamp. </entry>
+                            <entry>
+                                <i>CRT</i> =
+                                    <varname>RATING_POSTPROCESSING.Reset-Timestamp</varname>
+                            </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> CUT </entry>
+                            <entry> This variable indicates the timestamp of either last Billing
+                                Cycle Reset (BCR) or any HLAPI/Admin change to buckets. It has the
+                                value when bucket was updated by any method such as CRUD operation
+                                or BCR. </entry>
+                            <entry>
+                                <i>CUT</i> =
+                                    <varname>RATING_POSTPROCESSING.Last-Billing-Cycle-Timestamp</varname>
+                            </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> MDN </entry>
+                            <entry> This variable indicates the MSISDN value or device that triggers
+                                the notification. The variable is the E.164 number configured in the
+                                device. </entry>
+                            <entry>
+                                <i>MDN</i> = <varname>SPR_DEVICE.E164</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> EVT </entry>
+                            <entry> This variable indicates the notification event. </entry>
+                            <entry>
+                                <i>EVT</i> = <varname>CALL_COMMON.Notification-Event</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> T </entry>
+                            <entry> This variable indicates the time when the notification is
+                                generated for a bucket. It refers to the last three digits or
+                                milliseconds of the Unix timestamp. </entry>
+                            <entry>
+                                <i>T</i> =
+                                    <varname>RATING_POSTPROCESSING.Unix-Timestamp-Ms</varname>
+                            </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> TIM </entry>
+                            <entry> This variable indicates the Unix timestamp when the notification
+                                is generated. This is the current time period in seconds. </entry>
+                            <entry>
+                                <i>TIM</i> = <varname>RATING_POSTPROCESSING.Unix-Timestamp</varname>
+                            </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry rowsep="0"> TOS </entry>
+                            <entry rowsep="0"> This variable indicates the type of service. It can
+                                have values like DIAM, SMSC. </entry>
+                            <entry rowsep="0">
+                                <i>TOS</i> = <varname>DIAM</varname>
+                            </entry>
+                            <entry rowsep="0"> String </entry>
+                            <entry rowsep="0"> Optional </entry>
+                        </row>
+                        <row>
+                            <entry/>
+                            <entry>
+                                <p>Following is the list of different values for TOS:</p>
+                                <ul>
+                                    <li>
+                                        <p>VOIC: Voice call</p>
+                                    </li>
+                                    <li>
+                                        <p>SMSC: Short message</p>
+                                    </li>
+                                    <li>
+                                        <p>MMSC: Multimedia message</p>
+                                    </li>
+                                    <li>
+                                        <p>PACK: Data transport</p>
+                                    </li>
+                                    <li>
+                                        <p>BREW: Brew service</p>
+                                    </li>
+                                    <li>
+                                        <p>ADMN: Audit</p>
+                                    </li>
+                                    <li>
+                                        <p>IMOM: IMOM call</p>
+                                    </li>
+                                    <li>
+                                        <p>DIAM: Diameter</p>
+                                    </li>
+                                    <li>
+                                        <p>USSD: Unstructured Supplementary Service Data</p>
+                                    </li>
+                                    <li>
+                                        <p>VDEO: VoLTE video call</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry/>
+                            <entry/>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry> TYPE </entry>
+                            <entry> This variable indicates the resource type for which notification
+                                is being triggered. For bucket consumption, this is set as
+                                    <varname>BUCKET</varname>. </entry>
+                            <entry>
+                                <i>TYPE</i> = <varname>RATING_POSTPROCESSING.Resource-Type</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> ULI </entry>
+                            <entry>
+                                <p>This variable indicates the spending limit threshold.</p>
+                                <p>This is the absolute value of Threshold/CAP (even if they are
+                                    defined in percentage), which is reached during the processing
+                                    of CCR-U/T. If no threshold/CAP is reached, this parameter is
+                                    sent as 0.</p>
+                            </entry>
+                            <entry>
+                                <i>ULI</i> =
+                                    <varname>RATING_POSTPROCESSING.Last-Crossed-Threshold-Value</varname>
+                            </entry>
+                            <entry> BigDecimal </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> UNI </entry>
+                            <entry>
+                                <p>This variable indicates the unit of remaining allowance and
+                                    configured as a string value. The service operator ensures that
+                                    the value of this variable matches the unit type of the bucket. </p>
+                                <p>Specify values such as MON, TIM, BYT.</p>
+                            </entry>
+                            <entry>
+                                <i>UNI</i> = <varname>MON</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> USU </entry>
+                            <entry> This variable indicates the reported units in CCR from CCR-U/T. </entry>
+                            <entry>
+                                <i>USU</i> = <varname>CALL_COMMON.Used-Service-Units</varname>
+                            </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<table pgwide="1" colsep="1" rowsep="1">
+                <title>TCP/IP notification variables for counter consumption at each CCR-U/T</title>
+                <tgroup cols="5">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <colspec colname="COLSPEC5"/>
+                    <colspec colname="col3"/>
+                    <colspec colname="col4"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Parameter</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                            <entry>
+                                <p>Example</p>
+                            </entry>
+                            <entry>
+                                <p>Type</p>
+                            </entry>
+                            <entry>
+                                <p>Mandatory/ Optional</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> ACT </entry>
+                            <entry>
+                                <p>This variable indicates the account ID of the subscription used
+                                    in the call.</p>
+                                <p>Create a custom data dictionary with Id as
+                                        <uicontrol>BillingAccountID</uicontrol> and content type as
+                                        <uicontrol>DEVICE</uicontrol>. Attach custom data in device
+                                    with key as <uicontrol>BillingAccountID</uicontrol>. Priority of
+                                    custom data is higher.</p>
+                            </entry>
+                            <entry>
+                                <p>
+                                    <i>APNRTRACT</i> =
+                                        <varname>RATING_POSTPROCESSING.BillingAccountID</varname>
+                                </p>
+                                <p>Or</p>
+                                <p>
+                                    <i>APNRTRACT</i> = <varname>SUBSCRIPTION.AccountID</varname>
+                                </p>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> APNTRCOS </entry>
+                            <entry>
+                                <p>This variable indicates the name of the charging service.</p>
+                                <p>Create a custom data dictionary with Id as
+                                        <uicontrol>Segment</uicontrol> and content type as
+                                        <uicontrol>DEVICE</uicontrol>. Attach custom data in device
+                                    with key as <uicontrol>Segment</uicontrol>. Priority of custom
+                                    data is higher.</p>
+                            </entry>
+                            <entry>
+                                <p>
+                                    <i>COS</i> =
+                                        <varname>RATING_POSTPROCESSING.Class-Of-Service</varname>
+                                </p>
+                                <p>
+                                    <i>COS</i> =
+                                        <varname>THRESHOLD_PROFILE.Charging-Service</varname>
+                                </p>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> BUNDLE </entry>
+                            <entry> This variable indicates the name of the bundle. </entry>
+                            <entry>
+                                <i>BUNDLE</i> = <varname>RATING_POSTPROCESSING.Bundle-Name</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> CID </entry>
+                            <entry> This variable indicates the discount ID. It is the ID of the
+                                counter for which notification is sent. </entry>
+                            <entry>
+                                <i>CID</i> = <varname>RATING_POSTPROCESSING.Discount-Id</varname>
+                            </entry>
+                            <entry/>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry> CIDABYUSE </entry>
+                            <entry> This variable indicates the counter value. </entry>
+                            <entry>
+                                <i>CIDABYUSE</i> =
+                                    <varname>RATING_POSTPROCESSING.Current-Value</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> COC </entry>
+                            <entry> This variable provides a count of the ongoing overage block as
+                                the overage limit blocks keep on repeating multiple times. </entry>
+                            <entry>
+                                <i>COC</i> =
+                                    <varname>RATING_POSTPROCESSING.Counter-Overage-Count</varname>
+                            </entry>
+                            <entry> Integer </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> CRT </entry>
+                            <entry> This variable indicates the counter reset timestamp. </entry>
+                            <entry>
+                                <i>CRT</i> =
+                                    <varname>RATING_POSTPROCESSING.Reset-Timestamp</varname>
+                            </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> CUT </entry>
+                            <entry> This variable indicates the timestamp of either last Billing
+                                Cycle Reset (BCR) or any HLAPI/Admin change to buckets. It has the
+                                value when counter was updated by any method such as CRUD operation
+                                or BCR. </entry>
+                            <entry>
+                                <i>CUT</i> =
+                                    <varname>RATING_POSTPROCESSING.Last-Billing-Cycle-Timestamp</varname>
+                            </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> EVT </entry>
+                            <entry> This variable indicates the notification event. </entry>
+                            <entry>
+                                <i>EVT</i> = <varname>CALL_COMMON.Notification-Event</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> MDN </entry>
+                            <entry> This variable indicates the MSISDN value or device that triggers
+                                the notification. The variable is the E.164 number configured in the
+                                device. </entry>
+                            <entry>
+                                <i>MDN</i> = <varname>SPR_DEVICE.E164</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> OLI </entry>
+                            <entry> This variable indicates the overage limit in the counter
+                                instances. </entry>
+                            <entry>
+                                <i>OLI</i> =
+                                    <varname>RATING_POSTPROCESSING.Counter-Overage-Limit</varname>
+                            </entry>
+                            <entry> Big decimal </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> T </entry>
+                            <entry> This variable indicates the time when the notification is
+                                generated. It refers to the last three digits or milliseconds of the
+                                Unix timestamp. </entry>
+                            <entry>
+                                <i>T</i> =
+                                    <varname>RATING_POSTPROCESSING.Unix-Timestamp-Ms</varname>
+                            </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> TIM </entry>
+                            <entry> This variable indicates the Unix timestamp when the notification
+                                is generated. This is the current time period in seconds. </entry>
+                            <entry>
+                                <i>TIM</i> = <varname>RATING_POSTPROCESSING.Unix-Timestamp</varname>
+                            </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry rowsep="0"> TOS </entry>
+                            <entry rowsep="0"> This variable indicates the type of service. It can
+                                have values like DIAM, SMSC. </entry>
+                            <entry rowsep="0">
+                                <i>TOS</i> = <varname>DIAM</varname>
+                            </entry>
+                            <entry rowsep="0"> String </entry>
+                            <entry rowsep="0"> Optional </entry>
+                        </row>
+                        <row>
+                            <entry/>
+                            <entry>
+                                <p>Following is the list of different values for TOS:</p>
+                                <ul>
+                                    <li>
+                                        <p>VOIC: Voice call</p>
+                                    </li>
+                                    <li>
+                                        <p>SMSC: Short message</p>
+                                    </li>
+                                    <li>
+                                        <p>MMSC: Multimedia message</p>
+                                    </li>
+                                    <li>
+                                        <p>PACK: Data transport</p>
+                                    </li>
+                                    <li>
+                                        <p>BREW: Brew service</p>
+                                    </li>
+                                    <li>
+                                        <p>ADMN: Audit</p>
+                                    </li>
+                                    <li>
+                                        <p>IMOM: IMOM call</p>
+                                    </li>
+                                    <li>
+                                        <p>DIAM: Diameter</p>
+                                    </li>
+                                    <li>
+                                        <p>USSD: Unstructured Supplementary Service Data</p>
+                                    </li>
+                                    <li>
+                                        <p>VDEO: VoLTE video call</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry/>
+                            <entry/>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry> TYPE </entry>
+                            <entry> This variable indicates the resource type for which notification
+                                is being triggered. For counter consumption, this is set as
+                                    <varname>COUNTER</varname>. </entry>
+                            <entry>
+                                <i>TYPE</i> = <varname>RATING_POSTPROCESSING.Resource-Type</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> ULI </entry>
+                            <entry>
+                                <p>This variable indicates the spending limit threshold. It is
+                                    absolute value of threshold or cap. If no threshold or cap is
+                                    reached, then this variable is sent as <varname>0</varname>.</p>
+                                <p>OR</p>
+                                <p>If usage limit is defined, then this variable can also be mapped
+                                    to the prorated usage limit in the counter instance.</p>
+                            </entry>
+                            <entry>
+                                <p/>
+                                <ul>
+                                    <li>
+                                        <p>If usage limit is not defined:</p>
+                                        <p>
+                                            <i>ULI</i> =
+                                                <varname>RATING_POSTPROCESSING.Last-Crossed-Threshold-Value</varname>
+                                        </p>
+                                    </li>
+                                    <li>
+                                        <p>If usage limit is defined:</p>
+                                        <p>
+                                            <i>ULI</i> = <varname>RATING_
+                                                POSTPROCESSING.Counter-Usage-Limit</varname>
+                                        </p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry> BigDecimal </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> UNI </entry>
+                            <entry>
+                                <p>This variable indicates the unit of remaining allowance and
+                                    configured as a string value. The service operator ensures that
+                                    the value of this variable matches the unit type of the counter. </p>
+                                <p>Specify values such as MON, TIM, BYT.</p>
+                            </entry>
+                            <entry>
+                                <i>UNI</i> = <varname>MON</varname>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> USU </entry>
+                            <entry> This variable indicates the reported units in CCR from CCR-U/T. </entry>
+                            <entry>
+                                <i>USU</i> = <varname>CALL_COMMON.Used-Service-Units</varname>
+                            </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<sectiondiv>
+<p><b>Example: Notification at end of CCR-U/T for bucket and counter</b></p>
+<p>A notification is sent on counter usage at the end of each CCR-U/T request. Consider that a subscription is attached to a device and the device has two custom data as - <i>BillingAccountID</i> = Account1, Segment = CS1. The subscription is of bundle with only one charging service (CS1). The charging service has one data bucket with initial value 1000000000. A counter (C1) is attached to a device and the counter is of volume type with Counter Type = USAGE, <i>CounterScope</i> = ALL, <i>CounterConsumptionType</i> = ALL. The counter has threshold profile group with thresholds - Threshold1 = 10 from absolute start, Threshold2 = 20 from absolute start. Note that for counters, only absolute from start threshold is allowed. </p>
+<p>
+<uicontrol>Initial call with RSU = 15</uicontrol>
+</p>
+<p>A data call is initiated with RSU = 15. Reservation is done from bucket and current value = 999999985 and Unused value = 1000000000. The call is updated with USU = 15 and RSU = 10. The bucket is committed and the current value = 999999975 and unused value = 999999985. The counter (C1) is applicable and is incremented to 15. Threshold is processed and Threshold1 is crossed. Two notifications are sent in update. One for bucket and another for counter.</p>
+<p>Following is the content of notification sent after update call:</p>
+<fig>
+<codeblock expanse="page">MSGID=TNWCRTAT5:1:18:18010:48446:@1458318061:1#RETRY1;APNRTRCOSCS1MDN1234568789
+ACTAccount1TOSPACKEVTCCRU 
+CIDB1USE00000000015.000000ULI000000000000000000UNIBYTTIM1458318061T752USU15.
+000000CRT0CUT14581158</codeblock>
+</fig>
+<fig>
+<codeblock expanse="page">MSGID=TNWCRTAT5:1:18:18010:48446:@1458318061:1#RETRY2;APNRTRCOSCS1MDN1234568789
+ACTAccount1TOSPACKEVTCCRU 
+CIDC1USE00000000015.000000ULI000000000000000010UNIBYTTIM1458318061T752USU15.
+000000CRT0CUT14581158</codeblock>
+</fig>
+<p>
+<uicontrol>Terminate with USU = 10</uicontrol>
+</p>
+<p>A terminate request with USU = 10 is sent. The bucket is committed and current value = 999999975 and unused value = 999999975. The counter (C1) is applicable and is incremented to 25. The threshold (Threshold2) is crossed and notification is sent after update call with the following notification content:</p>
+<fig>
+<codeblock expanse="page">MSGID=TNWCRTAT5:1:18:18010:48446:@1458318061:1#RETRY1;APNRTRCOSCS1MDN1234568789
+ACTAccount1TOSPACKEVTCCRT 
+CIDB1USE00000000010.000000ULI000000000000000000UNIBYTTIM1458318061T752USU10.
+000000CRT0CUT14581158</codeblock>
+</fig>
+<fig>
+<codeblock expanse="page">MSGID=TNWCRTAT5:1:18:18010:48446:@1458318061:1#RETRY2;APNRTRCOSCS1MDN1234568789
+ACTAccount1TOSPACKEVTCCRT 
+CIDC1USE00000000010.000000ULI000000000000000020UNIBYTTIM1458318061T752USU10.
+000000CRT0CUT14581158</codeblock>
+</fig>
+<note>
+<p>Notifications only have the attributes defined in the rule of rating post processing.</p>
+</note>
+<p>The following figure shows the rule group created for the <uicontrol>RATING_POST_PROCESSING</uicontrol> trigger:<fig>
+<!--MMO resource relative URI: ../Graphics/Release_18.5/RG1_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-rg1_default.png"/>
+</fig></p>
+<p>The following figure shows the variables configured for the rule group created for the
+                        <uicontrol>RATING_POST_PROCESSING</uicontrol> trigger:<fig>
+                        <!--MMO resource relative URI: ../Graphics/Release_18.5/RG2_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-rg2_default.png"
+                            scale="50"/>
+                    </fig></p>
+</sectiondiv>
+</section>
+<section><title>Bundle or subscription renewal</title>
+<p>Notification can be sent when a bundle or subscription is renewed or reset using the subscription or account entity. When a subscription is renewed or reset, the Send-Notification action at <uicontrol>Subscription Renewed Event</uicontrol> and <uicontrol>Subscription Reset Event</uicontrol> events in lifecycle are triggered internally. The subscription is scanned and the attached bucket and counter information is retrieved, which is further sent to the notification server. Note that a subscription is an instance of a bundle owned and paid by the account. For each bucket or counter, a new notification is sent to the external notification client for further processing. To enable this notification, set the <varname>Dynamic Notification Custom flag</varname> to true.</p>
+<p>The TCP/IP notification sent to a network node to indicate that a bundle or subscription is
+                renewed or reset consists of the mandatory header fields mentioned in
+                    <!--xref URI: #Headerfields--><xref
+                    href="#id9yz-09126-ug01-pczza-sp1-notiftcp/Headerfields" format="dita"/> and the
+                following notification variables:</p>
+<note>
+<p>For further details on NS configuration, see the <!--XML Resource relative URI: -->
+                    <cite>NOKIA Converged Charging Notification Service (NS) User Guide</cite>.</p>
+</note>
+<table pgwide="1" colsep="1" rowsep="1">
+                <title>TCP/IP notification variables for bundle or subscription renewal case</title>
+                <tgroup cols="5">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <colspec colname="COLSPEC5"/>
+                    <colspec colname="col3"/>
+                    <colspec colname="col4"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Parameter</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                            <entry>
+                                <p>Example</p>
+                            </entry>
+                            <entry>
+                                <p>Type</p>
+                            </entry>
+                            <entry>
+                                <p>Mandatory/ Optional</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> ACT </entry>
+                            <entry> This variable must be mapped to a custom data with name such as
+                                    <uicontrol>BillingAccountID</uicontrol> defined in the device.
+                                Else this parameter value is null. </entry>
+                            <entry> APNRTRACT = SPR_DEVICE.BillingAccountID </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> APNRTRCOS </entry>
+                            <entry> This variable must be mapped to a custom data with name such as
+                                    <uicontrol>Segment</uicontrol> defined in the device. Else this
+                                parameter value is null. </entry>
+                            <entry>NCC</entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> CID </entry>
+                            <entry> This variable indicates the bucket ID or counter ID for which
+                                the notification is sent. </entry>
+                            <entry> Bucket1/Counter1 </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> EVT </entry>
+                            <entry> This variable indicates the notification event ID. </entry>
+                            <entry> NOTRST </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> TOS </entry>
+                            <entry> This variable indicates the service type. </entry>
+                            <entry> ADMN (constant for current notification) </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> MDN </entry>
+                            <entry> This variable indicates the MSISDN value or device that triggers
+                                the notification. The variable is the E.164 number configured in the
+                                device. </entry>
+                            <entry> 100000001 </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> UNI </entry>
+                            <entry>
+                                <p>This variable indicates the unit of remaining allowance and
+                                    configured as a string value. The service operator ensures that
+                                    the value of this variable matches the unit type of the bucket
+                                    or counter.</p>
+                                <p>This can be in TIM for time, BYT for volume, UNI for unit, MON
+                                    for money.</p>
+                            </entry>
+                            <entry> BYT </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> TIM </entry>
+                            <entry> This variable indicates the Unix timestamp when the notification
+                                is generated. This is the current time period in seconds. </entry>
+                            <entry> 1525169028 </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> T </entry>
+                            <entry> This variable indicates the time when the notification is
+                                generated. It refers to the last three digits or milliseconds of the
+                                Unix timestamp. </entry>
+                            <entry> 306 </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> USE </entry>
+                            <entry> This variable indicates the used bytes in subscription. </entry>
+                            <entry> 0 </entry>
+                            <entry> Double </entry>
+                            <entry> Optional </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<sectiondiv>
+<p><b>Example: Bundle renewal and reset</b></p>
+<p>Bob has an iPhone associated with a subscription of 10 GB data bucket that gets renewed monthly. Once the subscription or bundle is renewed, a notification is sent to Bob. For this example, the <varname>Dynamic Notification Custom Flag</varname> must be set to <varname>true</varname> and the following entities must be configured:</p>
+<table frame="all" pgwide="1" colsep="1" rowsep="1">
+                    <tgroup cols="2">
+                        <colspec colname="col1"/>
+                        <colspec colname="col2"/>
+                        <thead>
+                            <row>
+                                <entry>
+                                    <p>Entity</p>
+                                </entry>
+                                <entry>
+                                    <p>Task</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry> Notification server </entry>
+                                <entry> Configure the TCP/IP server. Multiple TCP/IP servers can be
+                                    defined. </entry>
+                            </row>
+                            <row>
+                                <entry> Notification template </entry>
+                                <entry> Define the text to be sent to Bob. </entry>
+                            </row>
+                            <row>
+                                <entry> Notification preferences </entry>
+                                <entry> Create a notification profile. </entry>
+                            </row>
+                            <row>
+                                <entry> Lifecycles </entry>
+                                <entry> Create a monthly renewal subscription lifecycle with type
+                                    set to BillCycle and applicable to Subscription, and define the
+                                    Subscription Renewed Event. </entry>
+                            </row>
+                            <row>
+                                <entry> Charging services </entry>
+                                <entry> Create a 10 GB data bucket. </entry>
+                            </row>
+                            <row>
+                                <entry> Bundles </entry>
+                                <entry>
+                                    <p>Create the following data:</p>
+                                    <ul>
+                                        <li>
+                                            <p>Create a bundle and link it to monthly renewal
+                                                subscription lifecycle</p>
+                                        </li>
+                                        <li>
+                                            <p>Associate the charging service with 10 GB data bucket
+                                                to it.</p>
+                                        </li>
+                                    </ul>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> Device </entry>
+                                <entry> Create a device and associate it with device lifecycle, set
+                                    the notification profile, and add the bundle subscription.
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> Account </entry>
+                                <entry> Create an account and associate it with account lifecycle.
+                                </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+<p>To set the Dynamic Notification Custom flag to true, follow the given steps:</p><ol>
+<li>
+<p>Log into the SM GUI.</p>
+</li>
+<li>
+<p>Navigate to <uicontrol>Global Configuration &gt; APPLICATION PREFERENCES</uicontrol>, select <uicontrol>Managed Elements</uicontrol> from drop-down list.</p>
+</li>
+<li>
+<p>Select the managed element and set the <varname>Dynamic Notification Custom Flag</varname> to true as shown in the following figure:</p>
+<!--MMO resource relative URI: ../Graphics/Release_18.5/Flag_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-flag_default.png"/>
+</li>
+</ol>
+<p>The following figure shows the lifecycle entity configured with the Subscription Renewed Event.<fig>
+                        <title>Subscription Renewed Event</title>
+                        <!--MMO resource relative URI: ../Graphics/Release_18.5/Bundle_renewal_default.png-->
+                        <image
+                            href="../images/img9yz-09126-ug01-pczza-sp1-bundle_renewal_default.png"
+                            scale="60"/>
+                    </fig></p>
+<p>Similarly, the following figure shows the lifecycle entity configured with the Subscription Reset Event.<fig>
+                        <title>Subscription Reset Event</title>
+                        <!--MMO resource relative URI: ../Graphics/Release_18.5/Bundle_reset_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-bundle_reset_default.png"
+                            scale="60"/>
+                    </fig></p>
+</sectiondiv>
+</section>
+<section><title>Overage limit is reached for account</title>
+<p>A notification is sent for an account when the threshold attached to the account is crossed or overage limit is reached at the end of CCR-U/T request. Whenever a consumption is done from account, a notification is sent to the Notification Server with the notification variables (listed in the <!--xref URI: #Overagelimitvariables--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-notiftcp/overagelimitvariables"/> table). The dynamic notification variables with notification action can be configured in the threshold rule on the SM GUI.</p>
+<note>
+<p>A user can configure the TCP/IP notification for threshold values other than overage.</p>
+</note>
+<p>To support notification for an account, the notification variable corresponding to an account is evaluated and passed to the notification client for processing. When the notification action is triggered on account, the notification action attempts to find the device that belongs to the administrator of the account:</p><ul>
+<li>
+<p>If a device is not found, then the action ends without sending a notification.</p>
+</li>
+<li>
+<p>If the device is found, then the notification client is invoked for the first device attached.</p>
+</li>
+</ul>
+<p>Following notification variables are used for sending notification to an account:</p><ul>
+<li>
+<p>AccountId</p>
+</li>
+<li>
+<p>Account balance</p>
+</li>
+<li>
+<p>Account End date</p>
+</li>
+<li>
+<p>Account Entity end date (from entity lifecycle)</p>
+</li>
+<li>
+<p>Overage Amount</p>
+</li>
+<li>
+<p>Threshold value</p>
+</li>
+</ul>
+<p>The values for account balance, threshold, and overage are displayed as:</p><ul>
+<li>
+<p>If values are decimals, then values with precision limit (up to 2 digits) are received in the email.</p>
+<p>For example, if the <i>ThresholdValue</i> = <varname>30.5676</varname>, then value received in the email notification is <varname>30.57</varname>.</p>
+</li>
+<li>
+<p>If the values are whole numbers, for example <i>AccountBalance</i> = <varname>20</varname>, then the value received in the email notification is <varname>20.0</varname>.</p>
+</li>
+</ul>
+<note>
+<p>In an email notification, the overage value gets populated for the threshold where overage flag is true when the threshold value received in the email notification is equal to the overage value.</p>
+<p>For example:</p>
+<p>
+<userinput>AccountName:AccD175931, AccountCurrentValue:10.0,AccountOverageValue:0.0,AccountEndDate:2019-02-23,ThresholdValue:0.0,AccountEntityEndDate:2019-03-18</userinput>
+</p>
+</note>
+<p>For information on <i>thresholdName</i>, <i>thresholdValue</i>, <i>recurring</i>, and
+                    <i>overageFlag</i> EDR tags, see the <!--XML Resource relative URI: -->
+                <cite>NOKIA Converged Charging CDR/EDR Reference guide</cite>.</p>
+<fig>
+                <title>Example for TCP/IP threshold configuration when overage limit is reached for
+                    an account</title>
+                <!--MMO resource relative URI: ../Graphics/Release_19.3/TCPIP_threshold_config_example_default.png-->
+                <image
+                    href="../images/img9yz-09126-ug01-pczza-sp1-tcpip_threshold_config_example_default.png"
+                    scale="60"/>
+            </fig>
+<table id="overagelimitvariables" pgwide="1" colsep="1" rowsep="1">
+                <title>TCP/IP notification variables for overage limit reached case</title>
+                <tgroup cols="5">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <colspec colname="COLSPEC5"/>
+                    <colspec colname="col3"/>
+                    <colspec colname="col4"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Variable name</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                            <entry>
+                                <p>Example</p>
+                            </entry>
+                            <entry>
+                                <p>Type</p>
+                            </entry>
+                            <entry>
+                                <p>Mandatory/ Optional</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> APNRTRACT </entry>
+                            <entry> This variable must be mapped to a custom data with name such as
+                                    <uicontrol>BillingAccountID</uicontrol> defined in the device.
+                                Else this parameter value is null. </entry>
+                            <entry> APNRTRACT = SPR_DEVICE.BillingAccountID </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> COS </entry>
+                            <entry> This variable must be mapped to a custom data with name such as
+                                    <uicontrol>Segment</uicontrol> defined in the device. Else this
+                                parameter value is null. </entry>
+                            <entry>NCC</entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> CID </entry>
+                            <entry> This variable indicates the account ID for which the
+                                notification is sent. It can also be filled with a static value. </entry>
+                            <entry> Bucket1/Counter1 </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> PCT </entry>
+                            <entry> The threshold cannot be defined for account. Therefore, it can
+                                be filled with a static value, example, 100. </entry>
+                            <entry> PCT = THRESHOLD_PROFILE. Threshold-Percentage </entry>
+                            <entry> Big Decimal </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> MDN </entry>
+                            <entry> This variable indicates the MSISDN value or device that triggers
+                                the notification. The variable is the E.164 number configured in the
+                                device. </entry>
+                            <entry> 100000001 </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> EVT </entry>
+                            <entry> This variable indicates the notification event ID. In the
+                                current case, it is OVGLMT. </entry>
+                            <entry> NOTRST </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> UNI </entry>
+                            <entry>
+                                <p>This variable indicates the unit of remaining allowance and
+                                    configured as a string value.</p>
+                                <p>MON can be used for money.</p>
+                            </entry>
+                            <entry> MON </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> TIM </entry>
+                            <entry> This variable indicates the Unix timestamp when the notification
+                                is generated. This is the current time period in seconds. </entry>
+                            <entry> 1525169028 </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> T </entry>
+                            <entry> This variable indicates the time when the notification is
+                                generated. It refers to the last three digits or milliseconds of the
+                                Unix timestamp. </entry>
+                            <entry> 306 </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> ULI </entry>
+                            <entry> This variable indicates the spending limit counter threshold. It
+                                is the value of overage defined on account. If there is no overage
+                                defined on account, then this parameter has the value 0. </entry>
+                            <entry> THRESHOLD_PROFILE.Overage-Value </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> BAL </entry>
+                            <entry> This variable indicates the remaining allowance to next
+                                threshold. It can be set to a static value of 0. </entry>
+                            <entry> THRESHOLD_PROFILE.Account-Current-Value </entry>
+                            <entry> BIG DECIMAL </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> USE </entry>
+                            <entry> This variable indicates the overage defined on account. If there
+                                is no overage defined on account, then this parameter has the value
+                                0. </entry>
+                            <entry> 0 </entry>
+                            <entry> Double </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> LNG </entry>
+                            <entry> This variable indicates the language of notification. </entry>
+                            <entry> LNG = “ENGLISH” </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<note>
+<p>If you configure the notification variable with value <varname>THRESHOLD_PROFILE.Overage-Value</varname> in rule actions, then it only contains value when <i>Overage Flag</i> is set <varname>TRUE</varname> in ThresholdProfileGroup.</p>
+</note>
+</section>
+<section id="hn"><title>Header fields and notification variables for sending TCP/IP notification</title>
+<p>The following sections provide details on the notification variables used for TCP/IP notifications.</p>
+</section>
+    <section id="Headerfields"><title>Header fields for sending TCP/IP notification</title>
+<p>The following header fields in a notification template are sent to a network node for handling Charging Data Records (CDRs).</p>
+<note>
+<p>For notification using the northbound provisioning interface, <i>SYSTEM</i> context parameters as header parameters.</p>
+</note>
+<p>The header information is not defined in the notification template but are predefined attributes in the Notification Server.</p>
+<p>Format of TCP/IP notification is as follows:</p>
+<p>
+<codeph>MSGID=MASID:SPAID:HOSTID:CLIENTID:Sequentialnumber:@timecode:UsageSequenceNumber#RETRY0/1/2</codeph>
+</p>
+<p>
+<uicontrol>Example:</uicontrol>
+</p>
+<p>
+<systemoutput>MSGID=TNWCRTAT7:2:3:3005:81806:@1458289358#RETRY0;</systemoutput>
+</p>
+<p>The following table explains the fields in the notification template for sending a TCP/IP
+                        notification:<table pgwide="1" colsep="1" rowsep="1">
+                        <title>Header fields for sending TCP/IP notification to a network
+                            node</title>
+                        <tgroup cols="5">
+                            <colspec colname="col1"/>
+                            <colspec colname="col2"/>
+                            <colspec colname="COLSPEC3"/>
+                            <colspec colname="col3"/>
+                            <colspec colname="COLSPEC0"/>
+                            <thead>
+                                <row>
+                                    <entry>
+                                        <p>Header field</p>
+                                    </entry>
+                                    <entry>
+                                        <p>Description</p>
+                                    </entry>
+                                    <entry>
+                                        <p>Example</p>
+                                    </entry>
+                                    <entry>
+                                        <p>Type</p>
+                                    </entry>
+                                    <entry>
+                                        <p>Mandatory/ Optional</p>
+                                    </entry>
+                                </row>
+                            </thead>
+                            <tbody>
+                                <row>
+                                    <entry> MASID </entry>
+                                    <entry> This variable indicates the identifier of the physical
+                                        system, such as system ID. This is the NCC site ID that
+                                        generates the notification. </entry>
+                                    <entry>
+                                        <i>MASID</i> = <varname>CALL_COMMON.Site_ID</varname> or
+                                            <varname>SYSTEM.Site-ID</varname>
+                                    </entry>
+                                    <entry> String </entry>
+                                    <entry> Mandatory </entry>
+                                </row>
+                                <row>
+                                    <entry> SPAID </entry>
+                                    <entry> This variable indicates the identifier of the
+                                        application fixed against the NCC node. </entry>
+                                    <entry>
+                                        <i>SPAID</i> = <varname>CALL_COMMON.Application_ID</varname>
+                                        or <varname>SYSTEM.OCS-Application-ID</varname>
+                                    </entry>
+                                    <entry> Integer </entry>
+                                    <entry> Mandatory </entry>
+                                </row>
+                                <row>
+                                    <entry> HOSTID </entry>
+                                    <entry> This variable indicates the identifier of the host. </entry>
+                                    <entry>
+                                        <i>HOSTID</i> = <varname>CALL_COMMON.Host_ID</varname> or
+                                            <varname>SYSTEM.Host-ID</varname>
+                                    </entry>
+                                    <entry> String </entry>
+                                    <entry> Mandatory </entry>
+                                </row>
+                                <row>
+                                    <entry> CLIENTID </entry>
+                                    <entry>
+                                        <p>This variable indicates the client identifier within the
+                                            host.</p>
+                                        <p>
+                                            <b>Note</b>: As there is no separate client ID in NCC,
+                                            the <i>Client ID</i> has the same value as the
+                                                <i>SPAID</i>.</p>
+                                    </entry>
+                                    <entry>
+                                        <i>CLIENTID</i> =
+                                            <varname>CALL_COMMON.Application_ID</varname> or
+                                            <varname>SYSTEM.OCS-Application-ID</varname>
+                                    </entry>
+                                    <entry> String </entry>
+                                    <entry> Mandatory </entry>
+                                </row>
+                                <row>
+                                    <entry> SequentialNumber </entry>
+                                    <entry> This variable is the Sequence ID for the notification
+                                        transaction. It is sent by the notification server. </entry>
+                                    <entry> 5 </entry>
+                                    <entry> Integer </entry>
+                                    <entry> Mandatory </entry>
+                                </row>
+                                <row>
+                                    <entry> Timecode </entry>
+                                    <entry> This variable is the Unix timestamp of each message
+                                        being sent. It is updated with each retry and is sent by the
+                                        notification server. </entry>
+                                    <entry> 525068484725 </entry>
+                                    <entry> Long </entry>
+                                    <entry> Mandatory </entry>
+                                </row>
+                                <row>
+                                    <entry> UsageSequenceNumber </entry>
+                                    <entry>
+                                        <p>This variable is the notification processing sequence
+                                            number of usage (bucket or counter) for which the
+                                            notification is being sent. </p>
+                                        <p>It is sent by charging to NS so that same can be used by
+                                            NS while sending the notification to TCP/IP server. </p>
+                                        <p>
+                                            <uicontrol>Note</uicontrol>: It is used only in CCR-U
+                                            and CCR-T.</p>
+                                    </entry>
+                                    <entry> 1 </entry>
+                                    <entry> Integer </entry>
+                                    <entry> Mandatory </entry>
+                                </row>
+                                <row>
+                                    <entry> #RETRY0/1/2 </entry>
+                                    <entry>
+                                        <p>The number of retries that have been made to send the
+                                            message without ACK. It is sent by the notification
+                                            server. </p>
+                                        <p>1#RETRY&lt;X&gt;, where &lt;X&gt; is the number of
+                                            retries that have been made to send the message without
+                                            ACK.</p>
+                                    </entry>
+                                    <entry> 0/1/2 </entry>
+                                    <entry> Integer </entry>
+                                    <entry> Mandatory </entry>
+                                </row>
+                            </tbody>
+                        </tgroup>
+                    </table></p>
+</section>
+</conbody></concept>

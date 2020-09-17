@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-confmoos"><title>configure-manual-oos tool</title><conbody>
+<section><title>Description</title>
+<p>This command is run as the root user or tpaadmin from /opt/tpa/bin and used to manually declare a component that is in a geo-redundant deployment out of service. It can set and clear the manual out of service flag for a component (stored in SDC).</p>
+<p>When a site is set OOS using configure-manual-oos:</p><ul>
+<li>
+<p>other sites in the geo-redundant configuration see this site as Out-Of-Service (SMs and MEs), until it is returned to service using configure-manual-oos -e &lt;component name&gt;</p>
+</li>
+<li>
+<p>there is a system wide graceful shutdown of all Diameter links (Client or NCC Initiated)</p>
+</li>
+<li>
+<p>provisioning operations cannot be executed on the OOS site (SM or ME), until it is returned to service </p>
+</li>
+</ul>
+</section>
+<section><title>Syntax</title>
+<codeblock>/opt/tpa/bin/configure-manual-oos [-d&lt;component_name&gt;] [-e&lt;component_name&gt;] [-h] [-s]</codeblock>
+<note>
+<p>The component name is case sensitive and must be entered as upper case ME or SM. For example:</p>
+<p>
+<userinput>configure-manual-oos -d ME</userinput>
+</p>
+</note>
+<table>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+<p>
+<b>Code</b>
+</p>
+</entry>
+<entry>
+<p>
+<b>Description</b>
+</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+<codeblock>-d &lt;component name&gt;</codeblock>
+</entry>
+<entry>
+Declares the component manually out of service.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock> -e &lt;component name&gt;</codeblock>
+</entry>
+<entry>
+Clear the component from being declared manually out of service.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-h or -?</codeblock>
+</entry>
+<entry>
+Displays usage/help information.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-s </codeblock>
+</entry>
+<entry>
+Print each component name and whether or not it is manually out of service.
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<note>
+<p>When this command is run on a non-Geo NCC, it will do nothing but “Component ME State: UP” will
+                    be displayed when running the “sps-status” tool.</p>
+</note>
+<note>This command is supported on an IG but requires that you state SM or ME to render the
+                respective functionality on the IG OOS.<p/></note>
+</section>
+<section><title>Expected output for /opt/tpa/bin/configure-manual-oos</title>
+<p>The following is an example of the output that you will receive from the configure-manual-oos -d ME command. The -s command accompanying the -d command prints each component name and whether or not it is out of service.</p>
+<fig>
+<codeblock>[root@sps-me-1-oame-1 ~]# /opt/tpa/bin/configure-manual-oos -d ME
+[root@sps-me-1-oame-1 ~]# /opt/tpa/bin/configure-manual-oos -s
+------------------
+COMPONENT | MOOS
+------------------
+ME: TRUE</codeblock>
+</fig>
+<p>The following is an example of the output that you will receive from the configure-manual-oos -e ME command. The -s command accompanying the -e command prints each component name and whether or not it is out of service.</p>
+<fig>
+<codeblock>[root@sps-me-1-oame-1 ~]# /opt/tpa/bin/configure-manual-oos -e ME
+[root@sps-me-1-oame-1 ~]# /opt/tpa/bin/configure-manual-oos -s
+------------------
+COMPONENT | MOOS
+------------------
+ME: FALSE</codeblock>
+</fig>
+<p>The following is an example of the output that you will receive from the configure-manual-oos -d SM command. The -s command accompanying the -d command prints each component name and whether or not it is out of service.</p>
+<fig>
+<codeblock>[root@sps-me-1-oame-1 ~]# /opt/tpa/bin/configure-manual-oos -d SM
+[root@sps-me-1-oame-1 ~]# /opt/tpa/bin/configure-manual-oos -s
+------------------
+COMPONENT | MOOS
+------------------
+SM: TRUE</codeblock>
+</fig>
+<p>The following is an example of the output that you will receive from the configure-manual-oos -e SM command. The -s command accompanying the -e command prints each component name and whether or not it is out of service.</p>
+<fig>
+<codeblock>[root@sps-me-1-oame-1 ~]# /opt/tpa/bin/configure-manual-oos -e SM
+[root@sps-me-1-oame-1 ~]# /opt/tpa/bin/configure-manual-oos -s
+------------------
+COMPONENT | MOOS
+------------------
+SM: FALSE</codeblock>
+</fig>
+</section>
+<section><title>Usage examples of output from the ME</title>
+<p>In this example, the site’s initial status according to configure-manual-oos, sps-status and TPA_heartbeatStatus is displayed for an ME. Then the same is displayed when the site is taken out-of-service (OOS). Finally, we show the OOS cleared on the site.</p>
+<p>Output similar to the following is expected when you run /opt/tpa/bin/configure-manual-oos -s on an ME that is running with all services UP in a geo-redundant deployment. </p>
+<fig>
+<codeblock>[root@sps-me-1-oame-1 ~]# /opt/tpa/bin/configure-manual-oos -s
+------------------
+COMPONENT | MOOS
+------------------
+ME: FALSE</codeblock>
+</fig>
+<p>If you run the sps-status command after running the configure-manual-oos -s command, you will confirm the ME component is UP and the services that are UP by the output of the sps-status command:</p>
+<fig>
+<codeblock>[root@sps-me-1-oame-1 ~]# /opt/tpa/bin/sps-status
+
+Software Version: SPS_18_7_R1 (SPS_18_7_I335)
+Date: Tue Jul 24 13:23:21 EDT 2018
+Site Name: SPS-ME-1-SCTP-SPS_18_7_I335
+Component ME State: UP
+
+----------------------------------------------------------
+Service        State   Vital   Mode         Instances
+----------------------------------------------------------
+ROLLBACK       UP      true    ONEPLUSONE   sps-me-1-oame-0: UP (STANDBY)
+                                            sps-me-1-oame-1: UP (ACTIVE)
+CDR            UP      true    NPLUSK       sps-me-1-cdr-0: UP
+                                            sps-me-1-cdr-1: UP
+LOADBALANCER   UP      true    ONEPLUSONE   sps-me-1-ioho-0: UP (ACTIVE)
+                                            sps-me-1-ioho-1: UP (STANDBY)
+LTM            UP      true    ONEPLUSONE   sps-me-1-oame-0: UP (STANDBY)
+                                            sps-me-1-oame-1: UP (ACTIVE)
+DIAMETERIO     UP      true    ONEPLUSONE   sps-me-1-iohd-0: UP (ACTIVE)
+                                            sps-me-1-iohd-1: UP (STANDBY)
+AEROSPIKE_CLUSTER UP      true    STANDALONE
+XDR            UP      true    STANDALONE
+CHARGING       UP      true    NPLUSK       sps-me-1-diameterapp-0: UP
+                                            sps-me-1-diameterapp-1: UP
+RECOMMENDATION UP      false   NPLUSK       sps-me-1-comsvc-0: UP
+                                            sps-me-1-comsvc-1: UP
+PROVISIONING   UP      false   NPLUSK       sps-me-1-comsvc-0: UP
+                                            sps-me-1-comsvc-1: UP
+TEM            UP      true    ONEPLUSONE   sps-me-1-oame-0: UP (STANDBY)
+                                            sps-me-1-oame-1: UP (ACTIVE)
+POLICY         UP      true    NPLUSK       sps-me-1-diameterapp-0: UP
+                                            sps-me-1-diameterapp-1: UP
+------------------------------------------------------------------------------
+
+Service state queried from 'sps-me-1-oame-1'.</codeblock>
+</fig>
+<p>If you run the TPA_heartbeatStatus script on this ME, you will get output similar to the following:</p>
+<fig>
+<codeblock>[root@sps-me-1-oame-1 ~]# /opt/tpa/bin/TPA_heartbeatStatus
+Local Status:
+Component [ME] Service Status [IN_SERVICE]
+
+Status for Site 'sps-me-2' ID [2] Component [ME] Service status [IN_SERVICE] Missed OAM beats [0] Missed traffic beats [0] Last contact [1s ago] Last attempt [1s ago]
+Status for Site 'sps-sm-6' ID [6] Component [SM] Service status [IN_SERVICE] Missed OAM beats [0] Missed traffic beats [N/A] Last contact [1s ago] Last attempt [1s ago]
+Status for Site 'sps-me-3' ID [3] Component [ME] Service status [IN_SERVICE] Missed OAM beats [0] Missed traffic beats [0] Last contact [1s ago] Last attempt [1s ago]
+Status for Site 'sps-sm-5' ID [5] Component [SM] Service status [IN_SERVICE] Missed OAM beats [0] Missed traffic beats [N/A] Last contact [1s ago] Last attempt [1s ago]
+No alarm.</codeblock>
+</fig>
+<p>When you manually set this ME to Out-Of-Service and list the running MEs, using configure-manual-oos and display the site’s status according to configure-manual-oos, sps-status and TPA_heartbeatStatus you have output similar to the following:</p>
+<fig>
+<codeblock>[root@sps-me-1-oame-1 ~]# /opt/tpa/bin/configure-manual-oos -d ME
+[root@sps-me-1-oame-1 ~]# /opt/tpa/bin/configure-manual-oos -s
+------------------
+COMPONENT | MOOS
+------------------
+ME: TRUE</codeblock>
+</fig>
+<p>After running the configure-manual-oos -s command and from the sps-status command, you will confirm the ME component is DOWN and services that are UP as follows:</p>
+<fig>
+<codeblock>[root@sps-me-1-oame-1 ~]# /opt/tpa/bin/sps-status
+
+Software Version: SPS_18_7_R1 (SPS_18_7_I335)
+Date: Tue Jul 24 13:23:48 EDT 2018
+Site Name: SPS-ME-1-SCTP-SPS_18_7_I335
+Component ME State: DOWN
+
+----------------------------------------------------------
+Service        State   Vital   Mode         Instances
+----------------------------------------------------------
+ROLLBACK       UP      true    ONEPLUSONE   sps-me-1-oame-0: UP (STANDBY)
+                                            sps-me-1-oame-1: UP (ACTIVE)
+CDR            UP      true    NPLUSK       sps-me-1-cdr-0: UP
+                                            sps-me-1-cdr-1: UP
+LOADBALANCER   UP      true    ONEPLUSONE   sps-me-1-ioho-0: UP (ACTIVE)
+                                            sps-me-1-ioho-1: UP (STANDBY)
+LTM            UP      true    ONEPLUSONE   sps-me-1-oame-0: UP (STANDBY)
+                                            sps-me-1-oame-1: UP (ACTIVE)
+DIAMETERIO     UP      true    ONEPLUSONE   sps-me-1-iohd-0: UP (ACTIVE)
+                                            sps-me-1-iohd-1: UP (STANDBY)
+AEROSPIKE_CLUSTER UP    true    STANDALONE
+XDR               UP    true    STANDALONE
+CHARGING       UP      true    NPLUSK       sps-me-1-diameterapp-0: UP
+                                            sps-me-1-diameterapp-1: UP
+RECOMMENDATION UP      false   NPLUSK       sps-me-1-comsvc-0: UP
+                                            sps-me-1-comsvc-1: UP
+PROVISIONING   UP      false   NPLUSK       sps-me-1-comsvc-0: UP
+                                            sps-me-1-comsvc-1: UP
+TEM            UP      true    ONEPLUSONE   sps-me-1-oame-0: UP (STANDBY)
+                                            sps-me-1-oame-1: UP (ACTIVE)
+POLICY         UP      true    NPLUSK       sps-me-1-diameterapp-0: UP
+                                            sps-me-1-diameterapp-1: UP
+------------------------------------------------------------------------------
+
+Service state queried from 'sps-me-1-oame-1'.
+
+
+</codeblock>
+</fig>
+<p>If you run the TPA_heartbeatStatus script on this ME, you will get output similar to the following:</p>
+<fig>
+<codeblock>[root@sps-me-1-oame-1 ~]# /opt/tpa/bin/TPA_heartbeatStatus
+Local Status:
+Component [ME] Service Status [OUT_OF_SERVICE]
+
+Status for Site 'sps-me-2' ID [2] Component [ME] Service status [IN_SERVICE] Missed OAM beats [0] Missed traffic beats [0] Last contact [0s ago] Last attempt [0s ago]
+Status for Site 'sps-sm-6' ID [6] Component [SM] Service status [IN_SERVICE] Missed OAM beats [0] Missed traffic beats [N/A] Last contact [0s ago] Last attempt [0s ago]
+Status for Site 'sps-me-3' ID [3] Component [ME] Service status [IN_SERVICE] Missed OAM beats [0] Missed traffic beats [0] Last contact [0s ago] Last attempt [0s ago]
+Status for Site 'sps-sm-5' ID [5] Component [SM] Service status [IN_SERVICE] Missed OAM beats [0] Missed traffic beats [N/A] Last contact [0s ago] Last attempt [0s ago]
+
+</codeblock>
+</fig>
+<p>In the final part of this example, the manual OOS state is cleared from the applicable component on the site using configure-manual-oos and then we display the site’s status according to configure-manual-oos, sps-status and TPA_heartbeatStatus.</p>
+<fig>
+<codeblock>[root@sps-me-1-oame-1 ~]# /opt/tpa/bin/configure-manual-oos -e ME
+[root@sps-me-1-oame-1 ~]# /opt/tpa/bin/configure-manual-oos -s
+------------------
+COMPONENT | MOOS
+------------------
+ME: FALSE</codeblock>
+</fig>
+<p>Then verify with sps-status:</p>
+<fig>
+<codeblock>[root@sps-me-1-oame-1 ~]# /opt/tpa/bin/sps-status
+
+Software Version: SPS_18_7_R1 (SPS_18_7_I335)
+Date: Tue Jul 24 13:24:25 EDT 2018
+Site Name: SPS-ME-1-SCTP-SPS_18_7_I335
+Component ME State: UP
+
+----------------------------------------------------------
+Service         State   Vital   Mode         Instances
+----------------------------------------------------------
+ROLLBACK        UP      true    ONEPLUSONE   sps-me-1-oame-0: UP (STANDBY)
+                                             sps-me-1-oame-1: UP (ACTIVE)
+CDR             UP      true    NPLUSK       sps-me-1-cdr-0: UP
+                                             sps-me-1-cdr-1: UP
+LOADBALANCER    UP      true    ONEPLUSONE   sps-me-1-ioho-0: UP (ACTIVE)
+                                             sps-me-1-ioho-1: UP (STANDBY)
+LTM             UP      true    ONEPLUSONE   sps-me-1-oame-0: UP (STANDBY)
+                                             sps-me-1-oame-1: UP (ACTIVE)
+DIAMETERIO      UP      true    ONEPLUSONE   sps-me-1-iohd-0: UP (ACTIVE)
+                                             sps-me-1-iohd-1: UP (STANDBY)
+AEROSPIKE_CLUSTER UP      true    STANDALONE
+XDR               UP      true    STANDALONE
+CHARGING        UP      true    NPLUSK       sps-me-1-diameterapp-0: UP
+                                             sps-me-1-diameterapp-1: UP
+RECOMMENDATION  UP      false   NPLUSK       sps-me-1-comsvc-0: UP
+                                             sps-me-1-comsvc-1: UP
+PROVISIONING    UP      false   NPLUSK       sps-me-1-comsvc-0: UP
+                                             sps-me-1-comsvc-1: UP
+TEM             UP      true    ONEPLUSONE   sps-me-1-oame-0: UP (STANDBY)
+                                             sps-me-1-oame-1: UP (ACTIVE)
+POLICY          UP      true    NPLUSK       sps-me-1-diameterapp-0: UP
+                                             sps-me-1-diameterapp-1: UP
+----------------------------------------------------------
+
+Service state queried from 'sps-me-1-oame-1'.
+</codeblock>
+</fig>
+<p>Then use /opt/tpa/bin/TPA_heartbeatStatus:</p>
+<fig>
+<codeblock>[root@sps-me-1-oame-1 ~]# /opt/tpa/bin/TPA_heartbeatStatus
+Local Status:
+Component [ME] Service Status [IN_SERVICE]
+
+Status for Site 'sps-me-2' ID [2] Component [ME] Service status [IN_SERVICE] Missed OAM beats [0] Missed traffic beats [0] Last contact [1s ago] Last attempt [1s ago]
+Status for Site 'sps-sm-6' ID [6] Component [SM] Service status [IN_SERVICE] Missed OAM beats [0] Missed traffic beats [N/A] Last contact [1s ago] Last attempt [1s ago]
+Status for Site 'sps-me-3' ID [3] Component [ME] Service status [IN_SERVICE] Missed OAM beats [0] Missed traffic beats [0] Last contact [1s ago] Last attempt [1s ago]
+Status for Site 'sps-sm-5' ID [5] Component [SM] Service status [IN_SERVICE] Missed OAM beats [0] Missed traffic beats [N/A] Last contact [1s ago] Last attempt [1s ago]
+</codeblock>
+</fig>
+<p>The following is an example of the output that you will receive from the configure-manual-oos -d SM command. The -s command accompanying the -d command prints each component name and whether or not it is out of service.</p>
+<fig>
+<codeblock>[root@sps-me-1-oame-1 ~]# /opt/tpa/bin/configure-manual-oos -d SM
+[root@sps-me-1-oame-1 ~]# /opt/tpa/bin/configure-manual-oos -s
+------------------
+COMPONENT | MOOS
+------------------
+SM: TRUE</codeblock>
+</fig>
+<p>When you run the sps-status command, the status of the services are given for the services associated with the SM. When you run the TPA_heartbeatStatus command, the heartbeat statuses of both the SM and the MEs associated with the SM are output. For example:</p>
+<fig>
+<codeblock>[root@sps-sm-6-oame-0 ~]# /opt/tpa/bin/TPA_heartbeatStatus Local Status: Component [SM] Service Status [OUT_OF_SERVICE]  
+Status for Site 'sps-sm-5' ID [5] Component [SM] Service status [IN_SERVICE] Missed OAM beats [0] Missed traffic beats [N/A] Last contact [1s ago] Last attempt [1s ago] 
+Status for Site 'sps-me-2' ID [2] Component [ME] Service status [IN_SERVICE] Missed OAM beats [0] Missed traffic beats [N/A] Last contact [1s ago] Last attempt [1s ago] 
+Status for Site 'sps-me-3' ID [3] Component [ME] Service status [IN_SERVICE] Missed OAM beats [0] Missed traffic beats [N/A] Last contact [1s ago] Last attempt [1s ago] 
+Status for Site 'sps-me-1' ID [1] Component [ME] Service status [IN_SERVICE] Missed OAM beats [0] Missed traffic beats [N/A] Last contact [1s ago] Last attempt [1s ago]</codeblock>
+</fig>
+</section>
+</conbody></concept>

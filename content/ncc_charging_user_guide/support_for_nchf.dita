@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e10624"><title>Support for NCHF (5G) online charging</title><conbody>
+<section><title>Overview</title>
+<p>NCC provides 5G Nchf_ConvergedCharging interface to support interworking with a 5G PGW (SMF). NCC
+                supports 4G, LTE, or VoLTE traffic simultaneously with 5G traffic. It can act both
+                as an OCS and a CHF.</p>
+<p>In this release, NCC supports Nchf_ConvergedCharging only for data charging. A 5G NCHF call is
+                identified by <uicontrol>Service-Context-Id</uicontrol> =
+                    <varname>5G_32251@3gpp.org</varname> and <uicontrol>Call-Type</uicontrol> =
+                    <varname>NCHF_CHARGING</varname>.</p>
+<note><ul>
+<li>
+Internally, N40 is treated as Gy. 5G CDRs are applicable only through Add CDR action.
+</li>
+<li>
+Internally, <uicontrol>AUTH-APPLICATION_ID</uicontrol> = <varname>40</varname>
+</li>
+<li><varname>session-id</varname> formats are the same as used for N7 and N28. </li>
+<li>Custom attributes (if any) in the HTTP request are ignored, and no errors are returned. </li>
+<li>For supported result codes, refer to <xref
+                            href="5g_result_codes.dita#id9yz-09126-ug01-pczza-sp1-d1e235380/table_wzs_vjb_vmb"
+                        />. </li>
+<li>5G SMS/MMS calls are not supported. </li>
+<li>5G attributes are supported only through rules (these are not provided as part of the
+                        application). </li>
+<li>Offline charging is not supported. </li>
+<li>Only N40 specifications of December 2019 are supported. </li>
+<li>Terminate request does not return any error. NCC always returns success for Gy. </li>
+                    <li><varname>timeQuotaThreshold</varname> and
+                            <varname>unitQuotaThreshold</varname> attributes are not available in
+                        existing rule logic and slicing rule. These attributes are not included and
+                        verified in 5G response. </li>
+                    <li>In N40 notify request, the default value (that is,
+                            <varname>ONLINE_CHARGING</varname>) is sent in
+                            <varname>QuotaManagementIndicator</varname> attribute. </li>
+</ul>
+</note>
+</section>
+<section>
+            <title>Rule triggers</title>
+            <p>The following triggers are available for 5G calls:</p>
+            <ul>
+                <li>
+                    <i>NCHF_CHARGING_CALL_ESTABLISHMENT</i>: Trigger applied to 5G session
+                    establishment request. </li>
+                <li>
+                    <i>NCHF_CHARGING_CALL_MODIFICATION</i>: Trigger applied to 5G session
+                    modification request. </li>
+                <li>
+                    <i>NCHF_CHARGING_CALL_TERMINATION</i>: Trigger applied to 5G session termination
+                    request. </li>
+            </ul>
+            <p>For details on source contexts and attributes, refer to <xref
+                    keyref="id9YZ-09126-UG01-PCZZA-SP1-RuleAttributes"/>.</p>
+        </section>
+<section>
+            <title>CHF NF services</title>
+<table frame="all" colsep="1" rowsep="1">
+                <title>NF services provided by the CHF</title>
+                <tgroup cols="4">
+                    <colspec colname="COLSPEC1"/>
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <colspec colname="col3"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Service Name</p>
+                            </entry>
+                            <entry>
+                                <p>Service Operations</p>
+                            </entry>
+                            <entry>
+                                <p>Operation Semantics</p>
+                            </entry>
+                            <entry>
+                                <p>Mapping to internal operations (Gy)</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry morerows="3"> Nchf_ConvergedCharging </entry>
+                            <entry> Create </entry>
+                            <entry> Request/Response </entry>
+                            <entry> CCRi or CCA </entry>
+                        </row>
+                        <row>
+                            <entry> Update </entry>
+                            <entry> Request/Response </entry>
+                            <entry> CCRu or CCA </entry>
+                        </row>
+                        <row>
+                            <entry> Release </entry>
+                            <entry> Request/Response </entry>
+                            <entry> CCRt or CCA </entry>
+                        </row>
+                        <row>
+                            <entry> Notify </entry>
+                            <entry> Notify </entry>
+                            <entry> RAR/RAA </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+</section>
+</conbody></concept>

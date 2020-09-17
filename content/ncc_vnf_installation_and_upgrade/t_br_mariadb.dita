@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="id9YZ-09018-IN00-RJZZA-BR-MariaDB">
+	<title>Performing backup and restore for MariaDB</title>
+	<taskbody id="d1e12615">
+		<context>
+			<sectiondiv>
+				<p><b>Overview</b></p>
+				<p>This procedure provides instructions on how to back up and restore MariaDB during
+					installation of the NCC with two geo-redundant SM or IG sites. In this procedure
+					the first SM Geo site is called site1. The second SM or IG Geo site is called
+					site2. This procedure uses <codeph>mariadb-tools.sh</codeph> tool. For more
+					information about this tool, see <i>Operation, Administration, and Maintenance
+						Guide</i>.</p>
+				<p>This procedure assumes that no provisioning occurs on site2.</p>
+			</sectiondiv>
+			<note>
+				<p>Before copying any files to any NCC VMs, you must execute <codeph>df</codeph> and
+						<codeph>du</codeph> Linux commands to determine the available storage and
+					whether or not the copying of new files can proceed. For information on how to
+					use <codeph>df</codeph> (disk free) and <codeph>du</codeph> (disk usage), see
+					Linux manual page by entering <codeph>man df</codeph> and <codeph>man
+						du</codeph> as root user. There are two storage directories that can be used
+					on any VM: </p>
+				<ul>
+					<li>
+						<p>
+							<filepath>/appdata</filepath> directory, which is mounted to Cinder
+							volume for OpenStack and Independent disk for VMware.</p>
+					</li>
+					<li>
+						<p>
+							<filepath>/var/log</filepath> directory, which is mounted to the Cinder
+							volume for OpenStack and Independent disk for VMware).</p>
+					</li>
+				</ul>
+				<p>However, any other directory can also be used as long as that directory has
+					sufficient space left to store the backup file. If there is enough storage
+					available, proceed with the copying of new files. When you have completed the
+					task, clean-up the files that are no longer needed. If there is not enough
+					space, either do some clean-up or contact Nokia Support.</p>
+			</note>
+			<note>During this procedure, after restore command is executed, mysql process goes down since
+				MariaDB stops in between, but later comes up. This procedure waits for mysql to come
+				up every 5 secs and waits for a maximum of 20 mins, after which the procedure
+				exits.</note>
+			<p>To back up and restore MariaDB:</p>
+		</context>
+		<steps>
+			<step>
+				<cmd>Log in as root user to any IOHO VM of site1 and find the Slave IOHO VM by
+					entering:</cmd>
+				<info>
+					<p>
+						<codeph>maxadmin list servers</codeph>
+					</p>
+				</info>
+			</step>
+			<step>
+				<cmd>Log in as root user to any IOHO VM of site1 using the fixed IP address and
+					count the replicated data on site1 by entering:</cmd>
+				<info>
+					<p>
+						<codeph>/opt/tpa/bin/mariadb-tools.sh -u sa -p sa -d SPSMARIADB -c</codeph>
+					</p>
+					<note>
+						<p>For more information about <codeph>mariadb-tools.sh</codeph> tool, see
+								<i>Operation, Administration, and Maintenance Guide</i>.</p>
+					</note>
+				</info>
+			</step>
+			<step>
+				<cmd>Ensure that you are logged in to the Master IOHO VM of site1 using the fixed IP
+					address, and then back up site1 by entering:</cmd>
+				<info>
+					<p>
+						<codeph>/opt/tpa/bin/mariadb-tools.sh -u sa -p sa -d SPSMARIADB -b -f
+							&lt;fullpathfilename&gt;</codeph>
+					</p>
+					<p>For example,</p>
+					<p>
+						<codeph>[root@sps-sm-2-ioho-0 ~]# /opt/tpa/bin/mariadb-tools.sh -b -u sa -p
+							sa -d SPSMARIADB -f /appdata/backupsm2.tgz </codeph>
+					</p>
+					<p>
+						<b>Expected outcome</b>
+					</p>
+					<p>The backup file <filepath>backupsm2.tgz</filepath> is created in
+							<filepath>/appdata</filepath> directory.</p>
+					<p>
+						<systemoutput>Tue Jun 9 08:31:15 2020: INFO: Tool mariadb-tools.sh start
+							time : 2020-06-09 08:31:15,290  </systemoutput>
+					</p>
+					<p>
+						<systemoutput>Tue Jun 9 08:31:15 2020: INFO: Maxscale Master on HA Active.
+						</systemoutput>
+					</p>
+					<p>
+						<systemoutput>Tue Jun 9 08:31:15 2020: INFO: Finding replicated data
+							counts.</systemoutput>
+					</p>
+					<p>
+						<systemoutput>Tue Jun 9 08:31:16 2020: INFO: Count of rows in replicated
+							tables on host:sps-sm-1-ioho-1:1227 </systemoutput>
+					</p>
+					<p>
+						<systemoutput>Tue Jun 9 08:31:18 2020: INFO: Count of rows in replicated
+							tables on host:sps-sm-1-ioho-0:1227</systemoutput>
+					</p>
+					<p>
+						<systemoutput>Tue Jun 9 08:31:18 2020: INFO: Backup will be done in
+							/appdata/backupsm2.tgz, For detailed logs refer to
+							/opt/tpa/logs/MariaDBbackuptool.log.</systemoutput>
+					</p>
+					<p>
+						<systemoutput>Tue Jun 9 08:31:22 2020: INFO: Backup successfully done in
+							/appdata/backupsm2.tgz.</systemoutput>
+					</p>
+					<p>
+						<systemoutput>Tue Jun 9 08:31:22 2020: INFO: Tool mariadb-tools.sh end time:
+							2020-06-09 08:31:22,396</systemoutput>
+					</p>
+				</info>
+			</step>
+			<step>
+				<cmd>Transfer the data backup file from site1 to Master IOHO VM of site2.</cmd>
+				<info/>
+			</step>
+			<step>
+				<cmd>
+					<draft-comment>FIXME - put an instruction here</draft-comment>
+				</cmd>
+				<info>
+					<note>
+						<p>Do this step on Master IOHO VM on site2. The tool trasfers the backup file on other IOHO
+							VM.</p>
+					</note>
+					<p>Log in to Master IOHO VM of site2 with the fixed IP address and Restore site by
+						entering:</p>
+					<p>
+						<codeph>/opt/tpa/bin/mariadb-tools.sh -r -u sa -p sa -d SPSMARIADB -f
+							&lt;fullpathfilename&gt;</codeph>
+					</p>
+					<p>For example,</p>
+					<p>
+						<codeph>[root@sps-sm-2-ioho-1 ~]# /opt/tpa/bin/mariadb-tools.sh -r -u sa -p
+							sa -d SPSMARIADB -f /appdata/abc.tgz</codeph>
+					</p>
+					<p>
+						<b>Expected outcome</b>
+					</p>
+					<p>
+						<systemoutput>[root@sps-sm-1-ioho-1 ~]# /opt/tpa/bin/mariadb-tools.sh -r -u
+							sa -p sa -d SPSMARIADB -r -f /appdata/backupsm2.tgz</systemoutput>
+					</p>
+					<p>
+						<systemoutput>Mon Jun 8 11:28:28 2020: INFO: Tool mariadb-tools.sh start
+							time : 2020-06-08 11:28:28,372 </systemoutput>
+					</p>
+					<p>
+						<systemoutput>Mon Jun 8 11:28:28 2020: INFO: Maxscale Master on HA Active.
+						</systemoutput>
+					</p>
+					<p>
+						<systemoutput>Mon Jun 8 11:28:28 2020: WARN: This command will stop Geo
+							replication, will restore data, will resume replication, detailed logs
+							in /opt/tpa/logs/MariaDBbackuptool.log. </systemoutput>
+					</p>
+					<p>
+						<systemoutput>Do you wish to proceed? n [y,n,?,q] y </systemoutput>
+					</p>
+					<p>
+						<systemoutput>Mon Jun 8 11:28:30 2020: INFO: Finding replicated data counts.
+						</systemoutput>
+					</p>
+					<p>
+						<systemoutput>Mon Jun 8 11:28:31 2020: INFO: Count of rows in replicated
+							tables on host:sps-sm-1-ioho-1:1227</systemoutput>
+					</p>
+					<p>
+						<systemoutput>Mon Jun 8 11:28:33 2020: INFO: Count of rows in replicated
+							tables on host:sps-sm-1-ioho-0:1227</systemoutput>
+					</p>
+					<p>
+						<systemoutput>Mon Jun 8 11:28:33 2020: INFO: Stopping the slave to disable
+							Geo-replication. </systemoutput>
+					</p>
+					<p>
+						<systemoutput>Mon Jun 8 11:28:33 2020: INFO: Starting on
+							nodes:sps-sm-1-ioho-0 sps-sm-1-ioho-1 command: /usr/bin/maxscale_adm
+							--disable --stop-slave >/dev/null 2>/dev/null.</systemoutput>
+					</p>
+					<p>
+						<systemoutput>Mon Jun 8 11:28:36 2020: /usr/bin/maxscale_adm --disable
+							--stop-slave >/dev/null 2>/dev/null executed successfully on nodes
+							sps-sm-1-ioho-0 sps-sm-1-ioho-1. </systemoutput>
+					</p>
+					<p>
+						<systemoutput>Mon Jun 8 11:28:36 2020: /usr/lib/maxscale/maxscale_lib.py
+							--maxscale-service=stop >/dev/null 2>/dev/null executed successfully on
+							nodes sps-sm-1-ioho-0 sps-sm-1-ioho-1. </systemoutput>
+					</p>
+					<p>
+						<systemoutput>Mon Jun 8 11:28:36 2020: INFO: Finding replicated data counts.
+						</systemoutput>
+					</p>
+					<p>
+						<systemoutput>Mon Jun 8 11:28:37 2020: INFO: Count of rows in replicated
+							tables on host:sps-sm-1-ioho-1:1227 </systemoutput>
+					</p>
+					<p>
+						<systemoutput>Mon Jun 8 11:28:40 2020: INFO: Count of rows in replicated
+							tables on host:sps-sm-1-ioho-0:1227</systemoutput>
+					</p>
+					<p>
+						<systemoutput>Mon Jun 8 11:28:40 2020: INFO: Starting the restore operation,
+							for detailed logs, refer to /opt/tpa/logs/MariaDBbackuptool.log.
+						</systemoutput>
+					</p>
+					<p>
+						<systemoutput>Mon Jun 8 11:28:40 2020: INFO: Starting restore on
+							sps-sm-1-ioho-0 sps-sm-1-ioho-1. </systemoutput>
+					</p>
+					<p>
+						<systemoutput>Mon Jun 8 11:28:41 2020: INFO: Starting on
+							nodes:sps-sm-1-ioho-0 sps-sm-1-ioho-1 command: mariadb_db_backup
+							--restore --all --file /appdata/backupsm2.tgz >>
+							/opt/tpa/logs/MariaDBbackuptool.log 2>&amp;1.  </systemoutput>
+					</p>
+					<p>
+						<systemoutput>Mon Jun 8 11:28:57 2020: Restore command executed successfully
+							on nodes sps-sm-1-ioho-0 sps-sm-1-ioho-1.  </systemoutput>
+					</p>
+					<p>
+						<systemoutput>Mon Jun 8 11:28:57 2020: ERROR: Mysql process not running.
+						</systemoutput>
+					</p>
+					<p>
+						<systemoutput>Mon Jun 8 11:28:57 2020: INFO: Sleeping for 5secs to allow
+							mysql to come up , will wait maximum for 20 mins.</systemoutput>
+					</p>
+					<p>
+						<systemoutput>Mon Jun 8 11:29:02 2020: INFO: Checking counts again after
+							restore operation.  </systemoutput>
+					</p>
+					<p>
+						<systemoutput>Mon Jun 8 11:29:02 2020: INFO: Finding replicated data counts.
+						</systemoutput>
+					</p>
+					<p>
+						<systemoutput>Mon Jun 8 11:29:03 2020: INFO: Count of rows in replicated
+							tables on host:sps-sm-1-ioho-1:1221 </systemoutput>
+					</p>
+					<p>
+						<systemoutput>Mon Jun 8 11:29:05 2020: INFO: Count of rows in replicated
+							tables on host:sps-sm-1-ioho-0:1221 </systemoutput>
+					</p>
+					<p>
+						<systemoutput>Mon Jun 8 11:29:06 2020: INFO: Enabling Geo-replication after
+							restore.  </systemoutput>
+					</p>
+					<p>
+						<systemoutput>Mon Jun 8 11:29:06 2020: /usr/lib/maxscale/maxscale_lib.py
+							--maxscale-service=start >/dev/null 2>/dev/null executed successfully on
+							nodes sps-sm-1-ioho-0 sps-sm-1-ioho-1.  </systemoutput>
+					</p>
+					<p>
+						<systemoutput>Mon Jun 8 11:29:08 2020: /usr/bin/maxscale_adm --enable
+							>/dev/null 2>/dev/null executed successfully on nodes sps-sm-1-ioho-0
+							sps-sm-1-ioho-1.   </systemoutput>
+					</p>
+					<p>
+						<systemoutput>Mon Jun 8 11:29:08 2020: INFO: All operations complete.
+						</systemoutput>
+					</p>
+					<p>
+						<systemoutput>Mon Jun 8 11:29:08 2020: INFO: Tool mariadb-tools.sh end time:
+							2020-06-08 11:29:08,619  </systemoutput>
+					</p>
+				</info>
+			</step>
+			<step>
+				<cmd>Check the status of the all the IOHO VMs of site2 and site1 by logging to DB
+					and executing the following command: </cmd>
+				<info>
+					<p>
+						<codeph>mysql -u root -pmainstreet</codeph>
+					</p>
+					<p>
+						<codeph>SQL&gt; show slave status \G;</codeph>
+					</p>
+					<note>
+						<p>If <systemoutput>Procedure 1236</systemoutput> error occurs on site2, see
+							section <i>To recover from replication error 1236 after MariaDB
+								failover</i> in <i>Operation, Administration, and Maintenance
+								Guide</i>. </p>
+						<p>If any other issue occurs, contact Nokia Support.</p>
+					</note>
+				</info>
+			</step>
+			<step>
+				<cmd>Check the count on site2 and ensure that the count on site2 nearly matches the
+					count on site1. </cmd>
+				<info>
+					<note>
+						<p>The count on site2 can be either equal or less that the count on site1.
+							If there is no traffic on site1, the counts will match exactly. If
+							traffic continues on site1, the count on site1 is expected to be greater
+							than the count on site2. When geo-replication completes successfully,
+							the counts will match.</p>
+					</note>
+				</info>
+			</step>
+		</steps>
+	</taskbody>
+</task>

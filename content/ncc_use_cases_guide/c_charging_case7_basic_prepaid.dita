@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//NSN//DTD DITA Concept//EN" "nsnconcept.dtd">
+		<concept id="id9YZ-09018--PL00-FPZZA-d1e14324"><title>Case 7: Basic Prepaid for multiple services</title><conbody>
+
+<section><title>Overview</title>
+
+<p>Bob has an iPhone with Prepaid main account balance for multiple services, such as SMS, MMS, and data. The amount of Prepaid resources consumed is based on a defined rate. When the entire value of the account main balance is exhausted, the data, SMS, or MMS call services are denied.</p>
+</section>
+<section><title>Flow of events</title>
+
+<p/><ul>
+
+<li>A Prepaid main account is associated with the iPhone for SMS, MMS, and data services. </li>
+<li>
+<p>The account balance can be used either in data or SMS service at a defined rate.</p>
+<p>For example, SMS service is charged at 0.02 United States dollar per SMS, MMS service is charged at 0.04 United States dollar per SMS, and data is charged 0.125 United States dollars per 25 MB of data consumed.</p>
+</li>
+<li>Execute an SMS, MMS, or data call from the device and verify the charging is applied at the
+                    defined rate. </li>
+<li>Verify that SMS, MMS, or data calls are rejected once the account balance is exhausted. </li>
+</ul>
+</section>
+<section><title>Provisioning</title>
+
+<note type="attention">
+
+<p>Ensure that after creating a record, you distribute it to ME. Otherwise, the provisioning will not be successful.</p>
+</note>
+<p>Following entities are required for this use case.<table pgwide="1" colsep="1" rowsep="1">
+                    <title>Entities for case 7</title>
+                    <tgroup cols="2">
+                        <colspec colname="col1"/>
+                        <colspec colname="col2"/>
+                        <thead>
+                            <row>
+                                <entry> Entity </entry>
+                                <entry> Task </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry> Charging Service </entry>
+                                <entry> Create a charging service. </entry>
+                            </row>
+                            <row>
+                                <entry> Lifecycles </entry>
+                                <entry> Create a subscription, account, and device lifecycles.
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> Rates </entry>
+                                <entry> Create different rates to be applied for data, SMS, MMS
+                                    services. </entry>
+                            </row>
+                            <row>
+                                <entry> Bundle </entry>
+                                <entry> Create a bundle and associate it with the subscription
+                                    lifecycle. </entry>
+                            </row>
+                            <row>
+                                <entry> Account </entry>
+                                <entry> Create an account and associate with an account lifecycle.
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> Device </entry>
+                                <entry> Create a device and associate with a bundle and device
+                                    lifecycle. </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table></p>
+<p>Provision the following data:</p><ol>
+
+<li>Create the device lifecycle with following states:<ul>
+                        <li>
+                            <b>Preactive</b> (<emphasis>Initial</emphasis> flag -&gt; True) </li>
+                        <li>
+                            <b>Active</b>
+                        </li>
+                        <li>
+                            <b>Active Warned</b>
+                        </li>
+                        <li>
+                            <b>Expired</b> (Flag <emphasis>Barring</emphasis> -&gt; True) </li>
+                        <li>
+                            <b>Disconnected</b> (Flag <emphasis>Final</emphasis> and
+                                <emphasis>Barring</emphasis> -&gt;True) </li>
+                    </ul><p>Configure the triggering events as per the requirements.</p></li>
+<li>Provision the iPhone in the <uicontrol>Active</uicontrol> state. </li>
+<li>Define three rates - RateSMS, RateMMS, and RateData. <p>RateSMS:</p>
+                    <!--MMO resource relative URI: ../graphics/Case7_rate_default.png-->
+                    <image href="../images/case7_rate_default.png"/>
+                    <p>
+                        <varname>RateMMS</varname> is defined as 0.04 United States dollar per
+                        MMS.</p>
+                    <!--MMO resource relative URI: ../graphics/Case7_rate2_default.png-->
+                    <image href="../images/case7_rate2_default.png"/>
+                    <p>
+                        <varname>RateData</varname> is defined as 0.125 United States dollar per 25
+                        MB of data consumed.</p>
+                    <!--MMO resource relative URI: ../graphics/Case7_rate3_default.png-->
+                    <image href="../images/case7_rate3_default.png"/>
+                </li>
+<li>Create <varname>CS_PayasyouGo</varname> charging service with the following configuration:
+                        <table pgwide="1" rowsep="1" colsep="1">
+                        <tgroup cols="2">
+                            <colspec colname="col1"/>
+                            <colspec colname="col2"/>
+                            <thead>
+                                <row>
+                                    <entry> Parameter </entry>
+                                    <entry> Value </entry>
+                                </row>
+                            </thead>
+                            <tbody>
+                                <row>
+                                    <entry> Name </entry>
+                                    <entry> CS_PayasyouGo </entry>
+                                </row>
+                                <row>
+                                    <entry> Priority </entry>
+                                    <entry> 23 </entry>
+                                </row>
+                                <row>
+                                    <entry> Category </entry>
+                                    <entry> DefaultCategory </entry>
+                                </row>
+                            </tbody>
+                        </tgroup>
+                    </table>
+                    <p>Tariff formula:</p>
+                    <!--MMO resource relative URI: ../graphics/Case7_CS1_default.png-->
+                    <image href="../images/case7_cs1_default.png"/>
+                </li>
+<li>Create a subscription lifecycle with the following states that never expire and always remain active:<ul>
+                        <li>
+                            <uicontrol>Preactive</uicontrol>
+                        </li>
+                        <li>
+                            <uicontrol>Active</uicontrol> (<emphasis>Initial</emphasis> flag = True)
+                        </li>
+                    </ul>
+                    <!--MMO resource relative URI: ../graphics/Case7_LC1_default.png-->
+                    <image href="../images/case7_lc1_default.png"/>
+                </li>
+<li>Create a bundle for the charging service and subscription lifecycle. <!--MMO resource relative URI: ../graphics/Case7_bundle_default.png-->
+                    <image href="../images/case7_bundle_default.png"/>
+                </li>
+<li>Create a subscription for the data bundle and the iPhone must have access to this subscription. </li>
+<li>The main account must have sufficient balance to complete a call. </li>
+</ol>
+</section>
+</conbody></concept>

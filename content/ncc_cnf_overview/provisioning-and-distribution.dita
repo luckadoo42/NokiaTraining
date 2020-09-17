@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+		<concept id="id9YZ-09018-UG00-PCZZA-d1e11665" ><title>Provisioning and distribution</title><conbody>
+
+<section><title>Overview</title>
+
+<p>The service data is either provisioned or distributed to the MEs using either APIs or the GUI, after creating the data in the local SM DB. Once the local creation is successful, the SM operator can select MEs to distribute the configuration to, from the existing registered ME list. The list shown contains only online MEs of the type that is suitable to the entity being provisioned. Offline MEs are not displayed in the distribution list. SM adds an ME list to each object to track where the object is distributed. This ME list contains ME names and the status of distribution for each. The ME list is used to distribute the data to all the online MEs when data is updated through APIs or GUI.</p>
+<p> If the ME list is empty, that is, the data was not yet distributed to any ME, the update is performed on the local SM DB only. An SM operator specifies MEs only in a distribute or update operation since SM does not allow the user to specify the ME list during creation. When updating data that has already been distributed, an explicit distribute operation is not required from the SM GUI since this is automatically done by SM. </p>
+<p>Subscriber data is provisioned to a single ME or replicating pair. The SM operator can choose the ME to distribute to, or SM uses an algorithm to choose the optimal host. Only information identifying the SM node is stored in the SM DB, the subscriber data is stored on the SPS node.</p>
+</section>
+<section><title>Distribution scenarios</title>
+
+<p>Following are the distribution scenarios:</p><ul>
+
+<li>
+<p>For the service data entities that are singleton (like throttling configuration under Diameter), only one instance can be distributed to any SPS node. If distribution of that instance fails, the SM operator cannot distribute another instance to that SPS node. The SM operator must remove the distributed (successful or failed) instance from the SPS node to distribute another instance.</p>
+</li>
+<li>
+<p>For the service data entities that are not singleton (like rates under charging), multiple instances can be distributed to any SPS node. The SM operator can choose to distribute (or not) specific instances to specific SPS nodes.</p>
+</li>
+<li>
+<p>For the subscriber data entities, a single ME can be specified during the create operation. If left blank, SM selects the ME to distribute this data.</p>
+</li>
+</ul>
+</section>
+</conbody></concept>

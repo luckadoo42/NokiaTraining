@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="SPS_CDR_Streams_Stream_Overview_distribution_rules">
+<title>Distribution rules</title>
+<body>
+                
+                <p>Configuration stream holds the default distribution rules for the CDR streams.
+                    The configuration is imported into lookup tables, stored into the database and
+                    taken into use when the Configuration stream is started for the first time.</p>
+                <p>Published tables for datasets are only created if they are in use in some
+                    splitting criteria.</p>
+                <p>In the following runs of CG Configuration Node, distribution rules are read from
+                    the draft tables and published only if they have changed and the validation of
+                    the rules passes. If the validation is successful, the configuration is loaded
+                    into the database and the streams take the changes into use immediately. Any
+                    ongoing output record batches still to be created are closed and flushed to the
+                    respective locations based on the old configuration, and new output record
+                    batches start using the new configuration.</p>
+                <p>The distribution rules define which output records are stored in which files and
+                    which directories. In practice, output records are divided into different file
+                    groups, and one record always belongs to one file group. Pre-configured
+                    splitting criteria is used for identifying the correct file group for each
+                    output record.</p>
+                <p>The default distribution rules are described in the following table. File naming
+                    follows the naming convention described in 3GPP TS 32.297.</p>
+                <table colsep="1" rowsep="1" frame="all">
+            <title>Default distribution rules</title>
+            <tgroup cols="4">
+                <thead>
+                    <row>
+                        <entry>Description</entry>
+                        <entry>Record type</entry>
+                        <entry>File group  (PI.FE)</entry>
+                        <entry>Directory</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>CDRs in NCC generic ASN.1 format</entry>
+                        <entry>
+                            <p>OCSChargingRecord</p>
+                            <p>NCHFChargingRecord</p>
+                        </entry>
+                        <entry>.CDR</entry>
+                        <entry>/cdr/cdr/</entry>
+                    </row>
+                    <row>
+                        <entry>EDRs in NCC generic ASN.1 format</entry>
+                        <entry>All other record types</entry>
+                        <entry>.EDR</entry>
+                        <entry>/cdr/edr/</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <section id="section_o1l_n35_cmb">
+            <title>File group characteristics</title>
+            <p>The following characteristics can be defined for file groups:</p>
+            <ul id="ul_odg_r35_cmb">
+                <li>Output identifier that can be used as part of the actual file name.</li>
+                <li>Output directory where to store the output files. If defined, this is a
+                    sub-directory of the directory defined in the CG Distributor Node. Otherwise,
+                    the default value in CG Distributor Node is used.</li>
+                <li>Number of records per file. If not specified, the default value in CG Mapper
+                    Node is used.</li>
+                <li>Maximum number of seconds to collect output records for one file. If not
+                    specified, the default value in CG Mapper Node is used.</li>
+                <li>Sequence number sharing. If specified, all file groups with the same value share
+                    the sequence numbering of the files. Otherwise, they all use their own sequence
+                    numbering for identifying the files.</li>
+                <li>Flag for disabling the output. If set, no output files are created for these
+                    output records. Instead the output records are filtered out.</li>
+                <li>Flag for disabling the rule. If set, the whole rule is disabled, and no output
+                    records will be part of that file group.</li>
+                <li>Description of the file group. This is not stored in the database and not used
+                    for processing the output records.</li>
+            </ul>
+        </section>
+        <section id="section_swr_t35_cmb">
+            <title>Splitting criteria</title>
+            <p>A splitting criterion is a reusable expression specifying the characteristics of one
+                field in the output record, e.g. record type. A combination of criteria is used for
+                identifying records that belong to a given file group and the same criterion can be
+                used by any number of file groups.</p>
+            <p>Only fields that are in the output record can be used. Customization in CG Mapper
+                Node allows also additional temporary fields to be added in the output record, if
+                needed for the distribution rules.</p>
+            <p>A separate lookup table is used for defining splitting criteria. Additional dataset
+                lookup tables can also be added, if the evaluation of some fields require comparison
+                to a bigger number of values. Datasets are simple lists of string valued entries,
+                stored in a separate lookup table.</p>
+            <p>A splitting criterion has a unique name, and the value of the given field can be
+                evaluated as:</p>
+            <ul id="ul_sqj_x35_cmb">
+                <li>an exact match</li>
+                <li>matching a regular expression</li>
+                <li>being numerical and greater / less than a given value</li>
+                <li>being an exact match to a value defined in a given dataset</li>
+                <li>starting with one of the prefixes defined in a given dataset</li>
+            </ul>
+        </section>
+        <section id="section_b22_y35_cmb">
+            <title>Distribution rules</title>
+            <p>When the splitting criteria have been defined, a prioritized list of file groups can
+                be created by combining the criteria as needed. The prioritized list is called the
+                distribution rules and stored in its own lookup table.</p>
+            <p>Every distribution rule defines one file group and its characteristics. The output
+                records belonging to the file group are described by the given splitting criteria
+                and multiple criteria can be given for one file group.</p>
+            <p>The output records are matched against the distribution rules, starting with the rule
+                with highest priority (smallest number) and proceeding down. The first rule for
+                which all the criteria are met is selected. There must always be a default file
+                group without any criteria with the lowest priority, so that all records are
+                guaranteed to have at least one matching rule.</p>
+            <p>For more details on the configuration of the distribution rules, see <i>CNF
+                Operation, Administration, and Maintenance Guide</i> in the NCC documentation
+                set.</p>
+        </section>
+            </body>
+</topic>

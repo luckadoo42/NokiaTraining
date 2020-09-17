@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+		<concept id="id9YZ-09018--PL00-FPZZA-appbased"><title>Case 3: Application-based charging</title><conbody>
+
+<section><title>Overview</title>
+
+<p>Suppose a user named Bob has an iPhone, which is associated with a prepaid data bundle of 300 MB
+        that expires 24 hours from purchase. The data traffic, for example Netflix traffic, is
+        identified based on a specific rating group in the data session.</p>
+<p>A threshold level is associated with the prepaid data bundle. When the allowance balance is
+        depleted, the day-based US or Canada Netflix traffic is charged from the prepaid account
+        balance associated with the iPhone at a defined rate. </p>
+<p>The following figure explains the different rates applied for data consumption once the allowance
+        level is depleted:</p>
+<fig>
+<title>Application-based charging</title>
+<!--MMO resource relative URI: ../../18.0/graphics/Application_based_charging_default.png-->
+<image href="../images/application_based_charging_default.png"/>
+</fig>
+</section>
+<section><title>Flow of events</title>
+
+<p/><ul>
+
+<li>Create a subscription lifecycle with defined states.</li>
+<li>Associate the device (which is, iPhone) with a prepaid bundle of 4.99 United States dollar for
+          consumption of data services.</li>
+<li>Associate the allowance to the bundle with 300 MB that can be used during the day when the user
+          Bob is in US or Canada.</li>
+<li>Configure the prepaid bundle to expire in 24 hours from purchase.</li>
+<li>Configure a threshold level of 50 MB for the prepaid data bundle.</li>
+<li>Configure the Netflix data to be rated at 0.025 United States dollars for 10 MB in 10 MB
+          increments when the allowance is depleted.</li>
+        <li>Verify that when Bob starts using data from his iPhone, the data charging is done from
+          the bucket. When the bucket consumption crosses the threshold level of 50 MB, a
+          notification is sent to the registered email ID of Bob.<ol id="ol_f3h_pyz_pmb">
+            <li>For evening calls when Bob is in US or Canada, the Netflix data services are free
+              and no charges are applied. The counter is incremented.</li>
+            <li>For day or evening calls, when Bob is in a location other than US or Canada, the
+              Netflix data calls are rejected, that is, the Netflix data in Rest of World (RoW) is
+              blocked.</li>
+          </ol></li>
+</ul>
+</section>
+<section><title>Provisioning</title>
+
+<note type="attention">
+
+<p>Ensure that after creating a record, you distribute it to ME. Otherwise, the provisioning will not be successful.</p>
+</note>
+<p>Following entities are required for this use case.<table pgwide="1" colsep="1" rowsep="1">
+     <title>Entities for case 3</title>
+     <tgroup cols="2">
+            <colspec colname="col1" colwidth="1*"/>
+            <colspec colname="col2" colwidth="1.52*"/>
+            <thead>
+              <row>
+                <entry> Entity </entry>
+                <entry> Task </entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>Notification preferences </entry>
+                <entry>Select the notification channel as Email.</entry>
+              </row>
+              <row>
+                <entry>Notification templates </entry>
+                <entry>Create a notification template and add the text to be sent in an Email
+                  notification.</entry>
+              </row>
+              <row>
+                <entry>Notification servers </entry>
+                <entry>Configure a notification server to send an Email notification.</entry>
+              </row>
+              <row>
+                <entry>Thresholds</entry>
+                <entry>Create a money type threshold profile group to send notification when the
+                  threshold level of 50 MB is crossed. </entry>
+              </row>
+              <row>
+                <entry>Rates</entry>
+                <entry>Create the rate to be used for Netflix data.</entry>
+              </row>
+              <row>
+                <entry>Charging Services</entry>
+                <entry>
+                  <p>Create a charging service with the following details:</p>
+                  <ol>
+                    <li>
+                      <uicontrol>Bucket:</uicontrol> Create a data bucket with usage counter.</li>
+                    <li>
+                      <uicontrol>Tariff:</uicontrol> Create a tariff formula with rule
+                      condition.</li>
+                  </ol>
+                </entry>
+              </row>
+              <row>
+                <entry>Bundles</entry>
+                <entry>Create a bundle and associate it with a subscription lifecycle and charging
+                  service.</entry>
+              </row>
+              <row>
+                <entry>Rules And variables</entry>
+                <entry>Create different rule variables to identify the location, time at which the
+                  call is made, and determine whether the type of traffic is Netflix or not.</entry>
+              </row>
+              <row>
+                <entry>Mapping tables</entry>
+                <entry>Create a complex map.</entry>
+              </row>
+              <row>
+                <entry>Lifecycles</entry>
+                <entry>Create the subscription and device lifecycles and use default lifecycle for
+                  account.</entry>
+              </row>
+              <row>
+                <entry>Accounts</entry>
+                <entry>Create an account and associate with an account lifecycle.</entry>
+              </row>
+              <row>
+                <entry>Devices</entry>
+                <entry>Create a device and associate with a bundle and device lifecycle.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+    </table></p>
+<p>Provision the following data from the SM GUI:</p><ol>
+        <li>Create a notification preference by navigating to <uicontrol>Notification
+            Management</uicontrol> and select <uicontrol>Notification Preferences</uicontrol> and
+          select <uicontrol>Email</uicontrol> as notification channel.</li>
+<li>Create a notification profile for the <varname>iPhone</varname> following the given steps:<ol>
+      <li>Navigate to <uicontrol>Notification Management</uicontrol> and select
+                <uicontrol>Notification Templates</uicontrol>.</li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+              <image href="../images/sdd_button_default.png"/> to create a notification profile as
+              shown in the following figure: <!--MMO resource relative URI: ../graphics/Notification_use_case2_default.png-->
+              <image href="../images/notification_use_case2_default.png" scale="50"/>
+            </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Distribute_button_default.png-->
+              <image href="../images/distribute_button_default.png"/> to distribute the notification
+              profile to the specific ME further selected for the iPhone.</li>
+     </ol>
+    </li>
+<li>Configure a notification server by navigating to <uicontrol>Notification Management</uicontrol>
+          and select <uicontrol>Notification Servers</uicontrol>.</li>
+<li>Create the rate following the given steps:<ol>
+      <li>Navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> tab and select
+                <uicontrol>CHARGING</uicontrol>.</li>
+      <li>Select <uicontrol>Rates</uicontrol> from the drop-down menu as shown in the following
+              figure: <!--MMO resource relative URI: ../graphics/Selecting_Rate_entity_for_application_use_case_default.png-->
+              <image href="../images/selecting_rate_entity_for_application_use_case_default.png"
+                placement="break" scale="50"/>
+            </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+              <image href="../images/sdd_button_default.png"/> to create and configure the
+                <i>NetflixDayRate</i> rate as shown in the following figure: <!--MMO resource relative URI: ../graphics/Rate_entity_for_application_use_case_default.png-->
+              <image href="../images/rate_entity_for_application_use_case_default.png" scale="50"/>
+            </li>
+     </ol>
+    </li>
+<li>Create a charging service following the given steps:<ol>
+      <li>Navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> tab &gt;
+        <uicontrol>CHARGING</uicontrol> and select <uicontrol>Charging Services</uicontrol> from the
+       drop-down menu. </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+              <image href="../images/sdd_button_default.png" id="image_yww_r3t_3lb"/> to create the
+                <varname>Netflix_CS_Data</varname> charging service as shown in the following
+              figure: <!--MMO resource relative URI: ../graphics/CS_configuration_in_application_use_case_default.png-->
+              <image href="../images/cs_configuration_in_application_use_case_default.png"
+                scale="50"/> Click <uicontrol>CONTINUE</uicontrol>. </li>
+      <li>Create a <varname>NetflixDayPassBucket</varname> data bucket and
+                <varname>NetflixEveningCounter</varname> usage counter as shown in the following
+              figure: <!--MMO resource relative URI: ../graphics/Associate_bucket_and_counter_to_CS_default.png-->
+              <image href="../images/associate_bucket_and_counter_to_cs_default.png" scale="50"/>
+              Click <uicontrol>CONTINUE</uicontrol>. </li>
+      <li>Add a tariff formula with rule conditions as shown in the following figure: <!--MMO resource relative URI: ../graphics/Tariff_formula_in_CS_in_application_use_case_default.png-->
+              <image href="../images/tariff_formula_in_CS_in_application_use_case_default.png"
+                scale="50"/>
+            </li>
+     </ol>
+    </li>
+<li>Create a device lifecycle following the given steps:<ol>
+      <li>Navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select the
+        <uicontrol>Common</uicontrol> tab. Browse to select <uicontrol>Lifecycles</uicontrol> from
+       the drop-down list. </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+              <image href="../images/sdd_button_default.png"/> to create a lifecycle and define the
+              states <uicontrol>Active</uicontrol>, <uicontrol>Disconnected</uicontrol>,
+                <uicontrol>PreActive</uicontrol>, <uicontrol>ActiveWarned</uicontrol>,
+                <uicontrol>Expired</uicontrol>: <!--MMO resource relative URI: ../graphics/Appbasedcharging_deviceLc_default.png-->
+              <image href="../images/appbasedcharging_devicelc_default.png" scale="50"/>
+            </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Distribute_button_default.png-->
+              <image href="../images/distribute_button_default.png"/> to distribute the lifecycle to
+              the specific ME further selected for the iPhone.</li>
+     </ol>
+    </li>
+<li>Create a subscription lifecycle following the given steps:<ol>
+      <li>Navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select the
+        <uicontrol>Common</uicontrol> tab. Browse to select <uicontrol>Lifecycles</uicontrol> from
+       the drop-down list. </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+       <image href="../images/sdd_button_default.png"/> to create a lifecycle and define the states
+        <uicontrol>Active</uicontrol>, <uicontrol>Disconnected</uicontrol>,
+        <uicontrol>PreActive</uicontrol>, <uicontrol>Inactive</uicontrol>: <!--MMO resource relative URI: ../graphics/Case3_sublc1_default.png-->
+       <image href="../images/case3_sublc1_default.png"/>
+      </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Distribute_button_default.png-->
+       <image href="../images/distribute_button_default.png"/> to distribute the lifecycle to the
+       specific ME further selected for the iPhone. </li>
+     </ol></li>
+<li>Create a bundle following the given steps:<ol>
+      <li>Navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> tab &gt;
+        <uicontrol>CHARGING</uicontrol> and select <uicontrol>Bundles</uicontrol> from the drop-down
+       menu. </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+              <image href="../images/sdd_button_default.png"/> to create the
+                <varname>Netflix_Package</varname> bundle based on account ID with 4.99 United
+              States dollars as shown in the following figure: <!--MMO resource relative URI: ../graphics/Case3_bundle6_default.png-->
+              <image href="../images/case3_bundle6_default.png" scale="50"/>
+            </li>
+     </ol>
+    </li>
+<li>Configure the following threshold and on crossing this limit, Bob receives a notification:<ol>
+      <li>Navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> tab and select
+        <uicontrol>COMMON</uicontrol>. Browse to select <uicontrol>Thresholds</uicontrol> from the
+       drop-down menu. </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+              <image href="../images/sdd_button_default.png"/> to create and configure the
+                <varname>Netflix_Threshold</varname> threshold profile for <varname>Absolute from
+                Start</varname> threshold profile as shown in the following figure: <!--MMO resource relative URI: ../graphics/TPG_configuration_for_application_use_case_default.png-->
+              <image href="../images/tpg_configuration_for_application_use_case_default.png"
+                scale="50"/>
+            </li>
+      <li>Configure a rule in threshold for <i>Send-Notification</i> action with <i>Recurring</i>
+              flag checked as shown in the following figure: <!--MMO resource relative URI: ../graphics/Configuring_threshold_for_application_use_case_default.png-->
+              <image href="../images/configuring_threshold_for_application_use_case_default.png"
+                scale="50"/>
+            </li>
+     </ol>
+    </li>
+<li>You can either import or create Rule System Version (RSV) for charging:<p>To import the RSV for
+      charging, navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> tab &gt;
+       <uicontrol>CHARGING</uicontrol> and select <uicontrol>Rules And Variables</uicontrol> from
+      the drop-down menu.</p><ol>
+      <li>Click on the <uicontrol>Import</uicontrol> button as shown in the following figure: <!--MMO resource relative URI: ../graphics/Import_RSV_in_application_use_case_default.png-->
+              <image href="../images/import_rsv_in_application_use_case_default.png" scale="50"/>
+            </li>
+      <li>In the next window, click on <uicontrol>BROWSE</uicontrol> to upload the RSV and then
+       click on the <uicontrol>IMPORT</uicontrol> button as shown in the following figure: <!--MMO resource relative URI: ../graphics/Browse_RSV_file_in_application_use_case_default.png-->
+       <image href="../images/browse_rsv_file_in_application_use_case_default.png"/>
+      </li>
+      <li>The <varname>RSV-Charging</varname> rule variable entry is listed as shown in the
+              following figure: <!--MMO resource relative URI: ../graphics/Case3_RSV_default.png-->
+              <image href="../images/case3_rsv_default.png" scale="50"/>
+            </li>
+      <li>Click on the <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Edit_button_default.png-->
+       <image href="../images/edit_button_default.png"/> to edit the RSV and click
+        <uicontrol>CONTINUE</uicontrol>. </li>
+      <li>Change the <uicontrol>State</uicontrol> from <uicontrol>DRAFT</uicontrol> to
+        <uicontrol>RELEASE</uicontrol>. </li>
+      <li>Click on the <uicontrol>X</uicontrol> button and then click the <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Distribute_button_default.png-->
+       <image href="../images/distribute_button_default.png"/> button to distribute the RSV. </li>
+      <li>Drag the required Managed Element from the <uicontrol>Available Managed
+                Elements</uicontrol> list to <uicontrol>Selected Managed Elements</uicontrol> list
+              as shown in the following figure: <!--MMO resource relative URI: ../graphics/Dragging_ME_in_RSV_default.png-->
+              <image href="../images/dragging_me_in_rsv_default.png" scale="50"/> Click on the <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Distribute_button_default.png-->
+              <image href="../images/distribute_button_default.png"/> button again. </li>
+      <li>Drag the required Managed Element from the <uicontrol>Selected Managed
+                Elements</uicontrol> list to <uicontrol>Activated Managed Elements</uicontrol> list
+              as shown in the following figure: <!--MMO resource relative URI: ../graphics/Activate_ME_in_application_use_case_default.png-->
+              <image href="../images/activate_me_in_application_use_case_default.png" scale="50"/>
+              Click on <uicontrol>ACTIVATE</uicontrol> button. </li>
+     </ol><p>
+      <uicontrol>Note</uicontrol>: A sample RSV is available at: <xref format="html"
+       scope="external"
+       href="https://documentation.nokia.com/aces/htdocs/json/Sample-Charging-RSV.json"
+       >https://infoproducts.alcatel-lucent.com/aces/htdocs/json/Sample-Charging-RSV.json</xref>
+     </p><p>To create the RSV for charging, navigate to <uicontrol>Policy &amp; Charging
+       Configuration</uicontrol> tab &gt; <uicontrol>CHARGING</uicontrol> and select
+       <uicontrol>Variables</uicontrol> from the drop-down menu.</p><ol>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+       <image href="../images/sdd_button_default.png" id="image_zdd_cjt_3lb"/> to create the
+        <varname>RSV-Charging</varname> rule variable as shown in the following figure:  <!--MMO resource relative URI: ../graphics/Case3_RSV1_default.png-->
+       <image href="../images/case3_rsv1_default.png"/>
+       Click <uicontrol>SAVE &amp; CONTINUE</uicontrol> to navigate to the next screen.
+      </li>
+      <li>Click on <uicontrol>Select a trigger</uicontrol> button, select
+                <varname>APPLICABILITY</varname> from the trigger drop-down list and click
+                <uicontrol>ADD</uicontrol> as shown in the following figure: <!--MMO resource relative URI: ../graphics/Add_trigger_in_application_use_case_default.png-->
+              <image href="../images/add_trigger_in_application_use_case_default.png" scale="50"/>
+              Add other triggers, such as <varname>TARIFF</varname> and <varname>THRESHOLD</varname>
+              in the similar manner: </li>
+      <li>Click on <uicontrol>Add Rule Variable</uicontrol> for <varname>APPLICABILITY</varname>
+              trigger as shown in the following figure: <!--MMO resource relative URI: ../graphics/Add_rule_variable_for_trigger_default.png-->
+              <image href="../images/add_rule_variable_for_trigger_default.png" scale="50"/>
+            </li>
+      <li>Click on <uicontrol>NEW RULE</uicontrol> button to open the rule box. In the rule box,
+              press <i>ctrl + spacebar</i> from the keyboard and then select
+                <varname>GyCCR</varname> option. Again, press <i>ctrl + spacebar</i> from the
+              keyboard and select <varname>Multiple-Services-Credit-Control.Rating-Group</varname>
+              and enter <varname>Netflix</varname> in the <i>Value</i> field as shown in the
+              following figure: <!--MMO resource relative URI: ../graphics/Rule_variable_details_in_application_use_case_default.png-->
+              <image href="../images/rule_variable_details_in_application_use_case_default.png"
+                scale="50"/>
+              <p>
+                <b>Note</b>: In the rule, the <userinput>Rating Group=8</userinput> is received from
+                the network for Netflix traffic.</p>
+              <p>Similarly, define another rule for <varname>Spotify</varname> and then click
+                  <uicontrol>SAVE RULE VARIABLE</uicontrol>.</p>
+              <p>You can define the rules for <varname>TARIFF</varname> and
+                  <varname>THRESHOLD</varname> triggers in the similar way.</p>
+            </li>
+     </ol></li>
+<li>Configure the following rule variables in the <varname>RSV-Charging</varname> RSV:<ol>
+      <li>Navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> tab &gt;
+        <uicontrol>CHARGING</uicontrol> and select <uicontrol>Rules And Variables</uicontrol> from
+       the drop-down menu. Then, select <varname>RSV-Charging</varname>. </li>
+      <li>Create different rule variables, such as <i>TrafficType</i> rule and
+                <varname>Zone</varname> variables to identify Netflix or spotify traffic and
+              location for <varname>APPLICABILITY</varname> trigger and <i>TimePeriod</i> rule
+              variable to identify evening or day for <varname>TARIFF</varname> trigger as shown in
+              the following figure: <!--MMO resource relative URI: ../graphics/Traffictype1_default.png-->
+              <image href="../images/traffictype1_default.png"/> Following figure shows the rule
+              variables: <!--MMO resource relative URI: ../graphics/Traffictype2_default.png-->
+              <image href="../images/traffictype2_default.png" scale="50"/>
+            </li>
+      <li>Create <varname>Zone</varname> rule variable as shown in the following figure: <!--MMO resource relative URI: ../graphics/Case3_RSV11_default.png-->
+              <image href="../images/case3_rsv11_default.png"/>
+              <!--MMO resource relative URI: ../graphics/Create_zone_rule_variable_default.png-->
+              <image href="../images/create_zone_rule_variable_default.png" scale="50"/>
+              <b>Note</b>: The <i>ZoningandRoamingMapping</i> complex map created in the previous
+              step is used in <i>Zone</i> rule variable for <varname>APPLICABILITY</varname>
+              trigger. </li>
+      <li>Create <varname>TimePeriod</varname> rule variable for <varname>TARIFF</varname> trigger
+       as shown in the following figure: <!--MMO resource relative URI: ../graphics/Case3_Timeperiod_default.png-->
+       <image href="../images/case3_timeperiod_default.png"/>
+      </li>
+     </ol>
+    </li>
+<li>Configure the following complex map to define the mapping between MCCMNC, and zone or roam:<ol>
+      <li>Navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> tab and select
+        <uicontrol>COMMON</uicontrol>. Browse to select <uicontrol>Mapping Tables</uicontrol> from
+       the drop-down </li>
+      <li>Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+       <image href="../images/sdd_button_default.png"/> to create and configure the
+        <varname>ZoningandRoamingMapping</varname> complex map as shown in the following figure: <!--MMO resource relative URI: ../graphics/Case3_MT1_default.png-->
+       <image href="../images/case3_mt1_default.png"/>
+      </li>
+      <li>Click on <uicontrol>SAVE &amp; CONTINUE</uicontrol>. Navigate to the next page, click on
+        <uicontrol>ADD NEW MAP ROW</uicontrol> and enter the data as shown in the following figure:  <!--MMO resource relative URI: ../graphics/Case3_MT2_default.png-->
+       <image href="../images/case3_mt2_default.png" placement="break" scale="60"/>
+       Click <uicontrol>SAVE &amp; CONTINUE</uicontrol>.
+      </li>
+     </ol>
+      <b>Note</b>: The complex maps defined in the above figure is applicable only for this use
+      case. The values differ as per requirement.</li>
+<li>Create an account. To do this, navigate to <uicontrol>Subscriber Manager</uicontrol> and select
+          the <uicontrol>Account</uicontrol> tab. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+          <image href="../images/sdd_button_default.png"/> to create an account and set
+            <uicontrol>Overage Limit</uicontrol> parameter to 1000 United States dollars. <!--MMO resource relative URI: ../graphics/Case3_Account_default.png-->
+          <image href="../images/case3_account_default.png" scale="50"/>
+        </li>
+<li>Define overage balance limit for the prepaid account:<ul>
+            <li> When iPhone is a <i>Netflix_User</i>, Bob starts using data with <i>MCCMNC</i> =
+                <varname>302370(CANADA)</varname> and <i>Rating-Group</i> =
+                <varname>Netflix</varname> in the evening, for example 7 pm. </li>
+            <li> When iPhone is a <i>Netflix_User</i>, Bob starts using data with <i>MCCMNC</i> =
+                <varname>310410(US)</varname> and <i>Rating-Group</i> = <varname>Netflix</varname>
+              in the day, for example 10 am, such that data consumption is charged from the Prepaid
+              bundle. </li>
+            <li> When iPhone is a <i>Netflix_User</i>, Bob starts using data with <i>MCCMNC</i> =
+                <varname>40455(ROW)</varname> in the request. </li>
+          </ul>
+        </li>
+<li>Create a device. To do this, navigate to <uicontrol>Subscriber Manager</uicontrol> and select
+     the <uicontrol>Devices</uicontrol> tab. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png"/> to create a device. </li>
+<li>Subscribe <i>Netflix_User</i> device with the <varname>Netflix_Package</varname> data bundle. </li>
+</ol>
+</section>
+</conbody></concept>

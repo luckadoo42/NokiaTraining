@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+		<concept id="id9YZ-08923-CN08-PEZZA-d1e1912" ><title>NCC Dimensioning Tool</title><conbody>
+
+<section><title>Information from the Dimensioning Tool to enter into the VNF Artifacts Generator Tool </title>
+
+<p>The NCC Dimensioning Tool calculates several parameters that need to be entered into the VNF
+                Artifacts Generator Tool. The tool calculates the values of these parameters, based
+                input parameters like transaction rate, device count, and subscriber count. </p><ul>
+
+<li>
+<p>OpenStack Flavor (c04_r06_d60)</p>
+<p>Note: c04 refers to number of vCPU, r60 refers to RAM size, d60 refers to vDisk size.  </p>
+</li>
+<li>
+<p>oame_data_volume</p>
+</li>
+<li>
+<p>oame_backup_volume</p>
+</li>
+<li>
+<p>oame_log_volume</p>
+</li>
+<li>
+<p>auxiliary_data_volume</p>
+</li>
+<li>
+<p>auxiliary_log_volume</p>
+</li>
+<li>
+<p>db_data_volume</p>
+</li>
+<li>
+<p>db_datastore_volume</p>
+</li>
+<li>
+<p>db_log_volume</p>
+</li>
+<li>
+<p>db_digestlog_volume</p>
+</li>
+<li>
+<p>ioho_data_volume</p>
+</li>
+<li>
+<p>ioho_log_volume</p>
+</li>
+<li>
+<p>iohd_data_volume</p>
+</li>
+<li>
+<p>iohd_log_volume</p>
+</li>
+<li>
+<p>comsvc_data_volume</p>
+</li>
+<li>
+<p>comsvc_kafka_volume</p>
+</li>
+<li>
+<p>comsvc_log_volume</p>
+</li>
+<li>
+<p>diameterapp_data_volume</p>
+</li>
+<li>
+<p>diameterapp_log_volume</p>
+</li>
+<li>
+<p>cdr_data_volume</p>
+</li>
+<li>
+<p>cdr_log_volume</p>
+</li>
+<li>
+<p>cdr_record_volume</p>
+</li>
+<li>
+<p>smapp_data_volume</p>
+</li>
+<li>
+<p>smapp_log_volume</p>
+</li>
+<li>
+<p>aerospike/namespace/dsc/memorysize</p>
+</li>
+<li>
+<p>aerospike/namespace/dscglobal/memorysize</p>
+</li>
+<li>
+<p>aerospike/namespace/dsclocal/memorysize</p>
+</li>
+<li>
+<p>aerospike/namespace/spspd/memorysize</p>
+</li>
+<li>
+<p>aerospike/namespace/spsundologs/memorysize</p>
+</li>
+<li>
+<p>aerospike/xdr/xdrdigestlogpath/size</p>
+</li>
+</ul>
+<p>For VMWare:</p><ul>
+
+<li>
+<p>Virtual Memory Size</p>
+</li>
+<li>
+<p>Virtual CPU Number</p>
+</li>
+<li>
+<p>VMware Disk Size</p>
+</li>
+</ul>
+</section>
+<section><title>Additional information provided by the NCC Dimensioning Tool</title>
+
+<p>The NCC Dimensioning Tool also provides the following information which is important in planning
+                the deployment.</p><ul>
+
+<li>
+<p>NCC backup size: Backups are recommended to be moved away from the VNF. This parameter gives an
+                        indication of how much space to allocate to the system holding the back-ups.
+                        This parameter is the size of a single back-up.</p>
+</li>
+<li>
+<p>Write block size and IOPS: The environment into which the NCC is to be deployed must be capable
+                        of sustaining this number of IOPS, as a minimum.</p>
+</li>
+<li>
+<p>Write storage IO rates: The environment into which the NCC is to be deployed must be capable of
+                        sustaining this storage IO rate, as a minimum.</p>
+</li>
+<li>
+<p>OpenStack image size: The size of each VM image.</p>
+</li>
+<li>
+<p>VMware template size: A template is the master copy of the VM and is created, then the image is
+                        uploaded. There is a template for each VM type. Space usage for these
+                        templates must be factored in which storage space for the NCC is being
+                        calculated.</p>
+</li>
+</ul>
+</section>
+<section><title>Policy Inputs into the NCC Dimensioning Tool</title>
+
+<p>In the current version of the Dimensioning Tool, the inputs which are used to determine these items are:</p><ul>
+
+<li>
+<p>The working TPS, for both diameter and API calls</p>
+<p/><ul>
+
+<li>
+<p>Equal to the sum of all diameter transactions (Gx, Rx, Sy, Gy, RAR, and API provisioning)</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Number of devices (subscribers)</p>
+</li>
+<li>
+<p>Number of sessions (total of all session types)</p>
+</li>
+<li>
+<p>Maximum RAM allowed per DB VM</p>
+<p/><ul>
+
+<li>
+<p>A cloud environment may specify, for example, that the largest allowable RAM is 32 GB. That limitation can be specified in the Dimensioning Tool, and the Dimensioning Tool will calculate the number of required DB VMs based on that limitation.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Whether the deployment is IG or separate SM and ME</p>
+</li>
+<li>
+<p>Whether or not CDR/EDRs are enabled</p>
+</li>
+<li>
+<p>The CDR/EDR retention time, in hours</p>
+</li>
+<li>
+<p>The <i>xdrdigestlog</i> retention time, in hours. This is for geo-redundancy.</p>
+</li>
+<li>
+<p>Number of vCPUs for the diameter VMs</p>
+</li>
+<li>
+<p>Number of vCPUs for the database VMs</p>
+</li>
+</ul>
+<p>The Dimensioning Tool inputs are yellow, and outputs are green.</p>
+</section>
+<section><title>Charging Inputs into the NCC Dimensioning Tool</title>
+
+<p>In the current version of the Dimensioning Tool, the inputs which are used to determine these items are:</p><ul>
+
+<li>
+<p>Gy TPS required</p>
+</li>
+<li>
+<p>Sy TPS required</p>
+</li>
+<li>
+<p>Numbers of: devices, users, accounts, buckets, counters, subscriptions</p>
+</li>
+<li>
+<p>Number of sessions</p>
+</li>
+</ul>
+</section>
+</conbody></concept>

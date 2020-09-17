@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="allocation">
+    <title>NCC allocation decision for new user creation </title>
+    <conbody>
+        <note>There are alternate combined APIs such as create profile, update profile, delete
+            profile, add profile, that can avoid the complication of the allocation of elements. It
+            is recommended to use such combined APIs. For information, see <filepath>Service Manager
+                API Reference</filepath> document. </note>
+        <p>For create APIs, SM allows the API user to select a home site under certain
+            circumstances. SM selects a site to optimize access to the data during call processing.
+            SM bases the allocation decision based on following factors:</p>
+        <ul id="ul_c2y_c5b_tmb">
+            <li>
+                <ul id="ul_rgp_d5b_tmb">
+                    <li>The association of the new data with existing data.</li>
+                    <li>The loading of data across NCC sites as follows:<ul id="ul_qhd_h5b_tmb">
+                            <li>Home site is selected based on the least loaded ME (among total list
+                                of MEs where either home or backup is available).<note>SM maintains
+                                    count of home site allocations per ME.</note></li>
+                            <li>Backup site is selected based on the least loaded partition of the
+                                chosen home site.</li>
+                        </ul></li>
+                </ul>
+            </li>
+        </ul>
+        <p><b>Proximity of data</b></p>
+        <ul id="ul_ykj_qvb_tmb">
+            <li>Co-locate in partition:<ul id="ul_isb_svb_tmb">
+                    <li>Subscription associations with Devices, Groups, Account</li>
+                    <li>Group in hierarchy</li>
+                </ul></li>
+            <li>On separate partitions (note that this is not optimal and should be avoided by
+                specifying references when creating related entities as described below or using
+                alternate combined APIs):<ul id="ul_uhh_5vb_tmb">
+                    <li>Device → Group (ad-hoc Group case)</li>
+                    <li>Device → User (user in a Group on one NCC owns a Device on a different
+                        NCC)</li>
+                    <li>Account → User (user in a Group on an NCC manages an Account on a different
+                        NCC)</li>
+                </ul></li>
+        </ul>
+        <p>Following are the rules for NCC allocation for creating new subscriber data objects:</p>
+        <ul id="ul_x1j_pwb_tmb">
+            <li><b>Create Account</b>: Reference to an existing object is not required. Upstream can
+                choose an ME or SM allocates to balance load. </li>
+            <li><b>Create User</b>: Reference to one of the following existing objects is needed for
+                colocated allocation:<ul id="ul_zdx_nxb_tmb">
+                    <li>Account that the user is responsible</li>
+                    <li>Device that links through subscriptions for an Account. Hence, the create
+                        operation updates the Group or Device to reference it. </li>
+                </ul></li>
+            <li><b>Create Subscription</b>: Must reference an existing Account and Bundle.</li>
+            <li><b>Create Group</b>: Must reference one of the following existing objects for
+                colocated allocation:<ul id="ul_hyr_dyb_tmb">
+                    <li>Subscription</li>
+                    <li>User that owns the Group</li>
+                    <li>Device</li>
+                    <li>Parent group</li>
+                </ul></li>
+            <li><b>Create Device</b><ul id="ul_ic4_hyb_tmb">
+                    <li>For a prepaid phone that never references an Account, the upstream can
+                        specify Home ME or SM chooses based on load balancing.</li>
+                    <li>For a postpaid phone, a reference to one of the following objects is
+                            needed:<ul id="ul_nzj_myb_tmb">
+                            <li>Subscription</li>
+                            <li>User that will own the Device</li>
+                            <li>Group</li>
+                        </ul></li>
+                </ul></li>
+        </ul>
+    </conbody>
+</concept>

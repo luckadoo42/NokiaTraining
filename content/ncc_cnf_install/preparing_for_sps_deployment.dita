@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="preparing_for_sps_deployment">
+    <title>Creating a namespace</title>
+    <taskbody>
+        <context>
+            <p>This procedure provides instructions on how to create a namespace in NCC.</p>
+            <note>Each CNF in NCC requires its own namespace.</note>
+        </context>
+        <steps>
+            <step>
+                <cmd>Create the namespace by entering:</cmd>
+                <info>
+                    <codeblock>kubectl create ns &lt;namespace>
+kubectl label namespace &lt;namespace> istio-injection=enabled</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Set <codeph>mtls mode</codeph> to <codeph>PERMISSIVE</codeph> on the NCC
+                    namespace.</cmd>
+                <info>
+                    <codeblock>cat &lt;&lt;EOF | kubectl apply -f -
+apiVersion: "authentication.istio.io/v1alpha1"
+kind: "Policy"
+metadata:
+  name: "default"
+  namespace: "&lt;namespace>"
+spec:
+  peers:
+  - mtls:
+      mode: PERMISSIVE
+EOF</codeblock>
+                </info>
+            </step>
+        </steps>
+    </taskbody>
+</task>

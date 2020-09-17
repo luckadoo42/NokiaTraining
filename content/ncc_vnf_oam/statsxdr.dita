@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-statsxdr"><title>xdr-status tool</title><conbody>
+<section><title>Description</title>
+<p>This command displays XDR metrics along with both standard and internal XDR status. This tool can also be used to override the XDR states of OOS-WFR and OOS-DRR.</p>
+</section>
+<section><title>Syntax</title>
+<codeblock>xdr-status [-d &lt;OOS-DRR&gt;] [-w &lt;OOS-WFR&gt;] [-h]</codeblock>
+<table>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+<p>
+<b>Code</b>
+</p>
+</entry>
+<entry>
+<p>
+<b>Description</b>
+</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+<codeblock>No arguments</codeblock>
+</entry>
+<entry>
+Displays XDR metrics and status for the local site and the remote sites.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-h </codeblock>
+</entry>
+<entry>
+Displays usage/help information.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-d &lt;OOS-DRR&gt;</codeblock>
+</entry>
+<entry>
+Allows you to set the OOS-DRR override value, which can be true or false.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-w &lt;OOS-WFR&gt;</codeblock>
+</entry>
+<entry>
+Allows you to set the OOS-WFR override value, which can be true or false.
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section><title>Example Output for metrics </title>
+<fig>
+<codeblock>-sh-4.2$ /opt/tpa/bin/xdr-status 
+XDR replication status (local site towards remote sites):
+-------------------------------------------------------
+Collection Time: 2018-03-20 15:20:22 -0400
+dlog_free_pct: 86%
+xdr_timelag: 12
+Destination site name: SPSSite2:
+..dc_state: UP
+..sync up state: CURRENT
+..dc_timelag: 1
+..dc_ship_latency_avg: 2
+..dc_ship_source_error: 0
+..dc_ship_destination_error: 0
+Destination site name: SPSSite1:
+..dc_state: UP
+..sync up state: CURRENT
+..dc_timelag: 0
+..dc_ship_latency_avg: 2
+..dc_ship_source_error: 0
+..dc_ship_destination_error: 0
+
+XDR replication status (remote sites toward local site):
+-------------------------------------------------------
+Source site name: spssite1
+..Polling time: 2018-03-20 15:20:22 -0400
+..site service state: IN_SERVICE
+..collection time: 2018-03-20 15:20:22 -0400
+..dlog_free_pct: 99
+..dc_state: UP
+..sync up state: CURRENT
+..dc_timelag: 1
+..dc_ship_latency_avg: 1
+..dc_ship_source_error: 0
+..dc_ship_destination_error: 0
+Source site name: spssite2
+..Polling time: 2018-03-20 15:20:22 -0400
+..site service state: OUT_OF_SERVICE
+..collection time: 2018-03-20 15:20:22 -0400
+..dlog_free_pct: 98
+..dc_state: INACTIVE
+..sync up state: CURRENT
+..dc_timelag: 1
+..dc_ship_latency_avg: 1
+..dc_ship_source_error: 0
+..dc_ship_destination_error: 0
+
+Overall States:
+---------------
+Service State: UP
+Internal service state: Current
+Override for OOS-WFR: false
+Override for OOS-DRR: false
+</codeblock>
+</fig>
+</section>
+<section><title>Example Output when overriding OOS-DRR</title>
+<fig>
+<codeblock>[root@sps-me-2-oame-0 bin]# ./xdr-status -d true
+raiseOverrideOOSDRRAlarm is triggered to generate OOS override alarm.</codeblock>
+</fig>
+</section>
+<section><title>Example Output when overriding OOS-WFR</title>
+<fig>
+<codeblock>[root@sps-me-2-oame-0 bin]# ./xdr-status -w true
+raiseOverrideOOSWFRAlarm is triggered to generate OOS override alarm.</codeblock>
+</fig>
+</section>
+</conbody></concept>

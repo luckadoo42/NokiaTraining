@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="installing_btel_backup_and_restore">
+    <title>Installing BTEL Backup and Restore</title>
+    <taskbody>
+        <context>
+            <p>This procedure provides instructions on how to install the Backup and Restore for
+                BTEL.</p>
+            <note>In OpenShift the app namspace must be the same as cbur-master namespace.
+                Otherwise, Backup and       Restore fails.</note>
+        </context>
+        <steps>
+            <step>
+                <cmd>Enter for the Backup part:</cmd>
+                <info>
+                    <codeblock>curl -v --header 'Accept: application/json' -X POST http://cbur-master-cbur.$CBUR_MASTER_NAMESPACE.svc.cluster.local:80/v2/helm/release/backup/$NAMESPACE/$RELEASENAME?helm_version=3 2>&amp;1 | tee backup_btel.log</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Do a helm upgrade of BTEL using the same Override files and options used when
+                    you installed,       adding some properties for CPRO by entering:</cmd>
+                <info>
+                    <codeblock>WORKER_COUNT=`kubectl get nodes -l is_worker=true|grep -v STATUS|wc -l`</codeblock>
+                    <codeblock>helm upgrade -n ${NAMESPACE} ${RELEASENAME} btel-chart-20.9.*.tgz --wait --timeout=1200s -f values_btel_sps_${SITE_TYPE}.yaml -f sizing_btel_lab.yaml -f feature_btel_cbur_enable.yaml --set belk.belk-fluentd.fluentd.replicas=$WORKER_COUNT --set cpro.server.persistentVolume.mountPath="/prometheus" --set cpro.server.persistentVolume.mountPath2="/prometheus"  --set cpro.alertmanager.strategy.type=Recreate --set cpro.server.strategy.type=Recreate</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Enter for the Restore part:</cmd>
+                <info>
+                    <codeblock>curl -vkL --header 'Content-Type: multipart/form-data' --header 'Accept: application/json' -X POST --header 'Content-Type: application/x-www-form-urlencoded' -d 'backup_id=&amp;volume=&amp;object_type=&amp;object_name=' http://cbur-master-cbur.$CBUR_MASTER_NAMESPACE.svc.cluster.local:80/v2/helm/release/restore/$NAMESPACE/$RELEASENAME?helm_version=3 2>&amp;1 | tee restore_btel.log</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Switch back by another upgrade. Make CBUR backup folder and Prometheus storage
+                    folder both point to "/data". </cmd>
+                <info>
+                    <codeblock>helm upgrade -n ${NAMESPACE} ${RELEASENAME} btel-chart-20.9.*.tgz --wait --timeout=1200s -f values_btel_sps_${SITE_TYPE}.yaml -f sizing_btel_lab.yaml -f feature_btel_cbur_enable.yaml --set belk.belk-fluentd.fluentd.replicas=$WORKER_COUNT --set cpro.server.persistentVolume.mountPath="/data" --set cpro.server.persistentVolume.mountPath2="/data"  --set cpro.alertmanager.strategy.type=Recreate --set cpro.server.strategy.type=Recreate
+</codeblock>
+                </info>
+            </step>
+        </steps>
+    </taskbody>
+</task>

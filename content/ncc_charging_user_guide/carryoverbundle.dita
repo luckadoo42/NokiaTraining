@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-carryoverbundle"><title>Carry over for bundles</title><conbody>
+<section><title>Overview</title>
+<p>This feature introduces the capability to carry over parts of a recurring bundle when a subscription is either renewed or reset for the next billing cycle. For example, consider a monthly recurring bundle consisting of voice minutes, SMS, and data. The voice minutes are configured to carry over in the monthly bundle. At the end of the bundle period, the monthly bundle is renewed and balance for SMS and data services are reset. The balance for voice minutes is also reset and available for use along with the pre-renewal balance.</p>
+<p>The carried over balance is made available to an end user following either of the given scenarios:</p><ul>
+<li>
+<p>In the first case, the carried over balance is made available only for one billing cycle. At the end of each billing cycle, the carried over balance is overwritten, which means that the last unused carried over balance is lost.</p>
+</li>
+<li>
+<p>In the second case, the carried over balance does not expire. At the end of each billing cycle, the new carried over balance is added to the existing carried over balance. You can configure the maximum value of the amount that is carried over from the main bucket over the reset or renew billing cycle. If any limit is defined for the carried over amount, then the final balance is capped to that limit.</p>
+</li>
+</ul>
+</section>
+<section><title>Configuring carry-over bundle functionality</title>
+<p>If the carry-over feature is configured, then either the initial value of the main bucket balance
+                or the combined value of the main bucket balance and carried over bucket balance is
+                used to calculate the threshold level. The <i>ThresholdNotificationType</i>
+                application preference is considered only when threshold is configured in
+                percentage. For more information refer <xref
+                    href="#id9yz-09126-ug01-pczza-sp1-carryoverbundle/ex3" format="dita"/>  and <!--xref URI: #ext4-->
+                <xref href="#id9yz-09126-ug01-pczza-sp1-carryoverbundle/ext4" format="dita"/>.</p>
+<p>The carry over feature impacts the calculation of dynamic slicing as well. The combined value of
+                the main bucket balance and carried over balance is considered for dynamic slicing
+                calculation. For information on dynamic slicing functionality, see the
+                    <!--xref URI: #dynamic--><xref href="dynamic.dita"/> section.</p>
+<p>For information on Charging Data Records (CDRs) to record the carried over amount, see the <i>NOKIA Smart Plan Suite CDR/EDR Reference</i> guide.</p>
+</section>
+<section><title>Examples</title>
+<p>Consider the following examples for a better understanding of this functionality:</p></section>
+    <section><title>Example 1: Carry-over balance is made available only for one billing cycle</title>
+
+<p>Bob has a device associated with a bucket balance of 500 MB monthly recurring subscription. After consumption for a month, it is found that only 300 MB is used and remaining 200 MB is available to be carried over to the next billing cycle to be used along with the renewed bucket balance of 500 MB. If at the end of the next billing cycle, only 100 MB is used from the bucket balance, then only the remaining 400 MB bucket balance is carried over to the next billing cycle and the previous carried over 200 MB bucket balance is discarded.</p>
+<fig>
+<title>Carry-over bundle is made available only for one billing cycle</title>
+<!--MMO resource relative URI: ../Graphics/Release_18.0/Carry_over_bundle_scenario_1_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-carry_over_bundle_scenario_1_default.png"/>
+</fig>
+<p/><ol>
+<li>
+<p>
+<varname>SM</varname> refers to <i>Shared Monthly</i>, which means only a bundle with a charging service containing a bucket.</p>
+</li>
+<li>
+<p>
+<varname>SM CO</varname> refers to <i>Shared Monthly Carry-Over</i> bucket.</p>
+</li>
+<li>
+<p>Period refers to the billing cycle.</p>
+</li>
+</ol>
+</section>
+    <section><title>Example 2: Defining the cap limit of carry-over balance</title>
+<p>Bob has a device associated with a bucket balance of 500 MB monthly recurring subscription. The cap limit applied to the carried over bucket balance is 300 MB. After consumption for a month, only 300 MB is used and the remaining 200 MB is available to be carried over to the next billing cycle. If at the end of the next billing cycle, only 100 MB is used from the bucket balance, then only the remaining 400 MB bucket balance is added to the existing carried over bucket balance. Since, after adding the new carried over balance to the existing carried over balance, the cap applied to the carried over bucket balance (300 MB) exceeds, the carried over bucket balance is limited only to 300 MB or the cap limit.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_18.0/Carry_over_bundle_scenario_2_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-carry_over_bundle_scenario_2_default.png"/>
+</fig>
+<p/><ol>
+<li>
+<p>
+<varname>SM</varname> refers to <i>Shared Monthly</i>, which means only a bundle with a charging service containing a bucket.</p>
+</li>
+<li>
+<p>
+<varname>SM CO</varname> refers to <i>Shared Monthly Carry Over</i> bucket.</p>
+</li>
+<li>
+<p>Period refers to the billing cycle.</p>
+</li>
+</ol>
+</section>
+    <section id="ex3"><title>Example 3: Threshold notification is triggered when the total of remaining bucket balance and carry-over balance exceeds the defined limit</title>
+<p>Bob has a device associated with a recurring bundle of 1 GB configured with a 20 percent threshold notification. At the end of the first billing cycle, only 500 MB of the bucket balance is consumed and the remaining 500 MB is available to be carried over to the next billing cycle. The carried over balance is added to the renewed bucket balance of 1 GB and the total bundle balance is 1.5 GB. The notification is triggered when the total of the remaining bucket balance and carried over bucket balance exceeds 20 percent of 1 GB, which is 200 MB.</p>
+</section>
+    <section id="ext4"><title>Example 4: Total of remaining bucket balance and carry-over balance triggers a low-level threshold notification</title>
+
+<p>Bob has a device associated with a recurring bundle of 1 GB configured with a low-level threshold notification of 20 percent. At the end of the first billing cycle, only 100 MB of the bucket balance is consumed and the remaining 900 MB is available to be carried over to the next billing cycle. The carried over balance is added to the renewed bucket balance of 1 GB and the total bundle balance is 1.9 GB. The notification is triggered when the total of remaining bucket balance and carried over bucket balance exceeds 20 percent of 1.9 GB, which is 380 MB.</p>
+</section>
+</conbody></concept>

@@ -1,0 +1,470 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e18415"><title>Data call controller and charging</title><conbody>
+<section><title>Data call controller</title>
+<p>When the call controller of the NCC application receives an <i>Event</i>, <i>Initial</i>,
+     <i>Update</i>, or <i>Terminate</i> Diameter request, it interacts with other NCC modules.</p>
+<p>The call controller module contains the logic to be executed on receiving an incoming Diameter request and this logic does not depend on the external protocol that triggered the request.</p>
+<p>Call controller provides the interface to the network for different Diameter requests and
+    responses that interface with other NCC modules. It accepts the initial attachment from the
+    gateways and performs the following functions:</p><ul>
+<li>
+<p>Interfaces with the subscriber model to get the device and its lifecycle.</p>
+</li>
+<li>
+<p>Creates, modifies, and terminates a Gy session.</p>
+</li>
+<li>
+<p>Sends a request object to the charging or rating engine.</p>
+</li>
+<li>
+<p>Processes all Credit-Control-Request (CCR) and outgoing Credit-Control-Answer (CCA) messages.</p>
+</li>
+<li>
+<p>Generates an alarm for call controller.</p>
+</li>
+</ul>
+<p>When a Diameter CCR is received, call controller retrieves the <uicontrol>subscriptionId</uicontrol> and uses it to query the subscriber model for the device and determine the existence of the device. If the device exists, then call controller continues the message processing. If the device is barred or not found, then the call is rejected.</p>
+</section>
+<section><title>Online data call charging</title>
+<p>NCC performs online (or real-time) charging and rating over the Ro and Gy interfaces, along with
+    hosting duties and managing user account information and rating plans. An account, located in an
+    online charging system, is queried prior to the granting of permission for use of the requested
+    network resources allowing the network to perform real-time monitoring of resource usage and
+    detection of the relevant chargeable events.</p>
+<p>Based on the 3GPP TS 32.299 Ro specifications for all Diameter charging details, NCC supports the
+    following three charging modes for online charging of data calls for IMS, SMS, MMS, and PS
+    domains:</p><ul>
+<li>
+<p>Immediate Event Charging (IEC); also known as immediate debit</p>
+</li>
+<li>
+<p>Event Charging with Unit Reservation (ECUR); also known as two-step debit</p>
+</li>
+<li>
+<p>Session Charging with Unit Reservation (SCUR); also known as quota-based charging</p>
+</li>
+</ul>
+<p>Intended for the transport of charging events, the Rf and the Ro are reference points from the
+    Charging Trigger Function (CTF) to the Charging Data Function (CDF) and the Online Charging
+    Function (OCF) respectively. NCC communicates with the external entities over the Ro interface
+    for charging requests when triggered by a domain, service node, or sub-system as shown in the
+     <!--xref URI: #ChargingModuleInterfaces--><xref
+     keyref="id9YZ-09126-UG01-PCZZA-SP1-d1e18415/chargingmoduleinterfaces"/>.</p>
+<fig id="chargingmoduleinterfaces">
+<title>Charging module interfaces</title>
+<!--MMO resource relative URI: ../Graphics/Release_18.0/Charging_modules_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-charging_modules_default.png"/>
+</fig>
+<p>The data service receives a charging request from an external entity through the Diameter interface. Data charging is managed according to the parameters contained in the request and includes the following capabilities:</p><ul>
+<li>
+<p>Charging according to the event or content accessed (event charging), such as an MMS.</p>
+</li>
+<li>
+<p>Charging according to the volume of data exchanged (volume charging).</p>
+</li>
+<li>
+<p>Charging according to the duration of the GRPS session (duration charging).</p>
+</li>
+<li>
+<p>Charging according to the <i>CC-Money</i> AVP not sent by the client.</p>
+</li>
+<li>
+<p>Device-based charging (prepaid or postpaid).</p>
+</li>
+<li>
+<p>QoS adaptation and charging based on policy rules.</p>
+</li>
+</ul>
+<p>The data charging function (charging mode) supports session-based and event-based charging modes and requests.</p><ul>
+<li>
+<p>Session-based requests</p>
+</li>
+<li>
+<p>Event-based requests</p>
+</li>
+</ul>
+<p>Event-based charging is performed either by immediate debit or in a two-step mode as follows:</p><ul>
+<li>
+<p>In immediate debit mode, the external entity indicates the origin, the destination, the service
+      identifier, and the requested units (amount of money), if known. NCC provides the external
+      entity with the information mentioning whether the immediate debit request is granted or
+      not.</p>
+</li>
+<li>
+<p>In the two-step debit mode, there is firstly a credit reservation request (CCRi), where the request is units are reserved and then second request if for commit (CCRt), where there is a debit from account.</p>
+<p>CCRt is received by NCC only if the granted units are consumed or Validity-Timer expires.</p>
+</li>
+</ul>
+<p>Session-based charging allows you to request a certain amount of "quota", such as a certain
+    volume for a specific URL or a certain amount of time for a video session. This type of charging
+    is based on allocation of volume, duration, or specialized units slice(s). Volume/duration slice
+    allocation is performed as follows:</p><ul>
+<li>
+<p>The external entity sends a request to the data charging function to book a volume and / or duration and or / specialized units slice(s).</p>
+<p>
+<b>Note</b>: The volume, time, unit, or money reservation is supported only for a single request. Multiple types of unit reservation, such as volume + time per volume + units is not supported.</p>
+</li>
+<li>
+<p>The data charging function performs a slice price according to the parameters included in the request and the parameters hosted in the accounts and then books a slice.</p>
+</li>
+<li>
+<p>A transaction acknowledgement is sent to the external entity.</p>
+</li>
+</ul>
+<p>The operator selects whether the data charging function determines the volume, duration, money, or slice size (auto-determination), or whether this is done by the external entity.</p>
+<p>The debit function enables the debit of an end-user account. For direct debiting with IEC, a single transaction is created where the OCF deducts a specific amount from the user's account immediately after completing the credit authorization. After receiving the authorization, the CTF delivers services. This form of credit authorization is a one-time event in which no session state is maintained. With IEC, the online charging client implements the “CLIENT, EVENT BASED” state machine described in IETF RFC 4006.</p>
+<p>The debit may be performed in one step (immediate debit) or two steps (debit with confirmation of the end-user) according to the type of transaction.</p>
+</section>
+<section><title>Call control credit request profile configuration</title>
+   <p>NCC supports call controller configuration from the credit request profile, which is made up
+    of rules, default actions, and the dynamically generated information from request messages. Each
+    transaction is processed in the active Rule System Version (RSV) as follows:</p><ul>
+    <li>
+     <p>Rules: generated from the credit request profile executed by the Rule Engine.</p>
+    </li>
+    <li>
+     <p>Default actions: executed only if a similar action is not executed in the selected rule.</p>
+    </li>
+    <li>
+     <p>A list of rule tables used for call controller to set conditions and retrieve actions.</p>
+    </li>
+   </ul><p>Based on the object evaluated and location in the call flow, source contexts vary. For
+    example, the Credit Request Profile is evaluated first in the flow. It has access to device and
+    the Gy.Message context only. When the applicability condition or tariff is evaluated, there is
+    access to more contexts.</p><p>The default RSV and default credit request profile provide an
+    out-of-box solution for customizing the credit request profile. The following table describes
+    the call controller default credit request profile parameters. Each parameter can have a default
+    value that is automatically provisioned when no provisioning is present.</p>
+   <table pgwide="1" colsep="1" rowsep="1">
+    <tgroup cols="3">
+     <colspec colname="col1"/>
+     <colspec colname="COLSPEC0"/>
+     <colspec colname="col2"/>
+     <thead>
+      <row>
+       <entry>
+        <p>Parameter</p>
+       </entry>
+       <entry>
+        <p>Description</p>
+       </entry>
+       <entry>
+        <p>Value</p>
+       </entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry> profileName </entry>
+       <entry> The name of the default profile. </entry>
+       <entry> The default Credit Request Profile is named “Default” </entry>
+      </row>
+      <row>
+       <entry> priority </entry>
+       <entry> The priority in the default Credit Request Profile is set to the lowest priority,
+        which is the largest number of the type Integer. </entry>
+       <entry> Integer </entry>
+      </row>
+      <row>
+       <entry> isActive </entry>
+       <entry> This parameter exists in the default Credit Request Profile to show its status. </entry>
+       <entry> true </entry>
+      </row>
+      <row>
+       <entry> defaultActions </entry>
+       <entry>
+        <p>You can create two default rule variables (one for CallType and one for CallSubType) when
+         you create the default charging rule system version (with RSV name 'default'). The rule
+         logic for the rule variables is empty and left for you to provision their evaluation and
+         set the values of the variables. </p>
+        <p>The default actions here exist for the rule variables that you create.</p>
+        <p>Other default actions or values can be added to this default profile when needed.</p>
+       </entry>
+       <entry>
+        <p>Action: Call_Result.Call-Type=Variables.get_variable("CallType")</p>
+        <p>Action: Call_Result.Call-Sub-Type=Variables.get_variable("CallSubType")</p>
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+   <note>
+    <p>These entity parameters cannot be changed and are valid for Internal purposes only. It is not
+     exposed in the SM GUI for operators.</p>
+   </note><p>When there is a charging rule system version reload, the creditRequestProfieScanner
+    checks to see if the default CreditRequestProfile exists. If it does not exist, then it
+    creates the default CreditRequestProfile.</p><p>The following table describes what can be
+    provisioned for call controller using a call control Credit Request Profile. Many of the
+    parameters are optional to provision; however, each parameter can have a default value that is
+    automatically provisioned when no provisioning is present. </p><table pgwide="1" colsep="1"
+    rowsep="1">
+    <title>Call control credit request profile</title>
+    <tgroup cols="4">
+     <colspec colname="col1"/>
+     <colspec colname="col2"/>
+     <colspec colname="col3"/>
+     <colspec colname="COLSPEC0"/>
+     <thead>
+      <row>
+       <entry>
+        <p>Parameter</p>
+       </entry>
+       <entry>
+        <p>Type</p>
+       </entry>
+       <entry>
+        <p>Description</p>
+       </entry>
+       <entry>
+        <p>Mandatory/Optional </p>
+       </entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry> profileName </entry>
+       <entry> String </entry>
+       <entry> A unique name of the profile that defines the value of the primary key of this table. </entry>
+       <entry> Mandatory </entry>
+      </row>
+      <row>
+       <entry> priority </entry>
+       <entry> Integer </entry>
+       <entry>
+        <p>The priority of this profile, whose value is also unique.</p>
+        <p>The priority in the default Credit Request Profile is set to the lowest priority, which
+         is the largest number of the type Integer.</p>
+       </entry>
+       <entry> Mandatory </entry>
+      </row>
+      <row>
+       <entry> operatorName </entry>
+       <entry> String </entry>
+       <entry> The name of the operator that owns this profile. </entry>
+       <entry> Optional </entry>
+      </row>
+      <row>
+       <entry> isActive </entry>
+       <entry> boolean </entry>
+       <entry>
+        <p>The status of this profile. Only the active profile is used.</p>
+        <p>This parameter exists in the default Credit Request Profile.</p>
+       </entry>
+       <entry> Mandatory </entry>
+      </row>
+      <row>
+       <entry> creationTime </entry>
+       <entry> Long </entry>
+       <entry> The time stamp of when this profile was created. The value is automatically
+        generated. </entry>
+       <entry> - </entry>
+      </row>
+      <row>
+       <entry> lastUpdateTime </entry>
+       <entry> Long </entry>
+       <entry> The time stamp of the updated time of this profile. This value is automatically
+        generated. </entry>
+       <entry> - </entry>
+      </row>
+      <row>
+       <entry> defaultZone </entry>
+       <entry> String </entry>
+       <entry> The name of the default zone used in zone processing if the mapping table/rules do
+        not yield a result. </entry>
+       <entry> Optional; however, if it is not provisioned, Rest of World (ROW) is used. </entry>
+      </row>
+      <row>
+       <entry> ruleTables </entry>
+       <entry> List&lt;ChargingRuleTable&gt; </entry>
+       <entry>
+        <p>Contains a list of chargingRuletables.  The same action can be present in  both rule
+         tables and defaultActions.</p>
+        <p>The defaultAction has the lower priority.</p>
+        <p>All rule tables in the list are automatically generated into individual rule tables in
+         the currently active RSV.</p>
+       </entry>
+       <entry> Optional </entry>
+      </row>
+      <row>
+       <entry> defaultActions </entry>
+       <entry> List&lt;Actions&gt; </entry>
+       <entry>
+        <p>Contains a list of actions used as command level action values, for example: </p>
+        <p>
+         <varname>CALL_RESULT.DEFAULT_ROAMING_DECISION</varname>
+        </p>
+        <p>
+         <varname>CALL_RESULT.CREDIT_CONTROL_FAILURE_HANDLING</varname>
+        </p>
+        <p>
+         <varname>CALL_RESULT.DIRECT_DEBITING_FAILURE_HANDLING</varname>
+        </p>
+       </entry>
+       <entry> Optional </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+   <note>
+    <p>These entity parameters cannot be changed and are valid for Internal purposes only. It is not
+     exposed in the SM GUI for operators.</p>
+   </note><p>The following three rule tables are examples of rules executed using the
+     <i>Credit-Request-Profile</i> and rule engine:</p>
+   <p>
+    <b>Rule Table 1</b>
+   </p>
+   <userinput>If GY_MESSAGE.Service-Context-Id = 32274@3gpp.org</userinput>
+   <userinput>Then CALL_RESULT.Default-Roaming-Decision=RoamingDecision HOME </userinput>
+   <p>
+    <b>Rule Table 2</b>
+   </p>
+   <userinput>If GY_MESSAGE.Multiple-Services-Credit-Control.Rating-Group = 8</userinput>
+   <userinput>Then CALL_RESULT.Call-Sub-Type = CallSubType SMS_MO </userinput>
+   <p>
+    <b>Rule Table 3</b>
+   </p>
+   <userinput>If DeviceId is in the list of 2000000000001|2000000000002|2000000000003</userinput>
+   <userinput>Then Call-Zones = North America, Canada, Ontario </userinput>
+  </section>
+<section><title>Determining the CallType and CallSubType with rule variable default actions</title>
+<p>Call controller resolves the CallType and CallSubType values using rule variables. Both the values are in common call source context and passed on to rating to allow manipulation of charging services. The call type and call sub-type determination are defined in a rule associated with the credit request profile object or in a rule variable.</p>
+<p>Out of the box, the rule logic for the default actions mentioned in the default Credit Request Profile does not exist; therefore, you must configure each of the rule variables. You can configure a CallType instance to equal the CallType rule variable value and the CallSubType instance to equal the CallSubType rule variable value in the RSV only. Then you can use the default Credit Request Profile to use the rule variables. You can also configure the CallType and CallSubType rule variables directly as a rule action in a rule table without referencing the rule variable inside the Credit Request Profile.</p>
+<p>If you do not configure these two rule variables, the call type determination is based on the 3GPP standard described below, and there is no CallSubType mapping.</p><ul>
+<li>
+<p>
+<varname>SMS_SERVICE_CONTEXT_ID 32274@3gpp.org</varname>: SMS call type</p>
+</li>
+<li>
+<p>
+<varname>PS_SERVICE_CONTEXT_ID 32251@3gpp.org</varname>: PS call type</p>
+</li>
+</ul>
+<p>Two default rule actions exist in the default ChargingRuleSystemVersion, one for CallType and one for CallSubType. The default CallType and CallSubType rule variables in the actions are empty rule variables without default values. You are responsible for configuring the rule variables with conditions and values. Rule Variable creation is described in the <i>Variables</i> section in the <i>Rules</i> chapter of the <!--XML Resource relative URI: -->
+<cite>Nokia Smart Plan Suite Overview</cite>. For example, within the default ChargingRuleSystemVersion find the default Credit Request Profile and use the default actions for CallType and CallSubType ensuring that the rule variables are configured as follows:</p><ul>
+<li>
+<p>Rule Variable for CallType configured under <uicontrol>Variables</uicontrol>.</p>
+<p>Rule Variable Name: CallType</p>
+<p>Rule Variable Type: ENUM </p>
+</li>
+<li>
+<p>Rule Variable for CallSubType configured under <uicontrol>Variables</uicontrol>.</p>
+<p>Rule Variable Name: CallSubType</p>
+<p>Rule Variable Type:  STRING</p>
+</li>
+<li>
+<p>Rule Set Types: GY_CREDIT_REQUEST</p>
+</li>
+<li>
+<p>Rule Variable Evaluation</p>
+</li>
+</ul>
+<p>The default Credit Request Profile is configured with the lowest priority, which is the largest number of the type Integer. You need to clone the default ChargingRuleSystemVersion, and modify the default CallType and CallSubType rule variables, as needed, to add the evaluations with different conditions and values.</p>
+<sectiondiv>
+<p><b>Example of CallType and CallSubType usage</b></p>
+<p>The following is a simple example of defining the rule logic inside the rule variable CallType. In this example, you want to use AVP1 in a Gy Message to determine the CallType inside the variable CallType, the rule logic can be defined as follows:</p><ul>
+<li>
+<p>Rule Variable Name: CallType</p>
+</li>
+<li>
+<p>Description: CallType variable in Gy Message.</p>
+</li>
+<li>
+<p>Rule Variable Type: ENUM </p>
+</li>
+<li>
+<p>Rule Set Types:  GY_CREDIT_REQUEST</p>
+</li>
+<li>
+<p>If <userinput>Gy_Message.AVP1</userinput>= <varname>sms@abc.com</varname>
+</p>
+<p>then, the value is <varname>CallType.SMS</varname>
+</p>
+</li>
+<li>
+<p>If <userinput>Gy_Message.AVP1</userinput>= <varname>ps@abc.com</varname>
+</p>
+<p>, then the value is <varname>CallType.PS</varname>
+</p>
+</li>
+</ul>
+<p>The following are more complex examples that define the rule logic inside the rule variable CallSubType, while including the rating-group in MSCC and Service-Context-Id to determine the CallSubType. For example, you can define a rule in which the CallSubType rule variable is set to the value data stream or SMS_MO depending on some specific values received in the Service-Context-Id and the Rating-Group AVPs.</p>
+<p>
+<b>Complex example 1</b>
+</p><ul>
+<li>
+<p>Rule Variable Name: CallSubType</p>
+</li>
+<li>
+<p>Description: CallSubType variable determination by MSCC and Service-Context-Id in Gy Message.</p>
+</li>
+<li>
+<p>Rule Variable Type: STRING</p>
+</li>
+<li>
+<p>Rule Set Types: GY_CREDIT_REQUEST</p>
+</li>
+<li>
+<p>If <userinput>Gy_Message.Service-Context-Id</userinput>= <varname>ps@abc.com</varname> AND <userinput>Gy_Message.Multiple-Services-Credit-Control.Rating-Group</userinput> = <varname>2</varname>
+</p>
+<p>, then the value is <varname>dataStream</varname>
+</p>
+</li>
+<li>
+<p>If <userinput>Gy_Message.service-Context-Id</userinput> = <varname>sms@abc.com</varname> AND <userinput>Gy_Message.Multiple-Services-Credit-Control.Rating-Group</userinput> = <varname>3</varname>
+</p>
+<p>, then the value is <varname>SMS_MO</varname>
+</p>
+</li>
+</ul>
+<p>
+<b>Complex example 2– Defining the value of CallSubType using the rule variable CallType</b>:</p><ul>
+<li>
+<p>Rule Variable Name: CallSubType</p>
+</li>
+<li>
+<p>Description: CallSubType variable mapped by Multiple-Services-Credit-Control.Rating-Group and CallType rule variable in the Gy Message.</p>
+</li>
+<li>
+<p>Rule Variable Type: STRING</p>
+</li>
+<li>
+<p>Rule Set Types: GY_CREDIT_REQUEST</p>
+</li>
+<li>
+<p>If Variables.get_variable <userinput>callType</userinput>= <varname>CallType.PS</varname> AND <userinput>Gy_Message.Multiple-Services-Credit-Control.Rating-Group</userinput> = <varname>2</varname>
+</p>
+<p>, then the value is <varname>dataStream</varname>
+</p>
+</li>
+<li>
+<p>If Variables.get_variable <userinput>callType</userinput> = <varname>CallType.SMS</varname> AND <userinput>Gy_Message.Multiple-Services-Credit-Control.Rating-Group</userinput> = <varname>3</varname>
+</p>
+<p>, then the value is <varname>SMS_MO</varname>
+</p>
+</li>
+</ul>
+</sectiondiv>
+</section>
+<section><title>Multiple-Services-Credit-Control</title>
+<p>The <i>Multiple-Services-Credit-Control</i> AVP is of type grouped and contains the AVPs related to the independent credit-control of multiple services feature. Each instance of this AVP carries units related to one or more services or related to a single rating group.</p>
+<p>The <i>Service-Identifier</i> and the <i>Rating-Group</i> AVPs associate the granted units to a given service or rating group. If both the <i>Service-Identifier</i> and the <i>Rating-Group</i> AVPs are included, the target of the service units is always the services indicated by the value of the <i>Rating-Group</i> AVP.</p>
+<p>The <i>Requested-Service-Unit</i> AVP contains the amount of requested service units. If the <i>Requested-Service-Unit</i> AVP is empty, then the reservation is done as per the central logic. The <i>Requested-Service-Unit</i> AVP must be present in the initial interrogation and within the intermediate interrogations in which new quota is requested. If the credit-control client does not include the <i>Requested-Service-Unit</i> AVP in a request command (for example, if it determines that the end user terminated the service) then the server must debit the used amount from the user's account, but must not return a new quota in the corresponding answer. The Validity-Time and Result-Code are present in an answer command for graceful service termination. </p>
+<p>The <i>Multiple-Services-Control</i> AVP is defined as follows:</p>
+<fig>
+<codeblock>Multiple-Services-Credit-Control ::= &lt; AVP Header: 456 &gt;
+           [ Granted-Service-Unit ]
+           [ Requested-Service-Unit ]
+          *[ Used-Service-Unit ]
+           [ Tariff-Change-Usage ]
+          *[ Service-Identifier ]
+           [ Rating-Group ]
+          *[ G-S-U-Pool-Reference ]
+           [ Validity-Time ]
+           [ Result-Code ]
+           [ Final-Unit-Indication ]
+          *[ AVP ]
+</codeblock>
+</fig>
+</section>
+</conbody></concept>

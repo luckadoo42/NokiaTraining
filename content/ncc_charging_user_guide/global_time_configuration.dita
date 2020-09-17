@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e23189"><title>Global time configuration (other than BCR)</title><conbody>
+<section><title>Configuring TTC time</title>
+<p>A service operator can configure the <uicontrol>Tariff-Time-Change</uicontrol>, which is an optional parameter wherein the time is aligned with the timezone of an account of the first subscription of the device (if available). Otherwise, it considers the default timezone.</p>
+<p>Apart from the start time, end time or validity time, or activation time associated with the subscription, the TTC time can also be specified. This TTC time is configured either using Gy pre-processing of rules or through the rules of bundle definition. However, if a particular device does not have its own subscription and consumes data from the group subscription, then the default system timezone is mapped with the TTC time configured in rules.</p>
+<p>The time specified in the <uicontrol>Tariff-Time-Change</uicontrol> parameter is in hour:min:sec for the 24-hour format as shown in the following figure:<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.0/Capture_TTC_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-capture_ttc_default.png"/>
+</fig></p>
+<p>The global TTC can be configured in system for the purpose of segregating the data consumed by the devices in the required time frame. For example, if daily data consumed by a device is required, then global TTC can be configured as the midnight time. In case, validity time for the granted units to the device crosses the midnight, then the TTC is configured and sent to the gateway leading to multiple USUs sent by the gateway in the form of before and after midnight usage. The system generates two CDRs one for before TTC usage and another after TTC usage. The before usage CDR has an attribute named <uicontrol>tariffTimeChange</uicontrol> and using the same information, the data from before usage can be aggregated to the previous day.</p>
+<p>
+<b>Precondition:</b> For the following table, TTC time is enabled in the Gy pre-processing of rules.</p>
+<table pgwide="1" colsep="1" rowsep="1">
+                <title>Different times used for TTC computation</title>
+                <tgroup cols="2">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Supported TTC times</p>
+                            </entry>
+                            <entry>
+                                <p>Comments</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> TTC time (Tariff-Time-Change) of Gy pre-processing </entry>
+                            <entry> This refers to the global TTC time configured as the
+                                    <uicontrol>Tariff-Time-Change</uicontrol> in Gy pre-processing
+                                rules. </entry>
+                        </row>
+                        <row>
+                            <entry> End time of subscription </entry>
+                            <entry> This time refers only to those subscriptions, which are used for
+                                reservation. </entry>
+                        </row>
+                        <row>
+                            <entry> Start time of subscription </entry>
+                            <entry> This time refers to all subscriptions. </entry>
+                        </row>
+                        <row>
+                            <entry> Future activation subscriptions </entry>
+                            <entry> This refers to the future activation time of all subscriptions
+                                irrespective of their applicability conditions. </entry>
+                        </row>
+                        <row>
+                            <entry> TTC time (Tariff-Time-Change) in bundle rules </entry>
+                            <entry> This refers to the time configured as the
+                                    <uicontrol>Tariff-Time-Change</uicontrol> only in bundle rules
+                                and considered for the subscriptions used in reservation. </entry>
+                        </row>
+                        <row>
+                            <entry> Entity lifecycle state validity time </entry>
+                            <entry> If current state in the entity lifecycle of the resource (from
+                                where reservation is done) has a validity time less than the BCR
+                                time of resource (from periodic lifecycle), then TTC is not set and
+                                instead validity time of the state is set as <uicontrol>Validity
+                                    Time</uicontrol> in CCA. </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<p>The final TTC time is the nearest time to the Diameter call found after sorting all the times mentioned in the above table.</p>
+<note>
+<p>The TTC time is configured by the <uicontrol>Tariff-Time-Change</uicontrol> attribute in the RSV or bundle rules. The TTC time mentioned in rules is in the format of <userinput>hh:mm:ss</userinput> from the GUI and configured in 24-hour format. The time conversion is described in the following table:</p>
+</note>
+<table pgwide="1" colsep="1" rowsep="1">
+                <tgroup cols="2">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>TTC time in rules GUI</p>
+                                <p>Hours:Mintues:Seconds</p>
+                            </entry>
+                            <entry>
+                                <p>Saved in milliseconds in the database as LongValue
+                                    (milliseconds)</p>
+                                <p>(Hour *3600 + Minutes * 60 + Seconds) * 1000</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> 14:22:33 </entry>
+                            <entry>
+                                <p>51753000</p>
+                                <p>For example; ((14*3600 + 22*60 + 33)*1000)</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> 00:00:00 </entry>
+                            <entry> 0 </entry>
+                        </row>
+                        <row>
+                            <entry> 01:22:00 </entry>
+                            <entry> 4920000 </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<sectiondiv>
+<p><b>EXAMPLE</b></p>
+<p>
+<b>Preconditions:</b> Bob makes a data call at <userinput>2018/7/25 9:30:00</userinput>. There is one subscription <varname>Sub1</varname> at device level, and two subscriptions <varname>Sub3</varname> and <varname>Sub4</varname> at group level. The validity time is 7200 seconds from the slicing profile. Global TTC time configures in the RSV is <userinput>9:40:00</userinput>.</p><ul>
+<li>
+<p>
+<varname>Sub1</varname> is a monthly renewed subscription with start time set as <userinput>2018/6/25 10:00:00</userinput> and end time set as <userinput>2018/7/25 10:00:00</userinput>.</p>
+</li>
+<li>
+<p>
+<varname>Sub3</varname> is a one-time (non-renewable) subscription with start time set as <userinput>2018/7/18 09:55:00</userinput> and end time set as <userinput>2018/ 7/25 09:55:00</userinput>.</p>
+</li>
+<li>
+<p>
+<varname>Sub4</varname> is in the barred state and its future activation time is <userinput>2018/7/25 10:40:00</userinput>.</p>
+</li>
+</ul>
+<p>
+<b>Post-conditions:</b>
+</p><ul>
+<li>
+<p>If <varname>Sub1</varname> and <varname>Sub3</varname> are used for the quota reservation, then the end time of <varname>Sub1</varname> and <varname>Sub3</varname>, and activation time of <varname>Sub4</varname>, and global TTC time configured are used for TTC calculation.</p>
+</li>
+<li>
+<p>
+<userinput>2018/7/25 9:40:00</userinput> (Global TTC time) &lt; <userinput>2018/7/25 09:55:00</userinput> (end time of <varname>Sub3</varname>) &lt; <userinput>2018/7/25 10:00:00</userinput> (end time of <varname>Sub1</varname>) &lt; <userinput>2018/7/25 10:40:00</userinput> (activation time of <varname>Sub4</varname>):</p>
+<p>TTC is set to <userinput>2018/7/25 09:40:00</userinput> (Global TTC configured in the RSV) and VT (from second TTC of <userinput>9:55</userinput>) and VT is set to 1500 seconds.</p>
+</li>
+</ul>
+</sectiondiv>
+</section>
+<section><title>Global TTC time in RSV</title>
+<p>The TTC time configured in the RSV rules or bundle rules is considered before any change that may happen in the subscription BCR or activation time. Under those scenarios, next update of the Diameter call provides data usages before or after the TTC time configured in the rules even when there is no change in the subscription validity.</p>
+<p>
+<b>Precondition:</b> The <b>Is-TTC-Enabled</b> flag is set to <varname>true</varname>.</p>
+<p>In the rule group of the <i>GY_PRE_PROCESSING</i> trigger, the global TTC time is configured as the <uicontrol>Tariff-Time-Change</uicontrol>. The data type of the <uicontrol>Tariff-Time-Change</uicontrol> is <varname>TimeOfDayValueType</varname> and it is represented in 24-hours format (hh:mm:ss) as shown in the following figure:</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.0/Global_TTC_time_in_RSV_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-global_ttc_time_in_rsv_default.png"/>
+</fig>
+<sectiondiv>
+<p><b>TTC calculation</b></p>
+<p>During quota allocation, the global TTC time configured in the Gy pre-processing, the end time or <i>Subscription Current State Validity Time</i> of the subscriptions used in quota reservation, or the TTC configured in bundle rules, which are associated with subscription used for quota reservation is checked and the start time or the future activation time is retrieved from all subscriptions and corresponding groups. The start time, end time, future activation time, TTC configured in bundle rules, and global TTC time are sorted, which are later than the call start time and within the VT to get the nearest time and second nearest time. If the subscription does not attach to any period lifecycle, then the associated account period lifecycle start time or end time is used.</p>
+<p>While calculating TTC, the global TTC time configured as the <uicontrol>Tariff-Time-Change</uicontrol> in RSV is considered and timezone for this time is aligned with the timezone of account of first device subscription (if there is only group subscription and no device subscription is available, then default time zone is considered).</p>
+<p>If the global TTC time is configured as the <uicontrol>Tariff-Time-Change</uicontrol> in RSV, then while calculating TTC, this time is considered as the upcoming time of next 24 hours. For example:</p><ol>
+<li>
+<p>If the global TTC time configured as the <uicontrol>Tariff-Time-Change</uicontrol> in RSV is <userinput>11:10:10</userinput> and call time is <userinput>11:30:00 on 2018/12/21</userinput>, then TTC is <userinput>11:10:10 of 2018/12/22</userinput> (assuming it is within the VT range).</p>
+</li>
+<li>
+<p>If the global TTC time configured as the <uicontrol>Tariff-Time-Change</uicontrol> in RSV is <userinput>11:10:10</userinput> and call time is <userinput>11:00:00 on 2018/12/21</userinput>, then TTC is <userinput>11:10:10 of 2018/12/21</userinput> (assuming it is within the VT range).</p>
+</li>
+</ol>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example</b></p>
+<p>
+<b>Preconditions:</b> Bob makes a data call at <userinput>11:00:00 on 2018/11/21</userinput>.</p><ul>
+<li>
+<p>There is a subscription <varname>Sub1</varname> at device level.</p>
+</li>
+<li>
+<p>The validity time is 86400 seconds in slicing profile.</p>
+</li>
+<li>
+<p>The global TTC time configured as the <uicontrol>Tariff-Time-Change</uicontrol> in RSV is <userinput>11:10:10</userinput>.</p>
+</li>
+<li>
+<p>
+<varname>Sub1</varname> is a monthly renewed subscription with start time set as <userinput>2018/11/21 10:00:00</userinput> and end time set as <userinput>2018/12/21 10:00:00</userinput>.</p>
+</li>
+</ul>
+<p>
+<b>Post-conditions:</b>
+</p><ul>
+<li>
+<p>If <varname>Sub1</varname> is used for the quota reservation, then the end time of <varname>Sub1</varname> and global TTC time are used for TTC calculation.</p>
+</li>
+<li>
+<p>After sorting, <userinput>2018/11/21 11:10:10</userinput> (configured in RSV as global TTC) &lt; <userinput>2018/12/21 10:00:00</userinput> (end time of <varname>Sub1</varname>).</p>
+<p>TTC is set to <userinput>2018/11/21 11:10:10</userinput> and VT is set to 86400 seconds.</p>
+</li>
+</ul>
+</sectiondiv>
+</section>
+<section><title>TTC in bundle rules</title>
+<p>The TTC time can also be configured in the bundle rules (<i>BUNDLE.Tariff-Time-Change</i>) and this time is considered in the TTC time computation only when TTC is enabled in RSV and same subscriptions (having TTC time configured in bundle rules) are used for reservation.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.0/TTC_time_in_bundle_rules_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-ttc_time_in_bundle_rules_default.png"/>
+</fig>
+<sectiondiv>
+<p><b>Example</b></p>
+<p>
+<b>Preconditions:</b> Bob makes a data call at <userinput>2018/7/25 9:30:00</userinput>.</p><ul>
+<li>
+<p>There are two subscriptions <varname>Sub1</varname> and <varname>Sub2</varname> at device level.</p>
+</li>
+<li>
+<p>The validity time is 7200 seconds from the slicing profile.</p>
+</li>
+<li>
+<p>The bundle TTC time configures in the bundle rules of <varname>Sub1</varname> is <userinput>9:40:00</userinput>.</p>
+</li>
+<li>
+<p>
+<varname>Sub1</varname> is a monthly renewed subscription with start time set as <userinput>2018/6/25 10:00:00</userinput> and end time set as <userinput>2018/7/25 10:00:00</userinput>.</p>
+</li>
+<li>
+<p>
+<varname>Sub2</varname> is a monthly renewed subscription with start time set as <userinput>2018/6/25 10:00:00</userinput> and end time set as <userinput>2018/7/25 11:00:00</userinput>.</p>
+</li>
+</ul>
+<p>
+<b>Post-conditions:</b>
+</p><ul>
+<li>
+<p>If <varname>Sub1</varname> and <varname>Sub2</varname> are used for the quota reservation, then the end time of <varname>Sub1</varname>, the end time of <varname>Sub2</varname>, and bundle TTC time are used for TTC calculation.</p>
+</li>
+<li>
+<p>After sorting, <userinput>2018/7/25 9:40:00</userinput> (configured in bundle rule) &lt; <userinput>2018/7/25 10:00:00</userinput> (end time of <varname>Sub1</varname>) &lt; <userinput>2018/7/25 11:00:00</userinput> (end time of <varname>Sub2</varname>).</p>
+<p>TTC is set to <userinput>2018/7/25 09:40:00</userinput> and VT is set to 1800 seconds.</p>
+</li>
+</ul>
+</sectiondiv>
+</section>
+<section id="VTadjustment"><title>VT adjustment</title>
+<p>If the global TTC is configured, and TTC and VT adjustment are also provided, then the validity time may be adjusted close to the global TTC leading to increase in traffic around TTC.</p>
+<note>
+<p>
+<uicontrol>tariffTimeChange</uicontrol> attribute is present for before tariff time change usage CDRs and it is the same value, which was sent in the previous request (CCA message send to the <i>TTC</i> AVP (considering which gateway sends the USU for before and after data usage). This attribute is useful in aggregating the data consumed by the device within a given duration. If this attribute is present in CDR, then units committed from a bucket or account is considered first to be consumed before considering the <uicontrol>tariffTimeChange</uicontrol> value.</p>
+</note>
+<p>Refer to <!--xref URI: Tariff_Time_Change.xml#VTandTTC--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-ttchandling/VTandTTC"/> for more information.</p>
+</section>
+</conbody></concept>

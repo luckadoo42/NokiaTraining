@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id ="d1e16735"><title>CDR mapping usage during call execution</title><conbody>
+<section>
+
+<p>The CDRMapping database table is searched for Index with combination of Record Type (from application), APN (if available), and MVNO (if available). Considering all the three parameters are provided in the call, the following search criteria is used:</p>
+<p /><ul>
+
+<li>
+<p>The index is searched with a key as a combination of all three inputs (Record Type, APN, and MVNO).</p>
+</li>
+<li>
+<p>Else, the Index is searched with a key as a combination of Record Type and MVNO.</p>
+</li>
+<li>
+<p>Else, the Index is searched with a key as a combination of Record Type &amp; APN.</p>
+</li>
+<li>
+<p>Else, the Index is searched with the key Record Type only.</p>
+</li>
+</ul>
+<p>If an entry is found, the corresponding Disabled flag is set to <varname>true</varname>.</p>
+<p /><ul>
+
+<li>
+<p>If it is set (true), Index 0 is returned, and CDR is not dumped.</p>
+</li>
+<li>
+<p>Else, the Index is provided to the CDR module for writing CDRs/EDRs.</p>
+</li>
+</ul>
+<p>If an entry is not found in the table, the default Index 1 is returned.</p>
+<sectiondiv>
+<p><b>Example</b></p>
+<p>Consider CDR mapping with the following entries:</p>
+<table colsep="1" frame="all" pgwide="1" rowsep="1">
+<tgroup cols="5">
+<colspec colname="col1" />
+<colspec colname="col2" />
+<colspec colname="col3" />
+<colspec colname="col4" />
+<colspec colname="col5" />
+<thead>
+<row>
+<entry>
+<p>Record Type</p>
+</entry>
+<entry>
+<p>APN</p>
+</entry>
+<entry>
+<p>MVNO</p>
+</entry>
+<entry>
+<p>Index ID</p>
+</entry>
+<entry>
+<p>Disabled</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+OCSChargingRecord
+</entry>
+<entry>
+-
+</entry>
+<entry>
+-
+</entry>
+<entry>
+2
+</entry>
+<entry>
+FALSE
+</entry>
+</row>
+<row>
+<entry>
+OCSChargingRecord
+</entry>
+<entry>
+APN1
+</entry>
+<entry>
+-
+</entry>
+<entry>
+3
+</entry>
+<entry>
+FALSE
+</entry>
+</row>
+<row>
+<entry>
+OCSChargingRecord
+</entry>
+<entry>
+APN2
+</entry>
+<entry>
+-
+</entry>
+<entry>
+4
+</entry>
+<entry>
+TRUE
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>Case 1: If input from the call is <varname>OCSChargingRecord</varname>, <varname>APN1</varname>, then index 3 is returned.</p>
+<p>Case 2: If input is <varname>OCSChargingRecord</varname>, <varname>APN2</varname>, then index 0 is returned as Disable flag is set to <varname>true</varname>.</p>
+<p>Case 3: If input is <varname>OCSChargingRecord</varname>, <varname>APN3</varname>, then index 2 is returned, as entry for <varname>APN3</varname> does not exist and hence search is done only with <varname>OCSChargingRecord</varname>.</p>
+<p>Case 4: If input is <varname>LIFECYCLE_RECORD</varname>, then index 1 (default value) is returned.</p>
+</sectiondiv>
+</section>
+</conbody></concept>

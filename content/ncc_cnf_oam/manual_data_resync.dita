@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="manual_data_resync">
+    <title>Manual data resynchronization</title>
+    <body>
+        <p>On occasion, Aerospike data sync may fall behind. If the data cannot be auto-synced, the
+            data may need to be resynced manually.</p>
+        <section id="section_z24_y1d_qmb">
+            <title>Problem description</title>
+            <p>This is a non catastrophic disaster where data is not getting synced between a mated
+                pair. The kubernetes objects are fine, it is only the data that is the problem. One
+                of the mated pair has fallen behind in syncing data from another. This could be
+                because of slowness or any other WAN issue.</p>
+        </section>
+        <section id="section_url_z1d_qmb">
+            <title>Resolution</title>
+            <p>Data needs to be manually transferred from the normal aerospike database to the
+                problematic database. The following needs to be done for recovery.<ol
+                    id="ol_ffs_w1d_qmb">
+                    <li>Mark the database at recovery site out of service using
+                            <i>configure-manual-oos</i></li>
+                    <li>Disabling XDR traffic on recovering site. Use <i>xdr-traffic-control</i> to
+                        block incoming XDR traffic. </li>
+                    <li>Backup database at healthy site using <i>db-backup</i></li>
+                    <li>Restore data at recovery site, using <i>db-restore</i></li>
+                    <li>Enable XDR traffic at recovery site, using <i>xdr-traffic-control</i></li>
+                    <li>Mark database recovery is completed (In Service IS) using
+                        <i>xdr-status</i></li>
+                    <li>Remove out of service flag using <i>configure-manual-oos</i></li>
+                </ol></p>
+        </section>
+    </body>
+</topic>

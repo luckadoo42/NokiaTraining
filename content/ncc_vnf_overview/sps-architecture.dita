@@ -1,0 +1,773 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9YZ-09018-UG00-PCZZA-d1e1415"><title>NCC architecture</title><conbody>
+<section><title>Overview</title>
+<p>NCC is a cloud ready software-based solution deployed in an OpenStack or VMware cloud
+                environment. It can also be delivered as a turn-key solution with Nokia CloudBand on
+                AirFrame.</p>
+<p>A typical deployment minimally consists of either an NCC site (also referred to as an ME) and a
+                Service Manager (SM) or one site using an Integrated (IG) site, which has both ME
+                and SM functionality in a co-located combination. The IG solution delivers the
+                smallest overall footprint since both ME and SM functions are able to share the same
+                set of common nodes (DB, OAME, IOHO, and Auxiliary). The ME can be a charging
+                application or a policy application or it can be a converged deployment with a
+                combination of the two applications. </p>
+<p>The following figure presents a layered view of the architecture.</p>
+<fig id="spsarchitecture">
+<title>A layered view of NCC architecture</title>
+<image href="../images/newspsarchfig2_default.png"/>
+</fig>
+<p>The following table describes the layers of the NCC architecture.</p>
+<table colsep="1" rowsep="1">
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+                                Component
+                            </entry>
+<entry>
+                                Description
+                            </entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry> I/O handlers </entry>
+<entry>
+<p>Responsible for:</p>
+<ul>
+<li>
+<p>Protocols for external communication (Diameter, SOAP, and
+                                            LDAP)</p>
+</li>
+<li>
+<p>Load balancing and routing or incoming traffic to
+                                            application nodes</p>
+</li>
+<li>
+<p>Concentration of outgoing traffic</p>
+</li>
+</ul>
+</entry>
+</row>
+<row>
+<entry> OAME </entry>
+<entry>
+<p>Responsible for:</p>
+<ul>
+<li>
+<p>Logs</p>
+</li>
+<li>
+<p>Measurements</p>
+</li>
+<li>
+<p>Monitoring</p>
+</li>
+<li>
+<p>Alarms</p>
+</li>
+<li>
+<p>Tracing</p>
+</li>
+<li>
+<p>EDR and CDR infrastructure</p>
+</li>
+<li>
+<p>System configuration</p>
+</li>
+</ul>
+</entry>
+</row>
+<row>
+<entry> Database (Aerospike) </entry>
+<entry>
+<p>Responsible for:</p>
+<ul>
+<li>
+<p>NoSQL database</p>
+</li>
+<li>
+<p>Low level APIs and tools</p>
+</li>
+<li>
+<p>Data replication, migration and balancing within a
+                                            clustered system</p>
+</li>
+<li>
+<p>N-way data replication between systems</p>
+</li>
+</ul>
+</entry>
+</row>
+<row>
+<entry> Database Layer </entry>
+<entry>
+<p>Responsible for:</p>
+<ul>
+<li>
+<p>Database read or write APIs</p>
+</li>
+<li>
+<p>Lock and transaction management </p>
+</li>
+<li>
+<p>Namespace management for replication partitions</p>
+</li>
+<li>
+<p>Data update notifications</p>
+</li>
+<li>
+<p>Database configuration and tuning</p>
+</li>
+<li>
+<p>Database tools (stats or usage)</p>
+</li>
+</ul>
+</entry>
+</row>
+<row>
+<entry> Application Layer </entry>
+<entry>
+<p>Responsible for:</p>
+<ul>
+<li>
+<p>Application and business logic</p>
+</li>
+<li>
+<p>Provisioning APIs from northbound users</p>
+</li>
+<li>
+<p>Most database access using data model layer but direct
+                                            access to database layer possible for specific types of
+                                            data.</p>
+</li>
+</ul>
+</entry>
+</row>
+<row>
+<entry> Data Model Layer </entry>
+<entry>
+<p>Responsible for:</p>
+<ul>
+<li>
+<p>Application APIs</p>
+</li>
+<li>
+<p>Definition of the data model</p>
+</li>
+<li>
+<p>Clubbing objects into single records</p>
+</li>
+<li>
+<p>Managing references between objects</p>
+</li>
+<li>
+<p>Caching of service definitions</p>
+</li>
+<li>
+<p>Remote data access</p>
+</li>
+<li>
+<p>Data synchronization with Subscriber Profile Repository
+                                            (SPR)</p>
+</li>
+<li>
+<p>Managing auto-rebalancing via migration of subscribers
+                                            and groups</p>
+</li>
+<li>
+<p>database tools (data for a group or device.)</p>
+</li>
+</ul>
+</entry>
+</row>
+<row>
+<entry> Other components </entry>
+<entry>
+<p>Includes:</p>
+<ul>
+<li>
+<p>Rule engine</p>
+</li>
+<li>
+<p>Messaging service</p>
+</li>
+</ul>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section><title>Components in the NCC system</title>
+<p>NCC is a multi-tier distributed system that provides high reliability and scalability employing
+                both High Availability (HA) on specific nodes and N+K Engineering on other specific
+                nodes in a deployment. </p>
+<p>The NCC consists of multiple components and nodes that can be deployed in co-located sites or in
+                geographically diverse sites. An SM is comprised of specific components and an NCC
+                ME site is comprised of its own specific components. An IG site is comprised of all
+                SM and ME components.</p>
+<note>NCC geo-redundant sites must always be deployed in multiples of two sites. This is true for
+                any type of deployment.</note>
+<p><xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/deployment"/> shows a typical deployment of the NCC
+                with SM and ME sites.</p>
+<fig id="deployment">
+<title>A view of how NCC is deployed in the network (NCC SM+ME)</title>
+<image href="../images/fig22ov_default.png" scale="70"/>
+</fig>
+<p>
+                <!--xref URI: #IGdeployment-->
+                <xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/IGdeployment"/> shows a deployment of
+                the NCC with an IG site.</p>
+<fig id="IGdeployment">
+<title>A view of how NCC is deployed with an IG in the network </title>
+<image href="../images/fig23ov_default.png" scale="70"/>
+</fig>
+<p>
+                <!--xref URI: #IGdeployment2-->
+                <xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/IGdeployment2"/> shows a deployment of
+                the NCC with an IG site.</p>
+<fig id="IGdeployment2">
+<title>A view of how NCC is deployed with an IG and MEs in the network </title>
+<image href="../images/fig24Ov_default.png" scale="70"/>
+</fig>
+<p>See the following for descriptions of each:</p><ul>
+<li>
+<p>
+<!--xref URI: #SMcomp-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/SMcomp"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #OAMEnodes-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/OAMEnodes"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #IGnodes-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/IGnodes"/>
+</p>
+</li>
+</ul>
+</section>
+<section id="SMcomp">
+<title>Service Manager site component descriptions</title>
+<p>A centralized Service Manager (SM) manages all the NCC Managed Elements in the network. SM is a
+                highly scalable front-end access to the network of NCC sites. It hosts all GUI,
+                provisioning, and external API access. SM runs in an active-active deployment with
+                data replication between the SMs. SM provisions and is aware of the location of all
+                subscriber or device records. SM contains the subscriber location data, but not the
+                actual records themselves.</p>
+<p>Configuration management of NCC must go through SM. Direct interaction with NCC Managed Elements
+                for configuration management is not available.</p>
+<note>SM does not prevent an upstream system from provisioning to either SM in a system; however,
+                data conflicts are possible if related APIs are sent to opposite SMs. Nokia
+                recommends that you either treat the SM pair as you would an active/standby pair or
+                send related operations to the same SM.</note>
+<p>SM is also composed of a multi-tier architecture, with a front-end tier of API or
+                GUI, an application tier, and a persistent store database. The OAM functions of the
+                SM are hosted by the OAME nodes.</p>
+<fig id="SMGUI">
+<title>Service Manager components</title>
+<image href="../images/smarch2_default.png" id="image_izr_ysg_jlb"/>
+</fig>
+<p>The SM components are as follows:</p>
+<ul id="ul_jzr_ysg_jlb">
+<li>
+<p>
+<!--xref URI: #smOAME-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/smOAME"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #smIOHO-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/smIOHO"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #smApplication1-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/smApplication1"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #smDB1-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/smDB1"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #auxnode12-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/auxnode12"/>
+</p>
+</li>
+</ul>
+</section>
+<section id="smOAME">
+<title>OAME</title>
+<p>The following applies for OAME nodes on SM:</p>
+<ul id="ul_lzr_ysg_jlb">
+<li>
+<p>The nodes are the single point of contact for all OAME interactions such as
+                        logs, alarms, or scripts.</p>
+</li>
+<li>
+<p>NCC users do not interact directly with the OAME nodes. The interactions are typically carried
+                        out using SM.</p>
+</li>
+<li>
+<p>The nodes run active-standby with floating IP address associated with the
+                        active.</p>
+</li>
+</ul>
+</section>
+<section id="smIOHO">
+<title>IOHO</title>
+<p>The following applies for IOHO nodes on SM:</p>
+<ul id="ul_mzr_ysg_jlb">
+<li>
+<p>The nodes receive requests from other BSS, OSS systems or GUI clients.</p>
+</li>
+<li>
+<p>The IOHO nodes operate in active-standby operations with a single floating IP
+                        address pinned to the active node</p>
+</li>
+<li>
+<p>A single IOHO pair is supported in SM.</p>
+</li>
+<li>
+<p>The IOHO nodes load balances the HTTP and TCP traffic for policy and charging
+                        to the application nodes.</p>
+</li>
+<li>
+<p>The load balancing algorithm is round robin.</p>
+</li>
+</ul>
+</section>
+<section id="smApplication1">
+<title>SM application</title>
+<p>The following applies for SM application nodes:</p>
+<ul id="ul_nzr_ysg_jlb">
+<li>
+<p>The SM application nodes are responsible for hosting GUI, provisioning, and
+                        external API access.</p>
+</li>
+<li>
+<p>The nodes operate in N+K redundancy. The Service Manager (SM) has a cluster
+                        of SM Application nodes configured with N+K engineering, similar to Policy
+                        and Charging Applications. The nodes are deployed as active-active N+K
+                        nodes, which implies that to achieve a capacity of N nodes, N+K nodes are
+                        deployed, and the system can tolerate K failures, and still provide capacity
+                        of N. All the N+K nodes are used in processing of messages nodes.</p>
+</li>
+<li>
+<p>When an application node is taken out of service, it finishes processing the
+                        messages in flight, and is not given any more messages.</p>
+</li>
+</ul>
+</section>
+<section id="smDB1">
+<title>Database</title>
+<p>The following applies for data base nodes:</p>
+<ul id="ul_ozr_ysg_jlb">
+<li>
+<p>NoSQL Aerospike database is the database in NCC.</p>
+</li>
+<li>
+<p>The nodes operate as a distributed database.</p>
+</li>
+<li>
+<p>The nodes operate in N+K redundancy.</p>
+</li>
+<li>
+<p>All persistent information is held in the database nodes.</p>
+</li>
+</ul>
+</section>
+<section id="auxnode12">
+<title>Auxiliary cluster</title>
+<p>The Auxiliary cluster hosts Service Discovery and Configuration (SDC) and ZooKeeper. The
+                ZooKeeper server cluster is used by the Kafka streaming platform. SDC provides a
+                means to deploy a distributed and reliable key-value store using ETCD as a cluster
+                of nodes, and that is used by the NCC as a central location of configuration and
+                services data.</p>
+<p>The Auxiliary nodes are all active, but there is one node which is elected as the
+                leader. If that leader node fails, a new election takes place and one of the other
+                nodes becomes the leader.</p>
+<p>The ETCD cluster might contain three, five or seven nodes. However, for live
+                deployments a minimum cluster size of five is required in order to tolerate the loss
+                of two member nodes.</p>
+<p>The choice of the cluster size depends on the fault tolerance requirement. Although
+                larger clusters provide better fault tolerance, the write performance suffers
+                because data must be replicated across more machines. </p>
+</section>
+<section id="OAMEnodes"><title>NCC Managed Element (ME) site component descriptions</title>
+<p><xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/nodeconfig"/> shows the nodes in an ME.</p>
+<fig id="nodeconfig">
+<title>Nodes of an ME </title>
+<!--MMO resource relative URI: ../Graphics/MEarch2_default.png-->
+<image href="../images/mearch2_default.png"/>
+</fig>
+<p>The Service Manager (SM), with its components, and the Managed Element (ME), with the following
+                components, collectively form a single NCC system.</p><ul>
+<li>
+<p>
+<!--xref URI: #OAMEnodes11-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/OAMEnodes11"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #IOHnodes-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/IOHnodes"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #Databasenodes-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/Databasenodes"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #CDRnode-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/CDRnode"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #auxnode-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/auxnode"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #Applicationnodes-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/Applicationnodes"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #CommonServicesnodes-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/CommonServicesnodes"/>
+</p>
+</li>
+</ul>
+</section>
+<section id="OAMEnodes11"><title>Operation Administration Maintenance Endpoint (OAME) nodes</title>
+<p>The OAME nodes perform the Operation and Maintenance Endpoint (OAME) functions of the NCC
+                system.</p><ul>
+<li>
+<p>The nodes are deployed in active/standby pairs with shared public IP addresses.</p>
+</li>
+<li>
+<p>The nodes run active/standby with floating IP address associated with the active.</p>
+</li>
+<li>
+<p>The nodes are the single point of contact for all OAME interactions such as logs, alarms, or scripts.</p>
+</li>
+<li>
+<p>NCC users do not typically interact directly with the OAME nodes. The interactions are typically
+                        carried out using SM.</p>
+</li>
+<li>
+<p>The OAME nodes are responsible for the various OAM related servers that perform monitoring, measurement, alarms, logging, tracing, and LTM.</p>
+</li>
+</ul>
+</section>
+<section id="IOHnodes"><title>Input Output Handler nodes</title>
+<p>IOH nodes consist of the following two types of nodes.</p>
+<sectiondiv>
+<p><b>Input Output Handler Diameter (IOHD) nodes</b></p>
+<p>The Input Output Handler Diameter nodes are the control point of the NCC network and provide
+                    Diameter, HTTP/2, and RADIUS load balancing. Diameter, HTTP/2, and RADIUS
+                    signaling enters and leaves NCC over these nodes. The nodes are deployed as a
+                    single high availability (HA) active-standby pair. One IOHD handles all the
+                    traffic while the other is in standby mode. If the active IOHD fails, then the
+                    standby IOHD takes over and continues providing service.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Input Output Handler Other (IOHO) nodes</b></p>
+<p>The Input Output Handler Other nodes are the point of contact for other types of traffic, such as
+                    Hyper-Text Transfer Protocol (HTTP) and Lightweight Directory Authentication
+                    Protocol (LDAP) in the NCC network. The nodes are deployed as a single high
+                    availability (HA) active-standby pair. One IOHO handles all the traffic while
+                    the other is in standby mode. If the active IOHO fails, then the standby IOHO
+                    takes over and continues providing service.</p>
+<p>TCP and HTTP signaling enters and leaves NCC over these nodes.</p><ul>
+<li>
+<p>The IOHO nodes operate in active-standby operations with single floating IP address pinned to the active node.</p>
+</li>
+<li>
+<p>The nodes load balance the HTTP and TCP traffic for policy and charging to the application nodes. The load balancing algorithm is based on round-robin.</p>
+</li>
+<li>
+<p>Contains the LDAP Concentrator.</p>
+</li>
+</ul>
+<p>The nodes are deployed as a single high availability active-standby pair. One OAME handles all the traffic while the other is in standby mode. If the active OAME fails, then the standby OAME takes over and continues providing service. See the section about Redundancy in this chapter.</p>
+</sectiondiv>
+</section>
+<section id="Databasenodes"><title>Database nodes</title>
+<p>The database nodes operate as a distributed database and hold all the persistent information. The nodes are NoSQL Aerospike databases deployed as active-active N+K nodes.</p>
+<p>The NCC database cluster is configured with N+K engineering, where all nodes are active. The
+                database cluster is configured into two zones, with N+K engineering being applied
+                within each zone. In normal operation, there are two copies of every database
+                record, one in each zone. If an entire zone is taken down for software upgrade, all
+                records remain accessible in the other database zone. When a database node fails,
+                records are migrated within the cluster so that records which were on that failed
+                node are once again present on two active nodes. If enough nodes fail such that a
+                zone has less than N active remaining, then the system no longer has its full
+                capacity available and will declare itself out-of-service. As well, if a node fails
+                very soon after another node had previously failed in the other zone and that
+                previous data migration has not yet completed, then some records will be
+                inaccessible and the system will declare itself out-of-service.</p>
+</section>
+<section id="CDRnode"><title>CDR node</title>
+<p>This node stores all the Call Data Records (CDRs) generated by the NCC applications like call
+                detail records, charging data records, and event data records. The CDRs are ASN.1
+                encoded and dumped as binary files to a Kafka queue, this queue resides on the
+                Common Services node. You can use a decoding tool to decode these files to plain
+                text files (CSV), for which you can specify the file name, location, size and number
+                of CDR files.</p>
+<p>The CDR nodes are configured with N+K engineering, where all nodes are active. N+K engineering  is configured into two zones and applied within each zone. In normal operation, there are two copies of every record, one in each zone. If an entire zone is taken down for software upgrade, for example, all records remain accessible in the other zone. When a CDR node fails, records are migrated within the zones so that records which were on that failed node are once again present on two active nodes. If enough nodes fail such that a zone has less than N active remaining, then the system no longer has its full capacity available and will declare itself out-of-service. As well, if a node fails very soon after another node had previously failed in the other zone and that previous migration has not yet completed, then some records will be inaccessible and the system will declare itself out-of-service.</p>
+</section>
+<section id="auxnode"><title>Auxiliary cluster</title>
+<p>The Auxiliary cluster hosts Service Discovery and Configuration (SDC) and ZooKeeper. The
+                ZooKeeper server cluster is used by the Kafka streaming platform. SDC provides a
+                means to deploy a distributed and reliable key-value store using ETCD as a cluster
+                of nodes, and that is used by the NCC as a central location of configuration and
+                services data.</p>
+<p>The Auxiliary nodes are all active, but there is one node which is elected as the leader. If that leader node fails, a new election takes place and one of the other nodes becomes the leader.</p>
+<p>The ETCD cluster might contain three, five or seven nodes. However, for live deployments a minimum cluster size of five is required in order to tolerate the loss of two member nodes.</p>
+<p>The choice of the cluster size depends on the fault tolerance requirement. Although larger clusters provide better fault tolerance, the write performance suffers because data must be replicated across more machines. </p>
+</section>
+<section id="Applicationnodes"><title>Diameter application nodes</title>
+<p>The Application nodes carry out all the application processing logic for charging and policy. The nodes are deployed as N+K nodes, which implies that to achieve a capacity of N nodes, N+K nodes are deployed, and the system can tolerate K failures, and still provide capacity of N. </p>
+<p>Policy and Charging Applications are configured with N+K engineering. For example, suppose N=10 nodes are required to handle full engineered capacity and K=2 additional nodes are added for redundancy.  In the normal case, all 12 application nodes would be active and processing traffic in a balanced load distribution. Up to K (2 in this example) nodes can fail without any system impact.  When a node fails, traffic is distributed evenly across the remaining active nodes. If enough nodes fail such that less than N are remaining, then the system no longer has its full capacity available and will declare itself out-of-service.</p>
+</section>
+<section id="CommonServicesnodes"><title>	Common Services nodes</title>
+<p>The common services nodes are responsible for carrying out all the provisioning, notification
+                function work of NCC. They are considered stateful and operate in a N+K redundancy
+                model. The data on Common Services nodes is normally transient (consumed quickly)
+                but that is not always the case. The Common Services VM has multiple components
+                (Kafka, and then Java apps for provisioning and notification). The Java apps are all
+                stateless. However, the Kafka broker has persistent storage, which makes that the
+                stateful component. The Kafka brokers store the queued CDRs, data change
+                notifications, TEM triggers, etc. The Kafka brokers run on the Common Services nodes
+                and all the application nodes put their CDRs in the Kafka queue.  </p>
+<p>When a common services node is taken out of service, it finishes processing the messages in-flight, and is not given any more messages. </p>
+</section>
+<section id="IGnodes"><title>NCC Integrated (IG) site component descriptions</title>
+<p>An NCC IG site regroups both SM and ME functionalities within a single site. Unless otherwise
+                specified one NCC IG site is functionally equivalent to one SM site and one ME
+                site.</p>
+<p>NCC IG is a multi-tier distributed system that provides high reliability and scalability
+                employing both High Availability (HA) on specific nodes and N+K Engineering on other
+                specific nodes in a deployment.</p>
+<fig>
+<title>Nodes of an NCC IG system</title>
+<!--MMO resource relative URI: ../Graphics/IGfigure_default.png-->
+<image href="../images/igfigure_default.png"/>
+</fig>
+<p>The NCC Integrated (IG), with the following components, form a single NCC system:</p><ul>
+<li>
+<p>the SM components, see the component descriptions in the following:</p><ul>
+<li>
+<p>
+<!--xref URI: #smOAME-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/smOAME"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #smIOHO-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/smIOHO"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #smApplication1-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/smApplication1"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #smDB1-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/smDB1"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #auxnode12-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/auxnode12"/>
+</p>
+</li>
+</ul>
+</li>
+<li>
+<p>the ME components, see the component descriptions in the following:</p><ul>
+<li>
+<p>
+<!--xref URI: #OAMEnodes11-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/OAMEnodes11"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #IOHnodes-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/IOHnodes"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #Databasenodes-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/Databasenodes"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #CDRnode-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/CDRnode"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #auxnode-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/auxnode"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #Applicationnodes-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/Applicationnodes"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: #CommonServicesnodes-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e1415/CommonServicesnodes"/>
+</p>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+<section><title>Network Repository Function (NRF)</title>
+<p>NRF is supported on the NCC for 5G environments and offers the following functions: </p><ul>
+<li>
+<p>Maintains the network function (NF) profile of the available NF instances and their supported services.</p>
+</li>
+<li>
+<p>Allows other NF instances to subscribe and get notified about the registration in NRF of new instances of a given type.</p>
+</li>
+<li>
+<p>Supports the service discovery function. It receives <i>NF Discovery</i> requests from NF instances and provides the information of the available NF instances fulfilling certain criteria.</p>
+</li>
+</ul>
+<sectiondiv>
+<p><b>NF components in NRF</b></p>
+<p>NCC requires two NF components, which are included in NCC, to communicate to NRF as follows:</p><ul>
+<li>
+<p>
+<i>NF-C</i> : Is the controller module on OAME nodes.</p>
+<p>The <i>NF</i> controller is the main module of the <i>NF</i> feature handler on NCC. The
+                                <i>NF-C</i> decides when a message such as <i>NFRegister</i>,
+                                <i>NFHeartbeat</i>, <i>NFDeregister</i>, <i>NFUpdate</i> is to be
+                            triggered towards the NRF. The <i>NF-C</i> never sends the message
+                            directly to the NRF instead, <i>NF-C</i> checks using kafka broker with
+                            one of the <i>NF-H</i> to send the message to the NRF</p>
+</li>
+<li>
+<p>
+<i>NF-H</i>: Is the handler module on the Diameter <i>app</i> nodes.</p>
+<p>The <i>NF-H</i> is the worker module that interacts with the NRF over the <i>Nnrf</i> interface. The requests towards the NRF are routed via the core IOH (<i>IOH-C</i>).</p>
+</li>
+</ul>
+<p>The following figure is an example of how the NF components and NRF are supported in the local
+                    NCC.</p>
+<fig>
+<title>NF components in local NCC</title>
+<image href="../images/nfcomplocalsps_default.gif" placement="break" scale="20"/>
+</fig>
+<p>The NF handler reports the response from the NRF back to the NF controller which then takes appropriate action based on the response code and the message.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>NRF services</b></p>
+<p>NCC, with NRF, offers the following services to other network functions:</p><ul>
+<li>
+<p>NFRegister</p>
+</li>
+<li>
+<p>NFDeregister</p>
+</li>
+<li>
+<p>NFDiscover</p>
+</li>
+<li>
+<p>NFHeartbeat</p>
+</li>
+</ul>
+</sectiondiv>
+<sectiondiv>
+<p><b>Multiple NRF server support</b></p>
+<p>The following figure is an example of how multiple NRFs are supported in the network.</p>
+<fig>
+<title>Multiple NRF servers in the network</title>
+<image href="../images/multiplenfr_default.gif" placement="break" scale="20"/>
+</fig>
+<p>NCC supports multiple NRF servers, as follows.</p><ul>
+<li>
+<p>Multiple NRF servers can be provisioned on a single NCC ME site. Different MEs can have different
+                            list of provisioned NRF servers. </p>
+</li>
+<li>
+<p>Only one of the provisioned NRF servers is designated as <i>Primary</i>. A Primary NRF is the
+                                <i>preferred</i> NRF server for an NCC site.</p>
+</li>
+<li>
+<p>Different MEs can have different NRF servers designated as <i>Primary</i>. All other provisioned NRF servers are treated as <i>Secondary</i>.</p>
+</li>
+<li>
+<p>No communication between NCC and NRF takes place unless an NRF server is designated as
+                                <i>Primary</i>. </p>
+<p>To change the <i>Primary</i> designate on a ME, another provisioned NRF server has to be made <i>Primary</i>. Hence, if a <i>Secondary</i> NRF server is made <i>Primary</i>, then the previous <i>Primary</i> server is automatically made <i>Secondary</i>.</p>
+</li>
+<li>
+<p> A <i>Primary</i> NRF server cannot be deleted. To delete a <i>Primary</i> NRF server, first one of the <i>Secondary</i> NRF servers has to be made as <i>Primary</i> and then the old <i>Primary</i> server is deleted.</p>
+</li>
+<li>
+<p>A <i>Primary</i> NRF server can be modified. However, the <i>apiRoot</i> of an NRF server is its identity, and is not allowed to be modified. </p>
+</li>
+<li>
+<p>An <i>inUse</i> flag indicates which NRF server communicates with NCC. This flag cannot be set
+                            from NCC Service Manager. This flag is set dynamically by NCC logic on
+                            the NCC ME.</p>
+</li>
+<li>
+<p>
+                            <i>inUse</i> flag is set for <varname>ANY</varname> NRF and not only
+                                <i>Primary</i>. NCC communicates to a secondary NRF at that time,
+                            and the <i>Secondary</i> NRF flag is set to <i>inUse</i>.</p>
+</li>
+<li>
+<p>For each NCC ME site, NCC Service Manager shows which NRF server is <i>Primary</i> and which NRF
+                            server is currently in use. </p>
+</li>
+<li>
+<p>An <i>inUse</i> NRF server is allowed to be deleted. In this case, the NF-C selects either the <i>Primary</i> or another <i>Secondary</i> for all its communication.</p>
+</li>
+<li>
+<p>An <i>inUse</i> NRF server can be modified. However, the <i>apiRoot</i> of an NRF server is its identity, and is not allowed to be modified.</p>
+</li>
+</ul>
+</sectiondiv>
+</section>
+</conbody></concept>

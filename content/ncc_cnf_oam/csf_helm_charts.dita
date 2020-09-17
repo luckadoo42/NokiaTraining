@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="csf_helm_charts">
+    <title>CSF helm charts</title>
+    <body>
+        <p>The following CSF helm charts are backed up.</p>
+        <table id="table_xcq_ssc_qmb">
+            <title>CSF Helm charts to back up</title>
+            <tgroup cols="3">
+                <colspec colnum="1" colname="col2"/>
+                <colspec colnum="2" colname="col3"/>
+                <colspec colnum="3" colname="col5"/>
+                <thead>
+                    <row>
+                        <entry>Helm chart name</entry>
+                        <entry>Dependencies</entry>
+                        <entry>Items backed up</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>ckaf-kafka</entry>
+                        <entry>ckaf-zookeeper</entry>
+                        <entry><u>zk-cbur-policy.yaml</u><p>volumes:</p><p>- zookeeper-data-dir
+                                    (<i>volumeClaimTemplates</i>)</p><p>- zk-transaction-log-backup
+                                    (<i>volumeClaimTemplates</i>)</p><u>ckaf-cbur-policy.yaml</u><p>volumes:</p><p>-
+                                topic-backup <i>(volume of type emptyDir)</i></p></entry>
+                    </row>
+                    <row>
+                        <entry>ckey</entry>
+                        <entry>cmdb</entry>
+                        <entry><u><u>brpolicy.yaml</u></u><p>volumes:</p><p>- backup
+                                    (<i>volumeClaimTemplates</i>)</p><p><u>mariadb-cbur-policy.yaml</u></p><p>volumes:</p><p>{{-
+                                if and (.Values.mariadb.persistence.backup)
+                                (.Values.mariadb.persistence.backup.enabled) }}</p><p>- backupdir
+                                    (<i>volumeClaimTemplates</i>)</p><p>{{- else }}</p><p>-
+                                datadir/backup <i>(datadir is a volumeClaimTemplate)</i></p><p>{{-
+                                end }}</p></entry>
+                    </row>
+                    <row>
+                        <entry>csdc</entry>
+                        <entry/>
+                        <entry><u><u>policy.yaml</u></u><p>volumes:</p><p>- tmpdatavol <i>(volume of
+                                    type emptyDir)</i></p></entry>
+                    </row>
+                    <row>
+                        <entry>belk-ekfc/belk-curator</entry>
+                        <entry/>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>belk-ekfc/belk-elasticsearch</entry>
+                        <entry/>
+                        <entry><u><u>BrPolicy.yaml</u></u><p>volumes:</p><p>- elasticsearch-backup
+                                    <i>(persistentVolumeClaim)</i></p><p>{{- if
+                                .Values.searchguard.enable }}</p><p>k8sobjects:</p><p>- object-type:
+                                configmaps</p><p>match-criteria: name</p><p>match-string: {{
+                                .Release.Name }}-belk-elasticsearch</p><p>{{- end }}</p></entry>
+                    </row>
+                    <row>
+                        <entry>belk-ekfc/belk-fluentd</entry>
+                        <entry/>
+                        <entry>
+                            <p><u><u>BrPolicy.yaml</u></u></p>
+                            <p>k8sobjects:</p>
+                            <p>- object-type: configmaps</p>
+                            <p>match-criteria: name</p>
+                            <p>match-string: {{ .Release.Name }}-belk-fluentd</p>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>belk-ekfc/belk-kibana</entry>
+                        <entry/>
+                        <entry><u><u>BrPolicy.yaml</u></u><p>k8sobjects:</p><p>- object-type:
+                                configmaps</p><p>match-criteria: name</p><p>match-string: {{
+                                .Release.Name }}-belk-kibana</p></entry>
+                    </row>
+                    <row>
+                        <entry>calm</entry>
+                        <entry/>
+                        <entry><u>alma-config-rest-brPolicy.yaml &amp;
+                                brPolicy.yaml</u><p>volumes:</p><p>- logs</p></entry>
+                    </row>
+                    <row>
+                        <entry>citm-ingress</entry>
+                        <entry>default404</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>BTEL/ckaf-kafka</entry>
+                        <entry>ckaf-zookeeper</entry>
+                        <entry>See entry for chart ckaf-kafka in this table.</entry>
+                    </row>
+                    <row>
+                        <entry>ckaf-schema-registry</entry>
+                        <entry/>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>cmdb (in btel)</entry>
+                        <entry/>
+                        <entry>
+                            <p><u>mariadb-cbur-policy.yaml</u></p>
+                            <p>volumes:</p>
+                            <p>{{- if and (.Values.mariadb.persistence.backup)
+                                (.Values.mariadb.persistence.backup.enabled) }}</p>
+                            <p>- backupdir (<i>volumeClaimTemplates</i>)</p>
+                            <p>{{- else }}</p>
+                            <p>- datadir/backup <i>(datadir is a volumeClaimTemplate)</i></p>
+                            <p>{{- end }}</p>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>cnot</entry>
+                        <entry>cnot-configmap</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>cpro</entry>
+                        <entry/>
+                        <entry>
+                            <p><u><u>brpolicy.yaml</u></u></p>
+                            <p>volumes:</p>
+                            <p>- storage-volume <i>(volumeClaimTemplates)</i></p>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>cpro-gen3gppxml</entry>
+                        <entry/>
+                        <entry><u><u>brpolicy.yaml</u></u><p>volumes:</p><p>- gen3gppxml-data
+                                    <i>(volumeClaimTemplates)</i></p></entry>
+                    </row>
+                    <row>
+                        <entry>cpro-grafana</entry>
+                        <entry>cmdb</entry>
+                        <entry>
+                            <p><u>grafana-brpolicy.yaml</u></p>
+                            <p>volumes:</p>
+                            <p>{{- if or (.Values.cmdb.enabled) (.Values.cmdb.need_deployed) }}</p>
+                            <p>- appdata <i>(volume of type emptyDir)</i></p>
+                            <p>{{- else }}</p>
+                            <p>- storage <i>(persistentVolumeClaim)</i></p>
+                            <p>{{- end}}</p>
+                            <p><u>mariadb-cbur-policy.yaml</u></p>
+                            <p>volumes:</p>
+                            <p>{{- if and (.Values.mariadb.persistence.backup)
+                                (.Values.mariadb.persistence.backup.enabled) }}</p>
+                            <p>- backupdir (<i>volumeClaimTemplates</i>)</p>
+                            <p>{{- else }}</p>
+                            <p>- datadir/backup <i>(datadir is a volumeClaimTemplate)</i></p>
+                            <p>{{- end }}</p>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>crmq</entry>
+                        <entry/>
+                        <entry>
+                            <p><u>BrPolicy.yaml</u></p>
+                            <p>volumes:</p>
+                            <p>- config-volume <i>(volume of type emptyDir)</i></p>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>CVEA</entry>
+                        <entry/>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>Data Refinery (Not a CSF component)</entry>
+                        <entry/>
+                        <entry/>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </body>
+</topic>

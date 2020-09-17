@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="procedure">
+    <title>Preparing topology data and resources</title>
+    <taskbody>
+        <context>This procedure provides instructions on how to create a
+                <filepath>site.conf</filepath> file for all CNFs in your deployment. The
+                <filepath>site.conf</filepath> file describes a CNF's topology data that is defined
+            by the topology parameters in the SPS Helm chart. For more information about topology
+            parameters, see section <xref href="parameters.dita"/>. The contents of all the
+                <filepath>site.conf</filepath> files are used to compose the
+                <filepath>topology.yaml</filepath> file that applies to every CNF in the
+                deployment.<note> You are going to use the <filepath>site.conf</filepath> file to
+                set variables during configuration and deployment of a CNF.</note><p>The topology
+                data depends on your deployment model, number of CNFs in the deployment and their
+                type. The NCC supports three CNFs: Service Manager (SM), Managed Element (ME), and
+                Integrated SM and ME (IG). In addition, ME can act as a CHF router. For more
+                information about CNF types and deployment models, see the NCC CNF Overview
+                Guide.</p></context>
+        <steps>
+            <step>
+                <cmd>For each CNF, choose an ID, which is defined by <codeph>spssite</codeph> and
+                        <codeph>spspartition</codeph> topology parameters.</cmd>
+            </step>
+            <step>
+                <cmd>For each CNF, create a <filepath>site.conf</filepath> file as follows:</cmd>
+                <info>
+                    <ol id="ol_kwn_pph_ymb">
+                        <li>In your working directory, create a subdirectory using the type and ID
+                            of the CNF in the format <codeph>&lt;TYPE>&lt;ID></codeph>.<p>
+                                Example:</p><codeblock>mkdir sm1
+mkdir me5</codeblock></li>
+                        <li>In this subdirectory, create the <filepath>site.conf</filepath> file and
+                            add to this file the following
+                            contents:<codeblock># Values can reference variables defined earlier in this file or existing environment variables.
+# Specify lowercase:
+export PLATFORM=openshift
+ 
+# Specify 1.4 or 1.5:
+export ISTIO_VERSION=
+ 
+# Lowercase ig, sm, or me:
+export SITE_TYPE=
+export SITE_ID=
+export NAMESPACE=naperil101vzwcchf-y-nk-sm-000
+ 
+export BUILD_VERSION=
+export NODE_NAME=
+export FQDN=
+# Specify an external IP of a worker/edge node:
+export INGRESS_IP=
+export HTTP_INGRESS_PORT=443
+# For IG/SM, CKEY_FQDN must match FQDN. For an ME, set its CKEY_FQDN to the FQDN of the SM:
+export CKEY_FQDN=${FQDN}
+# Set CKEY_NAMESPACE to the namespace where CKEY is installed (typically, your SM's namespace):
+export CKEY_NAMESPACE=${NAMESPACE}
+  
+export DIAMETER_ORIGIN_HOST="${SITE_TYPE}${SITE_ID}"
+export DIAMETER_ORIGIN_REALM=realm
+ 
+export POD_NAME_PREFIX="${NAMESPACE}-"
+export CONTAINER_NAME_PREFIX="ctr-${NAMESPACE}-"
+ 
+# DO NOT MODIFY CHART_VERSION: it is derived from BUILD_VERSION.
+export CHART_VERSION=$(echo $BUILD_VERSION | sed 's/SPS_//' | sed 's/_/./g' | sed 's/I/1-/')</codeblock></li>
+                        <li>In the <filepath>site.conf</filepath> file, set the values that you know
+                            such as <codeph>PLATFORM</codeph>, <codeph>ISTIO_VERSION</codeph>,
+                                <codeph>SITE_TYPE</codeph>, <codeph>SITE_ID</codeph>, and
+                                <codeph>NAMESPACE</codeph>.</li>
+                    </ol>
+                </info>
+            </step>
+            <step>
+                <cmd>For every <filepath>site.conf</filepath> file, add the build version to the
+                    contents of the file.</cmd>
+            </step>
+            <step>
+                <cmd>For each CNF, choose a Kubernetes node to be the CNF's Ingress node as follows: </cmd>
+                <info>
+                    <ol id="ol_dz1_h5h_ymb">
+                        <li>Choose a worker or edge node. <note>Each CNF must have its own Ingress
+                                node to avoid port conflicts.</note></li>
+                        <li>Find that Kubernetes node's external IP address.<p>The following is the
+                                example of the
+                            query:</p><codeblock>kubectl get node -l kubernetes.io/hostname=HOSTNAMEOFYOURCHOSENNODE
+ 
+NAME            STATUS   ROLES    AGE   VERSION
+aem0004node11   Ready    &lt;none>   83d   v1.17.4</codeblock></li>
+                        <li>Add that Kubernetes node's name to the CNF's
+                                <filepath>site.conf</filepath> file.</li>
+                    </ol>
+                </info>
+            </step>
+            <step>
+                <cmd> For each CNF's Ingress node, create an FQDN, and add this FQDN and the IP
+                    address to the CNF's <filepath>site.conf</filepath> file</cmd>
+            </step>
+            <step>
+                <cmd>For each CNF, choose a unique Diameter OriginHost using the type and ID of the
+                    CNF in the format <codeph>&lt;TYPE>&lt;ID></codeph>, for example,
+                        <codeph>sm1</codeph> or <codeph>me5</codeph>.</cmd>
+                <info>
+                    <note>The <filepath>site.conf</filepath> file uses this convention. You might
+                        change the format if you have different needs.</note>
+                </info>
+            </step>
+            <step>
+                <cmd>Inside your top-level working directory, create the
+                        <filepath>topology.yaml</filepath> file by using the information of the
+                        <filepath>site.conf</filepath> files of all the CNFs.</cmd>
+                <info>The following is an example of the <filepath>topology.yaml</filepath> file for
+                    the deployment with one SM and one
+                    ME.<codeblock>global:
+  topologydata:
+    config:
+      topology:
+        spspartition:
+        - id: 1
+          name: SPS-Partition
+          # siteids should include all IG and/or ME sites (exclude SM).
+          siteids: [5]
+        spssite:
+        - id: 1
+          location: California
+          matesite:
+          name: SPS-SM
+          # public ingress FQDN, port, and protocol
+          oamipaddress: sm1-bcmt2.dyn.nesc.nokia.net
+          oamport: 80
+          oamprotocol: http
+          primarysmsite: false
+          # public ingress FQDN, port, and protocol
+          trafficipaddress: sm1-bcmt2.dyn.nesc.nokia.net
+          trafficport: 80
+          trafficprotocol: http
+          types: ["SPS-SM"]
+          xdr:
+            externalips: []
+        - id: 5
+          location: Calgary
+          matesite:
+          name: SPS-ME
+          # public ingress FQDN, port, and protocol
+          oamipaddress: me5-bcmt2.dyn.nesc.nokia.net
+          oamport: 80
+          oamprotocol: http
+          originhost: me5
+          originrealm: realm
+          primarysmsite: false
+          # public ingress FQDN, port, and protocol
+          trafficipaddress: me5-bcmt2.dyn.nesc.nokia.net
+          trafficport: 80
+          trafficprotocol: http
+          types: ["SPS-Policy", "SPS-Charging", "SPS-Notification", "SPS-CE"]
+          xdr:
+            externalips: []</codeblock>The
+                    following is an example of the <filepath>topology.yaml</filepath> file for the
+                    deployment with two IG mated pairs with XDR
+                    replication.<codeblock>global: 
+  topologydata:
+    config:
+      topology:
+        spspartition:
+        - id: 1
+          name: IG1-IG2
+          siteids: [1,2]
+        spssite:
+        - id: 1
+          location: Austin
+          matesite: 1
+          name: SPS-IG1
+          #public ingress IP address, port and protocol
+          oamipaddress: "ig1-bcmt99.dyn.nesc.nokia.net"
+          oamport: 80
+          oamprotocol: http
+          originhost: ig1
+          originrealm: realm
+          primarysmsite: true
+          #public ingress IP address, port and protocol
+          trafficipaddress: "ig1-bcmt99.dyn.nesc.nokia.net"
+          trafficport: 80
+          trafficprotocol: http
+          types: ["SPS-SM","SPS-Policy", "SPS-Charging", "SPS-Notification", "SPS-CE"]
+          xdr:
+            externalips:
+            - ig1-bcmt99.dyn.nesc.nokia.net
+            externalport: 3008
+        - id: 1
+          location: France
+          matesite: 2
+          name: sps-ig2
+          #public ingress IP address, port and protocol
+          oamipaddress: ig2-bcmt99.dyn.nesc.nokia.net
+          oamport: 80
+          oamprotocol: http
+          originhost: ig2
+          originrealm: realm
+          primarysmsite: true
+          #public ingress IP address, port and protocol
+          trafficipaddress: ig2-bcmt99.dyn.nesc.nokia.net
+          trafficport: 80
+          trafficprotocol: http
+          types: ["SPS-SM", "SPS-Policy", "SPS-Charging", "SPS-Notification", "SPS-CE"]
+          xdr:
+            externalips:
+            - ig2-bcmt99.dyn.nesc.nokia.net
+            externalport: 3008</codeblock></info>
+            </step>
+            <step>
+                <cmd>Download the example files by entering:</cmd>
+                <info>
+                    <codeblock># Import variables from any one of your site.conf files (which site doesn't matter for this step):
+. ./sm1/site.conf
+ 
+# If this wget fails, check site.conf to verify that BUILD_VERSION is correct:
+wget https://repo.lab.pl.alcatel-lucent.com/sps-generic-candidates/spsmainbuild/${BUILD_VERSION}/CSF-configuration-examples_${CHART_VERSION}.tgz
+tar -xvzf CSF-configuration-examples_${CHART_VERSION}.tgz
+rm CSF-configuration-examples_${CHART_VERSION}.tgz
+mv CSF-configuration-examples_${CHART_VERSION} configuration-examples</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Verify that the working directory has a valid structure.</cmd>
+                <info>
+                    <p><filepath>workingdir</filepath></p>
+                    <ul id="ul_o3p_5zp_ymb">
+                        <li><filepath>configuration-examples</filepath><ul id="ul_p3p_5zp_ymb">
+                                <li>all extracted example configuration files</li>
+                            </ul></li>
+                        <li><filepath>me5</filepath><ul id="ul_q3p_5zp_ymb">
+                                <li><filepath>site.conf</filepath></li>
+                            </ul></li>
+                        <li><filepath>sm1</filepath><ul id="ul_r3p_5zp_ymb">
+                                <li><filepath>site.conf</filepath></li>
+                            </ul></li>
+                        <li><filepath>topology.yaml</filepath></li>
+                    </ul>
+                    <note>The installation instructions assume that you are inside this working
+                        directory. Subdirectories such as <codeph>sm1</codeph> and
+                            <codeph>me5</codeph> are  referred to as site directories.</note>
+                </info>
+            </step>
+        </steps>
+    </taskbody>
+</task>

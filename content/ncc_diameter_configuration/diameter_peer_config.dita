@@ -1,0 +1,614 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-cn01-tczza-d1e1400"><title>Diameter Peer configuration, white-listing, profiles, and tools</title><conbody>
+<section><title>Overview </title>
+<p>The NCC supports configuring Diameter peers to which NCC will initiate connections and provides
+                both realm-based and host-based routing to control where Diameter traffic is
+                directed on egress.</p>
+<sectiondiv>
+<p><b>Multiple connection support</b></p>
+<p>The NCC supports multiple inbound connections from a single peer. The connections can be
+                    optionally scoped by application type. For example, there may be two connections
+                    from the same Diameter peer, with one for Gx and another for Gy. Each Diameter
+                    connection supports 1:N Diameter applications.</p>
+<p>When scoping by application is configured, if more than one connection is available for a given application, any request messages received on a connection are answered on the same connection. To configure multiple connections, create Diameter peers with duplicate host names.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Diameter Peer parameters</b></p>
+<p>Specify the Diameter peer parameters as shown in the following table:</p>
+<table colsep="1" pgwide="1" rowsep="1" scale="80">
+                    <title>Diameter Peer parameters</title>
+                    <tgroup cols="4">
+                        <colspec colname="col1"/>
+                        <colspec colname="col2"/>
+                        <colspec colname="COLSPEC1"/>
+                        <colspec colname="COLSPEC0"/>
+                        <thead>
+                            <row>
+                                <entry>
+                                    <p>Parameter </p>
+                                </entry>
+                                <entry>
+                                    <p>Description</p>
+                                </entry>
+                                <entry>
+                                    <p>Options</p>
+                                </entry>
+                                <entry>
+                                    <p>Mandatory or Optional</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry> Peer Host </entry>
+                                <entry>
+                                    <p>Enter the host name of the Diameter peer.</p>
+                                    <p>For outbound connections you must specify an existing local
+                                        address group for the peer so that only IP addresses in that
+                                        group are displayed during peer connection. The Diameter
+                                        peer must be part of one of the Local Groups that are
+                                        configured at installation.</p>
+                                    <p>The host name must not contain the “/” character.</p>
+                                    <p>If more than 255 characters are provided in this field, the
+                                        first 255 characters are used and the subsequent characters
+                                        are ignored.</p>
+                                </entry>
+                                <entry>
+                                    <p>Enter the peer host (FQDN)</p>
+                                    <p>
+                                        <b>Note:</b> The Peer Host allows the wildcard (*) to be
+                                        used in the FQDN for inbound peers only. </p>
+                                </entry>
+                                <entry> Mandatory </entry>
+                            </row>
+                            <row>
+                                <entry> Description </entry>
+                                <entry> Provide a description of the Diameter peer. For example, if
+                                    the peer is to be a TDF server, you can add that here. </entry>
+                                <entry> Enter a short description of the peer. </entry>
+                                <entry> Optional </entry>
+                            </row>
+                            <row>
+                                <entry> Connection Type </entry>
+                                <entry>
+                                    <p>Enter the direction of the connection.</p>
+                                    <p>Inbound or Outbound</p>
+                                    <p>It is possible to configure more than one TCP or SCTP
+                                        connection to an outbound peer. The inbound messages are
+                                        routed to the server by NCC through one of the configured
+                                        connections.</p>
+                                    <p>
+                                        <b>Note: </b>A Peer Host with the connection type “Inbound”
+                                        supports the wildcard with the “*” character such that a
+                                        single entry with a wildcard(s) can be specified to satisfy
+                                        the range of virtual Diameter identities for a peer. </p>
+                                </entry>
+                                <entry> Inbound or Outbound </entry>
+                                <entry> Mandatory for Outbound and not required for Inbound.
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> Administrative State </entry>
+                                <entry>
+                                    <p>Specify the state of the peer connection.</p>
+                                    <p>If you need to disable a specific peer connection after
+                                        distribution, do not use this Disable button as it disables
+                                        all of the connections for this peer. Instead, you can
+                                        remove the specific connection from the ME to which it was
+                                        distributed using the Distribution dialog that pops up from
+                                        the Distribute button.</p>
+                                </entry>
+                                <entry> Enabled or Disabled </entry>
+                                <entry> Mandatory </entry>
+                            </row>
+                            <row>
+                                <entry> Primary IP </entry>
+                                <entry>
+                                    <p>Enter the primary IP address of the Diameter peer. There is
+                                        only one IP address for the TCP group.</p>
+                                    <p>For SCTP, enter the IP address that you want as the primary.
+                                        Any address configured in the group may be entered as the
+                                        group’s primary IP address.</p>
+                                </entry>
+                                <entry> IPv4 or IPv6 </entry>
+                                <entry> Mandatory </entry>
+                            </row>
+                            <row>
+                                <entry> Secondary IP </entry>
+                                <entry>
+                                    <p>Enter the secondary IP address (IPv4 or IPv6) of the Diameter
+                                        peer. </p>
+                                    <p>For SCTP, you can enter multiple secondary IP addresses for
+                                        use when the primary IP address is down.</p>
+                                    <p>For outbound connections, the NCC favors the primary and will
+                                        use a secondary IP address if the primary is
+                                        unreachable.</p>
+                                </entry>
+                                <entry> IPv4 or IPv6 </entry>
+                                <entry> Optional </entry>
+                            </row>
+                            <row>
+                                <entry> Port Number </entry>
+                                <entry> This defines the Diameter port. Specify the port number of
+                                    the remote host used to connect to the NCC. </entry>
+                                <entry>
+                                    <p>The value must be between 0 to 65535.</p>
+                                    <p>The default value is 3868.</p>
+                                </entry>
+                                <entry>
+                                    <p>Mandatory for outbound peers</p>
+                                    <p>Optional for inbound peers</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> Protocol </entry>
+                                <entry>
+                                    <p>Specifies the protocol used. One and only one protocol (TCP
+                                        or SCTP) must be set per Diameter group in this release.</p>
+                                    <p>Do not select TLS. TLS is the Diameter security for TCP and
+                                        specifies a secure connection. Security is set via the
+                                        diameteroam/group/N/diameter/config/secure key. Based on the
+                                        key’s value used, the TLS configuration for incoming and
+                                        outgoing connections will be appropriately updated in the
+                                        Diameter configuration files. </p>
+                                </entry>
+                                <entry>
+                                    <p>TCP</p>
+                                    <p>SCTP</p>
+                                </entry>
+                                <entry>
+                                    <p>Mandatory for Outbound.</p>
+                                    <p>If the Connection Type is Inbound, nothing can be entered in
+                                        this field.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry morerows="1"> Local Address Group </entry>
+                                <entry>
+                                    <p>The NCC supports TCP and SCTP transport protocols for
+                                        Diameter over one or more virtual IP (VIP) addresses of the
+                                        active IOHD VM. The groups are configured at installation
+                                        time as part of the Diameter group keys configuration in the
+                                        SDC.</p>
+                                    <p>For both TCP and SCTP connections, this parameter specifies a
+                                        Diameter Group Name that is either Tcp# or Sctp#, which is
+                                        made up of the &lt;Protocol&gt; and &lt;Group number&gt;
+                                        that was configured at installation time as part of the
+                                        Diameter group keys configuration in the SDC. For example,
+                                        the Local Address Group will appear as Tcp1 or Tcp2, or
+                                        Sctp1 or Sctp2, and so on.</p>
+                                    <p>The same IP address can be in one TCP group and one SCTP
+                                        group, but the same IP address cannot be in two groups with
+                                        the same protocol (TCP or SCTP). </p>
+                                    <p>The local groups that are configured at installation time are
+                                        the only Diameter groups supported in your installation and
+                                        they are the only groups to which you can add a Diameter
+                                        peer. The groups appear by default in the SM GUI as they
+                                        were configured at installation time.</p>
+                                    <p>When enabling either protocol, you can specify any address
+                                        group for the peers depending on what you have configured at
+                                        installation time. </p>
+                                    <p> See the SDC section in the NCC Installation and Upgrade
+                                        Guide for information about configuring system level
+                                        keys.</p>
+                                </entry>
+                                <entry>
+                                    <p>For SCTP connections, the NCC has the local address group
+                                        that contains the list of local IP addresses available for
+                                        that connection. </p>
+                                    <p>The list of selectable 'local address groups is retrieved
+                                        from the ME Diameter configuration. Different MEs can be
+                                        configured with a different set of 'local address
+                                        groups'.</p>
+                                </entry>
+                                <entry>
+                                    <p>Mandatory for Outbound.</p>
+                                    <p>If the Connection Type is Inbound, nothing can be entered in
+                                        this field.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <ul id="ul_mrj_4xd_wmb">
+                                        <li>
+                                            <p>A TCP Diameter group must be associated with one and
+                                                only one IOHD VIP address that can be IPv4 or
+                                                IPv6.</p>
+                                        </li>
+                                        <li>
+                                            <p>To support Diameter/TCP over multiple IOHD VIP
+                                                addresses, a separate TCP Diameter group must be
+                                                created for each VIP address.</p>
+                                        </li>
+                                        <li>
+                                            <p>There must not be any VIP address overlaps between
+                                                Diameter groups of the same protocol. If a VIP
+                                                address is associated with one Diameter group, it
+                                                cannot be associated with any other Diameter group
+                                                of the same protocol.</p>
+                                        </li>
+                                    </ul>
+                                    <p>To enable this support, the Diameter group keys must be
+                                        configured in accordance with the following at
+                                        installation:</p>
+                                </entry>
+                                <entry/>
+                                <entry/>
+                            </row>
+                            <row>
+                                <entry> Request Timeout </entry>
+                                <entry> Specify the time to wait for a response in ms. </entry>
+                                <entry> The value must be 0 or between 50 ms and 60000 ms. </entry>
+                                <entry> Optional </entry>
+                            </row>
+                            <row>
+                                <entry> Retry </entry>
+                                <entry> Specify the number of retry counts to be tried before
+                                    switching to the secondary IP. </entry>
+                                <entry> Integer </entry>
+                                <entry> Optional </entry>
+                            </row>
+                            <row>
+                                <entry> Security Domain </entry>
+                                <entry> Specify the user types that can see the peer records. </entry>
+                                <entry> If no value is specified, the records are public. </entry>
+                                <entry> Optional </entry>
+                            </row>
+                            <row>
+                                <entry> Add Secondary IP button </entry>
+                                <entry> Tap the button to enter another secondary IP address. For
+                                    SCTP, multiple IP addresses can be entered—one for each tap of
+                                    the button </entry>
+                                <entry> — </entry>
+                                <entry> Optional </entry>
+                            </row>
+                            <row>
+                                <entry> Ingress Throttling Profile </entry>
+                                <entry> Specify an ingress throttling profile to apply to the peer. </entry>
+                                <entry> Select the name of a profile from the list. </entry>
+                                <entry> Optional </entry>
+                            </row>
+                            <row>
+                                <entry> Egress Throttling Profile </entry>
+                                <entry> Specify an egress throttling profile to apply to the peer. </entry>
+                                <entry> Select the name of a profile from the list. </entry>
+                                <entry> Optional </entry>
+                            </row>
+                            <row>
+                                <entry> Peer Connection Profile </entry>
+                                <entry> Specify a peer connection profile to apply to the peer. </entry>
+                                <entry> Select the name of a profile from the list. </entry>
+                                <entry> Optional </entry>
+                            </row>
+                            <row>
+                                <entry> Downstream Overload Profile </entry>
+                                <entry> Specify a downstream overload profile to apply to the peer. </entry>
+                                <entry> Select the name of a profile from the list. </entry>
+                                <entry> Optional </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+</sectiondiv>
+<sectiondiv>
+<p><b>Diameter peer connection status for a Managed Element</b></p>
+<p>The peer connection status page in the SM GUI enables you to view the total number of peers for a given ME, and the number of peers that are up and down. The following table describes the parameters that are displayed for peer connection status.</p>
+<p>The <b>ME Name</b> drop-down list presents all the MEs available in NCC. Select an ME from the
+                    list to view the Diameter peer connection status for that ME.</p>
+<table colsep="1" pgwide="1" rowsep="1">
+<title>Peer connection status</title>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+<p>Parameter </p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry> Total Peers </entry>
+<entry> The total number of Diameter peers available for the ME.
+                                </entry>
+</row>
+<row>
+<entry> Peers-Up </entry>
+<entry> The number of peers that are up. </entry>
+</row>
+<row>
+<entry> Peers-Down </entry>
+<entry> The number of peers that are down. </entry>
+</row>
+<row>
+<entry> Peer Name </entry>
+<entry> Host name of the Diameter peer. </entry>
+</row>
+<row>
+<entry> Protocol </entry>
+<entry> The protocol used. </entry>
+</row>
+<row>
+<entry> Application </entry>
+<entry> Unique identifier for the Diameter peer. </entry>
+</row>
+<row>
+<entry> Node Name </entry>
+<entry> The DNS host name of the blade/VM that created this object.
+                                    This is used to clean up the objects when the Diameter stack is
+                                    stopped. </entry>
+</row>
+<row>
+<entry> Connection Type </entry>
+<entry> Direction of the connection - inbound or outbound. </entry>
+</row>
+<row>
+<entry> Status </entry>
+<entry> Specifies whether is Diameter peer is UP or DOWN. </entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+<sectiondiv>
+<p><b>Diameter Peer Whitelists and configuration</b></p>
+<p>At the top of the Diameter Peer configuration GUI page, there is a global toggle button for
+                    whitelisting that you can slide from enabled to disabled. After the white list
+                    is enabled, only the Diameter Peers configured to connect with the NCC are
+                    allowed for Diameter connection. If the toggle button is in the disabled
+                    position, any Diameter peer can connect to the NCC. Whitelisting accepts or
+                    rejects incoming connection requests. The Diameter peer whitelist feature
+                    enables you to specify the list of peers that are permitted to connect with the
+                    NCC. Requests from all other clients are rejected if the whitelist is enabled. </p>
+<p>The NCC allows you to efficiently whitelist peers that have one identity (FQDN or IP address) or
+                    multiple virtual identities within the same IP address. A Peer Host with the
+                    connection type “Inbound” supports using the wildcard “*” such that a single
+                    FQDN can be specified to satisfy a range of virtual Diameter identities for a
+                    peer. That is, you can use the “*” in any FQDN string to allow an incoming
+                    connection to match, at most, one (the first matched) inbound Diameter peer
+                    entry. The wildcard is not supported for “outbound” connection types. </p>
+<p>The wildcard “*” allows peer connection to be accepted for multiple connections from the same IP address. The wildcard is supported at any position within the string provided there is either a non-wildcard character immediately following it or an empty space. For example, the peer host could be “*base.gx” and that would match any string ending with “base.gx”. Used in the middle of a string like “toronto*mobile” would match any string that starts with “toronto” “(contains some characters)” and ends with “mobile”. Used at the end of a string like “ottawa*” would match any string that starts with “ottawa”. Multiple wildcards can also be used within the same string as long as they meet the same criteria as described above, for example: *toronto*base.*. Two or more wildcards immediately following each other (virt**.com) is not supported.</p>
+<p>Whitelisting only accepts or rejects incoming connection requests; nothing is disconnected by whitelisting. Whitelisting is only applicable to inbound peer connection requests and whitelist updates do not impact existing peer connections. A log is generated when a peer is either accepted or rejected due to whitelist capabilities.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Diameter peer connection profile</b></p>
+<p>A peer connection profile specifies the values to be used for:</p><ul>
+<li>
+<p>timers</p>
+</li>
+<li>
+<p>capabilities exchange</p>
+</li>
+</ul>
+<p>One of the peer connection profiles is set as the NCC system default profile and is used when
+                    peer-level values are not provided. </p>
+<p>The applications for both authorization and accounting applications are as follows:</p><ul>
+<li>
+<p>Wx</p>
+</li>
+<li>
+<p>Sy</p>
+</li>
+<li>
+<p>SWx</p>
+</li>
+<li>
+<p>Sh</p>
+</li>
+<li>
+<p>Sd</p>
+</li>
+<li>
+<p>S9</p>
+</li>
+<li>
+<p>S6b</p>
+</li>
+<li>
+<p>Rx</p>
+</li>
+<li>
+<p>Ro</p>
+</li>
+<li>
+<p>Gy</p>
+</li>
+<li>
+<p>CreditControl</p>
+</li>
+<li>
+<p>NASREQ</p>
+</li>
+<li>
+<p>ICCSy</p>
+</li>
+<li>
+<p>Gxx</p>
+</li>
+<li>
+<p>Gx</p>
+</li>
+<li>
+<p>Cx</p>
+</li>
+<li>
+<p>Dx</p>
+</li>
+<li>
+<p>BaseAccounting</p>
+</li>
+<li>
+<p>Rq</p>
+</li>
+<li>
+<p>E2E4</p>
+</li>
+<li>
+<p>Prop</p>
+</li>
+<li>
+<p>S6a</p>
+</li>
+<li>
+<p>S6d</p>
+</li>
+<li>
+<p>S13</p>
+</li>
+<li>
+<p>S13prime</p>
+</li>
+</ul>
+</sectiondiv>
+<sectiondiv>
+<p><b>Peer connection profile parameters</b></p>
+<p>In the Peer Connection Profile tab, specify the settings as described in the following table.</p>
+<table colsep="1" pgwide="1" rowsep="1">
+<title>Peer Connection Profile parameters</title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<colspec colname="COLSPEC2"/>
+<thead>
+<row>
+<entry>
+<p>Parameter</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+<entry>
+<p>Optional or Mandatory</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry> Profile Name </entry>
+<entry> Specify the profile name. </entry>
+<entry> Mandatory </entry>
+</row>
+<row>
+<entry> Origin Host </entry>
+<entry> Specify the name or IP address of the origin host. The host
+                                    name must not contain the “/” character. </entry>
+<entry> Optional </entry>
+</row>
+<row>
+<entry> Vendor ID </entry>
+<entry> Specify the vendor ID for the profile. </entry>
+<entry> Optional </entry>
+</row>
+<row>
+<entry> Product name </entry>
+<entry> Specify the product name that the NCC advertises to external
+                                    clients, such as an AF server. </entry>
+<entry> Optional </entry>
+</row>
+<row>
+<entry> Origin realm </entry>
+<entry> Specify the name or IP address of the origin realm. </entry>
+<entry> Optional </entry>
+</row>
+<row>
+<entry> Security Domain </entry>
+<entry>
+<p>Specify the user types that can see the profile records.</p>
+<p>If no value is specified, the records are public.</p>
+</entry>
+<entry> Optional </entry>
+</row>
+<row>
+<entry> Origin State ID </entry>
+<entry> Specify the origin state ID to be used for establishing a
+                                    connection with the peer. </entry>
+<entry> Optional </entry>
+</row>
+<row>
+<entry> Description </entry>
+<entry> Specify a description of the peer connection profile. </entry>
+<entry> Optional </entry>
+</row>
+<row>
+<entry> Authorization Applications </entry>
+<entry>
+<p>Lists one or more authorization application types to reach a
+                                        specified host or realm. Choose one or more application
+                                        types from the drop down.</p>
+<p>By default all applications are valid for a route. Leave the
+                                        field blank to enable all applications. </p>
+<p>Tap the Add Authorization IDs button and enter the Vendor Id
+                                        and Application.</p>
+</entry>
+<entry morerows="1"> Mandatory </entry>
+</row>
+<row>
+<entry> Accounting Applications </entry>
+<entry>
+<p>Lists one or more accounting application types to reach a
+                                        specified host or realm. Choose one or more application
+                                        types from the drop down.</p>
+<p>By default all applications are valid for a route. Leave the
+                                        field blank to enable all applications. </p>
+<p>Tap the Add Account IDs button and enter the Vendor Id and
+                                        Application.</p>
+</entry>
+</row>
+<row>
+<entry> Add AVP Entity </entry>
+<entry>
+<p>Tap the <uicontrol>Add AVP Entity</uicontrol> button to add
+                                        one or more AVP type and name associations.</p>
+<p>Specify a <uicontrol>Name</uicontrol> for the AVP entity.</p>
+<p>Select the <uicontrol>Type</uicontrol> of the AVP from the
+                                        drop-down and provide the applicable
+                                            <uicontrol>Value</uicontrol>.</p>
+</entry>
+<entry> Optional </entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+<sectiondiv>
+<p><b>Diameter peer and route list tools</b></p>
+<p>The NCC supports tools for listing Diameter peers and routes. On NCC, the tools are stored in the
+                    /opt/tpa/bin directory on the IOH and must be run as the tpaadmin user. The
+                    listing commands are as follows:</p><ul>
+<li>
+<p>listDiameterPeers.sh syntax</p>
+<p>
+<userinput>listDiameterPeers.sh -h -s</userinput>
+</p>
+<p>Where:</p><ul>
+<li>
+<p>-h outputs online help</p>
+</li>
+<li>
+<p>-s outputs a summary of the listed results</p>
+</li>
+</ul>
+</li>
+<li>
+<p>listDiameterRoutes.sh syntax</p>
+<p>
+<userinput>listDiameterRoutes.sh -h -d</userinput>
+</p>
+<p>Where:</p><ul>
+<li>
+<p>-h outputs online help</p>
+</li>
+<li>
+<p>-d lists detailed information</p>
+</li>
+</ul>
+</li>
+</ul>
+</sectiondiv>
+</section>
+</conbody></concept>

@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+		<concept id="id9YZ-09018-UG00-PCZZA-d1e7193"><title>5G interfaces in SPS</title><conbody>
+
+<section><title>5G architecture</title>
+
+<p>The 5G architecture is defined as service-based and the interaction between network functions is
+                represented using service-based interfaces for their interactions. The Service-based
+                architecture uses network functions (for example, Session Management Function (SMF))
+                within the control plane to enable other authorized network functions to access
+                their services. A subset of the 5G service based architecture with the supported
+                protocol interfaces is shown in the following figure.</p>
+<fig>
+                <title>5G service based network interfaces and architecture</title>
+                <!--MMO resource relative URI: ../Graphics/18.0_graphics/5Ginterfaces20_default.png-->
+                <image href="../images/5ginterfaces20_default.png"/>
+            </fig>
+<p>5G service based interfaces communicate through an SBI protocol stack as shown in the following figure.</p>
+<fig>
+<title>SBI protocol stack</title>
+<!--MMO resource relative URI: ../../SPS-5GhttpConfig/5Ggraphics/sbiprotostack_default.png-->
+<image href="../images/sbiprotostack_default.png"/>
+</fig>
+<p>The SPS uses RESTful http/2 based message bodies with application data payloads encoded in JSON format. The protocols closely mirror the Diameter equivalents.</p>
+<p>5G defines a reference point representation and not any dedicated protocol. 5G moves to a web service style of interfaces between elements and any authorized element can use that interface. SPS supports the N7, N28, and N40 interfaces.  </p><ul>
+
+<li>
+<p>SMF to PCF—The Npcf uses the N7 interface which is equivalent to the Gx interface  in 4G environments and is defined in 3GPPv15.0.0 TS29.512</p>
+</li>
+<li>
+<p>SMF to CHF—The Nchf uses the N40 interface which is equivalent to the Gy interface  in 4G environments.</p>
+</li>
+<li>
+<p>PCF to CHF—N28 interface is equivalent to the Sy interface in 4G environments.</p>
+</li>
+<li>
+<p>PCF to AF—The Naf uses the N5 interface (future version) which is equivalent to the Af/Rx
+                        interface and is defined in 3GPPv15.0.0 TS29.514</p>
+<p>The N5 interface represents AF’s usage of the PCF’s Npcf interface and PCF’s usage of the AF’s Naf interface.</p>
+</li>
+<li>
+<p>Nsmf—provides services for other elements including PCF</p>
+</li>
+<li>
+<p>AMF—The Access and Mobility Management Function.</p>
+</li>
+</ul>
+<note>
+
+<p>Any particular session is either 4G or 5G and SPS-Policy handles traffic from both a 4G/legacy
+                    core as well as a 5G core.</p>
+</note>
+<sectiondiv>
+<p><b>N7 interface</b></p>
+<p>N7 requests come into the HTTP/2 load balancer on the IOHD. </p>
+<p>Responses, or outbound messages like RARs, originating on the SPS are created on one of the
+                    charging pods. The message is then pushed to the 5G Web Service. The 5G Web
+                    Service sends the message to an external system, like the gateway, through the
+                    HTTP/2 concentrator on the IOHD.</p>
+<p>Inter-site routing is performed when a particular request arrives at the wrong site. In this
+                    scenario SPS first evaluates the contents of the request in its Diameter AVP
+                    format and updates any metrics prior to forwarding to the correct site. The
+                    answer message from the correct site travels back following the same path as the
+                    request. The answer is sent towards the site receiving the request where it is
+                    translated into an HTTP response prior to forwarding toward the client.</p>
+<p>See also: <!--xref URI: #N7messages--><xref keyref="id9YZ-09018-UG00-PCZZA-d1e7193/N7messages"/>.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>N28 interface</b></p>
+<p>The N28 interface is defined in 3GPP standard 29.594. Currently, the SPS provides Policy support for the 5G Nchf_SpendingLimitControl (N28) PCF-CHF interface. Here the PCF invokes the Nchf_SpendingLimitControl services to support interworking with a CHF/OCS, for policy counters and statuses related to spending limits. The Nchf_SpendingLimitControl service enables transfer of policy counter status information relating to subscriber spending limits from the CHF to the NF consumer.</p>
+<p>SPS Policy can process PDU sessions using the 5G Service Based Interface (SBI)
+                    Npcf_SpendingLimitControl service (N28) as well as IP-CAN sessions using
+                    Diameter Sy to the OCS. A session created using Gx uses Sy to interwork with the
+                    OCS and a session created using 5G SBI (N7) uses 5G SBI (N28) to interwork with
+                    the CHF.</p>
+<p>See also: <!--xref URI: #N28messages--><xref keyref="id9YZ-09018-UG00-PCZZA-d1e7193/N28messages"/>.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>N15 interface</b></p>
+<p>The N15 Reference point is between the PCF (Policy Control Function) and the AMF (Access and Mobility Management Functions) in the case of a non-roaming scenario, or the vPCF (Visited PCF) and AMF (Access and Mobility Management Functions) in case of a roaming scenario.</p>
+<p>When an AM Session is established the AM Session Establish trigger is invoked when the AMF requests that an AM Session is created from the incoming Npcf_AMPolicyControl_Create received on the N15 interface. On AM session establishment, the PCF subscribes for events from the AMF. Subscription IDs present in the are Npcf_AMPolicyControl_Create also used to retrieve a subscriber record. </p>
+</sectiondiv>
+<sectiondiv>
+<p><b>N40 interface</b></p>
+<p>The N40 Reference point is between SMF and CHF and is defined in TS 32.240 to enable online and
+                    offline charging. The reference point resides in the HPLMN and roaming with home
+                    routed and non-roaming scenarios are supported in the same manner.</p>
+</sectiondiv>
+</section>
+<section><title>LDAP key selection for 5G lookups</title>
+
+<p>SPS provides the flexibility to choose the key at installation time for a lookup when looking up subscriber information in the external SPR. Configurable options are currently provided in XML format for determining which key to use for either N7-based lookups or Gx-based lookups. See LDAP key selection configuration in the SPS-Policy Guide for information about configuring which keys to use for either N7-based lookups or Gx-based lookups.</p>
+</section>
+<section><title>Session information</title>
+
+<p>A PDU session is an HTTP/2 session between a UE and an IP network. The UE receives services through a protocol data unit (PDU) session, which is a logical connection between the UE and the data network. Various PDU session types are supported, for example, IPv4, IPv6, Ethernet, etc. The association is identified by a UE IP address and UE identity information, if available. The SPS tracks PDU Session information in the Sessions menu under the Subscriber Manager icon of the SM GUI. See the <i>Subscriber Manager Guide</i> for more information.</p>
+<sectiondiv>
+<p><b>Session types</b></p>
+<p>SPS Policy rules shall be able to distinguish sessions based on the following criteria.</p><ul>
+
+<li>
+<p>4G/LTE session that arrived by Gx: the session type is an IP-CAN session</p>
+</li>
+<li>
+<p>5G session that arrived by 5G SBI from SMF (through 5G NR, AMF): the session type is a PDU
+                            session and the RAT Type is NR</p>
+</li>
+<li>
+<p>4G/EPC session that arrived by 5G SBI from SMF PCRF/PCF combo box (using EPC): the session type
+                            is PDU session and the RAT Type is EUTRA </p>
+</li>
+</ul>
+<note>
+
+<p>userLocationInformation might also be used if present to distinguish the session. eutraLocation
+                        for 4G EPC or nrLocation for 5G SBI.</p>
+</note>
+</sectiondiv>
+</section>
+<section><title>5G metrics and alarms</title>
+
+<p>Metrics are captured separately from measurements made for each of the following types of traffic:</p><ul>
+
+<li>
+<p>4G/LTE Diameter</p>
+</li>
+<li>
+<p>5G messages and functionality including:</p><ul>
+
+<li>
+<p>native 5G calls (end to end 5G) in the form of HTTP_3GPP_Inbound and HTTP_3GPP_Outbound measurements</p>
+</li>
+<li>
+<p>4G/EPC (non-5G end-to-end) calls flowing through an SMF+PGW-C combo box. These are calls
+                                connecting through EPC but arriving at the PCF using N7.</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>Just as metrics are captured separately for each type of traffic, so are alarms specific to 5G functionality. </p>
+<p>See the respective chapters for Measurements and Alarms in the <i>SPS Administration Guide</i> for more information.</p>
+</section>
+<section id="N7messages"><title>N7 message attribute message types</title>
+
+<p>The N7 related specification is 3GPP 29.512 for N7  and 3GPP 29.571 for the common attributes. </p>
+<p>The command code reuses RAR, CCR and CC-Request-Type to identity the different N7 messages. The application-ID is an internal number used to differentiate the 5G and 4G sessions. An indication of the policy session Id is passed back by including it in the header information as policy-id. PCF needs to allocate and create a unique "policy id" and return it in the http Location header or in the update/delete request path along with the SmPolicyDecision in its contents. The following table describes the N7 HTTP/2 attribute message types.</p>
+<table pgwide="1" colsep="1" rowsep="1">
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC0"/>
+<thead>
+<row>
+<entry>
+N7 HTTP attribute and message types
+</entry>
+<entry>
+Function and Description 
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+N7 related message type
+</entry>
+<entry>
+<p>Indicates the N7 http interface </p>
+<p>Application-ID field (16777800) is set internally to represent the N7 interface. </p>
+</entry>
+</row>
+<row>
+<entry>
+Npcf_SMPolicyControl_Create
+</entry>
+<entry>
+<p>Indicates N7 session creation</p>
+<p>The Npcf_SMPolicyControl_Create service operation provides the means for the SMF to request the creation of a corresponding SM Policy association with the PCF.</p>
+<p>The content of the request message is SmPolicyContextData that is defined in 29.512.</p>
+</entry>
+</row>
+<row>
+<entry>
+Npcf_SMPolicyControl_Update
+</entry>
+<entry>
+Indicates an N7 session update 
+</entry>
+</row>
+<row>
+<entry>
+Npcf_SMPolicyControl_Delete
+</entry>
+<entry>
+Indicates N7 session deletion
+</entry>
+</row>
+<row>
+<entry>
+Npcf_SMPolicyControl_updateNotify
+</entry>
+<entry>
+Indicates notification for update or terminate request. This service actually includes two type of request, SM Policy Association Notification request and SM Policy Association termination request.
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section id="N28messages"><title>N28 message attribute message types</title>
+
+<p>N28 requests originate from the PCF. See the following table for details about N28 service operations.</p>
+<table pgwide="1" colsep="1" rowsep="1">
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC0"/>
+<thead>
+<row>
+<entry>
+N28 service operation
+</entry>
+<entry>
+Function and Description 
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+Nchf_SpendingLimitControl_Subscribe
+</entry>
+<entry>
+The PCF uses this service operation to subscribe to the notification of changes in the status of policy counters available and for the retrieval of policy counter status for those counters where the subscription is accepted.
+</entry>
+</row>
+<row>
+<entry>
+Nchf_SpendingLimitControl_Unsubscribe
+</entry>
+<entry>
+The PCF uses this service operation to unsubscribe from the notification of changes in the status of policy counters.
+</entry>
+</row>
+<row>
+<entry>
+Nchf_SpendingLimitControl_Notify
+</entry>
+<entry>
+The CHF, over N28, can notify  the PCF of a spending limit report. The CHF uses this service operation to notify the PCF about changes in the status of the subscribed policy counters as well as a removal of a subscriber from the CHF system so that the PCF can terminate the subscriptions of all policy counters for the subscriber. 
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>The PCF might include a list of Policy Counter Ids against which a report is requested from the
+                CHF. In the case that a list of Policy counters is not included in the Initial
+                request, then CHF reports on all available counters for that subscriber.</p>
+<p>The Nchf_SpendingLimitControl context defines the Subscription Permanent Identifier (SUPI), which
+                holds the IMSI or NAI in 5G, as mandatory and does not currently include any other
+                subscriber identifier(s) passed in the SpendingLimitControl_Subscribe call. SPS
+                however, does allow processing on the MSISDN, which is stored in the GPSI (holds the
+                MSISDN or External Id in 5G) as well as on both SUPI and GPSI. There is no separate
+                attribute in which CHF includes the Subscription Correlation ID AVP; therefore, the
+                NchfCorrelationId attribute was introduced. The {subscriptionId} parameter acts as a
+                Subscription Correlation ID which is used by PCF for further interactions. It is a
+                part of the response header and as per 29.594 v15.2.0, when PCF triggers CHF over
+                Nchf_SpendingLimitControl_Subscribe, CHF responds back with the following
+                header:</p>
+<p>
+<systemoutput>Location:</systemoutput>
+</p>
+<p>
+<systemoutput> description: 'Contains the URI of the created individual spending limit resource, according to the structure: </systemoutput>
+</p>
+<p>
+<systemoutput>{apiRoot}/nchf-spendinglimitcontrol/v1/subscriptions/{subscriptionId}'</systemoutput>
+</p>
+<p>
+<systemoutput> required: true</systemoutput>
+</p>
+<p>
+<systemoutput> schema:</systemoutput>
+</p>
+<p>
+<systemoutput>  type: string</systemoutput>
+</p>
+</section>
+</conbody></concept>

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="db_backup">
+    <title>db-backup</title>
+    <body>
+        <section id="section_gkv_c2m_cmb">
+            <title>Description</title>
+            <p>This tool creates a backup copy of the Aerospike database so that it may be restored
+                later if there are unforeseen situations (such as DB corruption or other severe
+                scenarios) whereby the database needs to be restored back to a previous version.</p>
+            <p>Nightly backups can be achieved by scheduling db-backup to run on a scheduled
+                interval (for example, each night during the maintenance window).</p>
+            <p>This tool is run on the active AdminCLI pod in the NCC system. Unless you are doing a
+                disaster recovery, Nokia recommends that you perform this procedure during off hours
+                (non-peak-hours). A separate backup file will be created for each namespace, with
+                inline compression (gzip) performed as the file is created to reduce the amount of
+                disk space required for these backups. All namespaces and data sets will be backed
+                    up.<note>db-backup will terminate if the cluster changes during the backup (for
+                    example, if a node goes down )</note><note>Do not run this command during the
+                    transition window from daylight saving time to standard time.</note></p>
+        </section>
+        <section id="section_g3b_d2m_cmb">
+            <title>Syntax</title>
+            <p>
+                <codeblock>db-backup -d &lt;directory> -n &lt;namespace[,namespace]*> [-f] [-r
+&lt;local|both|all>]</codeblock>
+            </p>
+            <p>
+                <table frame="all" rowsep="1" colsep="1" id="table_kmm_45q_cmb">
+                    <tgroup cols="2">
+                        <colspec colname="c1" colnum="1" colwidth="1*"/>
+                        <colspec colname="c2" colnum="2" colwidth="1*"/>
+                        <thead>
+                            <row>
+                                <entry>Option</entry>
+                                <entry>Description</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry><codeph>No arguments</codeph></entry>
+                                <entry>Displays usage/help information.</entry>
+                            </row>
+                            <row>
+                                <entry><codeph>-h or -?</codeph></entry>
+                                <entry>Displays usage/help information.</entry>
+                            </row>
+                            <row>
+                                <entry><codeph>-d &lt;directory></codeph></entry>
+                                <entry>Output directory for the backup files. This directory should
+                                    already exist.</entry>
+                            </row>
+                            <row>
+                                <entry><codeph>-f</codeph></entry>
+                                <entry>Force execution. If specified, the user will not be asked for
+                                    confirmation.</entry>
+                            </row>
+                            <row>
+                                <entry><codeph>-n &lt;namespace[,namespace]*></codeph></entry>
+                                <entry>Namespace list to backup. Allows you to specify the
+                                    namespaces to backup.</entry>
+                            </row>
+                            <row>
+                                <entry><codeph>-r</codeph></entry>
+                                <entry>Nodes running and storing the backups..</entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+            </p>
+        </section>
+        <section id="section_kzh_d2m_cmb">
+            <title>Example</title>
+            <p>A summary output for this command using the “-r” option is provided to the user.
+                Details of the backup operation can be found in the backuplog file, in the specified
+                backup
+                directory.<codeblock>[tpaadmin@sps-me-1-centralmanagement-0 ~]$ db-backup -d /BACKUP/20190322 -r all
+15:13 db-backup issued at: Fri Mar 22 15:13:36 EDT 2020
+15:13
+15:13 Creating a database backup to [/BACKUP/20190322]
+This action will create a backup of the local database in the directory:
+/BACKUP/20190322
+ATTENTION: The original database backup file will be removed if it
+exists.
+Do you wish to continue? (y/n)y
+15:13 Starting backup on sps-me-1-db-0 for sps-me-1-db-0-dsc
+15:13 Starting backup on sps-me-1-db-1 for sps-me-1-db-1-dsc
+15:13 Starting backup on sps-me-1-db-2 for sps-me-1-db-2-dsc
+15:13 Starting backup on sps-me-1-db-3 for sps-me-1-db-3-dsc
+15:13 Backup for sps-me-1-db-0-dsc completed
+15:13 Backup for sps-me-1-db-2-dsc completed
+15:13 Backup for sps-me-1-db-3-dsc completed
+15:13 Backup for sps-me-1-db-1-dsc completed
+15:13 Starting backup on sps-me-1-db-0 for sps-me-1-db-0-dsclocal
+15:13 Starting backup on sps-me-1-db-1 for sps-me-1-db-1-dsclocal
+15:13 Starting backup on sps-me-1-db-2 for sps-me-1-db-2-dsclocal
+15:13 Starting backup on sps-me-1-db-3 for sps-me-1-db-3-dsclocal
+15:13 Backup for sps-me-1-db-0-dsclocal completed
+15:13 Backup for sps-me-1-db-2-dsclocal completed
+15:13 Backup for sps-me-1-db-1-dsclocal completed
+15:13 Backup for sps-me-1-db-3-dsclocal completed
+15:13 Starting backup on sps-me-1-db-0 for sps-me-1-db-0-dscglobal
+15:13 Starting backup on sps-me-1-db-1 for sps-me-1-db-1-dscglobal
+15:13 Starting backup on sps-me-1-db-2 for sps-me-1-db-2-dscglobal
+15:13 Starting backup on sps-me-1-db-3 for sps-me-1-db-3-dscglobal
+15:13 Backup for sps-me-1-db-1-dscglobal completed
+15:13 Backup for sps-me-1-db-2-dscglobal completed
+15:13 Backup for sps-me-1-db-0-dscglobal completed
+15:13 Starting backup on sps-me-1-db-0 for sps-me-1-db-0-spspd1
+15:13 Starting backup on sps-me-1-db-1 for sps-me-1-db-1-spspd1
+15:13 Starting backup on sps-me-1-db-2 for sps-me-1-db-2-spspd1
+15:13 Backup for sps-me-1-db-3-dscglobal completed
+15:13 Starting backup on sps-me-1-db-3 for sps-me-1-db-3-spspd1
+15:13 Backup for sps-me-1-db-1-spspd1 completed
+15:13 Backup for sps-me-1-db-0-spspd1 completed
+15:13 Backup for sps-me-1-db-2-spspd1 completed
+15:13 Backup for sps-me-1-db-3-spspd1 completed
+15:13
+15:13 sps-me-1-db-0
+15:13 dsc Completed
+15:13 dsclocal Completed
+15:13 dscglobal Completed
+15:13 spspd1 Completed
+15:13 sps-me-1-db-1
+15:13 dsc Completed
+15:13 dsclocal Completed
+15:13 dscglobal Completed
+15:13 spspd1 Completed
+15:13 sps-me-1-db-2
+15:13 dsc Completed
+15:13 dsclocal Completed
+15:13 dscglobal Completed
+15:13 spspd1 Completed
+15:13 sps-me-1-db-3
+15:13 dsc Completed
+15:13 dsclocal Completed
+15:13 dscglobal Completed
+15:13 spspd1 Completed
+15:14
+15:14 SPS DB backup completed into directory [/BACKUP/20190322]
+15:14 on the database nodes.
+15:14
+15:14 See [/BACKUP/20190322/DB_BACKUP_*/*.backuplog] for
+15:14 detailed output of backup command execution.
+15:14
+15:14 db-backup completed at: Fri Mar 22 15:14:02 EDT 2020</codeblock></p>
+        </section>
+    </body>
+</topic>

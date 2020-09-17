@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="ncc" default="main" basedir=".">
+
+  <!-- For instructions, see http://nswtc.motivelabs.us.alcatel-lucent.com/info. -->
+ <target name="main" depends="ncc-pdfs,ncc-ic-war"/>
+ <!-- <target name="hai-ic-war-and-pdfs" depends="hai-pdfs,hai-ic-war"/> -->
+
+  <!-- Specify the name of the associated infocenter for publishing to infocenter server. Note: A support request
+  must be first be sent to the DocTools team at https://confluence.int.net.nokia.com/display/nswtcdoctools/Get+Support
+  to request an internal Infocenter so that you can view Eclipse output generated from server builds. -->
+
+ <!-- <property name="infocenter" value="hai"/> -->
+
+  <!-- Literal pathnames can be used for the input ditamaps in the targets below,
+    or these paths can be stored in properties for reuse in multiple targets below, which
+    would allow you to make pathname changes in one place. -->
+
+ <!-- <property name="sample.ditamap.file" value="_sample.ditamap"></property>
+  <property name="sample.path" value="${content.dir}/${sample.ditamap.file}"/> -->
+
+  <!-- The "main" target is what is built on server builds -->
+<!--  <target name="main" depends="all-docs"/> -->
+
+  <!-- Every target that contains build-doc or build-matching-docs elements should depend on 'init'. -->
+  <!-- In any target, you can add <build-doc> lines with different values to build a set of deliverables. -->
+
+   <target name="ncc-pdfs" depends= "init">
+    <build-matching-docs transtype="nswtc-pdf" includes="*.ditamap" excludes="_sample.ditamap" launch="true"/>
+  </target>
+
+  <target name="ncc-eclipsehelp" depends="init">
+    <build-matching-docs transtype="nswtc-eclipsehelp" includes="*.ditamap" excludes="_sample.ditamap" launch="true"/>
+  </target>
+ 
+
+    <target name="ncc-ic-war" depends="init">
+     <!--   test: build a war based on warconfig folder -->
+		 <build-matching-docs transtype="nswtc-eclipsehelp" includes="*.ditamap" excludes="_sample.ditamap" launch="true"/>
+        <build-war folder="warconfig" publish="true" /> 
+        </target> 
+		
+		
+<!--  <target name="hai-ic-war" depends="init">
+    <build-matching-docs transtype="nswtc-eclipsehelp" includes="*.ditamap"
+      excludes="hai_insights_recs_guide.ditamap,hai_release_notes.ditamap" 
+      
+      ditavalfile="content/conditions/hai_security-writeronly.ditaval"      launch="false"/>
+    <build-war folder="warconfig" publish="true"/>
+  </target> -->
+
+
+
+  
+	
+  <!-- Import main build file from target. -->
+  <import file="target/scripts/main-build.xml"/>
+
+</project>

@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="preparing_for_sps_cnf_installation">
+    <title>Preparing for NCC installation</title>
+    <taskbody>
+        <context>
+            <p>This procedure provides instructions on how to prepare for the installation of NCC
+                CNF in a customer's Kubernetes environment. </p>
+            <p>In this procedure you configure the outgoing Diameter TLS that is done as either
+                regular TLS or TLS in open state. The regular TLS way means that a TLS connection is
+                established before any Diameter specific requests. In this case TLS is managed by
+                Istio and NCC only deals with non-secure configuration. When you use TLS in open
+                state, the connection to the peer is first established in a non-secure way on a
+                non-secure port, and then it is upgraded to TLS after the CER/CEA exchange based on
+                the value of the Inband-Security-ID AVP. In NCC this is currently only valid when
+                the Diameter peer is a SurePay D-Router. In this case TLS is managed by NCC.</p>
+            <note>
+                <p>All calls to the external Web SSO, external TCP and external HTTP services
+                    require a Service Entry, which is a special exception rule offered by Istio. You
+                    need to create a Service Entry for each HTTP external service, the external Web
+                    SSO service, and the TCP external service. This applies to the following calls
+                    in NCC:</p>
+                <ul id="ul_d1j_knb_xlb">
+                    <li>SM calls to access ME's HTTP/SOAP API (heartbeat and provisioning)</li>
+                    <li>SM calls to access Web SSO APIs</li>
+                    <li>ME calls to access SM's HTTP/SOAP API (heartbeat and device
+                        notifications)</li>
+                    <li>IG calls to access IG's own external HTTP/SOAP API (heartbeat, provisioning,
+                        and device notification) </li>
+                    <li>
+                        <p>any other outbound connection initiated by NCC such as outbound
+                            Diameter-peer or outbound LDAP request</p>
+                    </li>
+                </ul>
+                <p>For more information about Service Entry, see Istio documentation.</p>
+            </note>
+        </context>
+        <steps>
+            <step>
+                <cmd> For each CNF in NCC,  create a namespace and enable Istio injection by
+                    entering: </cmd>
+                <info>
+                    <codeblock>kubectl create ns $NAMESPACE
+kubectl label namespace $NAMESPACE istio-injection=enabled</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>For each namespace, do the procedure <xref
+                        href="creating_service_accounts__roles_and_role_bindings.dita"/>.</cmd>
+            </step>
+            <step>
+                <cmd>For each namespace, create a resource quota by entering:</cmd>
+                <info>
+                    <codeblock>cat &lt;&lt;EOF | kubectl -n $NAMESPACE apply -f -
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: quota
+spec:
+  hard:
+    cpu: "200"
+    memory: 300G
+EOF</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>For every ME or IG, configure outgoing Diameter TLS using regular TLS or TLS in
+                    open state.</cmd>
+                <info><note>When you configure the Diameter Peer in SM GUI, the protocol must be set
+                        as follows: <ul>
+                            <li>If you are using regular TLS, then the protocol must be set to
+                                TCP.</li>
+                            <li>If you are using TLS in open state, then the protocol must be set to
+                                TLS.</li>
+                        </ul>
+                    </note>The following is an example of the configuration of a TLS outbound
+                    Diameter to a specific IP address with port 3868 when regular TLS is
+                    used.<codeblock>REMOTE_DIAMETER_PEER='diameter.example.com'
+IP_ADDRESS='10.20.30.40'
+# Increment for each diameter peer:
+PEER_NUMBER='1'
+ 
+cat &lt;&lt; EOF | kubectl apply -f -
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: tls-diameter-${PEER_NUMBER}
+  namespace: $NAMESPACE
+spec:
+  exportTo:
+  - .
+  hosts:
+  - "$REMOTE_DIAMETER_PEER"
+  addresses:
+  - $IP_ADDRESS/32
+  ports:
+  - number: 3868
+    name: tcp-diameter
+    protocol: TCP
+  - number: 5658
+    name: tcp-diameter-secure
+    protocol: TCP
+  endpoints:
+  - address: $IP_ADDRESS
+  location: MESH_EXTERNAL
+  resolution: STATIC
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: tls-diameter-${PEER_NUMBER}
+  namespace: $NAMESPACE
+spec:
+  exportTo:
+  - .
+  hosts:
+  - $REMOTE_DIAMETER_PEER
+  tcp:
+  - match:
+    - port: 3868
+    route:
+    - destination:
+        host: $REMOTE_DIAMETER_PEER
+        port:
+          number: 5658
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: tls-diameter-${PEER_NUMBER}
+  namespace: $NAMESPACE
+spec:
+  exportTo:
+  - .
+  host: "$REMOTE_DIAMETER_PEER"
+  trafficPolicy:
+    portLevelSettings:
+    - port:
+        number: 5658
+      tls:
+        mode: SIMPLE
+EOF</codeblock>The
+                    following is an example of the configuration of a TLS outbound Diameter to a
+                    specific IP address with port 3868 when  TLS in open state is used.<note>
+                        <p>When you use TLS in open state, another secret must be created.</p>
+                    </note><codeblock>REMOTE_DIAMETER_PEER='diameter.example.com'
+IP_ADDRESS='10.20.30.40'
+# Increment for each diameter peer:
+PEER_NUMBER='1'
+ 
+cat &lt;&lt; EOF | kubectl apply -f -
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: tls-diameter-${PEER_NUMBER}
+  namespace: $NAMESPACE
+spec:
+  exportTo:
+  - .
+  hosts:
+  - "$REMOTE_DIAMETER_PEER"
+  addresses:
+  - $IP_ADDRESS/32
+  ports:
+  - number: 3868
+    name: tcp-diameter
+    protocol: TCP
+  endpoints:
+  - address: $IP_ADDRESS
+  location: MESH_EXTERNAL
+  resolution: STATIC
+EOF</codeblock></info>
+            </step>
+            <step>
+                <cmd>Return to the working directory by entering:</cmd>
+                <info>
+                    <codeblock>cd ..</codeblock>
+                </info>
+            </step>
+        </steps>
+    </taskbody>
+</task>

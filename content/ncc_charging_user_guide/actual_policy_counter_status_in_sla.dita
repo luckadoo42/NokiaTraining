@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="actual_policy_counter_status_in_sla">
+    <title>Actual policy counter status in SLA</title>
+    <conbody>
+        <section id="section_pzl_hsr_ymb">
+            <title>Overview</title>
+            <p>Before this feature, when a subscriber was created and a subscription was purchased
+                or already associated to a group but the resource was empty at the time of
+                subscriber creation, the policy counter status being sent to PCRF by the OCS server
+                was the default value (as <varname>-99</varname>) in the initial SLA as response.
+                However, the expected policy counter state was the actual policy counter state after
+                evaluation of its policy threshold as configured by the service operator.</p>
+            <p>This feature provides the actual policy counter status as a result in SLA when a
+                newly provisioned prepaid subscriber subscribes to a bundle, a bucket resource is
+                created with zero volume, or a subscription is offered through
+                <i>ChangePlan</i>.</p>
+            <p>For example,</p>
+            <p>Create a group with 4 bundles and attach a policy counter to the group. Apply an
+                Aggregate View (AV) to the group, which has SO threshold applied on it. A group
+                policy counter, which is a resource-based counter has a threshold applied for the
+                first data consumption (<varname>Absolute from Start</varname>) at zero. The
+                threshold at zero for provisioning as <varname>Absolute from Start</varname> with
+                policy counter state as <varname>validVolume</varname> and the threshold at zero for
+                Diameter request as <varname>Absolute from End</varname> with policy counter state
+                as <varname>NoValidVolume</varname>.</p>
+            <p>As per the previous behavior, if a device was attached the group and the group had a
+                subscription but there was no volume in the group, which meant that subscription had
+                buckets with zero initial value, then the policy counter state being returned was
+                    <varname>-99</varname>, which was mapped at PCRF as <varname>HIGH</varname>.
+                Therefore, when PGW sent a Gy CCR at OCS, no volume was there on the group
+                subscription, a CLR is returned back to the network, and subscriber was never
+                redirected to the portal for top-up.</p>
+            <p>With this feature, if a device is being attached the group and the group has a
+                subscription but there is no volume in the group, which means subscription has
+                buckets with zero initial value, then the policy counter state is returned as
+                defined, which is <varname>noValidVolume</varname> because bucket though exists but
+                has zero initial value mapped at PCRF as <varname>REDIRECT</varname>. Therefore, PGW
+                results to Gy CCR(i) request after the redirect and accordingly, the call flow
+                continues.</p>
+        </section>
+        <section id="section_j5x_nwr_ymb">
+            <title>Additional information</title>
+            <p>Consider the following points for this feature:</p>
+            <ul id="ul_j1f_pwr_ymb">
+                <li>
+                    <p>This functionality is applicable to:</p>
+                    <ul id="ul_hgk_ptr_ymb">
+                        <li>
+                            <p>AV on device, group, or both.</p>
+                        </li>
+                        <li>
+                            <p><i>create Bucket</i>, <i>ChangePlan</i>, and a new subscription
+                                created particularly for a new subscriber.</p>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <p>AV is of <i>Charging Service</i> type and applied to a group.</p>
+                </li>
+                <li>
+                    <p>There are no adaptation for counter resources.</p>
+                </li>
+                <li>
+                    <p>Bucket is always created in the subscription.</p>
+                </li>
+                <li>
+                    <p>During a subscription add or update, if an AV or bucket has both old unused
+                        value (before subscription add or update) and new unused value (after
+                        subscription add or update) as zero, then thresholds of type
+                            <varname>Absolute from End</varname> is evaluated.</p>
+                </li>
+            </ul>
+        </section>
+        <section id="section_yqf_vds_ymb">
+            <title>Example</title>
+            <p>With this example, it is verified that the actual policy counter state in SLA and SNR
+                are sent when a threshold is attached to a policy counter and AV.</p>
+            <p><b>Provisioning:</b></p>
+            <ol id="ol_hgm_12s_ymb">
+                <li>
+                    <p>Set the <i>Default Signaling State in SLA (Initial)</i> as
+                            <varname>false</varname>.</p>
+                </li>
+                <li>
+                    <p>Create a charging service <varname>CS1</varname> with a bucket
+                            <varname>Bucket1</varname> and bucket balance as zero. Associate
+                            <varname>CS1</varname> to a bundle <varname>Bundle1</varname>.</p>
+                </li>
+                <li>
+                    <p>Create two thresholds <varname>TPG_teeth003091</varname> of <varname>Absolute
+                            from End</varname> type and <varname>TPG_ABS003091</varname> of
+                            <varname>Absolute from Start</varname> type:</p>
+                    <p>For <varname>Absolute from End</varname> threshold:</p>
+                    <image placement="break" href="../images/abethreshold1.png"
+                        id="image_mph_lxy_ymb" scale="75"/>
+                    <p/>
+                    <p>For <varname>Absolute from Start</varname> threshold:</p>
+                    <image placement="break" href="../images/absthreshold1.png"
+                        id="image_kkh_pyy_ymb" scale="75"/>
+                    <p/>
+                </li>
+                <li>
+                    <p>Create an AV of <i>Charging Service</i> type and attach the
+                            <varname>TPG_teeth003091</varname> and <varname>TPG_ABS003091</varname>
+                        thresholds to that AV.</p>
+                </li>
+                <li>
+                    <p>Create a resource-based policy counter and attach the counter threshold
+                            (<varname>Absolute from Start</varname>) to it with following
+                        conditions:</p>
+                    <ol id="ol_qts_n2s_ymb">
+                        <li>
+                            <p>If charging is done from a device, then set the policy counter state
+                                as <varname>HIGH</varname>.</p>
+                        </li>
+                        <li>
+                            <p>If charging is done from a group, then set the policy counter state
+                                as <varname>LOW</varname>.</p>
+                        </li>
+                    </ol>
+                    <image placement="break" href="../images/absthreshold.png"
+                        id="image_hnf_rgs_ymb" scale="75"/>
+                    <p/>
+                </li>
+                <li>
+                    <p>Create an account, device (with charging group first), and a group.</p>
+                </li>
+                <li>
+                    <p>Attach AV and counter to the group.</p>
+                </li>
+                <li>
+                    <p>Attach subscription to the group.</p>
+                </li>
+            </ol>
+            <p><b>Call processing:</b></p>
+            <ol id="ol_p4y_x2s_ymb">
+                <li>
+                    <p>Execute a Gx initial and terminate call.</p>
+                </li>
+                <li>
+                    <p>Update the bucket balance using <i>Bucket Update Instance</i> API set to
+                            <varname>20</varname>.</p>
+                </li>
+                <li>
+                    <p>Execute a Gx initial call.</p>
+                </li>
+                <li>
+                    <p>Execute a Gy call:</p>
+                    <p><varname>CCR(I): RSU = 10</varname></p>
+                    <p><varname>CCR(U): USU=10, RSU = 10</varname></p>
+                    <p><varname>CCR(T): USU = 10</varname></p>
+                </li>
+                <li>
+                    <p>Execute a Gx terminate call.</p>
+                </li>
+            </ol>
+            <p><b>Verification:</b></p>
+            <ol id="ol_skd_3fs_ymb">
+                <li>
+                    <p>When the first Gx initial and terminate calls are triggered (when bucket
+                        balance is zero), the policy counter state is returned as
+                            <varname>LOW</varname> in SLA.</p>
+                </li>
+                <li>
+                    <p>After the bucket update, when Gx initial call is executed, the policy counter
+                        state is returned as <varname>HIGH</varname> in SLA.</p>
+                </li>
+                <li>
+                    <p>When a Gy call is initiated and CCR(I) request is triggered, SNR is sent with
+                        policy counter state is returned as <varname>LOW</varname> in SLA as
+                        charging is done from group.</p>
+                </li>
+            </ol>
+        </section>
+    </conbody>
+</concept>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9YZ-09018-UG00-PCZZA-d1e1415">
+    <title>Deployment models</title>
+    <conbody>
+        <p>NCC CNF is deployed in the network as one pair of Service Managers (SM) and one or more
+            pairs of Managed Elements (MEs). A pair of MEs are active/active from the network
+            perspective, with one-half of their subscribers being active on one ME and secondary on
+            the other ME, and the other half of the subscribers being reversed. NCC CNF pairs are
+            deployed in two geographically diverse sites. In addition to SM and ME being separate,
+            NCC CNF can also be deployed with IG.</p>
+        <p>For more information about field deployments of NCC CNF, see <i>CNF Installation and
+            Update Guide</i> in the NCC documentation set.</p>
+        <section id="section_u1l_wq5_klb">
+            <title>ME deployment models</title>
+            <p>The following are variations of  ME deployment models.</p>
+            <ul id="ul_a4x_1q5_klb">
+                <li>
+                    <p><b>Independent ME pairs</b> In this model, each ME pair is independent from
+                        the other pairs. Received traffic is either processed locally or site-routed
+                        to the other ME in the pair (or is rejected). There is no NCC site-routing
+                        to an ME outside of this pair. The operator's network must perform routing
+                        to ensure that a particular message arrives to the correct ME pair, if that
+                        is required.</p>
+                </li>
+                <li><b>Networked ME pairs</b> In this model, all MEs can communicate with each other
+                    and know which subscribers are homed on any of the MEs in the network. When a
+                    message arrives at an ME, if the subscriber is not homed on this local ME, then
+                    this ME can site-route this message to the home ME anywhere in the network, not
+                    limited to just the other ME in this pair.</li>
+            </ul>
+        </section>
+        <section id="section_xzs_1bb_llb">
+            <title>Integrated SM and ME </title>
+            <p>The model when NCC is deployed with separate SM and ME might yield more independent
+                scaling and fault tolerance between the SM and ME functions, but it results in a
+                larger footprint. As another option, NCC CNF can be deployed with the SM
+                microservices integrated into the same Kubernetes cluster/namespace as the ME
+                microservices, which yields a reduced overall footprint due to sharing of common
+                services. </p>
+            <p>The following are the variations of integrated SM and ME:</p>
+            <ul id="ul_onn_dq5_klb">
+                <li>
+                    <p><b>Integrated SM and ME</b> Small deployments with an SM pair and a single ME
+                        pair might further optimize the deployment footprint by combining an SM and
+                        ME into a single system. While adding SM into an ME requires some extra
+                        containers for components such as the SM application, the overall footprint
+                        is reduced due to a sharing of some common services such as database, Kafka,
+                        BTEL infrastructure, and so on.</p>
+                </li>
+                <li><b>Integrated SM and ME with additional ME pairs</b> In a future version,
+                    network operators will be able to grow additional MEs into their network
+                    deployment. </li>
+            </ul>
+        </section>
+    </conbody>
+</concept>

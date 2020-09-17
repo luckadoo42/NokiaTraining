@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e27949"><title>Map lifecycle state to a policy counter ID </title><conbody>
+<section><title>Overview</title>
+<p>When subscribers opt for offers such as Fixed Wireless Access (FWA), the new OCS device is put into a temporary lifecycle state. This is done to prevent the data sessions until all the network elements are configured. Once the network elements are correctly configured, the device transition to an active lifecycle state that allows the data transfer. The HLAPI initializes the device lifecycle's initial state when device is created using the <uicontrol>AddRTRProfile</uicontrol> task and consequently changes the lifecycle state using the <uicontrol>UpdateRTRProfile</uicontrol> task. The Policy Counter (PC) status is stored through a <varname>Send SNR</varname> action for a policy counter so that the value is returned in a subsequent SLR-I received from the PCRF.</p>
+<p>This feature is only applicable to the device entity lifecycle. </p>
+</section>
+<section><title>Assumptions</title><ul>
+<li>
+<p>The lifecycle of the device cannot be changed or removed without removing the device. Therefore, it is not necessary to define a specific PC status when a device entity lifecycle is removed.</p>
+</li>
+<li>
+<p>When a device is created, as a first step, the lifecycle state always changes from <i>Start</i> to <i>Pre-active</i> with timer = 0 configuration. The further lifecycle states are changed according to the SIM state in the <userinput>AddRTRProfile</userinput> task.</p>
+</li>
+</ul>
+</section>
+<section><title>Configuration</title>
+<p>This feature does not contain the Policy Counter Definition. For example, consider that
+                    <varname>PLC1</varname>, <varname>PLC2</varname>, and <varname>PLC3</varname>
+                are existing policy counters whose definition is in a counter or charging service.
+                To configure this feature, you can enter <varname>PLC4</varname> for <i>Policy
+                    Counter Name</i> in the Lifecycle entity with a value for policy counter status.
+                See <!--xref URI: #examplepc--><xref
+                    href="#id9yz-09126-ug01-pczza-sp1-d1e27949/examplepc" format="dita"/> for
+                lifecycle related details. </p>
+</section>
+<section><title>AddRTRProfile task</title>
+<p>When a device is created using the <uicontrol>AddRTRProfile</uicontrol> task, the device lifecycle state is set to <i>Pre-Active</i> since timer=0 transition is configured in the Start state. The <userinput>Send S N R Action</userinput> is executed and PCID=LFS and PCS=0 is stored with lifecycle state <i>Pre-Active</i> in database.</p>
+<p>See <!--xref URI: #lifecyclestates--><xref
+                    href="#id9yz-09126-ug01-pczza-sp1-d1e27949/lifecyclestates" format="dita"/> for
+                sample lifecycle states. </p>
+<p>In the AddRTRProfile task, the lifecycle states change based on the values passed in the SIM state. </p><ol>
+<li>
+<p> If the SIM state is not passed or the value is empty, then the current lifecycle state is retained as <i>Pre-active </i> state.</p>
+</li>
+<li>
+<p>If the SIM state is passed as <i>Pre-Active</i>, same as its current state, then the lifecycle state is retained as <i>Pre-Active </i>.</p>
+</li>
+<li>
+<p>If the SIM state is passed as <i>Suspend</i>, then the device lifecycle state is changed to <i>Suspend</i> state. A <i>Send S N R Action</i> is executed and <i>Policy Counter Name (PCID) = LFS</i> and <i>Policy Counter Status (PCS) = 2 </i> is stored with the lifecycle state as <i>Suspend</i> in the database.</p>
+</li>
+<li>
+<p>If the SIM state is passed as <i>Suspend2</i>, and there is no transition defined between <i>Pre-Active</i> and <i>Suspend2</i>, then the lifecycle state is retained as <i>Pre-active</i> state and an error message in the HLAPI response is returned.</p>
+</li>
+</ol>
+<p>If SLR arrives for this device, SLA is returned with PCID=LFS and PCS=&lt;Memorized Policy Counter Status&gt;.</p>
+</section>
+<section><title>UpdateRTRProfile task</title>
+<p>In the UpdateRTRProfile task, the lifecycle states change based on the values passed in the SIM state: </p><ol>
+<li>
+<p>If the SIM state is not passed or the value is empty, then the current lifecycle state is retained.</p>
+</li>
+<li>
+<p>If the SIM state is same as the current lifecycle state, then the current lifecycle state is retained.</p>
+</li>
+<li>
+<p>If the SIM state is passed and the value is a valid state of the device lifecycle, and the value is different from the current state, then the device lifecycle is changed to the SIM state and <userinput>Send S N R Action</userinput> is executed.</p><ul>
+<li>
+<p>If a new PCS is same as the current PCS in the device lifecycle, the PCS is not stored again, and irrespective of whether there is an ongoing Sy session or not, SNR is not sent.</p>
+</li>
+<li>
+<p>If a new PCS is different from the current PCS in the device lifecycle, then the new PCS is stored in the database and the SNR is sent based on the following scenarios:</p>
+<table colsep="1" rowsep="1">
+                                <tgroup cols="2">
+                                    <colspec colname="col1"/>
+                                    <colspec colname="col2"/>
+                                    <thead>
+                                        <row>
+                                            <entry>
+                                                <p>If...</p>
+                                            </entry>
+                                            <entry>
+                                                <p>Then...</p>
+                                            </entry>
+                                        </row>
+                                    </thead>
+                                    <tbody>
+                                        <row>
+                                            <entry> There is an ongoing Sy session for the device </entry>
+                                            <entry> SNR is sent with the <i>PCID = LFS</i> and
+                                                  <i>PCS = &lt;memorized Policy Counter
+                                                  Status&gt;</i>. The PCID and PCS is stored in the
+                                                device information. </entry>
+                                        </row>
+                                        <row>
+                                            <entry> There is no ongoing Sy session for the device </entry>
+                                            <entry> Device does not send SNR message. The PCID and
+                                                PCS is stored in the device information. </entry>
+                                        </row>
+                                    </tbody>
+                                </tgroup>
+                            </table>
+</li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="examplepc"><title>Example</title>
+<p>Consider that a device named <varname>FWA_Device</varname> with Fixed Wireless Access (FWA) subscription is added using the AddRTRProfile task. The lifecycle is defined with states <varname>Start</varname>, <varname>Pre-active</varname>, <varname>Active</varname>, <varname>Suspend</varname>, and <varname>Suspend2</varname>.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_19.9/f-GUIexample_1_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-f-guiexample_1_default.png"/>
+</fig>
+<p>The initial device lifecycle state is set to <i>Pre-active</i> with timer = 0 configuration. A <varname>Send SNR</varname> is executed and <i>Policy Counter Name (PCID) = LFS</i> and <i>Policy Counter State = 0</i> is committed to memory with lifecycle state as <i>Pre-active</i> in the database.</p>
+<fig>
+                <!--MMO resource relative URI: ../Graphics/Release_19.9/f-GUIexample_2_default.png-->
+                <image href="../images/img9yz-09126-ug01-pczza-sp1-f-guiexample_2_default.png"
+                    scale="50"/>
+            </fig>
+<p>After all the network elements are configured correctly, the device lifecycle state is changed from <i>Pre-active</i> to <i>Active</i> state.</p>
+<fig>
+                <!--MMO resource relative URI: ../Graphics/Release_19.9/f-GUIexample_3_default.png-->
+                <image href="../images/img9yz-09126-ug01-pczza-sp1-f-guiexample_3_default.png"
+                    scale="40"/>
+            </fig></section>
+    <section id="lifecyclestates"><title>Lifecycle states</title>
+<p>Following figure shows the different states configured in the lifecycle. Note that the same policy counter name (LFS) is used for all the states.</p>
+<p>
+<uicontrol>Start state &gt; Pre-active event</uicontrol>
+</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.9/f-GUIexample_2_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-f-guiexample_2_default.png"
+                        scale="50"/>
+                </fig>
+<p>
+<uicontrol>Pre-active state &gt; Active event</uicontrol>
+</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.9/LC_Preactive_Active_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-lc_preactive_active_default.png"
+                        scale="50"/>
+                </fig>
+<p>
+<uicontrol>Pre-active state &gt; Suspend event</uicontrol>
+</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.9/LC_Active_Suspend_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-lc_active_suspend_default.png"
+                        scale="50"/>
+                </fig>
+<p>
+<uicontrol>Active state &gt; Pre-active event</uicontrol>
+</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.9/LC_Active_Preactive_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-lc_active_preactive_default.png"
+                        scale="50"/>
+                </fig>
+<p>
+<uicontrol>Active state &gt; Suspend event</uicontrol>
+</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.9/LC_Active_Suspend_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-lc_active_suspend_default.png"
+                        scale="50"/>
+                </fig>
+<p>
+<uicontrol>Suspend state &gt; Pre-active event</uicontrol>
+</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.9/LC_Suspend_Preactive_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-lc_suspend_preactive_default.png"
+                        scale="50"/>
+                </fig>
+<p>
+<uicontrol>Suspend state &gt; Active event</uicontrol>
+</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.9/LC_Suspend_Active_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-lc_suspend_active_default.png"
+                        scale="50"/>
+                </fig>
+<p>
+<uicontrol>Suspend state &gt; Suspend2 event</uicontrol>
+</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.9/LC_Suspend_Suspend2_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-lc_suspend_suspend2_default.png"
+                        scale="50"/>
+                </fig>
+<p>
+<uicontrol>Suspend2 state &gt; Suspend event</uicontrol>
+</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.9/f-GUIexample_7_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-f-guiexample_7_default.png"
+                        scale="50"/>
+                </fig>
+</section>
+</conbody></concept>

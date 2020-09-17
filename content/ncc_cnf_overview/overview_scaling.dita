@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="SPS_CDR_Streams_Stream_Overview_scaling">
+<title>Scaling</title>
+<body>
+                
+                <p>CG Kafka Node can be scaled by increasing the amount of consumer threads, which
+            is controlled by node parameters <codeph>ConsumerThreads</codeph> and
+                <codeph>ConsumerGroupId</codeph>. Each created consumer thread belongs to the same
+            consumer group ID, which causes the Apache Kafka broker to load balance the messages to
+            the consumers within the group listening to that particular topic. However, the number
+            of consumer threads should not be greater than the number of configured partitions in
+            the Kafka egress topic. Apache Kafka assigns one partition per consumer thread, hence,
+            if the number of consumers is greater than the number of partitions, the extra consumers
+            do not get any partitions, and they are idle and do not receive any data.</p>
+                <p>There can also be multiple Kafka input streams working in parallel, but if they
+                    are reading the same Kafka topic, they must all have the same consumer group ID
+                    configured. Otherwise, the Kafka input streams will receive the same Kafka
+                    messages, resulting in duplicate output records.</p>
+            </body>
+</topic>

@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="id9YZ-09126-MT02-REZZA-Launching-instance"><title>Deploying Maestro VM in OpenStack</title><taskbody id="d1e1764"><context>
+			<p>This procedure provides instructions on how to deploy the Maestro VM in OpenStack.
+				When the Maestro VM is deployed in OpenStack, it also has to be configured with a
+				static IP address. For more information, see OpenStack documentation.</p>
+		</context><prereq>
+<p>Before beginning this procedure, ensure that you are logged in to the OpenStack dashboard.</p>
+			<p>To deploy the Maestro VM in OpenStack:</p>
+</prereq><steps>
+<step>
+				<cmd>Upload the Maestro VM image to OpenStack using the procedure <xref
+						keyref="id9YZ-09126-MT02-REZZA-Uploading-Orchestrator-VM-image-to-OpenStack"
+					/>.</cmd>
+				<info/>
+			</step>
+<step><cmd/><info>
+<note>
+<p>The minimum system requirements are 8 vCPUs, 16 GB of RAM and 160 GB of disk space.</p>
+</note>
+<p>If you are deploying the Maestro VM on a static network (non-DHCP), then edit the Maestro HOT YAML file as follows:</p><ul>
+<li>
+<p>In the <b>default:</b> field, enter &lt;hostname of the Maestro VM&gt; as the following example shows:</p>
+<p>
+<userinput>default: Maestro-VM</userinput>
+</p>
+</li>
+<li>
+<p>In the <b>flavor:</b> field, enter &lt;Flavor ID&gt; as the following example shows:</p>
+<p>
+<userinput>flavor: m1.xlarge</userinput>
+</p>
+</li>
+<li>
+<p>In the <b>network_id:</b> field, enter &lt;Network ID or name&gt; as the following example shows:</p>
+<p>
+<userinput>network_id: v205-NODE030-CB-PROVIDER</userinput>
+</p>
+</li>
+<li>
+<p>In the <b>__timezone__: </b> field, enter '&lt;timezone&gt;' as the following example shows:</p>
+<p>
+<userinput>__timezone__: 'America/Toronto'</userinput>
+</p>
+<p>The default time zone is UTC if this filed is blank.</p>
+</li>
+<li>
+<p>In the <b>__ntpserver1__:</b> field, enter ‘&lt;NTP server IP&gt;’ as the following example shows:</p>
+<p>
+<userinput>__ntpserver1__: ‘10.75.223.4’</userinput>
+</p>
+<p>This field might also stay blank.</p>
+</li>
+<li>
+<p>In the <b>__nameserver1__:</b> field, enter ‘&lt;DNS server IP&gt;’ as the following example shows:</p>
+<p>
+<userinput>__nameserver1__: ‘172.23.102.60’</userinput>
+</p>
+<p>This field might also stay blank.</p>
+</li>
+<li>
+<p>In the <b>__domain__:</b> field, enter '&lt;list of domain search&gt;' as the following example shows:</p>
+<p>
+<userinput>__domain__: 'labs.ca.alcatel-lucent.comca'</userinput>
+</p>
+<p>This field might also stay blank.</p>
+</li>
+<li>
+<p>In the <b>fixed_ips:</b> field, enter ip_address: &lt;Maestro static IP address&gt;, subnet: &lt;Subnet ID&gt; as the following example shows:</p>
+<p>
+<userinput>ip_address: 10.75.138.102, subnet: OAM_SUBNET</userinput>
+</p>
+</li>
+</ul>
+</info></step>
+<step><cmd><draft-comment>FIXME - put an instruction here</draft-comment></cmd><info>
+<note>
+<p>The minimum system requirements are 8 vCPUs, 16 GB of RAM and 160 GB of disk space.</p>
+</note>
+<p>If you are deploying the Maestro VM on a DHCP network, then edit the Maestro HOT YAML file as follows:</p><ul>
+<li>
+<p>In the <b>default:</b> field, enter &lt;hostname of the Maestro VM&gt; as the following example shows:</p>
+<p>
+<userinput>default: Maestro-VM</userinput>
+</p>
+</li>
+<li>
+<p>In the <b>flavor:</b> field, enter &lt;Flavor ID&gt; as the following example shows:</p>
+<p>
+<userinput>flavor: m1.xlarge</userinput>
+</p>
+</li>
+<li>
+<p>In the <b>network_id:</b> field, enter &lt;Network ID or name&gt; as the following example shows:</p>
+<p>
+<userinput>network_id: Provider_External_Netork</userinput>
+</p>
+</li>
+<li>
+<p>In the <b>__timezone__: </b> field, enter '&lt;timezone&gt;' as the following example shows:</p>
+<p>
+<userinput>__timezone__: 'America/Toronto'</userinput>
+</p>
+<p>The default time zone is UTC if this filed is blank.</p>
+</li>
+<li>
+<p>In the <b>__ntpserver1__:</b> field, enter ‘&lt;NTP server IP&gt;’ as the following example shows:</p>
+<p>
+<userinput>__ntpserver1__: ‘10.75.223.4’</userinput>
+</p>
+<p>This field might also stay blank.</p>
+</li>
+<li>
+<p>Leave the <b>__nameserver1__:</b> field empty as the following example shows:</p>
+<p>
+<userinput>__nameserver1__:''</userinput>
+</p>
+</li>
+<li>
+<p>Leave the <b> __domain__ :</b> field empty as the following example shows:</p>
+<p>
+<userinput> __domain__:''</userinput>
+</p>
+</li>
+<li>
+<p>Delete or comment the line “ - {ip_address: &lt;Maestro static IP address&gt;, subnet: &lt;Subnet ID&gt;}”.</p>
+</li>
+</ul>
+</info></step>
+<step><cmd>In the OpenStack dashboard, select the <b>Orchestration</b> tab, then select the <b>Stacks</b> tab and then click the <b>+Launch Stack</b> button. The <b>Select Template</b> pane appears.</cmd><info/></step>
+<step><cmd>In the <b>Select Template</b> pane, click the <b>Choose File</b> button, then select the modified Maestro HOT YAML file and click <b>Next</b>. The <b>Launch Stack</b> pane appears.</cmd><info/></step>
+<step><cmd>In the <b>Launch Stack</b> pane, do the following:</cmd><info><ul>
+<li>
+<p>In the <b>Stack Name</b> field, enter the name for the stack and the password and then click <b>Launch</b>.</p>
+</li>
+<li>
+<p>In the <b>Password for user</b> field, the password.</p>
+</li>
+<li>
+<p>Click <b>Launch</b>.</p>
+</li>
+</ul></info></step>
+<step><cmd>Verify the successful instantiation of the Maestro VM by doing the following:</cmd><info><ul>
+<li>
+<p>Click the <b>Project</b> tab, then click the <b>Compute</b> tab, and then click the <b>Instances</b> tab. The <b>Instances</b> window appear.</p>
+</li>
+<li>
+<p>In the <b>Instances</b> window, verify that the Maestro VM is instantiated successfully and record the IP address assigned to the Maestro VM.</p>
+</li>
+</ul></info></step>
+<step><cmd>Log in to the Maestro VM over SSH using the IP address assigned to it.</cmd><info/></step>
+</steps>
+</taskbody></task>

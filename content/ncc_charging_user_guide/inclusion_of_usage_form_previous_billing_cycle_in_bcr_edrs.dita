@@ -1,0 +1,442 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="inclusion_of_usage_form_previous_billing_cycle_in_bcr_edrs">
+    <title>Including usage from previous billing cycle in BCR EDRs</title>
+    <conbody>
+        <p>To derive monthly billing from billing cycle reset (BCR) EDRs appropriately, all quota
+            allocated from the previous billing cycle (for active voice and data sessions when the
+            BCR occurs) must be factored in when the BCR EDR is generated. This quota applies to
+            account BCR and bundle renewals/expirations. This also includes quota for an account BCR
+            date, as well as the quota for subscriptions in which the renewal/expiration date is
+            controlled by their own period lifecycle (that is, if subscriptions not linked to the
+            account BCR date). This is termed as <i>standalone subscription event</i>, that is, the
+            renewal or expiration date for subscriptions is controlled by the subscription’s period
+            lifecycle.</p>
+    </conbody>
+    <concept id="concept_ccb_dlk_ymb">
+        <title>Configuration</title>
+        <conbody>
+            <p>The application preference <uicontrol>Include Final Usage in BCR EDRs</uicontrol> is
+                used to configure whether and how to generate final BCR before first call of the
+                day. The default value is <varname>DISABLED</varname>. Following are some other
+                possible values for this application preference. Different scenarios for each value
+                is described in this section.</p>
+            <section id="section_b1h_wnk_ymb">
+                <title>FIRST_CALL</title>
+                <ul id="ol_rwc_cnk_ymb">
+                    <li><b>Postpone TEM based on VT</b><p>To ensure that lifecycle is not triggered
+                            by TEM scheduled regularly and thus final BCR is not generated before
+                            first call of the day, turn on the following parameters:<ul
+                                id="ol_swc_cnk_ymb">
+                                <li>Set this application preference to
+                                    <varname>FIRST_CALL</varname>.</li>
+                                <li>Set the application preferences <b>VT Adjustment Factor
+                                        (seconds)</b> and <b>TTC Adjustment Factor (seconds)</b> to
+                                    a value greater than 0.</li>
+                                <li>Set the <b>Is-TTC-Enabled</b> flag to <varname>true</varname>.
+                                    See section <xref
+                                        keyref="id9YZ-09126-UG01-PCZZA-SP1-ttchandling"/> for more
+                                    details.</li>
+                            </ul></p></li>
+                    <li><b>Final BCR EDR processing has to wait for the first call of the day after
+                            BCR time</b><p>If active session is in progress, and the
+                            account/subscription BCR time is crossed by the allocated slice (VT
+                            exceeds BCR time), then lifecycle is not triggered by TEM scheduled
+                            regularly. But, TEM gets triggered by the first call of the day. This
+                            helps to include the total usage of billing cycle in related BCR
+                            EDRs.</p></li>
+                </ul>
+            </section>
+            <section id="section_hlp_xnk_ymb">
+                <title>LAST_DATA_CALL</title>
+                <ul id="ol_twc_cnk_ymb">
+                    <li><b>Postpone TEM based on VT</b><p>To ensure that lifecycle is not triggered
+                            by TEM scheduled regularly and thus final BCR is not generated before
+                            first call of the day, configure the following parameters:<ul
+                                id="ol_uwc_cnk_ymb">
+                                <li>Set this application preference to
+                                        <varname>LAST_DATA_CALL</varname>.</li>
+                                <li>Set the application preferences <b>VT Adjustment Factor
+                                        (seconds)</b> and <b>TTC Adjustment Factor (seconds)</b> to
+                                    a value greater than 0.</li>
+                                <li>Set the <b>Is-TTC-Enabled</b> flag to <varname>true</varname>.
+                                    See section <xref
+                                        keyref="id9YZ-09126-UG01-PCZZA-SP1-ttchandling"/> for more
+                                    details.</li>
+                            </ul></p></li>
+                    <li><b>Final BCR EDR processing has to wait for the final usage for all the
+                            active data sessions</b><ul id="ol_vwc_cnk_ymb">
+                            <li>If there are any active data sessions at the time of BCR, the BCR
+                                EDR is not logged at the time of BCR. It is saved to be dumped when
+                                all quota allocated from the previous billing cycle has been
+                                accounted for, either when usage is reported in a CCR-U/T after BCR
+                                or when the sessions are cleared via audit.</li>
+                            <li>If there are active voice sessions at the time of BCR, the voice
+                                usage till BCR is accounted for in the BCR EDR, by deriving the
+                                usage based on the interval from the last reported usage through the
+                                BCR time.<ul id="ol_wwc_cnk_ymb">
+                                    <li>If TTC is not enabled, virtual TTC is enabled to calculate
+                                        the TTC time (without any adjustments).</li>
+                                    <li>Using the TTC time, units before TTC and cost (final usage)
+                                        for the same are calculated.</li>
+                                    <li>At the time of BCR, the BCR EDRs are updated with the
+                                        calculated cost (final usage) for the voice usage till
+                                        BCR.</li>
+                                    <li>If the session is cleared via audit, the voice usage till
+                                        BCR is calculated.</li>
+                                </ul></li>
+                            <li>If there are any active fee reservations (Step Fee reservation or
+                                BOU Fee reservation), it is accounted for in the final BCR EDR as follows:<p>
+                                    <ul id="ol_xwc_cnk_ymb">
+                                        <li>Fee reserved for data sessions is treated like an active
+                                            data session, and BCR EDR is dumped only when all quota
+                                            allocated from the previous billing cycle has been
+                                            accounted for, either when usage is reported in a
+                                            CCR-U/T after BCR or when the sessions are cleared via
+                                            audit, and the fee reserved is charged.</li>
+                                        <li>Fee reserved for voice sessions is treated like an
+                                            active voice session, and the fee for the voice usage
+                                            till BCR is accounted for in the BCR EDR, by deriving
+                                            the fee for the usage based on the interval from the
+                                            last reported usage till the BCR time.</li>
+                                    </ul>
+                                </p></li>
+                        </ul></li>
+                </ul>
+            </section>
+            <section id="section_fly_xnk_ymb">
+                <title>LAST_CALL</title>
+                <ul id="ol_ywc_cnk_ymb">
+                    <li><b>Postpone TEM based on VT</b><p>To ensure that lifecycle is not triggered
+                            by TEM scheduled regularly, and thus final BCR is not generated before
+                            first call of the day, configure the following parameters:<ul
+                                id="ol_zwc_cnk_ymb">
+                                <li>Set this application preference to
+                                    <varname>LAST_CALL</varname>.</li>
+                                <li>Set the application preferences <b>VT Adjustment Factor
+                                        (seconds)</b> and <b>TTC Adjustment Factor (seconds)</b> to
+                                    a value greater than 0.</li>
+                                <li>Set the <b>Is-TTC-Enabled</b> flag to <varname>true</varname>.
+                                    See section <xref
+                                        keyref="id9YZ-09126-UG01-PCZZA-SP1-ttchandling"/> for more
+                                    details.</li>
+                            </ul></p></li>
+                    <li><b>Final BCR EDR processing has to wait for the final usage for all the
+                            active sessions</b><ul id="ol_axc_cnk_ymb">
+                            <li>If there are any active sessions at the time of BCR, the BCR EDR is
+                                not logged at the time of BCR; instead the same is saved, only to be
+                                dumped when all quota allocated from the previous billing cycle has
+                                been accounted for, either when usage is reported in a CCR-U/T after
+                                BCR or when the sessions are cleared via Audit.</li>
+                            <li>If there are any active fee reservations (Step Fee reservation or
+                                BOU Fee reservation), the same is accounted for in the final BCR
+                                EDR. Fee reserved for sessions shall be treated like an active
+                                session, and BCR EDR shall be dumped only when all quota allocated
+                                from the previous billing cycle has been accounted for, either when
+                                usage is reported in a CCR-U/T after BCR or when the sessions are
+                                cleared via Audit, and the fee reserved is charged.</li>
+                        </ul></li>
+                </ul>
+            </section>
+        </conbody>
+    </concept>
+    <concept id="concept_fnh_1hl_ymb">
+        <title>Applicability</title>
+        <conbody>
+            <p>This feature is applicable for BCR EDRs for the following lifecycle actions:</p>
+            <ul id="ul_mch_phl_ymb">
+                <li>Reset account</li>
+                <li>Renew subscription</li>
+                <li>Reset subscription</li>
+                <li>Empty subscription</li>
+                <li>Account BCR</li>
+                <li>Bundle renewals/expirations</li>
+            </ul>
+        </conbody>
+    </concept>
+    <concept id="concept_p1d_p3l_ymb">
+        <title>Points to consider</title>
+        <conbody>
+            <ul id="ol_dkk_p3l_ymb">
+                <li>The <varname>RecordEventResult</varname> tag value (15), overwrites the actual
+                        <varname>recordEventResult</varname> value.</li>
+                <li>
+                    <p>It is assumed that BCR is triggered via lifecycle audit or
+                        On-Call-Pending-PLC execution.</p>
+                    <p>If BCR is triggered before scheduled BCR via lifecycle REST APIs, then values
+                        in EDR may not be correct.</p>
+                </li>
+                <li>
+                    <p>As TTC is not supported for VoLTE sessions, if <b>Include Final Usage In BCR
+                            EDRs</b> is set to <varname>LAST_DATA_CALL</varname> then a virtual TTC
+                        is enabled. The TTC time is calculated without adjustments. This time is
+                        then used to calclulate the amount to be accounted in previous cycle.</p>
+                </li>
+                <li>If <b>Include Final Usage In BCR EDRs</b> is set to
+                        <varname>LAST_DATA_CALL</varname> and a VoLTE session is cleared via audit:
+                        <ul id="ol_ekk_p3l_ymb">
+                        <li>The VoLTE usage till BCR is used in previous values.</li>
+                        <li>Session audit CDR accounts for the committed usage till BCR</li>
+                    </ul></li>
+                <li>If <b>Include Final Usage In BCR EDRs</b> is set to
+                    <varname>LAST_CALL</varname>, then BCR EDR is logged after accounting usage for
+                    all sessions (both voice and data).</li>
+                <li>If <b>Include Final Usage In BCR EDRs</b> is set to
+                        <varname>LAST_DATA_CALL</varname>/<varname>LAST_CALL</varname>, then the
+                    functionality to postpone TEM based on VT continues to work.</li>
+                <li>If <b>Include Final Usage In BCR EDRs</b> is set to
+                        <varname>LAST_DATA_CALL</varname>/<varname>LAST_CALL</varname> and if
+                    neither usage is reported for the active sessions via CCR-U/T, nor the sessions
+                    are cleared by audit, within the current bill cycle, then at next BCR the
+                    following logic is applied:<ul id="ol_fkk_p3l_ymb">
+                        <li>The previous BCR already stored is logged first. <ul id="ol_gkk_p3l_ymb">
+                                <li>The <i>triggeredAtTime</i> tag gets the time when the previous
+                                    BCR was triggered, and <i>timestamp</i> tag gets the time when
+                                    the BCR EDR was dumped.</li>
+                                <li>Since usage is not reported, the logged EDR may not have the
+                                    accurate usage from previous cycle.</li>
+                            </ul></li>
+                        <li>The current BCR is processed and logged or stored based on active
+                            sessions.</li>
+                    </ul></li>
+                <li>If <b>Include Final Usage In BCR EDRs</b> is set to
+                        <varname>LAST_DATA_CALL</varname>, then account balance tags in BCR EDR are
+                    generated with the following logic: <ul id="ol_hkk_p3l_ymb">
+                        <li>The <i>accountBalanceBeforeReset </i>tag in ResetAccountAction EDR,
+                            accounts for the voice usage till BCR, by deriving the usage based on
+                            the interval from the last reported usage through the BCR time along
+                            with any applicable fees for the usage till BCR.</li>
+                        <li>If the account is not reset in the current cycle, then
+                                <i>accountBalanceBeforeRenew</i> and <i>accountBalanceAfterRenew</i>
+                            tags in RenewSubscriptionAction EDR, account for the voice usage till
+                            BCR, by deriving the usage based on the interval from the last reported
+                            usage through the BCR time along with any applicable fees for the usage
+                            till BCR. </li>
+                    </ul></li>
+                <li>If a user subscribes to booster bundle again before BCR:<ul id="ul_lnp_nwb_zmb">
+                        <li>In EDR, <varname>CustomData</varname> appears twice</li>
+                        <li>Policy counter info appears twice</li>
+                    </ul></li>
+                <li>VT time is calculated with adjustments.</li>
+                <li>For pending BCR EDRs, previous values are not adjusted (that is, no CCR/audit is
+                    done within the current cycle of the resource).</li>
+                <li>Lifecycle actions must be configured in the following order:<ol
+                        id="ol_et5_ywb_zmb">
+                        <li>ResetAccountAction</li>
+                        <li>RenewSubscriptionAction</li>
+                        <li>ResetPeriodAction</li>
+                    </ol>If the application preference <b>Include Final Usage in BCR EDRs</b> is set
+                    to <varname>LAST_DATA_CALL</varname> and active IMS sessions are present at BCR,
+                    then any different order may result in incorrect account balance in
+                        <i>RenewSubscriptionAction</i> EDRs. However, <i>ResetAccountAction</i>
+                    contains correct values.</li>
+            </ul>
+        </conbody>
+    </concept>
+    <concept id="concept_dwc_ppl_ymb">
+        <title>Example</title>
+        <conbody>
+            <section id="section_hkl_rpl_ymb">
+                <title>Preconditions</title>
+                <ul id="ol_xcs_spl_ymb">
+                    <li><b>Include Final Usage In BCR EDRs</b> is set to
+                            <varname>LAST_DATA_CALL</varname>.</li>
+                    <li>A single postpaid account has the following subscriptions mapped to a single
+                            device:<ul id="ol_ycs_spl_ymb">
+                            <li>A <i>Base</i> subscription:<ul id="ol_zcs_spl_ymb">
+                                    <li>Includes a domestic data counter: ABY (all RG=3300, RG=3303,
+                                        and RG=100 usage is applicable to the ABY counter).</li>
+                                    <li>Includes a tethered data counter: TBY (RG=3303 usage is
+                                        applicable to TBY, unless there is a tethered databoost
+                                        bundle available for tethered usage).</li>
+                                    <li>Includes an unlimited VOICE (minutes) counter.</li>
+                                    <li>The base bundle does not have a period lifecycle, it is
+                                        renewed on the account’s BCR date.</li>
+                                </ul></li>
+                            <li>A <i>tethered databoost</i> subscription including a single
+                                high-speed bucket, TBB (RG=3303 usage is applicable to the TBB
+                                    bucket),<ul id="ol_ads_spl_ymb">
+                                    <li>The tethered databoost bundle is a <i>one shot</i> bundle
+                                        without renewals, it expires on the account’s BCR date.</li>
+                                    <li>The charging service for the tethered databoost bundle is of
+                                        higher priority than the base bundle’s charging service
+                                        containing the TBY counter.</li>
+                                </ul></li>
+                        </ul></li>
+                    <li>Few other configurations:<ul id="ol_cds_spl_ymb">
+                            <li>The <varname>ABY</varname> counter is mapped to a policy counter ID,
+                                PC1, and has not yet reached its threshold value so its associated
+                                PC status is currently <varname>unthrottled</varname>.</li>
+                            <li>Both the <varname>TBY</varname> counter and <varname>TBB</varname>
+                                bucket are mapped to a virtual policy counter ID, PC2, with a
+                                current PC status of <varname>unthrottled</varname>, as long as the
+                                    <varname>TBB</varname> bucket is not exhausted.</li>
+                            <li>Current day is the day before the account’s BCR date, and the BCR is
+                                scheduled to occur at midnight (12:00 AM).</li>
+                            <li>There is one active Gy session and one active Sy session in progress
+                                for the device, including both a mobile data flow (RG=3300) and a
+                                tethered data flow (RG-3303).</li>
+                            <li>The slicing profile is configured to use a standard VT value of 12
+                                hours for RGs 3300, 3303, and 100.</li>
+                        </ul></li>
+                    <li>The following features are enabled:<ul id="ol_dds_spl_ymb">
+                            <li>Support aggregate counters within subscriptions/bundles and multiple
+                                charging service support for a single counter/bucket/threshold
+                                object.</li>
+                            <li>PC IDs for buckets, SNR for added/dropped policy counters, virtual
+                                PCs, and inclusion of all PC IDs in all SNRs/notifications.</li>
+                            <li>Disable TTC for prepaid and Force VT to align to TTC and a short
+                                interval if PC status changes at BCR<p>The following parameters are
+                                        configured:<ul id="ul_eds_spl_ymb">
+                                        <li>VTAF: 4 hours</li>
+                                        <li>TTCAF: 5 minutes</li>
+                                        <li>TTCAFlarge: 45 minutes</li>
+                                        <li>MINspread: 1 minute</li>
+                                    </ul></p></li>
+                            <li>
+                                <p>VolTE and VilTE correlation support</p>
+                            </li>
+                        </ul></li>
+                </ul>
+            </section>
+            <section id="section_uvp_ktl_ymb">
+                <title>Scenario</title>
+                <ul id="ol_afq_rtl_ymb">
+                    <li><b>At 10 PM</b>, an Ro VoLTE voice session starts (no RG or VT is applicable
+                        to the VoLTE voice sessions). <ul id="ol_bfq_rtl_ymb">
+                            <li>As the BCR is within the standard VT interval, a virtual TTC time is
+                                computed and stored, but not sent to the network.<ul
+                                    id="ol_cfq_rtl_ymb">
+                                    <li>Virtual TTC is set to 12:00:00 AM (= BCR Time without any
+                                        adjustment). </li>
+                                </ul></li>
+                        </ul></li>
+                    <li><b>At 10:30 PM</b>, a CCR-U is received for the active Gy session including
+                        usage applicable to RG 3300. <ul id="ol_dfq_rtl_ymb">
+                            <li>The usage is applied to the base subscription’s ABY counter and a 5G
+                                CDR is generated.</li>
+                            <li>As the current time is within the standard VT (12 hours) of the
+                                account’s BCR time, and neither PC1 nor PC2 are expected to change
+                                PC status during account BCR processing, the computation of VT and
+                                TTC values are returned to the network as follows:<ul
+                                    id="ol_efq_rtl_ymb">
+                                    <li>TTC is set to 12:03:30 AM (= 12:00 AM + RAND[1 second, 5
+                                        minutes)</li>
+                                    <li>VT is set to 4.5 hours (= time to BCR + RAND[TTC – time to
+                                        BCR + MINspread, VTAF] = 1.5 hours + RAND[3 minutes and 30
+                                        seconds + 1 minute, 4 hours])</li>
+                                </ul></li>
+                        </ul></li>
+                    <li><b>At 11 PM</b>, a CCR-U is received for the active Gy session including
+                        usage applicable to RG 3303. <ul id="ol_ffq_rtl_ymb">
+                            <li>The usage is applied to BOTH the tethered databoost subscription’s
+                                TBB bucket and the base subscription’s ABY counter and a 5G CDR is
+                                generated. </li>
+                            <li>In this case, the ABY counter reaches its threshold triggering a PC
+                                status change. An SNR is sent on the active Sy session with a PC
+                                status of <i>throttled</i> for PC ID <varname>PC1</varname>
+                                (associated with the ABY counter).</li>
+                            <li>As the PC status for PC ID <varname>PC1</varname> is now expected to
+                                change during the account’s BCR processing, and the BCR is within
+                                the standard VT interval, the computation of VT and TTC values to be
+                                returned to the network as follows:<ul id="ol_gfq_rtl_ymb">
+                                    <li>TTC is set to 12:29 AM (= 12:00 AM + RAND[1 second,
+                                        VTAFlarge] = 12:00 AM + RAND[1 second, 45 minutes]) </li>
+                                    <li>VT is set to 90 minutes (= time to TTC + MINspread = 1 hour
+                                        and 29 minutes + 1 minute)</li>
+                                </ul></li>
+                        </ul></li>
+                    <li><b>At 12:10 AM</b>, the end-user converts the media in their VoLTE call from
+                        voice to video, triggering a CCR-I for a new (second) data session, with an
+                        RG of 100. As this is the first event received on or after the account’s
+                        BCR, it triggers the CHF to take the following actions:<ul
+                            id="ol_hfq_rtl_ymb">
+                            <li>The current usage &amp; state info associated with the previous
+                                billing cycle is saved so that it can be maintained until all
+                                outstanding (data) quota associated with the previous billing cycle
+                                is reported resulting in an accurate summary of cumulative usage in
+                                the account’s BCR EDR.<note>For accounts with balance management
+                                    enabled (for example, prepaid accounts), the pre- and post-event
+                                    balance value reported in the BCR EDR must be stored as well,
+                                    including subscription renewal charges and any <i>pay go</i>
+                                    charges for the 120 voice minutes up through 12:00 for the VoLTE
+                                    session which spans the BCR but excluding subsequent charges
+                                    associated with the new billing cycle. For example, if there are
+                                    subsequent charges applicable to the new billing cycle applied
+                                    before all final usage is reported and the final BCR EDR is
+                                    generated, those charges should NOT be deducted from the balance
+                                    amount included in the BCR EDR.</note></li>
+                            <li>The outstanding 120 minutes for the VoLTE voice call from the
+                                previous billing cycle (prior to the virtual TTC or BCR time at
+                                12:00 AM), is added to the previous billing cycle info for the base
+                                subscription’s voice counter.</li>
+                            <li>Separate state information is created for the subscriptions
+                                applicable to the new bundle. This includes resetting the ABY, TBY,
+                                and VOICE counters to zero and the removal of the tethered databoost
+                                bundle from the account/device as it has expired and is no longer
+                                available for usage in the new billing cycle.</li>
+                            <li>As ABY has been reset to 0, and is below its throttle threshold, an
+                                SNR is sent over the active Sy session including PC ID
+                                    <varname>PC1</varname> with a PC status
+                                    <varname>unthrottled</varname>.</li>
+                            <li>GSU and VQT are returned to the network based on the current (0)
+                                value of ABY for the new billing cycle.</li>
+                            <li>A VT value of 12 hours is returned as no account BCR or subscription
+                                renewal/expiration events would occur within the next 12 hours.</li>
+                        </ul></li>
+                    <li><b>At 12:30 AM</b>, a CCR-U is received for data session 1 reporting usage
+                        for RG 3303. In this case, since TTC was previously set, both usage before
+                        the TTC (up through 12:29 AM) and after the TTC (from 12:29 AM through 12:30
+                        AM) are reported. The CHF takes the following actions:<ul
+                            id="ol_ifq_rtl_ymb">
+                            <li>The <i>BEFORE</i> usage is applied to the saved values of the
+                                tethered databoost subscription’s TBY bucket and the base
+                                subscription’s ABY counter from the previous billing cycle. This
+                                results in a 5G CDR record.</li>
+                            <li>The <i>AFTER</i> usage is applied to the base subscription’s ABY and
+                                TBY counters. This results in a separate 5G CDR.</li>
+                            <li>New GSU/VQT values are based on the current state of the new billing
+                                cycle’s ABY and TBY counters.</li>
+                            <li>VT is a set to 12 hours as there is no BCR or standalone
+                                subscription event within that interval.</li>
+                        </ul></li>
+                    <li><b>At 12:45 AM</b>, the end user terminates it's video call and VoLTE
+                        session resulting in the receipt of two network events:<ul
+                            id="ol_jfq_rtl_ymb">
+                            <li>A CCR-T received for the second Gy data session. The usage reported
+                                is applied to the ABY counter value for the new billing cycle and a
+                                5G CDR will be generated.</li>
+                            <li>A CCR-T received from the Ro VoLTE session. This results in 45
+                                minutes of usage being applied to the base subscription’s VOICE
+                                counter for the new billing cycle. A Ro VoLTE CDR is generated,
+                                which includes the following:<ul id="ol_kfq_rtl_ymb">
+                                    <li>Start time of 10 PM the previous day</li>
+                                    <li>The full call duration of 2 hours and 45 minutes</li>
+                                    <li>An indicator that the VoLTE session spanned the BCR
+                                        (recordEventResult = 15).</li>
+                                </ul></li>
+                        </ul></li>
+                    <li><b>At 3 AM</b>, <i>data session 1</i> returns a CCR-U for RG 3300 and the
+                        CHF takes the following actions:<ul id="ol_lfq_rtl_ymb">
+                            <li>The <i>BEFORE</i> usage (up through 12:03:30 AM) is applied to the
+                                saved values of the base subscription’s ABY counter from the
+                                previous billing cycle. This results in a 5G CDR record.</li>
+                            <li>All usage allocated from the previous billing cycle is accounted for
+                                and the CHF will generate the BCR EDR including all final usage,
+                                which includes the 120 minutes of voice from the VoLTE call that
+                                started at 10 PM. After generating the final EDR the stored
+                                information from the previous billing cycle is no longer needed and
+                                can be removed from the system.</li>
+                            <li>The <i>AFTER</i> usage (recorded after 12:03:30) is applied to the
+                                base subscription’s ABY counters. This results in a separate 5G
+                                CDR.</li>
+                            <li>New GSU/VQT values are based on the current state of the new billing
+                                cycle’s ABY counter.</li>
+                            <li>VT is set to 12 hours as there is no BCR event within that
+                                interval.</li>
+                        </ul></li>
+                </ul>
+            </section>
+        </conbody>
+    </concept>
+</concept>

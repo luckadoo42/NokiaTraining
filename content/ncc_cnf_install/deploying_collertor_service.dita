@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="deploying_collertor_service">
+    <title>Deploying Collector Service</title>
+    <taskbody>
+        <context>This procedure provides instructions on how to deploy the External Collector
+                Service.<note>This collector service can only be deployed in an environment where
+                python is installed and also is able to download additional python packages or
+                libraries.</note><note>Before you begin this procedure, ensure that the Collector
+                Helm chart and images are available.</note></context>
+        <steps>
+            <step>
+                <cmd>Extract the source to "collector" folder by entering:</cmd>
+                <info>
+                    <codeblock>tar -zxvf collector-chart-*.tgz</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Enter:</cmd>
+                <info>
+                    <codeblock>sed -i "s/vel_domain = ::/vel_domain = ${COLLECTORHOST}/g" collector/config/collector.conf</codeblock>
+                    <p>where the host name/IP depends on where the Collector service is being
+                        deployed.</p>
+                </info>
+            </step>
+            <step>
+                <cmd>If you are not using the default 30000 port in
+                        <filepath>collector.conf</filepath>, enter:</cmd>
+                <info>
+                    <codeblock>sed -i 's/vel_port = 30000/vel_port = 30001/g' collector/config/collector.conf</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Set up the topic to use the same topic configured in the values.yaml, which is
+                    the namespace if you used the command above.</cmd>
+                <info>
+                    <codeblock>sed -i "s/vel_topic_name = sps/vel_topic_name = ${NAMESPACE}/g" collector/config/collector.conf</codeblock>
+                </info>
+                <info>
+                    <note>Since the collector program uses python, it will not work without the
+                        following dependent libraries. pip works with both python 2 or
+                        3.<codeblock>
+sudo yum install python-pip
+sudo pip install --upgrade pip
+sudo pip install jsonschema
+sudo pip install zipp
+sudo pip install configparser</codeblock></note>
+                </info>
+            </step>
+            <step>
+                <cmd>Start the collector service by entering: </cmd>
+                <info>
+                    <codeblock>cd collector/scripts/linux
+./go-collector.sh</codeblock>
+                    <note>
+                        <p>By default logs are set to verbose and have a rolling count of 20. Log
+                            location is collector/logs.</p>
+                        <p>You can run the command in the background as well.</p>
+                    </note>
+                </info>
+            </step>
+            <step>
+                <cmd>Enter:</cmd>
+                <info>
+                    <codeblock>tail -f collector/logs/collector.log</codeblock>
+                    <note>
+                        <p>This script calls a python script inside it and starts the collector
+                            service.</p>
+                        <p>You can tail the collector.log file to check for incoming events</p>
+                    </note>
+                    <p><b>Expected output:</b></p>
+                    <codeblock>Logfile: ../../logs/collector.log
+Verbose mode on
+Registering for GET at /collector/eventListener/v7/sps-btel
+Registering for POST at /collector/eventListener/v7/sps-btel
+Registering for GET at /collector/eventListener/v7/eventBatch
+Registering for POST at /collector/eventListener/v7/eventBatch
+Registering for GET at /collector/eventListener/v7/clientThrottlingState
+Registering for POST at /collector/eventListener/v7/clientThrottlingState
+Registering for POST at /testControl/v7/commandList
+Registering for GET at /testControl/v7/commandList
+Serving on site3-bcmt2.dyn.nesc.nokia.net 30000...</codeblock>
+                </info>
+            </step>
+        </steps>
+    </taskbody>
+</task>

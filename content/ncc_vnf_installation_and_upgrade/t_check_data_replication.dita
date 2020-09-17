@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+		<task id="id9YZ-09018-IN00-RJZZA-Chek-data-replication"><title>Checking replicated data count on geo-redundant SM and IG sites</title><taskbody id="d1e12377"><context>
+<sectiondiv>
+<p><b>Overview</b></p>
+<p>This procedure applies to deployments with two geo-redundant SM or IG sites. It is possible that during or after the installation of the second SM or IG Geo site, MariaDB data has not replicated to this second SM or IG Geo site. This procedure allows you to check whether or not any additional actions are needed to complete MariaDB data replication on the second SM or IG Geo site. In this procedure the first SM or IG Geo site is called site1. The second SM or IG Geo site is called site2. This procedure uses <codeph>mariadb-tools.sh</codeph> tool. For more information about this tool, see <i>Operation, Administration, and Maintenance Guide</i>.</p>
+</sectiondiv>
+			<p>To check the count of replicated data on the pair of SM or IG Geo sites:</p>
+</context><steps>
+
+<step><cmd>Log in as root user to any IOHO VM of site1 and find the Master IOHO VM by entering:</cmd><info><p>
+<codeph>maxadmin list servers</codeph>
+</p></info></step>
+<step><cmd>Log in as root user to  the Master IOHO VM of site1 and check the count of replicated (non-alarm) data on site1 by entering:</cmd><info><p>
+<codeph>/opt/tpa/bin/mariadb-tools.sh -u sa -p sa -d SPSMARIADB -c</codeph>
+</p><note>
+
+<p>For more information about <codeph>mariadb-tools.sh</codeph> tool, see <i>Operation, Administration, and Maintenance Guide</i>.</p>
+</note></info></step>
+<step><cmd>Repeat steps 1 and step 2 for site2. If the count on site1 and site2 matches, stop the procedure here. Otherwise, go to the next step.</cmd><info><note>
+
+<p>Do not go to the next step if the counts match.</p>
+</note></info></step>
+<step><cmd> If the counts do not match, check the count again for site2 once or twice with a 10-15 mins interval. If site1 is processing traffic, check the count on both sites.</cmd><info/></step>
+<step><cmd>If the count on site2 is increasing but still does not match the count on site1, continue checking the count on site2 until it matches the count on site1, and then stop the procedure here. Otherwise, go to the next step.</cmd><info><note>
+
+<p>This behavior means that the replication is taking place but it is lagging. The duration of this step depends on WAN replication link and might take 5-6 hours.</p>
+</note></info></step>
+<step><cmd>If the count on site2 stops increasing and it still does not match the count on site1, do the following:</cmd><info><ul>
+
+<li>
+<p>Create some temporary Web SSO users on site1 to increase the count on site2.</p>
+</li>
+<li>
+<p>Ensure that geo-replication is working by doing the following:</p><ol>
+
+<li>
+<p>FInd MariaDB Master VM by entering:</p>
+<p>
+<codeph>maxadmin list servers</codeph>
+</p>
+</li>
+<li>
+<p>Log in to MariaDB Master VM using the fixed IP address.</p>
+</li>
+<li>
+<p>Check that the datacenter service is Active and running by entering:</p>
+<p>
+<codeph>systemctl status datacenter-monitor</codeph>
+</p>
+</li>
+<li>
+<p>Enter:</p>
+<p>
+<codeph>mariadb_adm --replication-status</codeph>
+</p>
+</li>
+</ol>
+<p>
+<b>Expected output</b>
+</p>
+<p>The entry to the remote datacenter is displayed, for example, the fixed IP address of the Master IOHO VM of site2.</p>
+</li>
+<li>
+<p>Check the count for site2.</p>
+</li>
+<li>
+<p>If the count on site2 begins to increase, stop the procedure here and do backup and restore using the procedure <!--xref URI: t-install-backing_up-restoring-MariaDB.xml#BR-MariaDB--><xref keyref="id9YZ-09018-IN00-RJZZA-BR-MariaDB"/>. Otherwise, go to the next step.</p>
+</li>
+</ul><note>
+
+<p>The condition in this step occurs because when Geo-replication is working, it is replicating the latest data but some preceding data gets lost. When this condition occurs, the Backup and Restore procedure is needed.</p>
+</note></info></step>
+<step><cmd>If the count on site2 does not increase, contact Nokia Professional Services to identify the cause of the failure and then resume the replication.</cmd><info/></step>
+</steps>
+</taskbody></task>

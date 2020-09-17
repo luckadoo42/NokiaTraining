@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//NSN//DTD DITA Concept//EN" "nsnconcept.dtd">
+		<concept id="id9YZ-09018--PL00-FPZZA-d1e15853"><title>Case 10: Evening discount for premium subscribers</title><conbody>
+
+<section><title>Overview</title>
+
+<p>Bob has an iPhone subscribed to a monthly data service. When Bob starts using data during the day, for example at around 9 am, then the charging is done at usual call rates. However, when Bob starts using data in the evening, for example around 7 pm, then special call rates are applied for charging the data call because Bob is recognized as a premium subscriber by the service operator.</p>
+<p>The service operator offers special call rates to all its premium subscribers for all data calls executed during evening between specific hours.</p>
+<p>Bob has a friend, Fred, not subscribed as a premium subscriber. The charges applied to all data calls executed by Fred from his Blackberry during the day or evening are the usual call rates and no special rates can be offered to Fred for evening data calls as he is a non-premium subscriber.</p>
+</section>
+<section><title>Flow of events</title>
+
+<p/><ul>
+
+<li>
+The service operator creates a <varname>Gold</varname> and <varname>Non-Gold</varname> category for its subscribers. The <varname>Gold</varname> category subscribers are offered special reduced rates for data calls in evening.
+</li>
+<li>
+Bob has an iPhone and is subscribed as a <varname>Gold</varname> subscriber for data services.<ul>
+
+<li>
+When Bob starts using data from his iPhone in the day, for example 9 am, then usual rate is applied for charging the data call during the day time.
+</li>
+<li>
+When Bob starts using data from his iPhone in the evening, for example 7 pm, then special reduced rate is offered for charging the evening data call by the service operator.
+</li>
+</ul>
+</li>
+<li>
+Fred has a Blackberry and is subscribed as a <varname>Non-Gold</varname> subscriber for data services. When Fred starts using data from his Blackberry during the evening, then no special reduced rate is offered for charging the evening data call. All data calls executed by the Blackberry during the day or evening are charged at usual call rates.
+</li>
+</ul>
+</section>
+<section><title>Provisioning</title>
+
+<note type="attention">
+
+<p>Ensure that after creating a record, you distribute it to ME. Otherwise, the provisioning will not be successful.</p>
+</note>
+<p>Following entities are required for this use case.<table pgwide="1" colsep="1" rowsep="1">
+     <title>Entities for case 10</title>
+     <tgroup cols="2">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <thead>
+       <row>
+        <entry> Entity </entry>
+        <entry> Task </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> Rate </entry>
+        <entry> Create two rates - discount and default. </entry>
+       </row>
+       <row>
+        <entry> Custom Data </entry>
+        <entry> Create a custom data. </entry>
+       </row>
+       <row>
+        <entry> Charging Service </entry>
+        <entry> Create a charging service. </entry>
+       </row>
+       <row>
+        <entry> Bundle </entry>
+        <entry> Create a bundle and associate it with subscription lifecycle. </entry>
+       </row>
+       <row>
+        <entry> Rules and Variables </entry>
+        <entry> Define the tariff rule for time of day. </entry>
+       </row>
+       <row>
+        <entry> Lifecycles </entry>
+        <entry> Create a subscription, account, and device lifecycles. </entry>
+       </row>
+       <row>
+        <entry> Account </entry>
+        <entry> Create an account and associate it with account lifecycle. </entry>
+       </row>
+       <row>
+        <entry> Device </entry>
+        <entry> Create two devices - iPhone and Blackberry and associate them with device lifecycle.
+        </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table></p>
+<p>Provision the following data:</p><ol>
+
+<li>
+<p>Provision the discount rate and default rate. To do this, log in to the SM GUI and navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select the <uicontrol>Charging</uicontrol> tab. Browse to select the <uicontrol>Rates</uicontrol> from the drop-down list.</p>
+<p>
+<varname>Rate_Gold</varname> is defined as 0.50 United States dollars for 200 MB of data consumed.</p>
+<!--MMO resource relative URI: ../graphics/Case10_rategold_default.png-->
+<image href="../images/case10_rategold_default.png"/>
+<p>
+<varname>Rate_Default</varname> is defined as 1 United States dollars for 200 MB of data consumed.</p>
+<!--MMO resource relative URI: ../graphics/Case10_ratedefault_default.png-->
+<image href="../images/case10_ratedefault_default.png"/>
+</li>
+<li>
+<p>Create a <emphasis>TimePeriod</emphasis> rule variable in the Rule System Version (RSV) to identify evening calls for <emphasis>Trigger</emphasis> set to <varname>TARIFF</varname> and define rules in it. To do this, navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select the <uicontrol>Charging</uicontrol> tab. Browse to select the <uicontrol>Rules and Variables</uicontrol> from the drop-down list.</p>
+<p>Select the Tariff trigger as shown in the following figure:</p>
+<!--MMO resource relative URI: ../graphics/Tarifftrigger_default.png-->
+<image href="../images/tarifftrigger_default.png"/>
+<p>Define the rule as shown in the following figure:</p>
+<!--MMO resource relative URI: ../graphics/Ruletrigger_default.png-->
+<image href="../images/ruletrigger_default.png"/>
+</li>
+<li>
+Create a custom data for the device. To do this, log into the SM GUI and navigate to <uicontrol>Subscriber Manager</uicontrol> and select the <uicontrol>Custom Data</uicontrol> tab. Click 
+<!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+<image href="../images/sdd_button_default.png"/>
+ to create the custom data as shown in the following figure:
+<!--MMO resource relative URI: ../graphics/Case10_Customdata_default.png-->
+<image href="../images/case10_customdata_default.png"/>
+</li>
+<li>
+<p>Create a charging service with the following tariff formula. To do this, log into the SM GUI and navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select the <uicontrol>Charging</uicontrol> tab. Browse to select the <uicontrol>Charging Services</uicontrol> from the drop-down list. Click 
+<!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+<image href="../images/sdd_button_default.png"/>
+ to create a charging service.</p>
+<table pgwide="1">
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+Parameter
+</entry>
+<entry>
+Value
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+Name
+</entry>
+<entry>
+CS_EveningBased
+</entry>
+</row>
+<row>
+<entry>
+Priority
+</entry>
+<entry>
+59
+</entry>
+</row>
+<row>
+<entry>
+Category
+</entry>
+<entry>
+DefaultCategory
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>
+<uicontrol>Tariff formula:</uicontrol>
+</p>
+<!--MMO resource relative URI: ../graphics/Case10_CS_default.png-->
+<image href="../images/case10_cs_default.png"/>
+</li>
+<li>
+Create a bundle for the charging service.
+<!--MMO resource relative URI: ../graphics/Case10_bundle_default.png-->
+<image href="../images/case10_bundle_default.png"/>
+</li>
+<li>
+Create a subscription for the bundle and both iPhone and Blackberry must have access to this subscription.
+</li>
+<li>
+The Gold category device iPhone exists with <varname>CUSTOMER_CATEGORY</varname> custom data and value set to <varname>GOLD</varname>.
+</li>
+<li>
+The Non-Gold category device Blackberry is not created with the <varname>CUSTOMER_CATEGORY</varname> custom data.
+</li>
+<li>
+Create an account and associate it with account lifecycle.
+</li>
+<li>
+Create two devices - iPhone and Blackberry and associate them with device lifecycle.
+</li>
+</ol>
+</section>
+</conbody></concept>

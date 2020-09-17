@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//NSN//DTD DITA Concept//EN" "nsnconcept.dtd">
+		<concept id="id9YZ-09018--PL00-FPZZA-d1e16372"><title>Case 11: Gifting usage to a friend</title><conbody>
+
+<section><title>Overview</title>
+
+<p>Bob has an iPhone associated with a data bucket balance for consumption of data services. Bob has a friend, Fred who has a Blackberry associated with a 1 GB data bucket.</p>
+<p>Bob transfers an amount of usage from the iPhone to the Blackberry for consumption of data services.</p>
+</section>
+<section><title>Flow of events</title>
+
+<p/><ul>
+
+<li>
+Bob has an iPhone with 50 GB data bucket for consumption of data services.
+</li>
+<li>
+Bob has a friend, Fred who has a Blackberry with 1 GB data bucket.
+</li>
+<li>
+Bob transfers 2 GB data from the iPhone data bucket to the Blackberry data bucket using the Service Manager Representational State Transfer Application Programming Interface (SM REST API).
+</li>
+<li>
+Verify that the current balance of the iPhone data bucket is 48 GB and the Blackberry data bucket is 3 GB.
+</li>
+</ul>
+</section>
+<section><title>Provisioning</title>
+
+<note type="attention">
+
+<p>Ensure that after creating a record, you distribute it to ME. Otherwise, the provisioning will not be successful.</p>
+</note>
+<p>Following entities are required for this use case.<table pgwide="1" colsep="1" rowsep="1">
+     <title>Entities for case 11</title>
+     <tgroup cols="2">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <thead>
+       <row>
+        <entry> Entity </entry>
+        <entry> Task </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> Charging Service </entry>
+        <entry>
+         <p>Create the following two charging services:</p>
+         <ul>
+          <li>
+           For iPhone: Create a charging service with 50 GB data bucket.
+          </li>
+          <li>
+           For Blackberry: Create a charging service with 1 GB data bucket.
+          </li>
+         </ul>
+        </entry>
+       </row>
+       <row>
+        <entry> Lifecycles </entry>
+        <entry> Create a subscription, account, and device lifecycles. </entry>
+       </row>
+       <row>
+        <entry> Bundle </entry>
+        <entry> Create 50 GB bundle for iPhone and 1 GB bundle for Blackberry and associate them
+         with subscription lifecycle. </entry>
+       </row>
+       <row>
+        <entry> Account </entry>
+        <entry> Create two accounts (each for Bob and Fred) and associate them with account
+         lifecycle. </entry>
+       </row>
+       <row>
+        <entry> Device </entry>
+        <entry> Create two devices - iPhone and Blackberry. Associate iPhone with 50 GB bundle and
+         device lifecycle. Associate Blackberry with 1 GB bundle and device lifecycle. </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table></p>
+<p>Provision the following data:</p><ol>
+
+<li>Provision the iPhone and Blackberry in <uicontrol>Active</uicontrol> state. To do this, log into
+     the SM GUI and navigate to <uicontrol>Subscriber Manager</uicontrol> and select the
+      <uicontrol>Devices</uicontrol> tab. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png"/> to create the device. </li>
+<li>Create the following two charging services. Navigate to <uicontrol>Policy &amp; Charging
+      Configuration</uicontrol> and select the <uicontrol>Charging</uicontrol> tab. Browse to select
+     the <uicontrol>Charging Services</uicontrol> from the drop-down list. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png" id="image_x3l_c15_3lb"/> to create a charging service.<p>
+      <uicontrol>For iPhone</uicontrol>:</p><table pgwide="1">
+      <tgroup cols="2">
+       <colspec colname="col1"/>
+       <colspec colname="col2"/>
+       <thead>
+        <row>
+         <entry> Parameter </entry>
+         <entry> Value </entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry> Name </entry>
+         <entry> CS_50GB </entry>
+        </row>
+        <row>
+         <entry> Priority </entry>
+         <entry> 27 </entry>
+        </row>
+        <row>
+         <entry> Bucket </entry>
+         <entry> Large_Sharing_Data_Bucket </entry>
+        </row>
+        <row>
+         <entry> Initial value </entry>
+         <entry> 50 </entry>
+        </row>
+        <row>
+         <entry> Unit Type Name </entry>
+         <entry> GByte </entry>
+        </row>
+        <row>
+         <entry> Tariff formula </entry>
+         <entry/>
+        </row>
+        <row>
+         <entry namest="col1" nameend="col2">
+          <!--MMO resource relative URI: ../graphics/Tariff_formula_default.png-->
+          <image href="../images/tariff_formula_default.png"/>
+         </entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table><p>
+      <uicontrol>For Blackberry</uicontrol>:</p><table pgwide="1" colsep="1" rowsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1"/>
+       <colspec colname="col2"/>
+       <thead>
+        <row>
+         <entry> Parameter </entry>
+         <entry> Value </entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry> Name </entry>
+         <entry> CS_1GB </entry>
+        </row>
+        <row>
+         <entry> Priority </entry>
+         <entry> 30 </entry>
+        </row>
+        <row>
+         <entry> Bucket </entry>
+         <entry> Sharing_Data_Bucket </entry>
+        </row>
+        <row>
+         <entry> Initial value </entry>
+         <entry> 1 </entry>
+        </row>
+        <row>
+         <entry> Unit Type Name </entry>
+         <entry> GByte </entry>
+        </row>
+        <row>
+         <entry> Tariff formula </entry>
+         <entry/>
+        </row>
+        <row>
+         <entry namest="col1" nameend="col2">
+          <!--MMO resource relative URI: ../graphics/Tariff_share_default.png-->
+          <image href="../images/tariff_share_default.png"/>
+         </entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table></li>
+<li>
+Create the subscription, account, and device lifecycles. Navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select the <uicontrol>Common</uicontrol> tab. Browse to select <uicontrol>Lifecycles</uicontrol> from the drop-down list. Click 
+<!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+<image href="../images/sdd_button_default.png"/>
+ to create a lifecycle.
+</li>
+<li>
+<p>Create a 50 GB bundle for iPhone and 1 GB bundle for Blackberry. Navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select the <uicontrol>Charging</uicontrol> tab. Browse to select the <uicontrol>Bundles</uicontrol> from the drop-down list. Click 
+<!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+<image href="../images/sdd_button_default.png"/>
+ to create the bundle.</p>
+<p>
+<uicontrol>50 GB bundle for iPhone:</uicontrol>
+</p>
+<!--MMO resource relative URI: ../graphics/Case11_bundle_50_GB_default.png-->
+<image href="../images/case11_bundle_50_gb_default.png"/>
+<p>
+<uicontrol>1 GB bundle for Blackberry:</uicontrol>
+</p>
+<!--MMO resource relative URI: ../graphics/Case11_bundle_1GB_default.png-->
+<image href="../images/case11_bundle_1gb_default.png"/>
+</li>
+<li>
+Create two accounts - one for iPhone <varname>(PrePAid_Acnt1)</varname> and one for Blackberry <varname>(PrePAid_Acnt2)</varname>. Navigate to <uicontrol>Subscriber Manager</uicontrol> and select the <uicontrol>Accounts</uicontrol> tab. Click 
+<!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+<image href="../images/sdd_button_default.png"/>
+ to create the account.
+</li>
+<li>
+<p>Create two devices - iPhone and Blackberry and associate the bundles. Navigate to <uicontrol>Subscriber Manager</uicontrol> and select the <uicontrol>Devices</uicontrol> tab. Click 
+<!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+<image href="../images/sdd_button_default.png"/>
+ to create the device.</p>
+<p>Associate the subscription (bundle) for iPhone device:</p>
+<!--MMO resource relative URI: ../graphics/Case11_subscription_default.png-->
+<image href="../images/case11_subscription_default.png"/>
+<p>Similarly, associate the subscription for Blackberry device:</p>
+<table pgwide="1">
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+Parameter
+</entry>
+<entry>
+Value
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+Bundle Name
+</entry>
+<entry>
+Bundle_1GB
+</entry>
+</row>
+<row>
+<entry>
+Account Name
+</entry>
+<entry>
+PrePAid_Acnt2
+</entry>
+</row>
+<row>
+<entry>
+Start Date
+</entry>
+<entry>
+NA
+</entry>
+</row>
+<row>
+<entry>
+End Date
+</entry>
+<entry>
+NA
+</entry>
+</row>
+<row>
+<entry>
+Subscription State
+</entry>
+<entry>
+Active
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</li>
+<li>
+<p>Device iPhone gives 2 GB of data to Device Blackberry using the SM REST API as follows:</p>
+<p>{ "sourceDeviceId":"OnePlus",     </p>
+<p>"destDeviceId":"Nokia",     </p>
+<p>"transferUnit":"100",     </p>
+<p>"unitName":"MByte",     </p>
+<p>"transferMedium":"DEVICE" }</p>
+</li>
+</ol>
+</section>
+</conbody></concept>

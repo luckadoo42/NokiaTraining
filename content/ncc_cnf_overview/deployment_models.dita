@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="deployment_models">
+    <title>Network repository function</title>
+    <conbody>
+        <section id="section_pkf_ngm_llb">
+            <title>Network Repository Function (NRF)</title>
+            <p>NRF is supported on the SPS for 5G environments and offers the following functions: </p>
+            <ul id="ul_qkf_ngm_llb">
+                <li>
+                    <p>Maintains the network function (NF) profile of the available NF instances and
+                        their supported services.</p>
+                </li>
+                <li>
+                    <p>Allows other NF instances to subscribe and get notified about the
+                        registration in NRF of new instances of a given type.</p>
+                </li>
+                <li>
+                    <p>Supports the service discovery function. It receives <i>NF Discovery</i>
+                        requests from NF instances and provides the information of the available NF
+                        instances fulfilling certain criteria.</p>
+                </li>
+            </ul>
+            <p>For more information about NRF, see <i>SPS-Policy User Guide</i>.</p>
+            <sectiondiv>
+                <p><b>NF components in NRF</b></p>
+                <p>SPS requires two NF components, which are included in SPS, to communicate to NRF
+                    as follows:</p>
+                <ul id="ul_rkf_ngm_llb">
+                    <li>
+                        <p>
+                            <i>NF-C</i> is the controller module.</p>
+                        <p>The <i>NF</i> controller is the main module of the <i>NF</i> feature
+                            handler on SPS. The <i>NF-C</i> decides when a message such as
+                                <i>NFRegister</i>, <i>NFHeartbeat</i>, <i>NFDeregister</i>,
+                                <i>NFUpdate</i> is to be triggered towards the NRF. The <i>NF-C</i>
+                            never sends the message directly to the NRF instead, <i>NF-C</i> checks
+                            using kafka broker with one of the <i>NF-H</i> to send the message to
+                            the NRF</p>
+                    </li>
+                    <li>
+                        <p>
+                            <i>NF-H</i> is the handler module in the application software.</p>
+                        <p>The <i>NF-H</i> is the worker module that interacts with the NRF over the
+                                <i>Nnrf</i> interface.</p>
+                    </li>
+                </ul>
+                <p>The NF handler reports the response from the NRF back to the NF controller which
+                    then takes appropriate action based on the response code and the message.</p>
+            </sectiondiv>
+            <sectiondiv>
+                <p><b>NRF services</b></p>
+                <p>SPS with NRF offers the following services to other network functions:</p>
+                <ul id="ul_ukf_ngm_llb">
+                    <li>
+                        <p>NFRegister</p>
+                    </li>
+                    <li>
+                        <p>NFDeregister</p>
+                    </li>
+                    <li>
+                        <p>NFDiscover</p>
+                    </li>
+                    <li>
+                        <p>NFHeartbeat</p>
+                    </li>
+                </ul>
+            </sectiondiv>
+            <sectiondiv>
+                <p><b>Multiple NRF server support</b></p>
+                <p>The following figure shows an example of how multiple NRFs are supported in the
+                    network.</p>
+                <fig id="fig_vkf_ngm_llb">
+                    <title>Multiple NRF servers in the network</title>
+                    <!--MMO resource relative URI: ../Graphics/multipleNFR_default.gif-->
+                    <image href="../images/multiplenfr_default.gif" scale="20" placement="break"
+                        id="image_wkf_ngm_llb"/>
+                </fig>
+                <p>SPS supports multiple NRF servers, as follows.</p>
+                <ul id="ul_xkf_ngm_llb">
+                    <li>
+                        <p>Multiple NRF servers can be provisioned on a single SPS ME site.
+                            Different MEs can have different list of provisioned NRF servers. </p>
+                    </li>
+                    <li>
+                        <p>Only one of the provisioned NRF servers is designated as <i>Primary</i>.
+                            A Primary NRF is the <i>preferred</i> NRF server for an SPS site.</p>
+                    </li>
+                    <li>
+                        <p>Different MEs can have different NRF servers designated as
+                            <i>Primary</i>. All other provisioned NRF servers are treated as
+                                <i>Secondary</i>.</p>
+                    </li>
+                    <li>
+                        <p>No communication between SPS and NRF takes place unless an NRF server is
+                            designated as <i>Primary</i>. </p>
+                        <p>To change the <i>Primary</i> designate on a ME, another provisioned NRF
+                            server has to be made <i>Primary</i>. Hence, if a <i>Secondary</i> NRF
+                            server is made <i>Primary</i>, then the previous <i>Primary</i> server
+                            is automatically made <i>Secondary</i>.</p>
+                    </li>
+                    <li>
+                        <p> A <i>Primary</i> NRF server cannot be deleted. To delete a
+                                <i>Primary</i> NRF server, first one of the <i>Secondary</i> NRF
+                            servers has to be made as <i>Primary</i> and then the old <i>Primary</i>
+                            server is deleted.</p>
+                    </li>
+                    <li>
+                        <p>A <i>Primary</i> NRF server can be modified. However, the <i>apiRoot</i>
+                            of an NRF server is its identity, and is not allowed to be modified.
+                        </p>
+                    </li>
+                    <li>
+                        <p>An <i>inUse</i> flag indicates which NRF server communicates with SPS.
+                            This flag cannot be set from SPS Service Manager. This flag is set
+                            dynamically by SPS logic on the SPS ME.</p>
+                    </li>
+                    <li>
+                        <p>
+                            <i>inUse</i> flag is set for <varname>ANY</varname> NRF and not only
+                                <i>Primary</i>. SPS communicates to a secondary NRF at that time,
+                            and the <i>Secondary</i> NRF flag is set to <i>inUse</i>.</p>
+                    </li>
+                    <li>
+                        <p>For each SPS ME site, SPS Service Manager shows which NRF server is
+                                <i>Primary</i> and which NRF server is currently in use. </p>
+                    </li>
+                    <li>
+                        <p>An <i>inUse</i> NRF server is allowed to be deleted. In this case, the
+                            NF-C selects either the <i>Primary</i> or another <i>Secondary</i> for
+                            all its communication.</p>
+                    </li>
+                    <li>
+                        <p>An <i>inUse</i> NRF server can be modified. However, the <i>apiRoot</i>
+                            of an NRF server is its identity, and is not allowed to be modified.</p>
+                    </li>
+                </ul>
+            </sectiondiv>
+        </section>
+        <section>
+            <p>For more information about NRF, see <i>SPS-Policy User Guide</i>.</p>
+        </section>
+    </conbody>
+</concept>

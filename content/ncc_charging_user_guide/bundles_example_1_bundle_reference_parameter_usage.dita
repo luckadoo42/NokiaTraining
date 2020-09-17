@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="bundref">
+<title>Example 1: Bundle Reference parameter usage</title>
+<body>
+<p>When a subscription with reference bundle expires, the linked subscription with aligned bundle also must expire. To achieve this, the following lifecycle configurations are recommended. Note that BOU type bundle for subscription with reference bundle is considered for configuration.</p>
+<p>
+<b>Reference bundle lifecycle:</b>
+</p>
+<p>Whenever the subscription with reference bundle moves from <userinput>Active</userinput> to <userinput>Preactive</userinput> or any other barred or suspended state, then <userinput>Trigger Event Action</userinput> is configured with <userinput>Expire Event</userinput> to check the subscription with aligned bundle and expire it and then expire itself (subscription with reference bundle). Note that <userinput>Expire Event</userinput> must be configured in the aligned bundle. Ensure that <uicontrol>Allow Event Broadcast</uicontrol> is selected.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/Basebundle1_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-basebundle1_default.png"/>
+</fig>
+<note type="attention">
+<p>Ensure that <userinput>Trigger Event Action</userinput> is configured in all the events that move the subscription with reference bundle from <userinput>Active</userinput> to <userinput>Preactive</userinput> or suspended state.</p>
+</note>
+<p>
+<uicontrol>Aligned (data boost) bundle lifecycle:</uicontrol>
+</p>
+<p>In this, when the <userinput>ExpireEvent</userinput> gets triggered, the subscription with aligned bundle moves to <userinput>Final</userinput> state. The <userinput>Final</userinput> state has the configuration to delete it.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/Databoost_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-databoost_default.png"/>
+</fig>
+<p>Some of the scenarios related to reference bundle are as follows:</p>
+<p/><ul>
+<li>
+<p>
+<b>Scenario 1</b>: Subscription of newly aligned bundle fails if the reference bundle is not attached to the Device.</p>
+</li>
+<li>
+<p>
+<b>Scenario 2</b>: Subscription of newly aligned bundle fails if the reference bundle is attached to Device but is not active.</p>
+</li>
+<li>
+<p>
+<b>Scenario 3</b>: Subscription of newly aligned bundle fails if the aligned bundle has future activation time greater than the reference subscription expiry time.</p>
+</li>
+<li>
+<p>
+<b>Scenario 4</b>: Aligned bundle expires when the reference bundle expires.</p>
+</li>
+<li>
+<p>
+<b>Scenario 5</b>: Subscription instance of newly aligned bundle aligns to one with earliest expiry when multiple instances of reference bundle are attached to Device.</p>
+</li>
+<li>
+<p>
+<b>Scenario 6</b>: Multiple instances of aligned bundle aligned to reference bundle expire when reference bundle expires.</p>
+</li>
+</ul>
+<p>
+<uicontrol>Scenario 1: Subscription of newly aligned bundle fails if reference bundle is not attached to the Device</uicontrol>
+</p>
+<p>
+<uicontrol>Pre-conditions</uicontrol>:</p>
+<p>Configure the reference and aligned bundles.</p>
+<p>Following is the configuration of reference bundle:</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/Basebundle_sc1_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-basebundle_sc1_default.png"/>
+</fig>
+<p>Following is the configuration of aligned (data boost) bundle:</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/Databoost_sc1_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-databoost_sc1_default.png"/>
+</fig>
+<p>Device is not subscribed to reference bundle.</p>
+<p>
+<uicontrol>Flow of events</uicontrol>:</p>
+<p>Device tries to subscribe to the aligned bundle (DataboostBundle). </p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/device1_sc1_default.png-->
+     <image href="../images/img9yz-09126-ug01-pczza-sp1-device1_sc1_default.png" scale="65"/>
+</fig>
+<p>The subscription fails with the following error message.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/device2_sc1_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-device2_sc1_default.png"/>
+</fig>
+<p>
+<uicontrol>Post-conditions:</uicontrol>
+</p>
+<p>Subscription to the aligned bundle (DataboostBundle) fails.</p>
+<p>
+<uicontrol>Scenario 2: Subscription of newly aligned bundle fails if the reference bundle is attached to Device but is not active</uicontrol>
+</p>
+<p>
+<uicontrol>Pre-conditions:</uicontrol>
+</p><ul>
+<li>
+<p>Base bundle is in <userinput>PreActive</userinput> state.</p>
+</li>
+<li>
+<p>Device is updated to subscribe to newly aligned bundle. </p>
+</li>
+</ul>
+<p>
+<uicontrol>Flow of events:</uicontrol>
+</p>
+<p>Device tries to subscribe to the aligned bundle (DataboostBundle). </p>
+<p>The subscription fails with the following error message.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/error_sc2_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-error_sc2_default.png"/>
+</fig>
+<p>
+<uicontrol>Post-conditions:</uicontrol>
+</p>
+<p>Subscription to the aligned bundle (DataboostBundle) fails.</p>
+<p>
+<uicontrol>Scenario 3: Subscription of newly aligned bundle fails if the referenced bundle has future activation time greater than the reference subscription expiry time</uicontrol>
+</p>
+<p>
+<uicontrol>Pre-conditions:</uicontrol>
+</p>
+<p>Reference bundle is attached to Device and Subscription is in <userinput>Active</userinput> state. Expiry time of subscription is 01-07-2020 00:00:00.</p>
+<p>
+<uicontrol>Flow of events:</uicontrol>
+</p>
+<p>Device tries to subscribe to the aligned bundle having reference to reference bundle with Activation time as 10-07-2020 00:00. </p>
+<p>
+<uicontrol>Post-conditions:</uicontrol>
+</p>
+<p>The aligned bundle is not attached to Device and the following error is displayed:</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/error_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-error_default.png"/>
+</fig>
+<p>
+<uicontrol>Scenario 4: Aligned bundle expires when the reference bundle expires</uicontrol>
+</p>
+<p>
+<uicontrol>Pre-conditions:</uicontrol>
+</p>
+<p>Reference bundle is in <userinput>Active</userinput> state.</p>
+<p>
+<uicontrol>Flow of events:</uicontrol>
+</p>
+<p>Device tries to subscribe to the aligned bundle (DataboostBundle). The subscription to aligned bundle is successful. </p>
+<p>
+<uicontrol>Post-conditions:</uicontrol>
+</p>
+<p/><ul>
+<li>
+<p>As expiration of reference subscription reaches, the subscription with aligned bundle expires first and then reference subscription expires.</p>
+</li>
+<li>
+<p>The aligned bundle subscription is moved to <userinput>Final</userinput> state as per lifecycle configuration.</p>
+</li>
+</ul>
+<p>
+<b>Scenario 5: Subscription instance of newly aligned bundle aligns to one with earliest expiry when multiple instances of reference bundle are attached to Device</b>
+</p>
+<p>
+<uicontrol>Pre-conditions:</uicontrol>
+</p>
+<p>Following is the configuration of reference bundle (BOUBaseBundle). Note that the value of <uicontrol>Bundle Reference</uicontrol> is Null.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/base_bundle_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-base_bundle_default.png"/>
+</fig>
+<p>Following is the configuration of aligned bundle (DataboostBundle). Note that the value of <uicontrol>Bundle Reference</uicontrol> has the reference to reference bundle (BOUBaseBundle). </p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/reference_bundle_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-reference_bundle_default.png"/>
+</fig>
+<p>Device has two active instances of reference bundle with different expiry time. The first bundle expiry time is 3:14 PM IST and the second one is 3:16 PM IST. There is a difference of two seconds. </p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/device_default.png-->
+     <image href="../images/img9yz-09126-ug01-pczza-sp1-device_default.png" scale="55"/>
+</fig>
+<p>
+<uicontrol>Flow of events:</uicontrol>
+</p>
+<p>Device subscribes to newly aligned bundle.</p>
+<p>
+<uicontrol>Post-conditions:</uicontrol>
+</p>
+<p>Device makes a call and the reference bundle instance with earlier expiry time expires and moves to <userinput>PreActive</userinput> state. The aligned bundle instance also expires. </p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/device3_default.png-->
+     <image href="../images/img9yz-09126-ug01-pczza-sp1-device3_default.png" scale="40"/>
+</fig>
+<p>
+<b>Scenario 6: Multiple instances of aligned bundle aligned to reference bundle expire when reference bundle expires</b>
+</p>
+<p>
+<uicontrol>Pre-conditions:</uicontrol>
+</p>
+<p>Device subscribes to reference bundle and makes a call to move it to <userinput>Active</userinput> state.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/device_overview_default.png-->
+     <image href="../images/img9yz-09126-ug01-pczza-sp1-device_overview_default.png" scale="60"/>
+</fig>
+<p>Device is updated to add new aligned bundle twice to have multiple instances.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/databoost2_default.png-->
+     <image href="../images/img9yz-09126-ug01-pczza-sp1-databoost2_default.png" scale="60"/>
+</fig>
+<p>
+<uicontrol>Flow of events:</uicontrol>
+</p>
+<p>Reference bundle instance expires and moves to <userinput>PreActive</userinput> state.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/device_basebundle_expiry_default.png-->
+     <image href="../images/img9yz-09126-ug01-pczza-sp1-device_basebundle_expiry_default.png" scale="60"/>
+</fig>
+<p>
+<uicontrol>Post-conditions:</uicontrol>
+</p>
+<p>Both the aligned bundle instances also expire and move to <userinput>Final</userinput> state.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/referenced_bundle_default.png-->
+     <image href="../images/img9yz-09126-ug01-pczza-sp1-referenced_bundle_default.png" scale="60"/>
+</fig>
+</body>
+</topic>

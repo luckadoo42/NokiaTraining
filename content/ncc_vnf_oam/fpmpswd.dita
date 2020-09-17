@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-fpmpswd"><title>fpm-password tool</title><conbody>
+<section><title>Description</title>
+<p>This tool is used to encrypt a particular password with a specified passphrase. This tool is available on the OAME nodes at <filepath>/bin/fpm-password</filepath>.</p>
+<note>
+<p>When encrypted parameters are used and must be decrypted before they are used, these parameters are decrypted automatically without using this tool.</p>
+</note>
+<p>The password is encrypted in accordance with the following:</p><ul>
+<li>
+<p>The input password must contain at least eight characters.</p>
+</li>
+<li>
+<p>The input password must not contain prohibited characters and combinations. </p>
+</li>
+</ul>
+<note>
+<p>Usage of the fpm-password tool is only available on the OAME VMs post-instantiate. Configuration of the snmp/users/v3 parameter can only be done after an installation or software upgrade.</p>
+</note>
+<table><title>Characters and combinations prohibited in passwords</title>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<tbody>
+<row>
+<entry>
+Characters
+</entry>
+<entry>
+; ( ) " ' ` \ | # &amp; &lt; &gt;
+</entry>
+</row>
+<row>
+<entry>
+Combinations
+</entry>
+<entry>
+&lt;any chars&gt;!&lt;any chars&gt; #&lt;any chars&gt;
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section><title>Syntax</title>
+<codeblock>fpm-password en &lt;input-password&gt; &lt;passphrase&gt;</codeblock>
+<p>
+<codeph>fpm-password de &lt;encrypted-password&gt; &lt;passphrase&gt;</codeph>
+</p>
+<p>where &lt;passphrase&gt; is the <codeph>&lt;AES-pass&gt;</codeph> in plain text.</p>
+<note>
+<p>The passphrase to decrypt the password must be the same that was used to encrypt that password.</p>
+</note>
+<table>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+<p>Code</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+<codeph>en &lt;input-password&gt; &lt;passphrase&gt;</codeph>
+</entry>
+<entry>
+Encrypts a particular password with a specified passphrase.
+</entry>
+</row>
+<row>
+<entry>
+<codeph>de &lt;encrypted-password&gt; &lt;passphrase&gt;</codeph>
+</entry>
+<entry>
+Decrypts a particular password with a specified passphrase.
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section><title>Example</title>
+<p>For example, to encrypt &lt;snmp_priv_passwd&gt;, enter:</p>
+<p>
+<codeph>fpm-password en &lt;snmp_priv_passwd&gt; &lt;snmp_passphrase&gt;</codeph>
+</p>
+<p>
+<b>Expected outcome</b>
+</p>
+<p>The following encrypted value is generated:</p>
+<p>
+<systemoutput>U2FsdGVkX18nlouweC7yc/Lh0Mug4MResz2rp9eF+cM=</systemoutput>
+</p>
+<note>
+<p>The output is shown on the console only.</p>
+</note>
+</section>
+<section><title>Example output</title>
+<fig>
+<codeblock>[tpaadmin@sps-ig-oame-1 ~]$ fpm-password en test@password testpassphrase 
+U2FsdGVkX18nlouweC7yc/Lh0Mug4MResz2rp9eF+cM=
+
+[tpaadmin@sps-ig-oame-1 ~]$ fpm-password de U2FsdGVkX18nlouweC7yc/Lh0Mug4MResz2rp9eF+cM= testpassphrase test@password</codeblock>
+</fig>
+</section>
+</conbody></concept>

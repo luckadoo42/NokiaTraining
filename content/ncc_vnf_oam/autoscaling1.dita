@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="id9YZ-09126-MT00-REZZA-SP2-autoscaling1"><title>Procedure: Enabling auto-scale on a VNF</title><taskbody id="d1e68343"><context><sectiondiv>
+				<p><b>Overview</b></p>
+				<p>Auto-scale is a scheduled maintenance operation in CBAM that runs periodically
+					and provides the appropriate scale-in and scale-out capabilities for the
+					DiameterApp VMs only. All other VM types are configured per the system
+					dimensioning (for max load), and are left fully scaled out at all times (unless
+					manually scaled in). By default auto-scale is disabled in CBAM. This procedure
+					provides instructions on how to configure and enable auto-scale in CBAM.</p>
+				<p>Before auto-scale is enabled in CBAM, auto-scale must be configured with the
+					auto-scaling triggering tool. When auto-scale is enabled, CBAM periodically runs
+					the auto-scaling triggering tool to pull the required KPIs from the VNF’s OAME
+					VM and make a decision as to whether scale-in or scale-out is needed. The
+					auto-scaling triggering tool calculates scaling triggers by calculating the
+					average CPU usage across all in-service DiameterApp VMs, excluding the VMs with
+					the highest and the lowest current CPU usage.</p>
+				<p>The NCC does not initiate an auto-scale (scale-out or scale-in) if the site's
+					overall state is OOS and it never scales in to a configuration with less than
+					two DiameterApp VMs. </p>
+				<p>There is no auto-scale rollback. Any rollback required is performed using a
+					manual rollback. If you get an auto-scale-out failure and find that the NCC is
+					reaching its resource limit, you can disable auto-scale in CBAM and re-enable it
+					when the VNF has enough resources.</p>
+				<note>Auto-scale operational failures are visible on CBAM alarms when auto-operation
+					workflows are starving, cannot be scheduled, run too long, fail during execution
+					or cannot trigger the operation. For more information on CBAM alarms, see CBAM
+					documentation.<p/></note>
+				<sectiondiv>
+					<p><b>Auto-scale logging</b></p>
+					<p>Active <filepath>AutoScale</filepath> logs can be found
+							in <filepath>/opt/tpa/logs/AutoScale.log</filepath> on the Active OAME
+						VM.</p>
+				</sectiondiv>
+			</sectiondiv><note>There is no auto-scale rollback. Any rollback is done
+				manually.<p/></note><p><b>Before you begin:</b></p><p>Before beginning this
+				procedure, ensure that:</p><ul id="ul_e1l_bzt_wmb">
+				<li>
+					<p>The site is deployed and instantiated using CBAM.</p>
+				</li>
+				<li>
+					<p>The number of available IP addresses is sufficient to scale out the VNF. For
+						information on how to add more IP addresses, see the procedure
+							<!--xref URI: t-oam-scaling-choosing-scalable-file.xml#Adding_IP_addresses--><xref
+							keyref="id9YZ-09126-MT00-REZZA-SP2-Adding_IP_addresses"/>.</p>
+				</li>
+				<li>
+					<p>Your cloud resources are sufficient to scale out the VNF.</p>
+				</li>
+			</ul><note>For more information on CBAM, see CloudBand Application Manager (CBAM)
+				documentation in the Nokia Discovery Center by going to <xref format="html"
+					href="https://doc.networks.nokia.com" scope="external"
+					>https://doc.networks.nokia.com</xref>
+			</note>To enable auto-scale on the VNF:</context><steps>
+<step><cmd>Run <codeph>auto-scale-policy-charging-apps</codeph> tool to ensure that auto-scaling parameters are configured as follows:</cmd><info><ul>
+<li>
+<p>Run the tool with <codeph>-c</codeph> option to verify that all auto-scaling parameters are configured.</p>
+</li>
+<li>
+<p>If the output contains the warning that &lt;scale-out-hard-limit&gt; is not fond, configure &lt;scale-out-hard-limit&gt; by running the tool with option <codeph>-u</codeph>.</p>
+</li>
+</ul><p>For information on the tool, see <!--xref URI: t-oam-tools-SPS-auto-scaling.xml#Auto-scale-tool--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-Auto-scale-tool"/>.</p></info></step>
+<step><cmd>Log in to the CBAM GUI.</cmd><info/></step>
+<step><cmd>In the CBAM GUI, click the options button with three horizontal lines, and then select <b>Virtualized Network Functions</b>. The <b>Virtualized Network Functions</b> pane appears.</cmd><info/></step>
+<step><cmd>In the <b>Virtualized Network Functions</b> pane, select the VNF on which to enable auto-scale and hover the mouse over the right of the selected VNF, and then click the <b>Modify</b> button represented by the pencil icon. The <b>General Data</b> pane appears.</cmd><info/></step>
+<step><cmd>In the <b>General Data</b> pane, <b>Auto-operations</b> are listed as item 5. To reach to <b>Auto-operations</b>, click <b>Continue</b> five consecutive times. The <b>Auto-operations</b> pane appears.</cmd><info/></step>
+<step><cmd>Select <b>auto-scale</b> and click the check mark button. <b>auto-scale</b> window appears.</cmd><info/></step>
+<step><cmd>In the <b>auto-scale</b> window, if needed, configure the <b>Period</b> such that the need for scaling is determined in intervals of days, hours, minutes. For example, every 2 days at 2:15 a.m. the auto-scale feature will run to determine if scaling is needed.</cmd><info><note>
+<p>The <b>Period</b> cannot be less then the default setting, which is 17 minutes.</p>
+</note><p>The auto-scale action is determined by the combined effect of the Period parameter and the
+						min-positive-intervals to control the execution frequency that CBAM uses to
+						execute the auto-scaling triggering tool in NCC. For example, if you want a
+						scale-out operation initiated within 5 minutes after the CPU utilization has
+						crossed the threshold, you can set the Period parameter to 1 minute and the
+						min-positivie-intervals to 3.</p></info></step>
+<step><cmd>In the <b>auto-scale</b> window, select the <b>Enable</b> check box and click <b>Finish</b>.</cmd><info><p>
+<b>Expected outcome</b>
+</p><p>In the <b>Auto-operations</b> window, the <b>Enabled</b> parameter for <b>auto_scale</b> is set to true.</p></info></step>
+<step><cmd>Do the following to ensure that the auto-scale is enabled to run at the configured period in CBAM:</cmd><info><ul>
+<li>
+<p>In the CBAM catalog, select and then click the VNF on which you have enabled <b>auto-scale</b>. The <b>Virtual Network Function Details</b> window appears.</p>
+</li>
+<li>
+<p>In the <b>Virtual Network Function Details</b> window click the <b>History</b> tab. The <b>History</b> list appears.</p>
+</li>
+<li>
+<p>From the <b>History</b> list, select and then click the most recent <b>Modify</b> operation. This operation is also listed in the <b>Last Operation Status</b> field in the left pane. The <b>Parameters</b> list appears.</p>
+</li>
+<li>
+<p>In the Parameters list, click <b>vnfConfigurableProperties</b> and ensure that the <b>enabled</b> parameter in the <b>auto-scale</b> operation is set to true.</p>
+</li>
+</ul></info></step>
+</steps>
+</taskbody></task>

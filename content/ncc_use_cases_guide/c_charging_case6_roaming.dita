@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//NSN//DTD DITA Concept//EN" "nsnconcept.dtd">
+		<concept id="id9YZ-09018--PL00-FPZZA-d1e13579"><title>Case 6: Roaming day pass with bucket of usage</title><conbody>
+
+<section><title>Overview</title>
+
+<p>Bob has a device with Prepaid pass for roaming data consumption from the monetary bucket. The roaming pass is configured to expire within 24 hours from purchase. The rate for roaming data consumption is based on the location. A threshold level is applied on the monetary bucket.</p>
+<p>If the data consumption from the monetary data bucket exceeds the threshold level, then an email is sent to Bob on his roaming device indicating that incremental charges will be applied for further data consumption.</p>
+</section>
+<section><title>Flow of events</title><ul>
+
+<li>Bob has a device associated with a Prepaid monetary data bucket for roaming data consumption. </li>
+<li>A threshold level is applied on the monetary data bucket. </li>
+<li>Bob has started usage with:<ul>
+      <li>
+       <emphasis>MCCMNC</emphasis> equal to <varname>CANADA</varname>
+      </li>
+      <li>
+       <emphasis>MCCMNC</emphasis> equal to <varname>Mexico</varname>
+      </li>
+      <li>
+       <emphasis>MCCMNC</emphasis> equal to <varname>US</varname>
+      </li>
+      <li>
+       <emphasis>MCCMNC</emphasis> equal to <varname>ROW</varname>
+      </li>
+     </ul>
+    </li>
+<li>
+Verify that if data consumption from the monetary data bucket exceeds the threshold level, then an email is sent to Bob on his roaming device indicating that incremental charges will be applied for further data consumption.
+</li>
+</ul>
+</section>
+<section><title>Provisioning</title>
+
+<note type="attention">
+
+<p>Ensure that after creating a record, you distribute it to ME. Otherwise, the provisioning will not be successful.</p>
+</note>
+<p>Following entities are required for this use case.<table pgwide="1" colsep="1" rowsep="1">
+     <title>Entities for case 6</title>
+     <tgroup cols="2">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <thead>
+       <row>
+        <entry> Entity </entry>
+        <entry> Task </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> Notification preferences </entry>
+        <entry> Select the notification channel as email. </entry>
+       </row>
+       <row>
+        <entry> Notification templates </entry>
+        <entry> Create a notification template and add the text to be sent in an email notification.
+        </entry>
+       </row>
+       <row>
+        <entry> Notification servers </entry>
+        <entry> Configure a notification server to send an email notification. </entry>
+       </row>
+       <row>
+        <entry> Thresholds </entry>
+        <entry> Create an absolute type threshold with <varname>Send-Notification</varname> action.
+        </entry>
+       </row>
+       <row>
+        <entry> Rates </entry>
+        <entry> Create different rates for zones. </entry>
+       </row>
+       <row>
+        <entry> Charging Services </entry>
+        <entry>
+         <p>Create a charging service with the following details:</p>
+         <ol>
+          <li>
+           
+            <uicontrol>Bucket:</uicontrol> Create a roaming day pass bucket.
+          </li>
+          <li>
+           
+            <uicontrol>Tariff:</uicontrol> Create a tariff formula to apply different rates based on
+            the zone in which Bob initiates a data call. 
+          </li>
+         </ol>
+        </entry>
+       </row>
+       <row>
+        <entry> Lifecycles </entry>
+        <entry> Create a subscription (DayPass subscription, DayPass subscription renewal), account,
+         and device lifecycles. </entry>
+       </row>
+       <row>
+        <entry> Bundles </entry>
+        <entry> Create a bundle and associate it with the subscription lifecycles. </entry>
+       </row>
+       <row>
+        <entry> Rules and Variables </entry>
+        <entry> Create a rule variable for roaming status. </entry>
+       </row>
+       <row>
+        <entry> Mapping Tables </entry>
+        <entry> Create the mapping for zones, MCC_MNC to Zone-Name mapping. </entry>
+       </row>
+       <row>
+        <entry> Accounts </entry>
+        <entry> Create an account and associate with an account lifecycle. </entry>
+       </row>
+       <row>
+        <entry> Devices </entry>
+        <entry> Create a device and associate with a bundle and device lifecycle. </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table></p>
+<p>Provision the following data:</p><ol>
+
+<li>Create a notification preference. To do this, navigate to <uicontrol>Notification
+      Management</uicontrol> and select the <uicontrol>Notification Preferences</uicontrol> tab.
+     Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png"/> to create the notification preference and
+     select <varname>EMAIL</varname> as notification channel. </li>
+<li>Create a notification template <varname>(Roaming_Bundle_Template)</varname>. To do this,
+     navigate to <uicontrol>Notification Management</uicontrol> and select the
+      <uicontrol>Notification Templates</uicontrol>. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png"/> to create the notification template. <!--MMO resource relative URI: ../graphics/Case6_Notiftemplate_default.png-->
+     <image href="../images/case6_notiftemplate_default.png"/>
+    </li>
+<li>Configure the notification server for sending emails. To do this, navigate to
+      <uicontrol>Notification Management</uicontrol> and select <uicontrol>Notification
+      Servers</uicontrol> tab. Browse to select <uicontrol>Email</uicontrol> from the drop-down
+     list. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png"/> to configure the notification server. </li>
+<li>Configure the threshold <varname>(TPG_Roaming)</varname> and on crossing this limit, Bob
+     receives a notification: <!--MMO resource relative URI: ../graphics/Case6_threshold_default.png-->
+     <image href="../images/case6_threshold_default.png" placement="break" scale="60"/>
+    </li>
+<li>Create three rates - Rate1, Rate2, Rate3. <p>
+      <uicontrol>Rate1:</uicontrol>
+     </p>
+     <!--MMO resource relative URI: ../graphics/Case6_rate1_default.png-->
+     <image href="../images/case6_rate1_default.png"/>
+     <p>
+      <uicontrol>Rate2:</uicontrol> Set <emphasis>RoamingPass_Rate2</emphasis> = <varname>4 United
+       States dollars</varname> for 200 MB with granularity = 10 MB.</p>
+     <p>
+      <uicontrol>Rate3:</uicontrol> Set <emphasis>RoamingPass_Rate3</emphasis> = <varname>5 United
+       States dollars</varname> for 100 MB with granularity = 20 MB.</p>
+    </li>
+<li>Create a charging service with the following configuration: <table pgwide="1" rowsep="1"
+      colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1"/>
+       <colspec colname="col2"/>
+       <thead>
+        <row>
+         <entry> Parameter </entry>
+         <entry> Value </entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry> Name </entry>
+         <entry> RoamingPass_CS </entry>
+        </row>
+        <row>
+         <entry> Priority </entry>
+         <entry> 21 </entry>
+        </row>
+        <row>
+         <entry> Category </entry>
+         <entry> DefaultCategory </entry>
+        </row>
+        <row>
+         <entry> Applicability condition </entry>
+         <entry/>
+        </row>
+        <row>
+         <entry namest="col1" nameend="col2">
+          <!--MMO resource relative URI: ../graphics/Case6_CS1_default.png-->
+          <image href="../images/case6_cs1_default.png"/>
+         </entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p>
+      <uicontrol>Add bucket:</uicontrol>
+     </p>
+     <!--MMO resource relative URI: ../graphics/Case6_CS2_default.png-->
+     <image href="../images/case6_cs2_default.png"/>
+     <p>
+      <uicontrol>Tariff formula:</uicontrol>
+     </p>
+     <!--MMO resource relative URI: ../graphics/Case6_CS3_default.png-->
+     <image href="../images/case6_cs3_default.png"/>
+    </li>
+<li>
+Create a rule variable <varname>RoamingStatus</varname> as shown in the following figure:
+<!--MMO resource relative URI: ../graphics/Case6_rule_default.png-->
+<image href="../images/case6_rule_default.png" placement="break" scale="50"/>
+</li>
+<li>
+Create a data bundle associated with the charging service.
+<!--MMO resource relative URI: ../graphics/Case6_bundle_default.png-->
+<image href="../images/case6_bundle_default.png"/>
+</li>
+<li>
+<p>Create complex maps to define the mapping between MCCMNC and zone.</p>
+<p/><ol>
+
+<li>
+Navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> tab and select <uicontrol>COMMON</uicontrol>. Browse to select <uicontrol>Mapping Tables</uicontrol> from the drop-down.
+</li>
+<li>
+Click 
+<!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+<image href="../images/sdd_button_default.png"/>
+ to create and configure the <varname>ZoningandRoamingMapping</varname> complex map as shown in the following figure:
+<!--MMO resource relative URI: ../graphics/Case3_MT1_default.png-->
+<image href="../images/case3_mt1_default.png"/>
+</li>
+<li>
+<p>Click on <uicontrol>SAVE &amp; CONTINUE</uicontrol>. Navigate to the next page, click on <uicontrol>ADD NEW MAP ROW</uicontrol> and enter the data as shown in the following figure:</p>
+<!--MMO resource relative URI: ../graphics/Case3_MT2_default.png-->
+<image href="../images/case3_mt2_default.png" placement="break" scale="60"/>
+<p>Click <uicontrol>SAVE &amp; CONTINUE</uicontrol>.</p>
+</li>
+</ol>
+</li>
+<li>
+<p>Create the following subscription lifecycles:</p>
+<p>Subscription lifecycle:</p>
+<!--MMO resource relative URI: ../graphics/Case6_LC1_default.png-->
+<image href="../images/case6_lc1_default.png"/>
+<p>Subscription renewal lifecycle that expires within 24 hours from purchase:</p>
+<!--MMO resource relative URI: ../graphics/Case6_LC2_default.png-->
+<image href="../images/case6_lc2_default.png"/>
+</li>
+<li>
+Create an account and associate with an account lifecycle.
+</li>
+<li>
+Create a device and associate with a bundle and device lifecycle and iPhone must have access to this subscription. The monetary bucket must have sufficient balance to complete the call.
+</li>
+</ol>
+</section>
+</conbody></concept>

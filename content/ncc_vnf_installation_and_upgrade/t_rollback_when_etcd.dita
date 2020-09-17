@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="untitled1">
+    <title>Rollback when ETCD versions are different</title>
+    <shortdesc/>
+    <taskbody>
+        <context>For any ISU with a FROM load of 20.0 or older to a TO load of 20.3 or newer, you
+            will require this procedure. This procedure addresses the issue where there was no
+            rollback for the “ETCD”. ETCD nodes running older versions were unable to join the
+            cluster of the newer versions. An example of this is: SPS 20.0 was using ETCD 3.2.x and
+            SPS 20.6 was using 3.3.11. <p>To support NCC roll backs for this scenario, the Auxiliary
+                VDU must undergo an RPM SU upgrade prior to the ISU. Once applied, the Auxiliary VM
+                operates at the latest ETCD. The following diagram illustrates the procedure needed
+                for this activity:</p><p><image href="../images/etcd.png" id="image_gj3_nrq_ylb"/>If
+                your etcd rpm version is below etcd-3.3.11-2.el7.x86_64 in the SPS FROM load, you
+                need to apply an RPM SU as specified in this procedure prior to upgrading to 20.3 or
+                newer. In this procedure you will:<ul id="ul_w3n_prq_ylb">
+                    <li>Check the ETCD version of the Auxiliary Nodes</li>
+                    <li>Prepare for the RPM SU</li>
+                    <li>Setup up your NCC as a Yum Repo</li>
+                    <li>Apply RPM SU</li>
+                    <li>Commit RPM SU Changes</li>
+                </ul></p>As a prerequisite, you must download the package rpmsu_repodata.tar.gz file
+            from the Nokia Support portal.</context>
+        <steps>
+            <stepsection>This upgrade is applicable for both SM and ME node types.</stepsection>
+            <step>
+                <cmd>Check the ETCD version of the Auxiliary nodes. In cases where NCC requires an
+                    ETCD upgrade, perform the following:</cmd>
+                <info>To confirm what load your NCC ETCD version is, log into one of the Auxiliary
+                    nodes and enter the following Linux command.</info>
+                <info><b>rpm -aq | grep etcd</b></info>
+                <info>Output similar to the following is observed if you have a 20.0 ETCD
+                    version:</info>
+                <stepresult>
+                    <p>[tpaadmin@sps-sm-auxiliary-0 ~]$ rpm -aq | grep etcd</p>
+                    <p>etcd-3.2.18-1.el7.x86_64</p>
+                    <p>ALATPAetcdmonitoringjob-SPS_20_0_R1-1.x86_64</p>
+                    <p>[tpaadmin@sps-sm-auxiliary-0 ~]$</p>
+                </stepresult>
+            </step>
+            <step>
+                <cmd>Prepare for the RPM SU: Create the modified “From” CSAR package as
+                    follows:</cmd>
+                <info>
+                    <ol id="ol_nbr_wsq_ylb">
+                        <li>A Modified “FROM” CSAR package must be created to run RPM SU. The
+                            Modified “From” CSAR package contains an addition to the LCM events.
+                            When the RPM_SU is applied to the VNF, it will use this VNF Package
+                            version to support the use case. Using the VNF Editor open the existing
+                            VNF Conf file and complete the following changes.<b>Product VNFD Version
+                                Changed to “1.0.0 OpenStack_ME_RPM”</b><p><b>Product Info Name
+                                    Changed to “CBAM package for
+                                    SPS-ME-RPM-Test”</b></p><p><b>Parameter rpm_su
+                                added</b></p><image href="../images/lcm_rpm_su_general_2.png"
+                                placement="break" id="image_c4f_cvq_ylb"/><image
+                                href="../images/lcm_rpm_su.png" placement="break"
+                                id="image_ifg_hvq_ylb"/></li>
+                        <li>Save the contents as a new config file with for example this naming
+                                    convention:<p><b>SPS_20_0_I138_ME_RPM_VNF_CONF.json</b></p></li>
+                        <li>Using Maestro or the vnf generator create your CSAR package as
+                                    follows:<p><b>sps-instantiate -g
+                                    /opt/sps/workspaces/SPS_20_0_I138/ -i
+                                    /opt/sps/configs/SPS_20_0_I138_ME_SDC_CONFIG.json -j
+                                    /opt/sps/configs/SPS_20_0_I138_ME_RPM_VNF_CONF.json -s me
+                                    SPS_20_0_R1_SPS_20_0_I138</b></p></li>
+                    </ol>
+                </info>
+            </step>
+            <step>
+                <cmd>Prepare the RPM SU: Setup a Local Yum Repo for NCC as follows:</cmd>
+                <info>
+                    <ol id="ol_ckz_ltq_ylb">
+                        <li>Untar the yum package. <p>To complete the ETCD Upgrade on the Auxiliary
+                                blades, the Services team will provide the yum package
+                                rpmsu_repodata.tar.gz, which contains etcd 3.3.11 rpms and
+                                associated dependency files that are needed to run your RPM SU. The
+                                package rpmsu_repodata.tar.gz file can be downloaded from the Nokia
+                                Support Portal.</p><p>NCC OAME will serve as the Yum Repository for
+                                the Auxiliary blades, which do not have access to the public
+                                network. You will need to unzip and untar the rpmsu_repodata.tar.gz
+                                in the var/www/http directory and start an HTTP Server to complete
+                                this task, as follows:</p><p><b>cd /var/www/html</b></p><p><b>gunzip
+                                    rpmsu_repodata.tar.gz</b></p><p><b>rpmsu_repodata.tar</b></p><p><b>tar
+                                    -xvf rpmsu_repodata.tar</b></p></li>
+                        <li>Start your HTTP Server in the foreground with the following command. It
+                            can be shut down later using ^c as follows:<p><b>python -m
+                                    SimpleHTTPServer 80</b></p>From a Browser you can browse to
+                            HTTP://&lt;Fixed IP Address OAM-E> and view the local Yum Repo that you
+                            created.</li>
+                    </ol>
+                    <image placement="break" href="../images/yumrepo.png" id="image_zcw_4vq_ylb"/>
+                </info>
+            </step>
+            <step>
+                <cmd>Execute the RPM SU:</cmd>
+                <info>
+                    <ol id="ol_npc_ttq_ylb">
+                        <li>
+                            <p>Change the VNF Package version.</p>
+                            <p>Upload the new FROM CSAR to CBAM and invoke ‘change package version’
+                                on the VNF to associate it with the new FROM CSAR. Locate the VNF
+                                and run “Change Package Version” from the GUI as follows:</p>
+                            <image placement="break" href="../images/change_package_version_1.png"
+                                id="image_etb_vvq_ylb"/>
+                        </li>
+                        <li><p>Run the RPM_SU_Apply.</p><p>Perform ‘RPM SU’ only on vdu-Aux for
+                                etcd. If the setup is one-zone, use serial rpm su; otherwise,
+                                parallel rpm su can be used.</p><p>Where:</p><p>yum_repo_url =
+                                private ip address of the OAME</p><p>JumpHost = public IP Address
+                                (fixed) of the OAME</p>From the GUI run
+                                    rpmsu_apply<p><b>rpms:etcd</b></p><p><b>su_strategy:
+                                update</b></p><p><b>yum_repo_url &lt;private IP address of the
+                                    OAM></b></p><p><b>components sdc</b></p><p><b>vdu name:
+                                    vdu-Auxiliary</b></p><p><b>jumpHost: &lt;Public IP Address
+                                    (Fixed) of the OAM></b></p><image placement="break"
+                                href="../images/rpm_su_apply_1.png" id="image_gpj_zvq_ylb"/></li>
+                        <li><p>Verify the ETCD version on the Auxiliary blades as follows:</p><p>Log
+                                in to one of the Auxiliary nodes and enter the following Linux
+                                command.</p><b>rpm -aq | grep etcd</b><p>Your etcd rpm version
+                                should now be
+                                    etcd-3.3.11-2.el7.x86_64.</p><p><b>[root@sps-sm-auxiliary-0
+                                    tpaadmin]# rpm -aq | grep
+                                    etcd</b></p><p><b>ALATPAetcdmonitoringjob-SPS_20_0_R1-1.x86_64</b></p><p><b>etcd-3.3.11-2.el7.x86_64</b></p></li>
+                        <li>
+                            <p>Execute the RPM_SU_commit.</p>
+                            <p>Navigate to the rpmsu_commit to apply the changes to the rpm_su.</p>
+                            <p>The following parameter is required for this activity:
+                                    <b>vdu-Auxiliary</b>.</p>
+                            <image placement="break" href="../images/rpm_su_apply2_1.png"
+                                id="image_r4j_dwq_ylb"/>
+                        </li>
+                        <li>
+                            <p>Execute the Change the Package version back to the Original “From”
+                                Load.</p>
+                            <p>Change the Package version back to the Original VNFD Version. This
+                                activity will allow the NCC to undergo an ISU Upgrade. Once this is
+                                complete the Traditional ISU upgrade is possible.</p>
+                            <image placement="break" href="../images/change_package_version2_1.png"
+                                id="image_ckx_kwq_ylb"/>
+                        </li>
+                    </ol>
+                </info>
+            </step>
+            <step>
+                <cmd>Verify that the ETCD cluster is in a good operational state as follows:</cmd>
+                <info>
+                    <p>As the root user on the OAM VM:</p>
+                    <p><b>etcdctl --endpoint http://&lt;private IP address of Auxiliary VM>
+                            cluster-health</b></p>
+                    <codeblock>sh-4.2$ etcdctl --endpoint http://192.168.3.20:2379 cluster-health
+member c27bec035a8ad32 is healthy: got healthy result from http://192.168.3.22:2379
+member 1c3b5a7ec8195ac1 is healthy: got healthy result from http://192.168.3.21:2379
+member 5a8c105c6fe49368 is healthy: got healthy result from http://192.168.3.24:2379
+member bb64e251dfbf7c3d is healthy: got healthy result from http://192.168.3.23:2379
+member e575ffbb0ded2be6 is healthy: got healthy result from http://192.168.3.20:2379
+cluster is healthy</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Shut down your Yum Repository as follows:</cmd>
+                <info>
+                    <p>On your OAME, shut down your Simple HTTP Server ^c.</p>
+                    <p>The RPM procedure is now complete.</p>
+                    <p>Now the ISU procedure can be started.</p>
+                </info>
+            </step>
+        </steps>
+    </taskbody>
+</task>

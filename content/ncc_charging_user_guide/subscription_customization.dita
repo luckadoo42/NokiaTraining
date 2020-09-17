@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e194903"><title>Subscription customization</title><conbody>
+<section><title>Overview</title>
+<p>The subscription customization (template) feature provides the following functionalities:</p><ul>
+<li>While attaching a subscription to a device or group, the operators can customize the
+                    subscription by overriding the parameters from the existing subscription. This
+                    can be done by setting the <uicontrol>subscriptionCustomise</uicontrol> flag to
+                        <varname>True</varname> in the <i>create/Device</i> or <i>create/Group</i>
+                    API. The values not sent in the request are picked from the bundle
+                    definition.</li>
+<li>After creating a subscription, if an operator wants to update the bucket instances in that
+                    subscription, then the <i>update/BucketInstance</i> API is used.</li>
+</ul>
+<note>
+<p>The non-customized values are picked from the bundle definition.</p>
+</note>
+</section>
+<section><title>Additional information</title>
+<p>Following are some important points related to this feature performed by the operators:</p><ul>
+<li>
+<p>Modify a bundle while attaching a subscription to a device or group.</p>
+</li>
+<li>
+<p>Modify the objects in a bundle entity.</p>
+</li>
+<li>
+<p>Do not modify the bucket name and unit type.</p>
+</li>
+<li>
+<p>Do not attach extra charging service other than those present in the selected bundle.</p>
+</li>
+<li>
+<p>Do not attach extra buckets or counters other than those present in the selected bundle.</p>
+</li>
+</ul>
+</section>
+<section><title>create/Device or create/Group REST API</title>
+<p>Operators can customize a bundle using the <i>create/Device</i> or <i>create/Group</i> API while attaching a subscription to a device or group. If the <uicontrol>subscriptionCustomise</uicontrol> flag is set as <varname>True</varname>, then the operators customize only the lifecycle and charging service in a bundle.</p>
+<note>
+<p>You cannot add a new charging service but only use the existing charging services from the original bundle definition.</p>
+</note>
+<p>The <i>create/Device</i> or <i>create/Group</i> API can modify the following data:</p><ul>
+<li>
+<p>Lifecycle (entity or periodic) attached with a bundle definition.</p>
+</li>
+<li>
+<p>Counter threshold profile group, cap, overage threshold profile group, usage limit, and overage limit present in the charging service list.</p>
+</li>
+<li>
+<p>Initial value, current value, current charging step, threshold for buckets, and carry over
+                        parameters present in the charging service list.</p>
+</li>
+<li>
+<p>All or certain charging service can be selected in the bundle definition.</p>
+</li>
+</ul>
+<p>For the complete list of parameters and their descriptions, see the <!--XML Resource relative URI: -->
+                <cite>NOKIA Converged Charging Service Manager API Reference</cite> document.</p>
+            <sectiondiv><b>Logic for setting InitialValue, CurrentValue, and currentChargingStep for
+                    a Bucket with/without Charging Step</b><p>If
+                        <varname>currentChargingStep</varname> is provided in the request, but
+                    bucket does not have a Charging Step, then the request is rejected with an
+                    error.</p><p>If <varname>currentChargingStep</varname> is not provided in the
+                    request and bucket has a Charging Step, then CurrentValue and InitialValue are
+                    set to the size in step 1 of the Charging Step.</p><p>If
+                        <varname>currentChargingStep</varname> is provided in the request and bucket
+                    has a Charging Step, then if the <varname>currentChargingStep</varname> is
+                    greater than the number of steps in the Charging Step (with the last step as
+                        <i>not unlimited</i>), the request is rejected with an error. If
+                        <varname>currentChargingStep</varname> is less, then the following logic is
+                    used:</p><ol id="ol_l3v_ny1_tmb">
+                    <li>If <varname>InitialValue</varname> is available in the request, the request
+                        is rejected with an error. The initial value is calculated internally as
+                            follows:<ul id="ul_m3v_ny1_tmb">
+                            <li>For a Charging Step that has last step as not <i>unlimited</i>: Sum
+                                of steps starting from step 1 till currentCharging Step.</li>
+                            <li>For a Charging Step that has last step as unlimited: Sum of steps
+                                starting from 1 until step before unlimited step, plus the number of
+                                times unlimited step has been used.</li>
+                        </ul></li>
+                    <li>If <varname>CurrentValue</varname> is available in the request, then this
+                        value is set only if it is less than current charging step size. </li>
+                    <li>If current value is not available in the request, it is set as follows:<ul
+                            id="ul_n3v_ny1_tmb">
+                            <li>For a Charging Step that has last step as <i>not unlimited:
+                                </i>current step size.</li>
+                            <li>For a Charging Step that has last step as <i>unlimited</i>, it is
+                                set as follows:<ul id="ul_o3v_ny1_tmb">
+                                    <li>If current charging step &lt; number of steps: current
+                                        charging step size.</li>
+                                    <li>If current charging step >= number of steps: last step
+                                        size.</li>
+                                </ul></li>
+                        </ul></li>
+                </ol></sectiondiv>
+<sectiondiv>
+<p><b>Example: Creating a device and attaching a subscription</b></p>
+<p>The following figure shows an example where an iPhone device is created with two buckets. The <i>create/Device</i> API is used to change the initial value of the existing bucket (<varname>Bucket1</varname>) to 300 bytes. Note that the <uicontrol>subscriptionCustomise</uicontrol> flag is set as <varname>True</varname>.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_18.9/Bundle_customization_example_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-bundle_customization_example_default.png"/>
+</fig>
+</sectiondiv>
+</section>
+<section id="buckpara"><title>update/BucketInstance REST API</title>
+<p>Operators can update the following bucket instance parameters using the <i>update/BucketInstance</i> API:</p><ul>
+<li>
+<p>Bucket initial value</p>
+</li>
+<li>
+<p>Bucket current value</p>
+</li>
+<li>
+<p>Carry-over parameters</p>
+</li>
+</ul>
+<p>The new initial value can be greater or lesser than the original value. </p>
+<p>The new bucket initial value can be permanent (set <uicontrol>adjustAmountInitialValidity</uicontrol> parameter to zero) or temporary (set <uicontrol>adjustAmountInitialValidity</uicontrol> to any positive value greater than zero).</p><ul>
+<li>
+<p>Zero indicates that the given initial value remains forever, this is also the default value.</p>
+</li>
+<li>
+<p>Any positive value indicates the number of bill cycles (including the current bill cycle) for which the given initial value remains valid. A value of 1 means that the given initial value is valid only for the ongoing bill cycle and is replaced by the original initial value at next BCR. For example, adjustAmountInitialValidity = 3, initialValue = 1000 and origInitialValue = 1200. The initial value is valid for current bill cycle and two further bill cycles. After which, the initialValue falls back to 1200.</p>
+</li>
+</ul>
+<note type="attention">
+<p>The maximum value allowed for bucket initial or current is <varname>922337203685477600</varname>.</p>
+</note>
+<p>For the complete list of parameters and their descriptions, see the <!--XML Resource relative URI: -->
+                <cite>NOKIA Converged Charging Service Manager API Reference</cite> document for the
+                relevant release.</p>
+<sectiondiv>
+<p><b>Example 1: Changing bucket values (permanent update) using update/BucketInstance API</b></p>
+<p>
+<b>Provisioning:</b> At the start of a billing cycle (11/2018):</p>
+<p>Create a group with two devices has a bucket initial value = 600 Bytes and current value = 400 Bytes.</p>
+<p>
+<b>Result:</b>
+</p>
+<p>If a new device is attached to the group with bucket initial value = 300 Bytes, then current value = 100 Bytes. The bucket values are adjusted using the <i>update/BucketInstance</i> API. The <uicontrol>InitialvalueAdjustAmount</uicontrol> is used to set the value. The new device is added to the group with initial value = 600 + 300 = 900 Bytes and current value = 400 + 100 = 500 Bytes. After reset or renewal of bundle (12/2018), the group has three devices with initial value = 900 Bytes and current value = 900 Bytes.</p>
+<p>The following figure provides details on permanent update scenario. Note that the <uicontrol>adjustAmountInitialValidity</uicontrol> is set to <varname>0</varname>, where 0 indicates that the update is permanent.</p>
+<fig>
+<title>Subscription customization - permanent update</title>
+<!--MMO resource relative URI: ../Graphics/Release_19.0/Subscription_permanent_update_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-subscription_permanent_update_default.png"/>
+</fig>
+<p>The following figure from SM GUI shows the bucket values before using the <i>update/BucketInstance</i> API:</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.0/Subscription_custom_Ex4_1_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-subscription_custom_ex4_1_default.png"
+                        scale="65"/>
+                </fig>
+<p>The following figure from SM GUI shows the bucket values after executing the <i>update/BucketInstance</i> API:</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.0/Subscription_custom_Ex4_2_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-subscription_custom_ex4_2_default.png"
+                        scale="65"/>
+                </fig>
+<p>The following figure from SM GUI shows the bucket values after the billing cycle is reset:</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.0/Subscription_custom_Ex4_3_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-subscription_custom_ex4_3_default.png"
+                        scale="65"/>
+                </fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 2: Changing bucket values (temporary update) using REST API</b></p>
+<p>The following figure provides details on the temporary update scenario. Note that the <uicontrol>adjustAmountInitialValidity</uicontrol> is set to 1, where 1 indicates that the update is temporary. In the current example, the value 1 is used, but you can add any positive value greater than 1 to indicate that the update is temporary.</p>
+<fig>
+<title>Subscription customization - temporary update</title>
+<!--MMO resource relative URI: ../Graphics/Release_19.0/Subscription_custom_temporary_update_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-subscription_custom_temporary_update_default.png"/>
+</fig>
+<p>The following figure from SM GUI shows the bucket values before using the <i>update/BucketInstance</i> API:</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.0/Subscription_custom_Ex5_1_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-subscription_custom_ex5_1_default.png"
+                        scale="65"/>
+                </fig>
+<p>The following figure from SM GUI shows the bucket values after executing the <i>update/BucketInstance</i> API:</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.0/Subscription_custom_Ex5_2_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-subscription_custom_ex5_2_default.png"
+                        scale="65"/>
+                </fig>
+<p>The following figure from SM GUI shows the bucket values after the billing cycle is reset.</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.0/Subscription_custom_Ex5_3_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-subscription_custom_ex5_3_default.png"
+                        scale="65"/>
+                </fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 3: Carry over update - variant 1</b></p>
+<p>The following figure provides details on the carry over update scenario where the carry over flag is set to false. Since the carry over flag is disabled, the carry over logic is not executed from the next renewal cycle. The current balance of carry over value is available for use in the current bill cycle.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_19.0/Carryover_ex6_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-carryover_ex6_default.png"/>
+</fig>
+<p>The following figure from SM GUI shows the bucket values before using the <i>update/BucketInstance</i> API:</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.0/Carryover_ex6_v1_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-carryover_ex6_v1_default.png"
+                        scale="65"/>
+                </fig>
+<p>The following figure from SM GUI shows the bucket values after the billing cycle is reset. In the current scenario, since the carry over flag is set to false, the carry over values are removed.</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.0/Carryover_ex6_v2_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-carryover_ex6_v2_default.png"
+                        scale="65"/>
+                </fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 4: Carry over update - variant 2</b></p>
+<p>The following figure provides details on the carry over update scenario where the carry over flag is set to true. Since the carry over flag is enabled, the carry over logic is executed from the next renewal cycle. When the <i>update/BucketInstance</i> API is executed in the current bill cycle, an empty carry over bucket instance gets created but the values are filled in the next bill cycle reset. In this case, the carry over value is 50. Therefore, 50% of the bucket initial and current value is carried over, that is 50% of 5000 = 2500.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_19.0/Carryover_ex7_1_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-carryover_ex7_1_default.png"/>
+</fig>
+</sectiondiv>
+</section>
+</conbody></concept>

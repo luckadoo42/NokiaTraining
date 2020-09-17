@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e199026"><title>Rating group or category control </title><conbody>
+<section><title>Overview</title>
+<p>This feature provides the flexibility to define a number of schema on a per category basis. This is to determine whether to include or exclude the usage counting for specific rating groups.</p>
+<p>You can attach these schema to a subscription or a charging service to provide flexibility to define whether the data in a specific MSCC or flow level category to consider the following categories:</p><ul>
+<li>
+<p>
+<uicontrol>Always deny this category</uicontrol>
+</p>
+</li>
+<li>
+<p>
+<uicontrol>Always allow this category </uicontrol>
+</p>
+<p>For always allow and always deny categories, add the applicability condition based on rating group. And attach it to a charging service to define whether the data in a particular MSCC or category is allowed or not.</p>
+</li>
+<li>
+<p>
+<uicontrol>Allow and check time or applicability but do not count the usage</uicontrol>: Add time as a condition inside the applicability condition to check if a charging service can be selected or not.</p>
+</li>
+<li>
+<p>
+<uicontrol>Treat as normal and count and apply usage thresholds</uicontrol>: This is the default handling on a category or rating group. </p>
+</li>
+</ul>
+<p>The category logic and rules are enabled as rules based configuration attached to the subscription or charging service definition. They are processed early in the subscription flow to enable optimization of processing.</p>
+</section>
+<section><title>Always allow this category</title>
+<p>For always allow this category, the tariff rule is added in the charging service. </p>
+<p>Example: <userinput>if GY_MESSAGE.Multiple-Services-Credit-Control.Rating-Group  = 'example' then RATING.No-Charge</userinput>
+</p>
+<p>Tariff rule in charging service is <userinput>RATING.No-Charge</userinput>
+</p>
+<p>Since the call is free for always allowed rating group, therefore, all the charging services must configure no charge for this rating group. Otherwise, account balance or bucket is used to cover the call charge.</p>
+<p>The result code 2001 is returned.</p>
+<note>
+<p>Since this is always allow this category, the applicability condition in all the charging service must be configured as shown in example.</p>
+</note>
+<sectiondiv>
+<p><b>Example: Allow allowed category</b></p>
+<p>The result code can be determined by the rule in <i>GY_PRE_PROCESSING</i> and <i>GY_POST_PROCESSING</i> for always allowed rating group. In this case, if the CCR has rating group 8, then the call is free of charge and the result code <systemoutput>4011</systemoutput> is returned in CCA message. If a return result code is configured in the GY_PRE_PROCESSING rule, then the usage is not counted for that rating group. If a return result code is configured in the GY_POST_PROCESSING rule, then the usage for that rating group can be counted.</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.3/Allow_category_GY_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-allow_category_gy_default.png"
+                        scale="60"/>
+                </fig>
+<p>
+<uicontrol>GY_POST_PROCESSING</uicontrol>
+</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.3/Rating_group_GY_post_processing_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-rating_group_gy_post_processing_default.png"
+                        scale="60"/>
+                </fig>
+</sectiondiv>
+</section>
+<section><title>Always deny this category</title>
+<p>For always deny this category, the applicability condition is added in the charging service. </p>
+<p>Example: <userinput>GY_MESSAGE.Multiple-Services-Credit-Control.Rating-Group  != 'example' </userinput>
+</p>
+<p>The result code 5031 is returned.</p>
+<note>
+<p>As this is always deny category, the applicability condition in all the charging services must be configured with the same rule.</p>
+</note>
+<sectiondiv>
+<p><b>Example: Always denied rating group with result code 4010</b></p>
+<p>The result code can be determined by the rule in GY_PRE_PROCESSING and GY_POST_PROCESSING. If a valid result code returned in GY_PRE_PROCESSING rule, then it indicates that the rating group is not monitored and counted and the returned result code in rule is used to set the MSCC level result code.</p>
+<p>For example, configuration in GY_PRE_PROCESSING and GY_POST_PROCESSING rule. In this case, during
+                    a call, when NCC receives CCR containing rating group 8, then in CCA message for
+                    rating group 8, the result code 4010 is returned.</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.3/Category_control_rules_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-category_control_rules_default.png"
+                        scale="60"/>
+                </fig>
+<p>
+<uicontrol>GY_POST_PROCESSING</uicontrol>
+</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.3/Rating_group_GY2_default.jpg-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-rating_group_gy2_default.jpg"
+                        scale="60"/>
+                </fig>
+</sectiondiv>
+</section>
+<section><title>Allow and check time or applicability but not count usage</title>
+<p>The counter is not created inside charging service or as counter, therefore, no counting is done. If a counter is created, and if there is a need that the counters must not be updated, then the applicability condition must be defined in such a way which disallow counter update.</p>
+<p>The time of day period must be checked and application condition must be added.</p>
+<p>
+<uicontrol>Example:</uicontrol>
+<userinput>GY_MESSAGE.Multiple-Services-Credit-Control.Rating-Group  = 'example' and CALL_COMMON.Time-Of-Day &gt; 21600000 and CALL_COMMON.Time-Of-Day &lt; 43200000</userinput>
+</p>
+<p>Tariff rule in charging service is <userinput>RATING.No-Charge</userinput>
+</p>
+<sectiondiv>
+<p><b>Example: Allow and check time but not count usage</b></p>
+<p>The following figure shows the configuration of tariff rule for charging service and Applicability Condition rule for counter since this type of category is not countable. Category is allowed at several time intervals.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_19.3/Allow_not_count1_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-allow_not_count1_default.png"/>
+</fig>
+<p>The following figure shows the counter configuration.</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_20.3/Counter_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-counter_default.png"
+                        scale="50"/>
+                </fig>
+</sectiondiv>
+</section>
+<section><title>Treat as normal, count and apply usage thresholds</title>
+<p>For counting, the counter can be configured with the consumption type as charging service to count or not. For usage threshold, the threshold can be configured on counter.</p>
+</section>
+</conbody></concept>

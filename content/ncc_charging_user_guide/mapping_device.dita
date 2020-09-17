@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e225136"><title>Mapping device location to location policy counter status</title><conbody>
+<section><title>Overview</title>
+<p>This feature supports mapping the MCCMNC location of a device to a policy counter status associated with the <i>Location Policy Counter ID</i> of a device. This mapping includes the following capabilities:</p><ul>
+<li>
+<p>An MCCMNC can be directly mapped to an external location policy counter status value (for example, <varname>HOME</varname> for MCCMNC values considered to be within a user network).</p>
+</li>
+<li>
+<p>An MCCMNC can be mapped to a bundle name (this is expected to be used for <varname>TravelPass</varname> BOU bundles).</p>
+<p>In this case, if the bundle is currently available for the device (for example, in the <varname>Active</varname> or <varname>Pre-Active</varname> state), then the policy counter status is used for the current location policy counter status. Otherwise, if the bundle name is not currently available for the device, then a globally configured value for roaming should be sent (for example, <varname>ROAM</varname>).</p>
+</li>
+<li>
+<p>If there is no entry in the table for the current MCCMNC of a device, then the globally configured value for roaming (for example, <varname>ROAM</varname>) must be used as the location PC status for the device.</p>
+</li>
+</ul>
+<note>
+<p>This feature supports only a single global table mapping MCCMNCs to a fixed bundle name.</p>
+</note>
+<fig>
+                <title>GY_POST_PROCESSING ruleset</title>
+                <!--MMO resource relative URI: ../Graphics/Release_20.6/GY_POST_PROCESSING_ruleset_default.png-->
+                <image
+                    href="../images/img9yz-09126-ug01-pczza-sp1-gy_post_processing_ruleset_default.png"
+                    scale="35"/>
+            </fig>
+<fig>
+                <title>Mapping tables - Define map structure</title>
+                <!--MMO resource relative URI: ../Graphics/Release_20.6/Define_map_structure1_default.png-->
+                <image
+                    href="../images/img9yz-09126-ug01-pczza-sp1-define_map_structure1_default.png"
+                    scale="45"/>
+                <!--MMO resource relative URI: ../Graphics/Release_20.6/Define_map_structure2_default.png-->
+                <image
+                    href="../images/img9yz-09126-ug01-pczza-sp1-define_map_structure2_default.png"
+                    scale="45"/>
+            </fig>
+<p>For the preceding figure, consider the following steps:</p><ol>
+<li>
+<p>The MCCMNC of a device can be directly mapped to an external <i>Location Policy Counter Status</i> value. For example, <varname>HOME</varname> for status value, which is considered as a user's own network.</p>
+</li>
+<li>
+<p>If preceding directly mapping is empty, then use the MCCMNC of a device for mapping to a bundle name. This is bundle is expected to be used for <varname>TravelPass</varname>.</p>
+</li>
+<li>
+<p>If the bundle is currently available for the device and it is in the <varname>Active</varname> or <varname>Pre-Active</varname> state, then the PC status defined in the table is used for the current <i>Location Policy Counter Status</i>.</p>
+</li>
+<li>
+<p>If the bundle name is not currently available for the device or it is not in the <varname>Active</varname> or <varname>Pre-Active</varname> state, then a globally configured value for roaming should be used as the location policy counter status, for example <varname>ROAM</varname>.</p>
+</li>
+<li>
+<p>For the preceding steps, if there is no entry in the table for the MCCMNC of a device, then the globally configured value for roaming (for example, <varname>ROAM</varname>) must be used as the location PC status for the device.</p>
+</li>
+<li>
+<p>After checking the preceding steps, it checks whether the new <i>Location Policy Counter Status</i> is same as the current stored <i>Location Policy Counter Status</i> of a device. If not, then send an SNR with new <i>Location Policy Counter Status</i>; but if not, then there is no need to send an SNR.</p>
+</li>
+</ol>
+<p>Following are the supported call types:</p><ul>
+<li>
+<p>Gy</p>
+</li>
+<li>
+<p>IMS</p>
+</li>
+<li>
+<p>Event</p>
+</li>
+<li>
+<p>5G</p>
+</li>
+</ul>
+</section>
+<section><title>Update location for 5G and VoLTE MO call</title>
+<p>When a 5G call is received, following AVPs are checked:</p><ol>
+<li>
+<p>
+<i>userLocationInformation</i> AVP (under <i>PS information group</i> AVP), which stores the exact user location and MCC MNC extracts from this AVP.</p>
+<p>This AVP is mapped with 5G request parameter <uicontrol>PDUSessionChargingInformation</uicontrol> or <uicontrol>userLocationInfo</uicontrol>.</p>
+</li>
+<li>
+<p>
+<i>3gpp-ms-timezone</i> AVP (under <i>PS information group</i> AVP), which stores the UE timezone.</p>
+<p>This AVP is mapped from 5G request parameter <uicontrol>PDUSessionChargingInformation</uicontrol> or <uicontrol>uetimezone</uicontrol>. The <uicontrol>timeZoneId</uicontrol>, <uicontrol>sgsnMccMnc</uicontrol>, and <uicontrol>userLocationInfo</uicontrol> attributes for 5G call, check each request message for location update, not only those request with <i>user_location_update</i> trigger type.</p>
+</li>
+</ol>
+<p>When a message is received for VoLTE MO call, following AVPs are checked:</p>
+<p>Location updates received in VoLTE CCR-I transactions and VoLTE CCR-U updates with a location change trigger, which includes an <i>Access-Network-Information</i> AVP with an access-class header with a value of <varname>3GPP-GERAN</varname> should have the ULI in the ANI used to update the MCCMNC and ULI for the device. When this feature is enabled, ANI information received in VoLTE transactions without an access-class header of <varname>3GPP-GERAN</varname> is not used to update the stored location information of a device.</p><ol>
+<li>
+<p>
+<i>Geo Location Type</i>: <varname>RATType3Gpp.GERAN</varname>
+</p>
+</li>
+<li>
+<p>
+<i>User Location Id</i>: <varname>cgi3gpp</varname>
+</p>
+<p>-&gt; <i>format</i>: <varname>MCC MNC LAC CI</varname>
+</p>
+<p>-&gt; <i>length</i>: <varname>13</varname> or <varname>14</varname> (MNC 2 or 3)</p>
+</li>
+<li>
+<p>
+<i>Identity Type</i>: <varname>AccessInfoType.CGI</varname>
+</p>
+</li>
+</ol>
+</section>
+<section><title>Actions associated with Location Policy Counter ID</title>
+<table pgwide="1" colsep="1" rowsep="1">
+                <tgroup cols="2">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Action</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> update/updateLocationPolicyCounter/Device </entry>
+                            <entry> Used to add, update, or delete the <i>Location Policy Counter
+                                    ID</i> in device entity based on global definition by providing
+                                the mandatory parameter <uicontrol>Device ID</uicontrol>. </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<p>For more information on <i>Location Policy Counter ID</i> and <i>Location Policy Counter Status</i>, see the <!--xref URI: ../Topics/t-Application_preferences.xml#system_pref--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-system_pref"/> section.</p>
+</section>
+</conbody></concept>

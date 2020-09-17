@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9YZ-09018-UG00-PCZZA-d1e11946"><title>SurePay LDAP</title><conbody>
+<section><title>Overview</title>
+<p>When SurePay is used, the OCS device data is based on SurePay threshold counters that are passed
+                across the LDAP interface from the OCS to the LDAP server configured on the NCC
+                (port 10389 on the Service Manager) as custom data attributes that are stored
+                against the subscriber.</p>
+<p>LDAP notifications from SurePay contain Custom-Data only for Device. Other objects like Account, Group, etc. associated with the Device are not affected.</p>
+<p>An LDAP “get” from SurePay provides NCC with device attributes that can be used in rules, such
+                that name value pairs are extracted. The fields that must be present in the NCC SM
+                LDAP interface are shown in <!--xref URI: #SureLD--><xref
+                    keyref="id9YZ-09018-UG00-PCZZA-d1e11946/SureLD"/>. These fields are used to
+                create custom data names by concatenating the APN and the attribute abbreviation in
+                the following formats:</p>
+<table colsep="1" frame="all" rowsep="1"><title>Custom data formats</title>
+<tgroup cols="4" colsep="1" rowsep="1">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<colspec colname="col3"/>
+<colspec colname="col4"/>
+<thead>
+<row>
+<entry>
+QoS format
+</entry>
+<entry>
+Category available?
+</entry>
+<entry>
+Redirection flag available?
+</entry>
+<entry>
+Populated as
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+Old
+</entry>
+<entry>
+Not applicable
+</entry>
+<entry>
+Not applicable
+</entry>
+<entry>
+<systemoutput>&lt;APN&gt;.[DL | UL | OA | IP]</systemoutput>
+<sup>1</sup>
+</entry>
+</row>
+<row>
+<entry morerows="3">
+New
+</entry>
+<entry>
+No
+</entry>
+<entry>
+Yes
+</entry>
+<entry>
+<systemoutput>&lt;APN&gt;.[DL | UL | OA | IP | IF]</systemoutput>
+<sup>1</sup>
+</entry>
+</row>
+<row>
+<entry>
+No
+</entry>
+<entry>
+No
+</entry>
+<entry>
+<systemoutput>&lt;APN&gt;.[DL | UL | OA | IP]</systemoutput>
+<sup>1</sup>
+</entry>
+</row>
+<row>
+<entry>
+Yes
+</entry>
+<entry>
+Yes
+</entry>
+<entry>
+<systemoutput>&lt;APN&gt;.&lt;category&gt;.[DL | UL | OA | IP | RF]</systemoutput>
+<sup>2</sup>
+</entry>
+</row>
+<row>
+<entry>
+Yes
+</entry>
+<entry>
+No
+</entry>
+<entry>
+<systemoutput>&lt;APN&gt;.&lt;category&gt;.[DL | UL | OA | IP]</systemoutput>
+<sup>2</sup>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table><ol><li id="ldapsrfn1"><draft-comment>FIXME - DITA doesn't support table-notes</draft-comment>If category is not available, then <systemoutput>&lt;APN&gt;</systemoutput> is the first 12 characters of APN.</li><li id="ldapsrfn2"><draft-comment>FIXME - DITA doesn't support table-notes</draft-comment>If category is available, then <systemoutput>&lt;APN&gt;</systemoutput> is the first 9 characters of APN.</li></ol>
+<p>QoS notifications sent from SurePay have 13 attributes (with 12 semicolons as separators) (for
+                example, 1234567890;11;111;;;Y;;;;1.1.1.1;web.abc.in;cat;N). The following table
+                lists the QoS notification attributes that are processed by the NCC Service
+                    Manager.<table id="SureLD">
+                    <title>SurePay - SM LDAP interface</title>
+                    <tgroup cols="5" colsep="1" rowsep="1">
+                        <colspec colname="col1"/>
+                        <colspec colname="col2"/>
+                        <colspec colname="col3"/>
+                        <colspec colname="COLSPEC0"/>
+                        <colspec colname="col4"/>
+                        <thead>
+                            <row>
+                                <entry> Field # </entry>
+                                <entry> Field </entry>
+                                <entry> Custom Data Name </entry>
+                                <entry> Custom Data Name (with Category)<sup>1</sup>
+                                </entry>
+                                <entry> Custom Data Value Type </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry> 0 </entry>
+                                <entry> MSISDN </entry>
+                                <entry> – </entry>
+                                <entry> – </entry>
+                                <entry> – </entry>
+                            </row>
+                            <row>
+                                <entry> 1 </entry>
+                                <entry> QoS Downlink Value </entry>
+                                <entry> &lt;APN&gt;.DL </entry>
+                                <entry> &lt;APN&gt;.&lt;category&gt;.DL </entry>
+                                <entry> Integer </entry>
+                            </row>
+                            <row>
+                                <entry> 2 </entry>
+                                <entry> QoS Uplink Value </entry>
+                                <entry> &lt;APN&gt;.UL </entry>
+                                <entry> &lt;APN&gt;.&lt;category&gt;.UL </entry>
+                                <entry> Integer </entry>
+                            </row>
+                            <row>
+                                <entry> 5 </entry>
+                                <entry> Over Allowance </entry>
+                                <entry> &lt;APN&gt;.OA </entry>
+                                <entry> &lt;APN&gt;.&lt;category&gt;.OA </entry>
+                                <entry> String </entry>
+                            </row>
+                            <row>
+                                <entry> 9 </entry>
+                                <entry> Framed-IP Address </entry>
+                                <entry> &lt;APN&gt;.IP </entry>
+                                <entry> &lt;APN&gt;.&lt;category&gt;.IP </entry>
+                                <entry> IP address </entry>
+                            </row>
+                            <row>
+                                <entry> 12 </entry>
+                                <entry> Redirection Flag </entry>
+                                <entry> &lt;APN&gt;.RF </entry>
+                                <entry> &lt;APN&gt;.&lt;category&gt;.RF </entry>
+                                <entry> String </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table></p><ol><li><draft-comment>FIXME - DITA doesn't support table-notes</draft-comment>Length of &lt;category&gt; is up to 2 characters.</li><li><draft-comment>FIXME - DITA doesn't support table-notes</draft-comment>NCC Service Manager also
+                    supports old QoS notification format, that is, without &lt;category&gt; and
+                    Redirection Flag (with 11 attributes).</li></ol>
+<p>When a request reaches SM, then the Custom-Data operations for the Device are performed using the existing APIs (Device Get and Update). These APIs are called between SM and ME internally and the final response is send back to SurePay.</p>
+</section>
+<section><title>NCC User Configuration</title>
+<p>To accept the LDAP requests, a NCC user must be configured as follows:</p>
+<p/><ul>
+<li>
+<p>On the SM, you must configure an LDAP user name and password (in <b>Global Configurations &gt; Application Preferences &gt; ☰ &gt; Service Manager &gt; LDAP Server Configuration</b>) with their full name set to the bind DN of the LDAP connection and it must have the same name as the UNIX system user.</p>
+<p>When SM is deployed, a default user name (<systemoutput>cn=ldapuser</systemoutput>) and a corresponding password are set. You can change the user name and password.</p>
+</li>
+<li>
+<p>Ensure that the UNIX system user has the same name as the one created for the SM user with the same password as the one used for the LDAP connection.</p>
+</li>
+<li>
+<p>Ensure that the NCC device is configured with an E.164 subscription ID that matches the MSISDN in
+                        the LDAP search request from SurePay.</p>
+</li>
+</ul>
+</section>
+<section><title>Firewall Configuration</title>
+<p>Firewall must be enabled for the 10389 port. If you choose any other port, then the firewall must be disabled on that port.</p>
+</section>
+<section><title>Logging</title>
+<p>The LDAP requests and responses are logged in <filepath>/opt/tpa/logs/LDAPSearch.log</filepath> in SM.</p>
+</section>
+</conbody></concept>

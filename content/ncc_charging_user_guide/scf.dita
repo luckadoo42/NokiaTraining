@@ -1,0 +1,1014 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-scf"><title>Step-charge functionality </title><conbody>
+<section><title>Overview</title>
+<p>A subscriber may have a tariff plan with a group bundle or individual bundle. When the bundle is consumed completely and the volume of bundle is zero, subscriber cannot make data calls. To provide more flexibility to subscribers, operators can define bucket steps so that the bucket value increments when the volume is zero. That is, the operators can define bundles with step configuration and bucket amount available in steps. When such bundles are subscribed, the bucket is initialized to the first step value and these steps are managed by an entity named as <uicontrol>Charging Step</uicontrol>. The steps can be added, deleted, or modified using the SM GUI or REST API and the number of steps is reset at subscription reset or subscription renewal at the start of the next billing cycle when a bucket is reset to its first step value.</p>
+<p>Note that the priority of main bundle is greater than the priority of step bundles. NCC uses the
+                bundles for calls based on the configuration made.</p>
+<p>Operators can also define a fee for the steps. That is, during a call, when the step bundle is used, operators can charge fee for each step increment. If the account does not have sufficient amount for fee, then next charging service is selected for the call. The last step defined in the <uicontrol>Charging Step</uicontrol> can be repeated until the plan is reset.</p>
+<p>Currently, the step-up fee deduction and step count increment is done at the time of reservation.
+                You can change this behavior by setting the application preference,
+                    <uicontrol>Step-up On Commit</uicontrol> flag to <varname>True</varname>. Once
+                this flag is set to true, the Step-up fee deduction and step count increment is done
+                at the time of commit. See <xref href="#id9yz-09126-ug01-pczza-sp1-scf/stepcommit"
+                    format="dita"/>.</p>
+<p>Notifications can also be sent before an x amount, which is the sum of all buckets in <i>Pass
+                    0</i> is consumed. This x amount threshold is managed using the aggregate view
+                configured at group or device level. See <xref
+                    href="#id9yz-09126-ug01-pczza-sp1-scf/notifstep" format="dita"/> for more
+                details.</p>
+</section>
+        <section id="section_dkr_vqy_rmb"><title>Step-charge customization</title><p>If a bundle is
+                configured with step-bucket and is subscribed to a Group or Device that has other
+                subscription instances, then the following logic is followed when a call is
+                triggered:</p><ul id="ul_fn4_2ry_rmb">
+                <li>All the resources are consumed first that are configured in Pass 0 along with
+                    current step of step-bucket.</li>
+                <li>The step-bucket is moved to next step when no other resource is left in Pass
+                    0.</li>
+            </ul>For example, consider that a Device has 5 subscriptions attached where the
+            subscription 3 has a step-bucket with multiple steps. When a call is triggered, in Pass
+            0, the resource is consumed from subscription 1, subscription 2, first step of
+            subscription 3 followed by subscription 4 and subscription 5. When no resource is left
+            in Pass 0, the step-bucket is moved to next step of subscription 3 for usage. This
+            default behavior of step-bucket usage is applicable to all passes. <p>Operators can
+                modify this default behavior and provide flexibility to consume all the steps of
+                step-bucket before moving to the next resource. This is applicable even when some
+                resource is available for usage. For example, in the above scenario, all the steps
+                of subscription 3 are consumed followed by subscription 4 and then subscription 5.
+                To enable this behavior, set the application preference <b>Use All Steps First</b>
+                to <varname>true</varname>.</p><p> See <xref
+                    href="system_pref.dita#id9yz-09126-ug01-pczza-sp1-system_pref/pref"/> for
+                details on <b>Use All Steps First</b> application preference.</p><p>See <xref
+                    href="#id9yz-09126-ug01-pczza-sp1-scf/section_t1v_fh5_smb" format="dita"/> and
+                    <xref href="#id9yz-09126-ug01-pczza-sp1-scf/section_m1t_yl5_smb" format="dita"/>
+                for examples related to customized step-up behavior.</p></section>
+<section id="Stepchargescenario">
+            <title>Step-charge scenario while handling Send-SNR action for AV</title>
+            <p>If the AV has a step-charge bucket and the steps of that bucket are outstanding, then
+                the bucket balance is top-up in the next reservation. Therefore, the AV value also
+                increases and to avoid sending an SNR on the AV value during commit, the rule
+                attribute <varname>SY.SEND-SNR</varname> is introduced in the
+                    <i>THRESHOLD_PROFILE</i> with the following format:</p>
+            <p>if</p>
+            <p>
+                <i>THRESHOLD_PROFILE.has-More-Steps</i> = <varname>BooleanEnum.FALSE</varname>
+            </p>
+            <p>then</p>
+            <p>
+                <i>SY.SEND-SNR</i> = <varname>C1,Low</varname>
+            </p>
+            <fig id="fig_jbs_nwy_rmb">
+                <image
+                    href="../images/img9yz-09126-ug01-pczza-sp1-step-charge_threshold_config_default.png"
+                    id="image_kbs_nwy_rmb"/>
+            </fig>
+            <p>Refer to the example <!--xref URI: #Stepchargeexample--><xref
+                    href="snraction.dita#id9yz-09126-ug01-pczza-sp1-snraction/Stepchargeexample"/>
+                for more information.</p>
+        </section>
+        <section id="section_lbs_nwy_rmb">
+            <p><b>Limitations of step-charge Send-SNR scenario</b></p>
+            <p>The <i>THRESHOLD_PROFILE.has-More-Steps</i> is a flag, which determines whether
+                step-up is pending in a bucket or a bucket is accumulated by an AV (depending on
+                which the threshold is attached to) using a <uicontrol>Charging Step</uicontrol>.
+                However, this flag cannot determine whether bucket step-up happened successfully or
+                not.</p>
+            <note>There is only one scenario wherein the bucket step fails even when charging steps
+                are pending in the bucket. It is when there is some fees attached on the next step,
+                which is to be deducted from the account balance and account does not have enough
+                balance to pay for the fee of the next step. Therefore, in case of
+                    <uicontrol>Charging Step</uicontrol> with the fee, this rule attribute does not
+                check fee availability and only checks any pending steps in the bucket or bucket
+                accumulated by an AV.<p/></note>
+        </section>
+<section><title>Step-bundle examples</title> </section>
+    <section id="stepcharge"><title>Step-bundle without fee</title>
+<p>Consider that a device has group subscriptions and device subscriptions. The group subscriptions have high priority with high QoS, and the device subscriptions have low priority with low QoS. When all the group subscriptions exhaust, the device subscriptions with low QoS are consumed. Operators can manage the high and low QoS using the resource based policy counters. When the bundle with charging step configuration is initially subscribed to a group, the value of the first step is written into the initial value of the step charge bucket instance.</p>
+<p>The following figure shows an example of step charge function. Initially, only 1 GB of Shared Monthly (SM) bundle is available to the user and when this 1 GB of SM is exhausted, it moves to next available resource. In the following example, shared bundle 1, shared bundle 2, shared bundle 3 is checked in the same order. When all the shared bundles are consumed and there is no amount available, then you can step-up to SM bundle. The top-up is performed incrementally. After top-up, the initial value of SM becomes 2 GB out of which 1 GB is available for use. <fig>
+<!--MMO resource relative URI: ../Graphics/Release_19.6/Step_charge_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-step_charge_default.png"/>
+</fig></p>
+<p>When a periodic subscription reset/renew happens, all the buckets are reset. If a bucket has a step charge defined, then the value of bucket is set to the value of first step.</p>
+<p>You can delete any step from existing <uicontrol>Charging Step</uicontrol> configuration. For example, if step size is reduced from 3 to 2 during the call, all the instances linked to that step and currently are on step 3, continue and after exhaustion, no top-up is done.</p>
+</section>
+    <section id="bundle"> <title>Step-bundle with fee</title>
+<p>Consider that a bundle has 1 day periodic lifecycle. A <uicontrol>Charging Step</uicontrol> of 1 step with 1 MB and bundle fee of 1 USD is defined. This step repeats until reset/renewal of bundle. The bundle fee for renewal is 1 USD. The device subscribes to this bundle and 1 USD is deducted from the device account and the bucket has 1 MB. Here, 1 USD is the bundle fee and not the step fee.</p>
+<p>Following consumption is done:</p><ol>
+<li>
+<p>CCR-I, RSU 0.1 MB on 17.8.2019 -&gt; 0.1 MB is reserved and 0.9 MB is available</p>
+</li>
+<li>
+<p>CCR-U, USU 0.1 MB, RSU 1.5 MB on 17.8.2019 -&gt; Commit 0.1 MB, step-up is done, 1 USD is deducted from account and 1 MB is added to bucket, total bucket value is 1.9 MB, 1.5 MB is reserved from 1.9 MB and 0.4 MB is available</p>
+</li>
+<li>
+<p>CCR-U, USU 1.5 MB, RSU 0.2 MB on 17.8.2019 -&gt; Commit 1.5 MB, 0.2 MB is reserved and 0.2 MB is available </p>
+</li>
+<li>
+<p>CCR-T, USU 0.2 MB -&gt; Commit 0.2 MB, available is 0.2 MB</p>
+</li>
+</ol>
+<p>The subscription is renewed and a renewal fee of 1 USD is deducted from the account and bucket has 1 MB available. </p>
+<p>Following consumption is done:</p><ol>
+<li>
+<p>CCR-I, RSU 0.1 MB on 18.8.2019 -&gt; 0.1 MB is reserved and 0.9 MB is available</p>
+</li>
+<li>
+<p>CCR-T, USU 0.1 MB on 18.8.2019 -&gt; 0.1 MB is reserved and 0.9 MB is available</p>
+</li>
+</ol>
+</section>
+<section><title>Additional information</title>
+<p>Following are some important points to note for this feature:</p><ul>
+<li>
+<p>Do not top-up a bucket with step-charge configuration. If a top-up is done, then the current step-size is increased.</p>
+</li>
+<li>
+<p>The category order is not considered.</p>
+</li>
+<li>
+<p>Carry-over works as per the configuration defined in the bucket entity.</p>
+</li>
+<li>
+<p>The prorate or refund functionality works as per the configurations made.</p>
+</li>
+<li>
+<p>It is recommended not to delete the charging step when it has any active reference with the bucket. </p>
+</li>
+<li>
+<p>Operators cannot reduce the steps from 1 to 0.</p>
+</li>
+<li>
+<p>Subscription customization (template) is not supported.</p>
+</li>
+<li>
+<p>The fee defined for the step can be same or different based on your requirement.</p>
+</li>
+<li>
+<p>Modification to the first step value in <uicontrol>Charging Step</uicontrol> does not impact the attached bucket initial value. To keep the data in synchronization, perform an update on the charging service to modify the bucket initial value as well.</p>
+</li>
+<li>
+<p>For step-up notification, ensure that only one threshold is embedded within a threshold profile. For generic threshold configurations, separate threshold profiles or threshold profile groups can be used.</p>
+</li>
+<li>
+<p>It is recommended to configure a reference to bucket with <uicontrol>Charging Step</uicontrol> only in Pass 0.</p>
+</li>
+<li>
+<p>For step-up notification, add a condition of <userinput>THRESHOLD_PROFILE.Bucket-Current-Step &gt; 1</userinput> before <systemoutput>Send-Notification</systemoutput> action. This ensures that the step-up notification is not sent during reservation from step 1 and is sent for all other steps. See <!--xref URI: #stepup--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-scf/stepup"/> for more details.</p>
+</li>
+</ul>
+</section>
+<section><title>Configuring a charging step</title>
+<p>To configure a charging step, perform the following steps:</p><ol>
+<li>
+<p>Configure the <uicontrol>Charging Step</uicontrol> entity. </p>
+</li>
+<li>
+<p>Attach the <uicontrol>Charging Step</uicontrol> to a bucket in the <uicontrol>Charging Services</uicontrol> entity.</p>
+</li>
+</ol>
+<p>See <!--xref URI: c-Service_Model.xml#chargingstep--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-chargingstep"/> for parameter details.</p>
+</section>
+<section id="notifstep"><title>Step-charge threshold and notifications</title>
+<p>Operators can send notifications before the extension (step-up) using aggregate view threshold applied on group or device subscriptions, for example, before x MB is consumed. Notifications can also be sent after the successful extension (step-up).</p></section>
+    <section><title>Example: Notification sent before X MB consumption</title>
+<p>To send notification before X MB, for example, 10 MB is remaining in aggregate view, configure the following entities:</p><ul>
+<li>
+<p>Create a charging service.</p>
+</li>
+<li>
+<p>Create a threshold profile group with following values:</p><ul>
+<li>
+<p>
+<uicontrol>Threshold Value</uicontrol> = <varname>10 MB</varname>
+</p>
+</li>
+<li>
+<p>
+<uicontrol>Threshold Profile Type</uicontrol> = <varname>ABSOLUTE FROM END</varname>
+</p>
+</li>
+<li>
+<p>
+<uicontrol>Reservation Threshold</uicontrol> = <varname>False</varname>
+</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Create an aggregate view for group or device subscriptions and apply the threshold that is already created.</p>
+</li>
+</ul>
+<p>See <xref href="#id9yz-09126-ug01-pczza-sp1-scf/stepup" format="dita"/> for details on step-up
+                    notification.</p>
+</section>
+    <section><title>Examples</title><p>Consider the following examples for better understanding of this feature:</p></section>
+    <section id="new"><title>Example 1: Device subscription to a step bundle</title>
+                                <p>In this example, a step bundle is created, which is subscribed by a device. </p>
+                <p>Perform the following steps to create a step bundle using the SM GUI.</p>
+                <ol id="ol_hkp_fhf_tmb">
+                    <li>Create a charging step using the <uicontrol>Charging Step</uicontrol> entity
+                        as shown in the following figure. <image
+                            href="../images/img9yz-09126-ug01-pczza-sp1-step_charge1_default.png"
+                            id="image_ikp_fhf_tmb"/>
+                    </li>
+                    <li>Create a charging service with bucket and link the charging step to it. Once
+                        you select the <uicontrol>Charging Step</uicontrol> while bucket creation,
+                        the <uicontrol>Initial Value</uicontrol> field on the GUI is grayed out.
+                        This means, the value of charging step is taken as the bucket initial value.
+                            <image
+                            href="../images/img9yz-09126-ug01-pczza-sp1-step_charge2_default.png"
+                            scale="55" id="image_jkp_fhf_tmb"/>
+                    </li>
+                    <li>Create a step bundle and associate the charging service created in previous
+                        step. <image
+                            href="../images/img9yz-09126-ug01-pczza-sp1-step_charge3_default.png"
+                            scale="55" id="image_kkp_fhf_tmb"/>
+                    </li>
+                    <li>
+                        <p>Create an account to be associated with the device.</p>
+                    </li>
+                    <li>Create a device and add the step bundle as subscription. <image
+                            href="../images/img9yz-09126-ug01-pczza-sp1-step_charge4_default.png"
+                            scale="55" id="image_lkp_fhf_tmb"/>
+                        <p>The device overview shows the bundle subscribed along with the initial
+                            value which is the step 1 value defined in the charging step.  <image
+                                href="../images/img9yz-09126-ug01-pczza-sp1-step_charge5_default.png"
+                                scale="55" id="image_mkp_fhf_tmb"/>
+                        </p></li>
+                </ol>
+            </section>
+    <section><title>Example 2: Consumption from multiple steps of a step bucket (OK case)</title>
+                                <p>A device has only device subscriptions as shown in the following figure:</p>
+                <fig id="fig_wgc_3hf_tmb">
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-step_device_default.png"
+                        id="image_xgc_3hf_tmb"/>
+                </fig>
+                <p>As shown in the preceding figure, the charging services are configured as
+                    follows:</p>
+                <ul id="ul_ygc_3hf_tmb">
+                    <li>
+                        <p>CS1 (Bucket1) = 100 Byte</p>
+                    </li>
+                    <li>
+                        <p>CS2 (Bucket2) = 100 Byte (3 steps are configured as 100, 100, 100)</p>
+                    </li>
+                    <li>
+                        <p>CS3 (Bucket3) = 100 Byte</p>
+                    </li>
+                </ul>
+                <p>
+                    <uicontrol>First RSU is 200 bytes</uicontrol>
+                </p>
+                <p>The reservation is done in the following manner:</p>
+                <fig id="fig_zgc_3hf_tmb">
+                    <codeblock>Bucket 1             -100
+Bucket 2(Step-1)     -100
+Bucket 3             -0</codeblock>
+                </fig>
+                <p>The bucket values are as follows:</p>
+                <ul id="ul_ahc_3hf_tmb">
+                    <li>
+                        <p>CS1 (Bucket 1) = 0</p>
+                    </li>
+                    <li>
+                        <p>CS2 (Step-1) = 0</p>
+                    </li>
+                    <li>
+                        <p>CS3 (Bucket 3) = 100</p>
+                    </li>
+                </ul>
+                <p>
+                    <uicontrol>Second RSU is 300 bytes</uicontrol>
+                </p>
+                <p>The reservation is done in the following manner:</p>
+                <fig id="fig_bhc_3hf_tmb">
+                    <codeblock>Bucket 3             -100
+Bucket 2(Step-2)     -100
+Bucket 2(Step-3)     -100</codeblock>
+                </fig>
+                <p>The bucket values are as follows:</p>
+                <ul id="ul_chc_3hf_tmb">
+                    <li>
+                        <p>CS1 (Bucket 1) = 0</p>
+                    </li>
+                    <li>
+                        <p>CS2 (Step-2, Step-3) = 0</p>
+                    </li>
+                    <li>
+                        <p>CS3 (Bucket 3) = 0</p>
+                    </li>
+                </ul>
+                <p>In the same request, consumption can be done from multiple steps of a Step Bucket
+                    if in between there was no consumption from any other bucket. In the current
+                    case, first 100 bytes were consumed from Bucket 3 and then 200 bytes from
+                    Bucket2.</p>
+                <p>In this case, the <i>RATING RESULT</i> is <varname>OK</varname>.</p>
+            </section>
+    <section><title>Example 3: Consumption from multiple steps of a step bucket (POK case)</title>
+                <p><b></b></p>
+                <p>A device has both device and group subscriptions as shown in the following
+                    figure. Subscription Index is set as DEVICE_FIRST.</p>
+                <fig id="fig_xcd_4hf_tmb">
+                    <!--MMO resource relative URI: ../Graphics/Release_19.6/Step_device_group_POK_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-step_device_group_pok_default.png"
+                        id="image_ycd_4hf_tmb"/>
+                </fig>
+                <p>Device subscription has three subscriptions as follows:</p>
+                <ul id="ul_zcd_4hf_tmb">
+                    <li>
+                        <p>CS1 (Bucket1) = 100 Byte</p>
+                    </li>
+                    <li>
+                        <p>CS2 (Step Bucket2) = 100 Byte (3 steps configured as 100, 100, 100)</p>
+                    </li>
+                    <li>
+                        <p>CS3 (Bucket3) = 100 Byte</p>
+                    </li>
+                </ul>
+                <p>Group subscription has three subscriptions as follows:</p>
+                <ul id="ul_add_4hf_tmb">
+                    <li>
+                        <p>CS4 (Bucket4) = 100 Byte</p>
+                    </li>
+                    <li>
+                        <p>CS5 (Step Bucket5) = 100 Byte (3 steps configured as 100, 100, 100)</p>
+                    </li>
+                    <li>
+                        <p>CS6 (Bucket6) = 100 Byte</p>
+                    </li>
+                </ul>
+                <p>
+                    <uicontrol>RSU is 400 bytes</uicontrol>
+                </p>
+                <p>The reservation is done in the following manner:</p>
+                <fig id="fig_bdd_4hf_tmb">
+                    <codeblock>Bucket 1             -100
+Bucket 2(Step-1)     -100
+Bucket 3             -100</codeblock>
+                </fig>
+                <p>Only 300 bytes are reserved from buckets.</p>
+                <p>The bucket values are as follows:</p>
+                <p>Device subscription:</p>
+                <ul id="ul_cdd_4hf_tmb">
+                    <li>
+                        <p>CS1 (Bucket1) = 0</p>
+                    </li>
+                    <li>
+                        <p>CS2 (Step-1) = 0, Step-2 = 100, Step-3 = 100</p>
+                    </li>
+                    <li>
+                        <p>CS3 (Bucket3) = 0</p>
+                    </li>
+                </ul>
+                <p>Group subscription:</p>
+                <ul id="ul_ddd_4hf_tmb">
+                    <li>
+                        <p>CS4 (Bucket4) = 100</p>
+                    </li>
+                    <li>
+                        <p>CS5 (Step Bucket5) = 100 (3 steps configured as 100, 100, 100)</p>
+                    </li>
+                    <li>
+                        <p>CS6 (Bucket6) = 100</p>
+                    </li>
+                </ul>
+                <p>In this case, the <userinput>RATING RESULT</userinput> is
+                    <varname>POK</varname>.</p>
+                <p>In the same request, consumption cannot be done from multiple steps of a Step
+                    Bucket if in between some bytes were consumed from any other bucket.</p>
+            </section>
+    <section><title>Example 4: Mix match device subscription</title>
+                                <p>This example shows that the step charge does not work for mix match cases. In
+                    this example, let us consider that a device has a mix-match subscription. For
+                    mix-match Device-Group subscription, the category order is CS1 is 1, CS2 is 2,
+                    CS3 is 3, CS4 is 4, CS5 is 5, and CS6 is 6.</p>
+                <p>The following figure shows the mix-match device subscription:</p>
+                <fig id="fig_fhg_qhf_tmb">
+                    <!--MMO resource relative URI: ../Graphics/Release_19.6/Step_device_group_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-step_device_group_default.png"
+                        id="image_ghg_qhf_tmb"/>
+                </fig>
+                <p>First device subscription has two subscriptions as follows:</p>
+                <ul id="ul_hhg_qhf_tmb">
+                    <li>
+                        <p>CS1 (Bucket1) = 100 Byte</p>
+                    </li>
+                    <li>
+                        <p>CS2 (Step Bucket2) = 100 Byte (3 steps configured as 100, 100, 100)</p>
+                    </li>
+                </ul>
+                <p>Second group subscription has two subscriptions as follows:</p>
+                <ul id="ul_ihg_qhf_tmb">
+                    <li>
+                        <p>CS3 (Bucket4) = 100 Byte</p>
+                    </li>
+                    <li>
+                        <p>CS4 (Step Bucket5) = 100 Byte (3 steps configured as 100, 100, 100)</p>
+                    </li>
+                </ul>
+                <p>Third device subscription has two subscriptions as follows:</p>
+                <ul id="ul_jhg_qhf_tmb">
+                    <li>
+                        <p>CS5 (Bucket1) = 100 Byte</p>
+                    </li>
+                    <li>
+                        <p>CS6 (Step Bucket2) = 100 Byte (3 steps configured as 100, 100, 100)</p>
+                    </li>
+                </ul>
+                <p>
+                    <uicontrol>RSU is 300 bytes</uicontrol>
+                </p>
+                <p>The reservation is done in the following manner:</p>
+                <fig id="fig_khg_qhf_tmb">
+                    <codeblock>Bucket 1             -100
+Bucket 2(Step-1)     -100
+Bucket 3             -100</codeblock>
+                </fig>
+                <p>Step charging does not work in this case. After reservation of 200 bytes from
+                    device subscription, the next reservation happens from the group subscription
+                    instead of device subscription bucket2 step-2 or device subscription
+                    bucket5.</p>
+                <p>The bucket values are as follows:</p>
+                <p>First Device subscription:</p>
+                <ul id="ul_lhg_qhf_tmb">
+                    <li>
+                        <p>CS1 (Bucket 1) = 0</p>
+                    </li>
+                    <li>
+                        <p>CS2 (Step-1) = 0, Step-2 = 100, Step-3 = 100</p>
+                    </li>
+                </ul>
+                <p>Second Group subscription:</p>
+                <ul id="ul_mhg_qhf_tmb">
+                    <li>
+                        <p>CS3 (Bucket 1) = 0</p>
+                    </li>
+                    <li>
+                        <p>CS4 (Step Bucket 5) = 100 (3 steps configured as 100, 100, 100)</p>
+                    </li>
+                </ul>
+                <p>Third Device subscription:</p>
+                <ul id="ul_nhg_qhf_tmb">
+                    <li>
+                        <p>CS5 (Bucket 1) = 100</p>
+                    </li>
+                    <li>
+                        <p>CS6 (Step Bucket 2) = 100 (3 steps configured as 100, 100, 100)</p>
+                    </li>
+                </ul>
+                <p>In this case, the <i>RATING RESULT</i> is <varname>OK</varname>.</p>
+            </section>
+    <section id="stepup"><title>Example 5: Step-up notification</title>
+                
+                <p>For step-up notification, create a threshold with the following values and attach
+                    it to a step bucket.</p>
+                <ul id="ul_pgl_thf_tmb">
+                    <li>
+                        <p>
+                            <uicontrol>Threshold value</uicontrol> = <varname>0 Byte</varname>
+                        </p>
+                    </li>
+                    <li>
+                        <p>
+                            <uicontrol>Threshold profile type</uicontrol> = <varname>ABSOLUTE FROM
+                                START</varname>
+                        </p>
+                    </li>
+                    <li>
+                        <p>
+                            <uicontrol>Reservation Threshold</uicontrol> = <varname>True</varname>
+                        </p>
+                    </li>
+                </ul>
+                <p>The following figure shows the threshold profile group configuration:</p>
+                <fig id="fig_qgl_thf_tmb">
+                    <!--MMO resource relative URI: ../Graphics/Release_19.6/Reservation_threshold_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-reservation_threshold_default.png"
+                        id="image_rgl_thf_tmb"/>
+                </fig>
+                <p>The following figure shows the threshold rule configured:</p>
+                <fig id="fig_sgl_thf_tmb">
+                    <!--MMO resource relative URI: ../Graphics/Release_19.6/Threshold_stepup_default.jpg-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-threshold_stepup_default.jpg"
+                        scale="55" id="image_tgl_thf_tmb"/>
+                </fig>
+                <p>Note that the step bucket must be defined in the <uicontrol>Charging
+                        Services</uicontrol> entity. This step bucket can be attached to a step in
+                    the <uicontrol>Charging Step</uicontrol> entity.</p>
+            </section>
+    <section id="stepcommit"><title>Example 6: Step up on commit (under commit scenario)</title>
+                                <p>Consider that an account has a balance of 100 units and has the following two
+                    bundles:</p>
+                <ul id="ul_ybj_zhf_tmb">
+                    <li>
+                        <p>Bundle 1 has a 1 MB normal volume bucket and</p>
+                    </li>
+                    <li>
+                        <p>Bundle 2 has a step-up bucket of 1 step with a step fee of 1 unit per
+                            step with unlimited option selected</p>
+                    </li>
+                </ul>
+                <p>The application preference parameter <uicontrol>Step-up On Commit</uicontrol> is
+                    set to <varname>True</varname>.</p>
+                <p>A CCR(I) arrives with an empty RSU and NCC grants units as shown in the following
+                    table. Note that the step up fee is deducted from the account only when the
+                    actual usage is committed.</p>
+                <table pgwide="1" colsep="1" rowsep="1" id="table_zbj_zhf_tmb">
+                    <tgroup cols="10">
+                        <colspec colname="col1"/>
+                        <colspec colname="col2"/>
+                        <colspec colname="col3"/>
+                        <colspec colname="col4"/>
+                        <colspec colname="col5"/>
+                        <colspec colname="col6"/>
+                        <colspec colname="col7"/>
+                        <colspec colname="col8"/>
+                        <colspec colname="COLSPEC0"/>
+                        <colspec colname="col9"/>
+                        <thead>
+                            <row>
+                                <entry/>
+                                <entry/>
+                                <entry/>
+                                <entry>
+                                    <p>Account balance</p>
+                                </entry>
+                                <entry/>
+                                <entry>
+                                    <p>Bundle 1</p>
+                                </entry>
+                                <entry nameend="COLSPEC0" namest="col7">
+                                    <p>Bundle 2</p>
+                                </entry>
+                                <entry>
+                                    <p>Current Step</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry/>
+                                <entry> USU </entry>
+                                <entry> GSU </entry>
+                                <entry> Without Reservation </entry>
+                                <entry> With Reservation </entry>
+                                <entry> Pass0-Bucket1 </entry>
+                                <entry> Pass0-Bucket2 </entry>
+                                <entry> Pass1-Stepbucket </entry>
+                                <entry/>
+                                <entry/>
+                            </row>
+                            <row>
+                                <entry/>
+                                <entry/>
+                                <entry/>
+                                <entry/>
+                                <entry/>
+                                <entry/>
+                                <entry/>
+                                <entry> Initial value </entry>
+                                <entry> Current value </entry>
+                                <entry/>
+                            </row>
+                            <row>
+                                <entry> Before call </entry>
+                                <entry/>
+                                <entry/>
+                                <entry> 100 </entry>
+                                <entry> 100 </entry>
+                                <entry> 1 MB </entry>
+                                <entry> 0 MB </entry>
+                                <entry> 0 MB </entry>
+                                <entry> 0 MB </entry>
+                                <entry> 1 </entry>
+                            </row>
+                            <row>
+                                <entry> CCR(I) </entry>
+                                <entry/>
+                                <entry> 5 MB </entry>
+                                <entry> 96 </entry>
+                                <entry> 100 </entry>
+                                <entry> 0 MB </entry>
+                                <entry> 0 MB </entry>
+                                <entry> 4 MB </entry>
+                                <entry> 0 MB </entry>
+                                <entry> 1 </entry>
+                            </row>
+                            <row>
+                                <entry> CCR(U) </entry>
+                                <entry> 2.2 MB </entry>
+                                <entry> 5 MB </entry>
+                                <entry> 93 </entry>
+                                <entry> 98 </entry>
+                                <entry> 0 MB </entry>
+                                <entry> 0 MB </entry>
+                                <entry> 7 MB </entry>
+                                <entry> 0.8 MB </entry>
+                                <entry> 3 </entry>
+                            </row>
+                            <row>
+                                <entry> CCR(T) </entry>
+                                <entry> 2.1 MB </entry>
+                                <entry/>
+                                <entry> 96 </entry>
+                                <entry> 96 </entry>
+                                <entry> 0 MB </entry>
+                                <entry> 0 MB </entry>
+                                <entry> 4 MB </entry>
+                                <entry> 0.70 MB </entry>
+                                <entry> 5 </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+            </section>
+    <section id="section_t1v_fh5_smb"><title>Example 7: Step up on commit (custom behavior)</title>
+                                <p>Consider that the step charging from step buckets is configured with steps and
+                    step fees in Pass 0 and step-up is configured to be done at commit. The <b>Use
+                        All Steps First</b> application preference parameter is set to
+                        <varname>true</varname>. The account has a balance of 100 units and has the
+                    following bundles:</p>
+                <ul id="ul_jzx_135_smb">
+                    <li>Bundle 1 has a normal bucket without steps </li>
+                    <li>Bundle 2 has a step-bucket with step size of 4 MB, 7 MB, and 5 MB, step fee
+                    is 2 units for second step, 1 unit for third step</li>
+                    <li>Bundle 3 has a normal bucket without steps</li>
+                </ul>
+                <table pgwide="1" colsep="1" rowsep="1" id="table_xyy_gj5_smb" scale="80">
+                    <tgroup cols="10">
+                        <colspec colname="col1"/>
+                        <colspec colname="col2"/>
+                        <colspec colname="col3"/>
+                        <colspec colname="col4"/>
+                        <colspec colname="col5"/>
+                        <colspec colname="col6"/>
+                        <colspec colname="col7"/>
+                        <colspec colname="col8"/>
+                        <colspec colname="COLSPEC0"/>
+                        <colspec colname="col9"/>
+                        <thead>
+                            <row>
+                                <entry/>
+                                <entry/>
+                                <entry/>
+                                <entry>
+                                    <p>Account balance</p>
+                                </entry>
+                                <entry/>
+                                <entry>
+                                    <p>Bundle 1</p>
+                                </entry>
+                                <entry nameend="COLSPEC0" namest="col7">
+                                    <p>Bundle 2</p>
+                                </entry>
+                                <entry>
+                                    <p>Bundle 3</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry/>
+                                <entry> USU </entry>
+                                <entry> GSU </entry>
+                                <entry> Without Reservation </entry>
+                                <entry> With Reservation </entry>
+                                <entry>Bucket 1</entry>
+                                <entry/>
+                                <entry namest="col8" nameend="COLSPEC0">Step Bucket</entry>
+                                <entry>Bucket 3</entry>
+                            </row>
+                            <row>
+                                <entry/>
+                                <entry/>
+                                <entry/>
+                                <entry/>
+                                <entry/>
+                                <entry/>
+                                <entry> Initial value </entry>
+                                <entry> Current value </entry>
+                                <entry>Current Step</entry>
+                                <entry/>
+                            </row>
+                            <row>
+                                <entry> Before call </entry>
+                                <entry/>
+                                <entry/>
+                                <entry>100 </entry>
+                                <entry>100 </entry>
+                                <entry> 1 MB </entry>
+                                <entry>4 MB </entry>
+                                <entry>4 MB </entry>
+                                <entry>1</entry>
+                                <entry>10 MB </entry>
+                            </row>
+                            <row>
+                                <entry> CCR(I) </entry>
+                                <entry/>
+                                <entry> 5 MB </entry>
+                                <entry>100 </entry>
+                                <entry>100 </entry>
+                                <entry>0 MB (1 MB is reserved)</entry>
+                                <entry>4 MB </entry>
+                                <entry>0 MB (4 MB is reserved)</entry>
+                                <entry>1 </entry>
+                                <entry>10 MB </entry>
+                            </row>
+                            <row>
+                                <entry> CCR(U1)</entry>
+                                <entry>5 MB </entry>
+                                <entry>5 MB </entry>
+                                <entry>98 </entry>
+                                <entry>100 </entry>
+                                <entry>0 MB (1 MB is commited) </entry>
+                                <entry>11 MB </entry>
+                                <entry>2 MB (4 MB is committed + 5 MB is reserved) </entry>
+                                <entry>1</entry>
+                                <entry>10 MB </entry>
+                            </row>
+                            <row>
+                                <entry> CCR(U2)</entry>
+                                <entry>5 MB</entry>
+                                <entry>5 MB</entry>
+                                <entry>97</entry>
+                                <entry>98</entry>
+                                <entry>0 MB</entry>
+                                <entry>16 MB</entry>
+                                <entry>2 MB (5 MB is committed + 5 MB is reserved)</entry>
+                                <entry>2</entry>
+                                <entry>10 MB</entry>
+                            </row>
+                            <row>
+                                <entry> CCR(U3)</entry>
+                                <entry>5 MB</entry>
+                                <entry>5 MB</entry>
+                                <entry>97</entry>
+                                <entry>97</entry>
+                                <entry>0 MB</entry>
+                                <entry>16 MB</entry>
+                                <entry>0 MB (5 MB is commited + 2 MB is reserved)</entry>
+                                <entry>3</entry>
+                                <entry>7 MB (3 MB is reserved)</entry>
+                            </row>
+                            <row>
+                                <entry>CCR(T) </entry>
+                                <entry>5 MB</entry>
+                                <entry/>
+                                <entry>97 </entry>
+                                <entry>97 </entry>
+                                <entry>0 MB </entry>
+                                <entry>16 MB </entry>
+                                <entry>0 MB (2 MB is commited) </entry>
+                                <entry>3</entry>
+                                <entry>7 MB (3 MB is committed) </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+            </section>
+    <section id="section_m1t_yl5_smb"><title>Example 8: Step up on reservation (custom behavior)</title>
+                                <p>Consider that the step charging from step buckets is configured with steps and
+                    step fees in Pass 0 and step-up is configured to be done at reservation. The
+                        <b>Use All Steps First</b> application preference parameter is set to
+                        <varname>true</varname>. The account has a balance of 100 units and has the
+                    following bundles:</p>
+                <ul id="ul_n1t_yl5_smb">
+                    <li>Bundle 1 has a normal bucket without steps </li>
+                    <li>Bundle 2 has a step-bucket with step size of 4 MB, 7 MB, and 5 MB, step fee
+                    is 2 units for second step, 1 unit for third step</li>
+                    <li>Bundle 3 has a normal bucket without steps </li>
+                </ul>
+                <table pgwide="1" colsep="1" rowsep="1" scale="80" id="table_o1t_yl5_smb">
+                    <tgroup cols="10">
+                        <colspec colname="col1"/>
+                        <colspec colname="col2"/>
+                        <colspec colname="col3"/>
+                        <colspec colname="col4"/>
+                        <colspec colname="col5"/>
+                        <colspec colname="col6"/>
+                        <colspec colname="col7"/>
+                        <colspec colname="col8"/>
+                        <colspec colname="COLSPEC0"/>
+                        <colspec colname="col9"/>
+                        <thead>
+                            <row>
+                                <entry/>
+                                <entry/>
+                                <entry/>
+                                <entry>
+                                    <p>Account balance</p>
+                                </entry>
+                                <entry/>
+                                <entry>
+                                    <p>Bundle 1</p>
+                                </entry>
+                                <entry nameend="COLSPEC0" namest="col7">
+                                    <p>Bundle 2</p>
+                                </entry>
+                                <entry>
+                                    <p>Bundle 3</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry/>
+                                <entry> USU </entry>
+                                <entry> GSU </entry>
+                                <entry> Without Reservation </entry>
+                                <entry> With Reservation </entry>
+                                <entry>Bucket 1</entry>
+                                <entry/>
+                                <entry namest="col8" nameend="COLSPEC0">Step Bucket</entry>
+                                <entry>Bucket 3</entry>
+                            </row>
+                            <row>
+                                <entry/>
+                                <entry/>
+                                <entry/>
+                                <entry/>
+                                <entry/>
+                                <entry/>
+                                <entry> Initial value </entry>
+                                <entry> Current value </entry>
+                                <entry>Current Step</entry>
+                                <entry/>
+                            </row>
+                            <row>
+                                <entry> Before call </entry>
+                                <entry/>
+                                <entry/>
+                                <entry>100 </entry>
+                                <entry>100 </entry>
+                                <entry> 1 MB </entry>
+                                <entry>4 MB </entry>
+                                <entry>4 MB </entry>
+                                <entry>1</entry>
+                                <entry>10 MB </entry>
+                            </row>
+                            <row>
+                                <entry> CCR(I) </entry>
+                                <entry/>
+                                <entry>7 MB </entry>
+                                <entry>98 </entry>
+                                <entry>98 </entry>
+                                <entry>0 MB (1 MB is reserved)</entry>
+                                <entry>11 MB </entry>
+                                <entry>5 MB (6 MB is reserved)</entry>
+                                <entry>2 </entry>
+                                <entry>10 MB </entry>
+                            </row>
+                            <row>
+                                <entry> CCR(U1)</entry>
+                                <entry>5 MB </entry>
+                                <entry>7 MB </entry>
+                                <entry>98 </entry>
+                                <entry>98 </entry>
+                                <entry>0 MB (1 MB is commited) </entry>
+                                <entry>11 MB </entry>
+                                <entry>0 MB (4 MB is committed + 7 MB is reserved) </entry>
+                                <entry>2</entry>
+                                <entry>10 MB </entry>
+                            </row>
+                            <row>
+                                <entry> CCR(U2)</entry>
+                                <entry>5 MB</entry>
+                                <entry>7 MB</entry>
+                                <entry>97</entry>
+                                <entry>97</entry>
+                                <entry>0 MB</entry>
+                                <entry>16 MB</entry>
+                                <entry>0 MB (5 MB is committed + 7 MB is reserved)</entry>
+                                <entry>3</entry>
+                                <entry>10 MB</entry>
+                            </row>
+                            <row>
+                                <entry> CCR(U3)</entry>
+                                <entry>5 MB</entry>
+                                <entry>7 MB</entry>
+                                <entry>97</entry>
+                                <entry>97</entry>
+                                <entry>0 MB</entry>
+                                <entry>16 MB</entry>
+                                <entry>0 MB (5 MB is commited + 2 MB is reserved)</entry>
+                                <entry>3</entry>
+                                <entry>5 MB (5 MB is reserved)</entry>
+                            </row>
+                            <row>
+                                <entry>CCR(T) </entry>
+                                <entry>5 MB</entry>
+                                <entry/>
+                                <entry>97 </entry>
+                                <entry>97 </entry>
+                                <entry>0 MB </entry>
+                                <entry>16 MB </entry>
+                                <entry>0 MB (2 MB is commited) </entry>
+                                <entry>3</entry>
+                                <entry>7 MB (3 MB is committed) </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+            </section>
+<section><title>Increment counters for step-charge functionality</title>
+<p>Currently, the logic to deduct step-fee from an account has been enhanced to consider the
+                applicable cost counters. All applicable counters include global cost counters
+                (device counters, group counters, or device-group counters) or subscription cost
+                counters, which are updated with the step-fee as a part of call processing. The
+                step-fee is considered as a normal spending limit.</p>
+<p>This enhancement in step-charge functionality considers the following points:</p><ul>
+<li>
+<p>This logic is applicable only when the <uicontrol>Step-up On Commit</uicontrol> application preference flag is set as <varname>true</varname>.</p>
+</li>
+<li>
+<p>This logic only considers cost counters (and not multi-bundle counters). The counters are always incremented with step-fee and there is no impact on counter CDRs.</p>
+</li>
+<li>
+<p>For global counters, both deductions from step-fee and main balance are counted.</p>
+</li>
+<li>
+<p>For subscription counters attached to step-bucket, only deduction from step-fee is counted.</p>
+</li>
+<li>
+<p>Before the step-fee reservation, cap, threshold, slice reduction logic is evaluated on all applicable step-bucket counters.</p>
+</li>
+<li>
+<p>The threshold and cap actions are executed at commit.</p>
+</li>
+</ul>
+<note>
+<p>AV logic is not fully supported for step counters.</p>
+</note>
+<sectiondiv>
+<p><b>Examples</b></p>
+<p>Consider the following examples to understand this functionality in a better way:</p>
+<p>
+<b>Preconditions:</b> Consider the following counters:</p><ul>
+<li>
+<p>Global cost counter <varname>CC1</varname>, which can be a device counter or group counter.</p>
+</li>
+<li>
+<p>Global cost counter <varname>CC2</varname>, which can be a device counter or group counter applicable to roaming zone. A threshold is configured to <systemoutput>Send-Notification</systemoutput> action at 50% and another notification with <systemoutput>Reject</systemoutput> action at 100%.</p>
+</li>
+<li>
+<p>Subscription cost counter <varname>CC3</varname>, subscription volume counter <varname>VC1</varname>, and step-bucket <varname>SB1</varname> applicable for all conditions.</p>
+</li>
+</ul>
+<p>
+<b>Example 1:</b> A user makes a call in roaming with tariff rule as:</p><ul>
+<li>
+<p>
+<i>Bucket-Selection</i> = <varname>SB1</varname>
+</p>
+</li>
+</ul>
+<p>Therefore, the expected output for counter update, <varname>CC1</varname> and <varname>CC2</varname> is applicable and subscription counter is not specified in tariff rule.</p>
+<p>
+<b>Example 2:</b> A user makes a call in local zone or home zone with tariff rule as:</p><ul>
+<li>
+<p>
+<i>Bucket-Selection</i> = <varname>SB1</varname>
+</p>
+</li>
+</ul>
+<p>Therefore, the expected output for counter update, <varname>CC1</varname> and <varname>CC2</varname> are not applicable and subscription counter is not specified in tariff rule.</p>
+<p>
+<b>Example 3:</b> A user makes a call in roaming zone with tariff rule as:</p><ul>
+<li>
+<p>
+<i>Bucket-Selection</i> = <varname>SB1</varname>
+</p>
+</li>
+<li>
+<p>
+<i>Counter-Selection</i> = <varname>CC3</varname>
+</p>
+</li>
+</ul>
+<p>Therefore, the expected output for counter update, <varname>CC1</varname>, <varname>CC2</varname>, and <varname>CC3</varname> are applicable.</p>
+<p>
+<b>Example 4:</b> A user makes a call in roaming zone with tariff rule as:</p><ul>
+<li>
+<p>
+<i>Bucket-Selection</i> = <varname>SB1</varname>
+</p>
+</li>
+<li>
+<p>
+<i>Counter-Selection</i> = <varname>CC3</varname>
+</p>
+</li>
+<li>
+<p>
+<i>Counter-Selection</i> = <varname>VC1</varname>
+</p>
+</li>
+</ul>
+<p>Therefore, the expected output for counter update, <varname>VC1</varname>, <varname>CC1</varname>, <varname>CC2</varname>, and <varname>CC3</varname> are applicable.</p>
+</sectiondiv>
+</section>
+</conbody></concept>

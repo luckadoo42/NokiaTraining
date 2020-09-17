@@ -1,0 +1,563 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+		<concept id="id9YZ-09018-IN00-RJZZA-CDR_worksheet"><title>CDR section</title><conbody id="CDR_worksheet">
+
+<p>The CDR section is used for the settings related to charging data records (CDRs).</p>
+<p>The following table describes the CDR parameters.</p>
+<note>
+
+<p>Do not remove the parameters.</p>
+</note>
+<table pgwide="1" rowsep="1" colsep="1"><title>CDR parameters descriptions</title>
+
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC23"/>
+<colspec colname="COLSPEC0"/>
+<thead>
+<row>
+<entry>
+Parameter
+</entry>
+<entry>
+Description
+</entry>
+<entry>
+Update notes
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>cdr/AuditCDR </entry>
+<entry>
+<p>This parameter defines how the CDR application is audited; whether or not and how the file is deleted from the CDR VM. </p>
+<p>This parameter is defined as follows:</p>
+<codeblock>{"enabled":"yes","age":7,"time_started":"0000"}</codeblock>
+<p>where:</p><ul>
+
+<li>
+<p>&lt;enabled&gt; specifies whether the CDR audit is enabled or not</p>
+</li>
+<li>
+<p>&lt;age&gt; is the age of the CDR files in days. The value range is [1,180].</p>
+</li>
+<li>
+<p>&lt;time_started&gt; is the time when the audit shall start. The format of this value is hhmm, for example, 2359, which is one minute to midnight.</p>
+</li>
+</ul>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+                    <row>
+                        <entry>cdr/timestampInMS</entry>
+                        <entry>
+                            <p>If this parameter is true, then the <b>RecordTimestamp</b> tag in
+                                CDR/EDR generated is in millisecond format with timezone offset.
+                                Since <b>RecordTimestamp</b> tag is generated in GMT time, timezone
+                                offset will be +0000.</p>
+                        </entry>
+                        <entry>To change the value of timestampInMS flag at run-time (after
+                            deployment or upgrade), contact Nokia Support.</entry>
+                    </row>
+<row>
+<entry>cdr/enableSFTP </entry>
+<entry>
+<p>This parameter defines whether the third parties such as the billing system, analytics or customer support collect CDRs using SFTP or do not collect.</p>
+<p>The values are true or false.</p>
+<p>If this parameter is true, then the third parties collect CDRs.</p>
+<p>The values of true and false are case sensitive and must be in lowercase.</p>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/global_properties/log.connection.close </entry>
+<entry>
+<p>This parameter defines whether the log broker disconnects or not. It can be turned off when interacting with 0.9 brokers with an aggressive &lt;connection.max.idle.ms&gt; value. </p>
+<p>The values are true or false.</p>
+<p>The values of true and false are case sensitive and must be in lowercase.</p>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/global_properties/message.send.max.retries </entry>
+<entry>
+<p>This parameter defines the number of times the producer retries sending a failing MessageSet. </p>
+<p>Retrying might cause reordering.</p>
+<p>The value range is [0,10000000]. </p>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/global_properties/message.timeout.ms </entry>
+<entry>
+<p>This parameter defines the local message timeout. This value is only enforced locally and limits the time that a produced message waits for a successful delivery. The time of 0 (zero) indicates infinite.</p>
+<p>The value range is [0,900000].</p>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/monitoring/sleep-interval </entry>
+<entry>
+This parameter defines how often the CDR service is checked by the monitoring service. The value is in seconds.
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/producer/encoding/common/cdr.data.list.size </entry>
+<entry>
+<p>This parameter defines the number of CDRs in a buffered list before being pushed to messaging queue. This can be changed in run-time and does not require service restart.</p>
+<p>The value range is [5,20].</p>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>
+cdr/producer/encoding/common/cdr.encoding.thread.pool.size
+</entry>
+<entry>
+<p>This parameter defines the number of threads in the executor service working on encoding CDR data. This can be configured in run-time and does not require service restart.</p>
+<p>The value range is [5,20].</p>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/producer/encoding/common/cdr.header.param </entry>
+<entry>
+<p>This parameter defines the version of 3GPP that is specified in the CDR header and according to 3GPP 32.297 document. This parameter is an array that contains the following 3GPP secifications:</p><ul>
+
+<li>
+<p>ReleaseId</p>
+<p>The value range is [1,6]. For the values of 7 and above, ReleaseIdExt comes into picture. The default value is 7.</p>
+</li>
+<li>
+<p>Version</p>
+<p>The value range is [0,32]. The default value is 2.</p>
+</li>
+<li>
+<p>TSnumber</p>
+<p>The value range is [1,7] and [9,20]. The default value is 7.</p>
+</li>
+<li>
+<p>ReleaseIdExt</p>
+<p>The value range is [0,3]. The default value is 0.</p>
+</li>
+</ul>
+<p>For more information, see section 6.1.2 (CDR file format and transfer document) of 3GPP 32.297 document.</p>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/producer/kafka_producer/acks </entry>
+<entry>
+<p>This parameter defines the number of acknowledgments that the producer requires the leader to receive before considering the request completed. This controls the durability of records that are sent.</p>
+<p> The supported values are <i>all</i>, 0 (zero) and 1.</p><ul>
+
+<li>
+<p>If the value is 0 (zero), then the producer does not wait for any acknowledgment from the server at all. The record is immediately added to the socket buffer and considered sent. In this case, no guarantee can be made that the server has received the record, and the retries configuration does not take effect since Client generally is not aware of any failures. The offset given back for each record is always set to -1.</p>
+</li>
+<li>
+<p>If the value is 1, the leader writes the record to its local log but responds without waiting for the full acknowledgement from all the followers. In this case, if the leader fails immediately after acknowledging the record but before the followers have replicated this record, then this record is lost.</p>
+</li>
+<li>
+<p>If the value is <i>all</i>, the leader waits for the full set of in-sync replicas to acknowledge the record. This guarantees that the record will not be lost as long as at least one in-sync replica remains alive. This is the strongest available guarantee.</p>
+</li>
+</ul>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/producer/kafka_producer/batch.size </entry>
+<entry>
+<p>This parameter defines the default batch size in bytes.</p>
+<p>The producer attempts to batch records together into fewer requests whenever multiple records are sent to the same partition. This improves performance on the client and on the server. </p>
+<p>No attempt will be made to batch records larger than this size.</p>
+<p>The requests sent to brokers contain multiple batches, one for each partition with data available to be sent.</p>
+<p>A small batch size makes batching less common and may reduce throughput. (The zero batch size disables batching entirely.) A very large batch size may use memory a bit more wastefully as we always allocate a buffer of the specified batch size in anticipation of additional records.</p>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/producer/kafka_producer/bootstrap.servers </entry>
+<entry>
+This parameter is a list of host/port pairs for establishing the initial connection to the Kafka cluster. The client uses all the servers irrespective of which servers are specified for bootstrapping. This list only impacts the initial hosts used to discover the full set of servers.
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/producer/kafka_producer/buffer.memory </entry>
+<entry>
+<p>This parameter defines the total number of memory bytes that the producer can use to buffer records waiting to be sent to the server. </p>
+<p>If the records are sent faster than they can be delivered to the server, the producer blocks for &lt;max.block.ms&gt; after which it throws an exception. </p>
+<p>This setting should correspond roughly to the total memory that the producer is going to use, but this is not a hard bound since not all this memory is used for buffering. Some additional memory is used for compression, if compression is enabled, as well as for maintaining in-flight requests.</p>
+<p>The value range is 0...</p>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/producer/kafka_producer/linger.ms </entry>
+<entry>
+<p>This parameter adds a small amount of artificial delay. Rather than sending out a record immediately, the producer waits for up to the specified delay to allow other records to be sent so that these records can be batched together.</p>
+<p>The value range is 0...</p>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/producer/kafka_producer/max.block.ms </entry>
+<entry>
+<p>This parameter controls for how long CDR sending is blocked either because the buffer is full or metadata is unavailable. Blocking the user-supplied serializers or partitioner is not counted against this timeout.</p>
+<p>The value range is 0...</p>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/producer/kafka_producer_mgr/sendpool.size </entry>
+<entry>
+<p>This parameter defines the number of threads used by the client to send message to Kafka.</p>
+<p>The value range is 1...</p>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/producer/kafka_producer/request.timeout.ms </entry>
+<entry>
+<p>This parameter defines the maximum amount of time that the client waits for the response of a request. If the response is not received before the timeout elapses, the client resends the request if necessary or fails the request if retries are exhausted.</p>
+<p>The value range is 0...</p>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/producer/kafka_producer/retries </entry>
+<entry>
+<p>Setting a value greater than zero causes the client to resend any record whose send fails with a potentially transient error.</p>
+<p>This is similar to when the client resends the record upon receiving an error. </p>
+<p>Allowing retries without setting &lt;max.in.flight.requests.per.connection&gt; to 1 potentially changes the ordering of records because if two batches are sent to a single partition and the first one fails and after failure it is resent, but the second batch succeeds, then the records from the second batch may appear first.</p>
+<p>The value range is [0,2147483647].</p>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/topics </entry>
+<entry>
+<p>This parameter defines the topic name, its partition count and Group ID as follows:</p>
+<codeblock>[{\"Name\":\"cdr\",\"Partition\":\"12\",\"GroupId\":\"1\"}</codeblock>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/topic_properties/produce.offset.report </entry>
+<entry>
+<p>This parameter reports the offset of a produced message back to the application. The application must use the dr_msg_cb to retrieve the offset from rd_kafka_message_t.offset. </p>
+<p>The values are true or false.</p>
+<p>The values of true and false are case sensitive and must be in lowercase.</p>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/topic_properties/request.required.acks </entry>
+<entry>
+<p>This parameter indicates how many acknowledgements the leader broker must receive from ISR brokers before responding to the request.</p><ul>
+
+<li>
+<p>If the value is  0 (zero), the leader broker does not send any response/ack to the client.</p>
+</li>
+<li>
+<p>If  the value is 1, only the leader broker needs to acknowledge the message.</p>
+</li>
+<li>
+<p>If the value is  -1 or <i>all</i>, the leader broker blocks until the message is committed by all in sync replicas (ISRs) or broker’s &lt;in.sync.replicassetting&gt; before sending a response.</p>
+</li>
+</ul>
+<p>The value range is [-1,1000].</p>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/restartTime </entry>
+<entry>
+<p>This parameter defines the sleep time in minutes before running <codeph>systemctl restart cdr</codeph> for the CDR VM.</p>
+<p>This parameter is used during scaling operations.</p>
+</entry>
+<entry>
+Default values shall only be modified if you need to increase the restart time between CDR VMs during scaling.
+</entry>
+</row>
+<row>
+<entry>cdr/restartBufferTime </entry>
+<entry>
+<p>This parameter defines the time buffer in minutes between two restart-trigger of CDR VMs.</p>
+<p>This parameter is used during scaling operations.</p>
+</entry>
+<entry>
+Default values shall only be modified if you need to increase the restart time between CDR VMs during scaling.
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC0" namest="col1">
+<p>
+<b>CDR varTable parameters</b>
+</p>
+<p>The optional <i>cdr/varTable/&lt;key name&gt;</i> parameters define the CDR <i>vars</i> environment where &lt;key name&gt; is an arbitrary string.</p>
+</entry>
+</row>
+<row>
+<entry>cdr/varTable/var3 </entry>
+<entry>
+<p>The CDR daemon automatically rejoins the cluster to continue receiving CDR messages and writing CDR files whenever disk usage percentage drops below the low threshold.</p>
+<p>The value format is as follows:</p>
+<codeblock>CDR_DISK_THRESHOLD_LOW=90</codeblock>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/varTable/var4 </entry>
+<entry>
+<p>The CDR daemon audits the disk usage percentage periodically. Once CDR disk usage percentage is over the high threshold, the CDR daemon automatically leaves from the CDR cluster with an alarm.</p>
+<p>The CDR that detaches itself from the cluster does not receive a CDR message and does not write CDR files.</p>
+<p>The value format is as follows:</p>
+<codeblock>CDR_DISK_THRESHOLD_HIGH=97</codeblock>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/varTable/var5 </entry>
+<entry>
+<p>CDR_COMMIT_TIME = <i>n</i> means that CDR commits message every <i>n</i> seconds.</p>
+<p>A value of 0 (zero) indicates that CDR is committed as soon as it is received.</p>
+<p>The value format is as follows:</p>
+<codeblock>CDR_COMMIT_TIME=5</codeblock>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC0" namest="col1">
+<p>
+<b>CDR index parameters</b>
+</p>
+<p>CDR index parameters contain &lt;group index&gt; portion, which is a number in the range of
+                                [0,200]. However, the usage of the value zero (“0”) is restricted by
+                                the NCC platform, thus the value zero cannot be used.</p>
+<p>The group index is used to bifurcate data based on the following:</p><ul>
+
+<li>
+<p>CDR or EDR</p>
+</li>
+<li>
+<p>record type</p>
+</li>
+<li>
+<p>MVNO implementation</p>
+</li>
+</ul>
+<p>Currently only indexes 1 and 2 are used to distinguish CDRs and EDRs.</p>
+</entry>
+</row>
+<row>
+<entry>cdr/&lt;group index&gt;/dest_dir </entry>
+<entry>
+<p>This parameter defines the path where the CDR file that corresponds to the group index is written. </p>
+<p>Ensure that there is sufficient disk space for cdr_record_volume where the CDR/EDR files are
+                                stored. All VM sizing is done prior to instantiation and there is no
+                                re-sizing. Prior to instantiation, see the NCC Dimensioning and
+                                Engineering Guidelines for dimensioning information and the NCC VNF
+                                Artifacts Generator Tool Guide for instructions on how to set the
+                                appropriate size. </p>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/&lt;group index&gt;/file_header_info </entry>
+<entry>
+<p>This parameter defines the following:</p><ul>
+
+<li>
+<p>Routing filter that determines the routing of CDRs into the CDR file.</p>
+</li>
+<li>
+<p>Private extension that indicates the vendor-specific private extension to be included into the CDR file.</p>
+</li>
+<li>
+<p>Node IP address.</p>
+</li>
+<li>
+<p>Wether of not there is a release extension. This part indicates the 3GPP release of TS 32.298. The values are Y and N. Beyond Rel-9, the value should be Y.</p>
+</li>
+</ul>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/&lt;group index&gt;/file_name_info </entry>
+<entry>
+<p>This parameter defines the following:</p><ul>
+
+<li>
+<p>whether or not the local time is used</p>
+</li>
+<li>
+<p>file name format</p>
+</li>
+<li>
+<p>file suffix. The maximum length is 21.</p>
+</li>
+</ul>
+<p>The file name format is a string that can be composed of any printable character which is valid for the file name. “$$” is “$” in the file name. The CDR is defined with the following variables:</p><ul>
+
+<li>
+<p>YEAR is a 4-digit year.</p>
+</li>
+<li>
+<p>MONTH is a 2-digit month in the range of [01, 12].</p>
+</li>
+<li>
+<p>DAY is a 2-digit day in the range of [01, 31].</p>
+</li>
+<li>
+<p>JULIAN is a 3-digit Julian date in the range of [001, 366].</p>
+</li>
+<li>
+<p>HOUR is a 2-digit hour in the range of [00, 24].</p>
+</li>
+<li>
+<p>MINUTE is a 2-digit minute in the range of [00, 59].</p>
+</li>
+<li>
+<p>SECOND is a 2-digit second in the range of [00, 59].</p>
+</li>
+<li>
+<p>RC is a running counter value.</p>
+</li>
+</ul>
+<p>For example, </p>
+<codeblock>MAS021_-_${RC}.${YEAR}${MONTH}${DAY}_-_${HOUR}${MINUTE}</codeblock>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/&lt;group index&gt;/file_size_limit </entry>
+<entry>
+This parameter specifies the CDR file size limit. The value range is from 1 to 1000 MB.
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/&lt;group index&gt;/index_name </entry>
+<entry>
+This parameter defines the index name for the group index.
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/index_list </entry>
+<entry>
+This parameter defines the list of index.
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/&lt;group index&gt;/node_ID </entry>
+<entry>
+This parameter defines the system that is used in the naming of the CDR files. The value is an alphanumeric (digits and numbers only) name from 1 to 12 characters. 
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/&lt;group index&gt;/rc_info </entry>
+<entry>
+<p>This parameter defines the following:</p><ul>
+
+<li>
+<p>RC file size.</p>
+</li>
+<li>
+<p>whether or not the RC field of a CDR file name needs to be padded.</p>
+</li>
+</ul>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/&lt;group index&gt;/rec_count_limit </entry>
+<entry>
+This parameter specifies the number of records in a CDR file. The value range is from 100 to 1,000,000.
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>cdr/&lt;group index&gt;/time_interval </entry>
+<entry>
+This parameter specifies the time interval in minutes of how often a CDR file is created. The options are 1, 5, 10, 15, 30 and 60 minutes.
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</conbody></concept>

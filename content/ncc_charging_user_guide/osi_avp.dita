@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e21422"><title>OSI AVP handling</title><conbody>
+<section><title>Overview</title>
+<p>A Diameter entity that loses state, for example due to a reboot, increments the value contained
+                                                  in its <i>Origin-State-Id (OSI)</i> AVP and
+                                                  communicates the new value to affected peers. When
+                                                  a Diameter server, such as NCC receives an
+                                                  incremented client OSI, it assumes that sessions
+                                                  that were active under the previous OSI have been
+                                                  terminated. A new OSI is generated when the
+                                                  applicable application server is started. </p>
+<p>NCC increments its OSI under the following conditions:</p><ul>
+<li>
+<p>Configuration data-only database restore</p>
+</li>
+<li>
+<p>Failover to the secondary (standby) site in the geo-redundant system</p>
+</li>
+</ul>
+<p>The default behavior is to react when the OSI increases in value with the understanding that the remote Diameter entity has lost its sessions (such as due to a reboot or reset). However, other options are provided to facilitate integrations, such as ignoring (not reacting to) OSI changes. </p>
+<p>The OSI value is passed in the Capability Exchange Request (CER) to NCC during connectivity. OSI
+                                                  is also sent in other Diameter requests and in the
+                                                  <i>Origin-State-Id</i> AVP. As per the Diameter
+                                                  specification, this AVP is optional, so if it is
+                                                  not present in the request, NCC behavior is to
+                                                  ignore. The OSI value is checked in each Diameter
+                                                  request that comes to NCC. There is a slight
+                                                  performance impact due to the database being
+                                                  updated when a different OSI value comes in the
+                                                  request. If the OSI value is the same, a
+                                                  comparison is done with a value stored in the
+                                                  cache rather than reading it from the database. </p>
+<p>The following application preferences can be configured to change the normal RFC 3588 compliant behavior: </p><ul>
+<li>
+<p>
+<uicontrol>RFC-3588: Non-Compliant Origin-State-Id Value:</uicontrol> This value is used for <i>Origin-State-Id</i> when the application preference RFC-3588: Use compliant <i>Origin-State-Id</i> is set to <varname>false</varname>. </p>
+</li>
+<li>
+<p>
+                                                  <uicontrol>Client Origin State-Id
+                                                  Validation:</uicontrol> This allows NCC to accept
+                                                  <i>Origin-State-Ids</i> from gateways that do not
+                                                  increment in the expected way. If this preference
+                                                  is set to <varname>VALIDATED</varname>, then the
+                                                  client OSI is always validated and is rejected
+                                                  when the “new” value is numerically less than the
+                                                  “old” value.</p>
+<p> If the change is accepted, then sessions associated with the old value are lost. The expected
+                                                  behavior of NCC is to not accept the connection.
+                                                  If NCC has learned the identity of a gateway with
+                                                  a specified OSI value and the same gateway
+                                                  (identity) connects with a lower OSI value, then
+                                                  all Diameter messages except watchdog and
+                                                  connection messages are rejected. If this
+                                                  preference is set to
+                                                  <varname>NOTVALIDATED</varname>, then all client
+                                                  OSI changes are valid, and session loss is
+                                                  inevitable. </p>
+<p>NCC allows gateways to connect with a lower Origin State-Id than is expected. A message is logged
+                                                  about the gateway reconnecting with an unexpected
+                                                  lower OSI. If this preference is set to
+                                                  <varname>IGNORED</varname>, then the client OSI
+                                                  changes do not cause session loss, which results
+                                                  in more stale sessions on NCC even though the
+                                                  Diameter entity or client is rebooted.</p>
+</li>
+</ul>
+<p>Upon detection of an incremented client OSI, NCC initiates the session clean-up tasks. For
+                                                  example, on notification of a PGW OSI change,
+                                                  Gy/Sy sessions associated with the previous OSI
+                                                  are terminated. Similarly, on notification of an
+                                                  OSI change, rules associated with the previous OSI
+                                                  are removed from the affected PGW (and DPI and
+                                                  SGWs, if applicable). As an OSI change triggers
+                                                  increased messaging and other activity that
+                                                  requires processing, NCC clears the affected
+                                                  sessions but gives the affected sessions a lower
+                                                  priority than inbound requests. There may be a
+                                                  slight reduction in performance while NCC handles
+                                                  the clean-up work resulting from a client OSI
+                                                  change. However, NCC considers processing new
+                                                  client requests with higher priority than
+                                                  performing the clean-up work.</p>
+<p>The format of peerOSI value in session is <codeph>&lt;Diameter peer ID:hostname:suffix&gt;</codeph>. This suffix value is determined using system property which specifies the maximum value of the suffix value appended at the end of index value. The value for this system property ranges from 1 to 100 with default value as 50. Everytime a session is created, it is stored in the database with current suffix value and then incremented by 1 for next new session. Once it reaches its maximum configured value, it is reset to its initial value. With this implementation, if the peerOSI value, say x, does not change, there are 50 different entries (considering default value of system property), corresponding to (50 * y) number of sessions in the database.</p>
+</section>
+</conbody></concept>

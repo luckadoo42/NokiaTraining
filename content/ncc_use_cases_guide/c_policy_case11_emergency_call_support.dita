@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//NSN//DTD DITA Concept//EN" "nsnconcept.dtd">
+		<concept id="id9YZ-09018--PL00-FPZZA-d1e26933"><title>Case 11: Emergency call support</title><conbody>
+
+<section><title>Overview</title>
+
+<p>Emergency calls arrive to the PCRF over both the Gx and the Rx interfaces. The Gx interface may identify the call as emergency through its APN and the Rx side has a AVP that can be used to indicate emergency calls. The emergency calls are always connected.</p>
+</section>
+<section><title>Flow of events</title>
+
+<p/><ul>
+
+<li>Verify the CCR-I initial request comes towards PCRF from PGW. </li>
+<li>Verify successfully PCC Rule is Installed on Gx Interface for Emergency Session for both Gx and
+                    Rx Session. </li>
+<li>Verify PCRF installed the PCC rule and assign the Two Dedicated Bearer for IP-CAN and Install
+                    the AF rule based on the AF reporting. </li>
+</ul>
+</section>
+<section><title>Provisioning</title>
+
+<note type="attention">
+
+<p> Ensure that after creating a record, you distribute it to ME. Otherwise, the provisioning will not be successful.</p>
+</note>
+<p>
+                <uicontrol>Pre-condition:</uicontrol> Verify that the basic provisioning is done for
+                Gx and Rx at NCC.</p>
+<p>Provision the following data:</p><ol>
+
+<li>Configure the APN for emergency calls. To do this, log into the SM GUI and navigate to Policy
+     &amp; Charging and click the Policy tab. Select the APN Configurations from the drop-down list.
+     Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png" id="image_rph_sqt_3lb"/> to configure the APN.
+      <p>For Gx, LTE is configured and for Rx, IMS is configured. For Gx calls, the
+      Called-Station-ID comes as LTE and for Rx calls, the service URN is the AVP which indicates
+      the value of IMS.</p>
+     <!--MMO resource relative URI: ../graphics/Case9_APN_default.png-->
+     <image href="../images/case9_apn_default.png"/>
+    </li>
+<li>Create the PCC rule template<draft-comment> using Gx policy RSV rule group</draft-comment>. To
+                    do this, log in to the SM GUI and navigate to <uicontrol>Policy &amp; Charging
+                        Configuration</uicontrol> and select <uicontrol>Policy</uicontrol> tab.
+                    Select the <uicontrol>Network Rule Templates</uicontrol> from the drop-down
+                    list. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+                    <image href="../images/sdd_button_default.png" id="image_imv_sqt_3lb"/> to
+                    create the rule templates as shown in the following figure: <p>EmergencyRule1 is
+                        predefined template.</p>
+                    <!--MMO resource relative URI: ../graphics/Case11_NWT1_default.png-->
+                    <image href="../images/case11_nwt1_default.png" placement="break" scale="60"/>
+                    <!--MMO resource relative URI: ../graphics/Case11_NWTc2_default.png-->
+                    <image href="../images/case11_nwtc2_default.png" placement="break" scale="60"/>
+                </li>
+<li>Define the condition in IP-CAN Establishment rule based on Emergency APN. <!--MMO resource relative URI: ../graphics/Case11_APNLTE_default.png-->
+     <image href="../images/case11_apnlte_default.png"/>
+    </li>
+<li>Define the condition for AF SESSION Establishment for the definition of the PCC Rule for Volte. <!--MMO resource relative URI: ../graphics/Case11_AFsession_default.png-->
+     <image href="../images/case11_afsession_default.png"/>
+    </li>
+<li>Create the device E.164. To do this, navigate to <uicontrol>Subscriber Manager</uicontrol> and
+     select the <uicontrol>Devices</uicontrol> tab. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png"/> to create the device. </li>
+</ol>
+</section>
+</conbody></concept>

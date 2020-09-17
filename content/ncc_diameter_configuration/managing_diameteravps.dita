@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-cn01-tczza-d1e8198"><title>Managing Diameter AVPs using message context attributes</title><conbody>
+<section><title>Overview</title>
+<p>The NCC provides a dictionary of definitions for the AVPs that can be present in the supported
+                Diameter applications. The NCC uses these dictionaries to generate source and result
+                contexts to help you build filters and actions. Each Diameter AVP is made available
+                as an attribute of the context corresponding to the message type it is contained in.
+                For example, Subscription-Id is made available as an attribute of GxCCR, GxxCCR,
+                etc. You can write filters to specify the actions that should be performed on the
+                Diameter messages and the conditions when these actions should occur. </p>
+</section>
+<section><title>Structure of Diameter AVPs</title>
+<p>The structure of the Diameter attributes for Diameter request and answer contexts are defined by the relevant standards document for the given application message type.</p>
+<note>For a complete list of standard Attribute Value Pairs (AVPs) for a Diameter command supported
+                by the NCC, refer to the appropriate Technical Standard (TS) document.<p/></note>
+<p>A Diameter AVP is usually a simple value with a unique identifier that enables the Diameter device to interpret the value. A Diameter message must have at least one AVP. Further, the Diameter protocol also defines the AVP structure for a message. </p>
+<p>The following AVP structures are allowed:</p><ul>
+<li>
+<p>
+<b>Simple AVP</b>- The AVP is a simple value, such as, int, string, float, etc.</p>
+</li>
+<li>
+<p>
+<b>Grouped AVP</b>- The AVP is a container of a collection of other AVPs, each of which may be simple values or grouped AVPs themselves. For example, in a Rx AAR message, the Media-Component-Description is multi-valued and of type grouped.</p>
+</li>
+<li>
+<p>
+<b>Multi-value AVP</b>- The AVP (simple or grouped) appears more than once in the Diameter message. For example, the Flow-Description AVP in a Rx AAR message.</p>
+</li>
+<li>
+<p>
+<b>Single-value AVP</b>- The AVP (simple or grouped) appears once in the Diameter message. For example, CC-Request-Type, CC-Request-Number in a Gx CCR message.</p>
+</li>
+</ul>
+</section>
+<section><title>Common action types for Diameter AVPs</title>
+<p>The NCC provides a set of basic actions/attributes that support the content manipulation of any
+                AVP instance in several ways: adding, removing, or moving the AVP. You can also
+                modify the content of an AVP. The common action types are specified as part of the
+                action attribute name in the Action Attribute table for the filter. The actions are
+                available across both single-value and multi-value AVP structures.</p>
+<p>Grouped AVPs have the same actions/attributes as simple AVPs with the following exceptions:</p><ul>
+<li>
+<p>The 'Set' action is not available for Grouped AVPs.</p>
+</li>
+<li>
+<p>You can use the presence of a grouped AVP in message filter conditions; however, the value of the AVP cannot be tested.</p>
+</li>
+</ul>
+<p>The table below describes the set of basic actions/attributes that allow you to manipulate Diameter AVPs in a message context. </p>
+<table colsep="1" pgwide="0" rowsep="1">
+<title>Common action types for AVP content manipulation</title>
+<tgroup cols="2" colsep="1">
+<colspec colname="1" colnum="1"/>
+<colspec colname="2" colnum="2"/>
+<thead>
+<row>
+<entry colname="1">
+<p>Action name</p>
+</entry>
+<entry colname="2">
+<p>Purpose</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry colname="1"> Add </entry>
+<entry colname="2">
+<p>Allows you to add an AVP if it does not already exist in the
+                                    Diameter message.</p>
+<p>For example, GxCCR.Origin-State-Id.Add 123456789.</p>
+</entry>
+</row>
+<row>
+<entry colname="1"> Set </entry>
+<entry colname="2">
+<p>Allows you to set the value of an AVP either by overwriting the
+                                    existing value, or by adding the AVP if it does not already
+                                    exist in the Diameter message.</p>
+<p>For example, Origin-State-Id.Set 987654321.</p>
+</entry>
+</row>
+<row>
+<entry colname="1"> Remove </entry>
+<entry colname="2">
+<p>Allows you to remove an AVP from the Diameter message.</p>
+<p>For example, Origin-State-Id.Remove.</p>
+</entry>
+</row>
+<row>
+<entry colname="1"> Remove-Value </entry>
+<entry colname="2">
+<p>Allows you to delete the existing value of an AVP from the
+                                    Diameter message. </p>
+<p> In the case of a single-value AVP, the single value is removed,
+                                    leaving the AVP without any value. For example,
+                                    Origin-State-Id.Remove-Value.</p>
+<p>When you use the action on a multi-value AVP, the value at the
+                                    current Write-Index is removed and all subsequent entries are
+                                    moved up one position.</p>
+</entry>
+</row>
+<row>
+<entry> Append </entry>
+<entry> Allows you to append to the value of an AVP. If the AVP doesn't
+                                exist yet, this action sets the value of the AVP. This action only
+                                applies to string AVPs. </entry>
+</row>
+<row>
+<entry> Prepend </entry>
+<entry> Allows you to prepend to the value of an AVP. If the AVP doesn't
+                                exist yet, this action sets the value of the AVP. This action only
+                                applies to string AVPs </entry>
+</row>
+<row>
+<entry> Name </entry>
+<entry>
+<p>Returns the name of the AVP as a string. For use as a parameter
+                                    in other Rule Attributes or Actions.</p>
+<p>For example, Subscription-Id.Name returns "Subscription-Id".</p>
+</entry>
+</row>
+<row>
+<entry> Path </entry>
+<entry>
+<p>Returns the dot separated path of the AVP as a string. For use as
+                                    a parameter in other Rule Attributes or Actions.</p>
+<p>For example, Subscription-Id.Subscription-Data.Path returns
+                                    "Subscription-Id.Subscription-Data".</p>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section><title>NCC custom AVP implementers</title>
+<p>In addition to the basic action types available for AVP content manipulation, the NCC also
+                provides custom implementation for specific AVPs. The custom AVP implementers
+                provide additional functionality beyond the standard attributes/actions.</p>
+<p> Custom implementers are supported for the following AVPs:</p><ul>
+<li>
+<p>User-Name</p>
+</li>
+<li>
+<p>Subscription-Id</p>
+</li>
+<li>
+<p>Framed-IP-Address</p>
+</li>
+</ul>
+<sectiondiv>
+<p><b>User-Name AVP custom implementer</b></p>
+<p>Diameter application message contexts that support the User-Name AVP (for example, S6A/S6D ULR) have access to a custom AVP implementer. The implementer is contained in the message context's corresponding filter group and allows you to extract and treat the contents of the User-Name AVP as an IMSI or NAI subscription ID. The table below describes the custom attributes available for the manipulation of the User-Name AVP.</p>
+<table colsep="1" rowsep="1">
+<title>User-Name AVP custom implementer attributes</title>
+<tgroup cols="2" colsep="1">
+<colspec colname="1" colnum="1"/>
+<colspec colname="2" colnum="2"/>
+<thead>
+<row>
+<entry colname="1">
+<p>Custom Attribute</p>
+</entry>
+<entry colname="2">
+<p>Description</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry colname="1"> User-Name.IMSI-MCC </entry>
+<entry colname="2">
+<p>This attribute allows you to extract the subscriber's
+                                        IMSI-MCC information from the User-Name AVP.</p>
+<p>The IMSI-MCC attribute indicates that the identifier is in
+                                        international IMSI format.</p>
+</entry>
+</row>
+<row>
+<entry colname="1"> User-Name.IMSI-MNC </entry>
+<entry colname="2"> This attribute allows you to extract the
+                                    subscriber's IMSI-MNC information from the User-Name AVP.
+                                </entry>
+</row>
+<row>
+<entry colname="1"> User-Name.IMSI-MSIN </entry>
+<entry colname="2"> This attribute allows you to extract the
+                                    subscriber's IMSI-MSIN information from the User-Name AVP.
+                                </entry>
+</row>
+<row>
+<entry colname="1"> User-Name.NAI-Realm </entry>
+<entry colname="2"> This attribute allows you to extract the
+                                    subscriber's NAI-Realm information from the User-Name AVP.
+                                </entry>
+</row>
+<row>
+<entry colname="1"> User-Name.NAI-User-Name </entry>
+<entry colname="2">
+<p>This attribute allows you to extract the subscriber's
+                                        NAI-User-Name information from the User-Name AVP.</p>
+<p>The NAI-User-Name attribute indicates that the end user
+                                        identifier is in the form of a NAI and is requesting the
+                                        username.</p>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+<sectiondiv>
+<p><b>Subscription-Id AVP custom implementer</b></p>
+<p>Diameter application message contexts that support the Subscription-Id AVP (for example, Gx CCR) have access to a custom AVP implementer. The implementer is contained in the message context's corresponding filter group and allows you to extract and treat the contents of the Subscription-Id AVP as an IMSI, NAI, E164 or SIP value. The table below describes the custom attributes available for the manipulation of the Subscription-Id AVP.</p>
+<table colsep="1" rowsep="1">
+<title>Subscription-Id AVP custom implementer attributes</title>
+<tgroup cols="2" colsep="1">
+<colspec colname="1" colnum="1"/>
+<colspec colname="2" colnum="2"/>
+<thead>
+<row>
+<entry colname="1">
+<p>Custom Attribute</p>
+</entry>
+<entry colname="2">
+<p>Description</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry colname="1"> Subscription-Id.E164-Country-Code </entry>
+<entry colname="2"> This attribute allows you to extract the
+                                    subscriber's three digit E.164 country code from the data. A
+                                    null is returned if the type is not E.164. </entry>
+</row>
+<row>
+<entry colname="1"> Subscription-Id.E164-National-Number </entry>
+<entry colname="2"> This attribute allows you to extract the
+                                    subscriber's E.164 national number from data. A null is returned
+                                    if the type is not E.164. </entry>
+</row>
+<row>
+<entry colname="1"> Subscription-Id.IMSI-MCC </entry>
+<entry colname="2"> This attribute allows you to extract the
+                                    subscriber's three digit IMSI Mobile Country Code information
+                                    from data. A null is returned if the type is not IMISI. </entry>
+</row>
+<row>
+<entry colname="1"> Subscription-Id.IMSI-MNC </entry>
+<entry colname="2"> This attribute allows you to extract the
+                                    subscriber's IMSI Mobile Network Code from data. A null is
+                                    returned if the type is not IMSI. </entry>
+</row>
+<row>
+<entry colname="1"> Subscription-Id.IMSI-MSIN </entry>
+<entry colname="2"> This attribute allows you to extract the
+                                    subscriber's IMSI mobile station identification number (MSIN). A
+                                    null is returned if the type is not IMSI. </entry>
+</row>
+<row>
+<entry colname="1"> Subscription-Id.NAI-Realm </entry>
+<entry colname="2"> This attribute allows you to extract the
+                                    subscriber's NAI-Realm information from the NAI URI data. A null
+                                    is returned if the Subscription-Id is not NAI. </entry>
+</row>
+<row>
+<entry colname="1"> Subscription-Id.NAI-User-Name </entry>
+<entry colname="2">
+<p>This attribute allows you to extract the subscriber's
+                                        username from the NAI URI data. A null is returned if the
+                                        Subscription-Id is not NAI.</p>
+<p>The NAI-User-Name attribute indicates that the end user
+                                        identifier is in the form of a NAI and is requesting the
+                                        username.</p>
+</entry>
+</row>
+<row>
+<entry colname="1"> Subscription-Id.SIP-Port </entry>
+<entry colname="2"> This attribute allows you to extract the port
+                                    number from SIP URI data. A null is returned if the
+                                    Subscription-Id is not SIP. </entry>
+</row>
+<row>
+<entry colname="1"> Subscription-Id.SIP-Realm </entry>
+<entry colname="2"> This attribute allows you to extract the realm
+                                    from SIP URI data. A null is returned if the Subscription-Id is
+                                    not SIP. </entry>
+</row>
+<row>
+<entry colname="1"> Subscription-Id.SIP-User-Name </entry>
+<entry colname="2"> This attribute allows you to extract the
+                                    username from the SIP URI data. A null is returned if the
+                                    Subscription-Id is not SIP. </entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+<sectiondiv>
+<p><b>Framed-IP-Address AVP custom implementer</b></p>
+<p>Diameter application message contexts that support the Framed-IP-Address AVP (for example, Gx CCR) have access to a custom AVP implementer. The implementer is contained in the message context's corresponding filter group and allows you to extract and treat the contents of the Framed-IP-Address AVP. The table below describes the custom attributes available for the manipulation of the Framed-IP-Address AVP.</p>
+<table colsep="1" rowsep="1">
+<title>Framed-IP-Address AVP custom implementer action attributes</title>
+<tgroup cols="2" colsep="1">
+<colspec colname="1" colnum="1"/>
+<colspec colname="2" colnum="2"/>
+<thead>
+<row>
+<entry colname="1">
+<p>Custom Action Attribute</p>
+</entry>
+<entry colname="2">
+<p>Description</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry colname="1"> Framed-IP-Address.Set-As-String </entry>
+<entry colname="2"> This action attribute allows you to set the
+                                    value of the IP address to the specified string value, for
+                                    example, 192.168.0.1. </entry>
+</row>
+<row>
+<entry colname="1"> Framed-IP-Address.As-String </entry>
+<entry colname="2"> This attribute returns the IP-Address in a
+                                    string form. A null is returned in case of an error, for
+                                    example, 192.168.0.1. </entry>
+</row>
+<row>
+<entry colname="1"> Framed-IP-Address.as-IP-Address </entry>
+<entry colname="2"> This attribute returns the IP-Address in a form
+                                    usable by the NCC. </entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+</section>
+</conbody></concept>

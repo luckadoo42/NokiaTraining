@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//NSN//DTD DITA Concept//EN" "nsnconcept.dtd">
+		<concept id="id9YZ-09018--PL00-FPZZA-d1e18993"><title>Case 14: Short term access</title><conbody>
+
+<section><title>Overview</title>
+
+<p>Bob has an iPhone with no existing internet plan. He contacts an operator to buy an internet bundle from anywhere, for example, home or any public places, such as coffee shop or restaurant for a limited duration of time.</p>
+<p>High speed usage limit is applied on the internet data bundle and the bundle subscription expires within one hour from purchase. When subscribed to the internet data bundle, the iPhone consumes data at a defined rate. If the data consumption from the internet bundle reaches the cap limit before an hour expires, then internet services are continued at a reduced speed. When the internet bundle subscription expires after an hour, iPhone can no longer access the internet bundle.</p>
+</section>
+<section><title>Flow of events</title>
+
+<p/><ul>
+
+<li>
+Bob has an iPhone with no existing internet services.
+</li>
+<li>
+Bob contacts an operator to request an internet bundle for a limited duration of one hour.
+</li>
+<li>
+The iPhone consumes 250 MB of data at a QoS of 1 MB/sec. If the data consumption the cap limit before an hour expires, then the internet services continue but the QoS is reduced to 100 Kb/sec. On reaching the cap limit, a notification is sent to Bob over mail.
+</li>
+<li>
+When the subscription lifecycle expires after an hour, the iPhone can no longer access the internet bundle.
+</li>
+</ul>
+</section>
+<section><title>Provisioning</title>
+
+<note type="attention">
+
+<p>Ensure that after creating a record, you distribute it to ME. Otherwise, the provisioning will not be successful.</p>
+</note>
+<p>Following entities are required for this use case:<table pgwide="1" colsep="1" rowsep="1">
+     <title>Entities for case 14</title>
+     <tgroup cols="2">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <thead>
+       <row>
+        <entry> Entity </entry>
+        <entry> Task </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> Notification preferences </entry>
+        <entry> Select the notification channel as email. </entry>
+       </row>
+       <row>
+        <entry> Notification template </entry>
+        <entry> Create a notification template <draft-comment>(NT_ShortAccess_1)</draft-comment> and
+         include the text to be sent to the end users. </entry>
+       </row>
+       <row>
+        <entry> Notification server </entry>
+        <entry> Configure a notification server to send an email notification. </entry>
+       </row>
+       <row>
+        <entry> Thresholds </entry>
+        <entry>
+         <p>Create a threshold profile group <draft-comment>(TPG_Access_1)</draft-comment> and
+          define actions to send SNRs based on the following threshold values: </p>
+         <ol>
+          <li>
+           Threshold 1 value is 0, action is Send-SNR with SL=HIGH
+          </li>
+          <li>
+           Threshold 2 value is 250 MB, actions are to Send-SNR with SL=LOW and
+            Send-Notification
+          </li>
+         </ol>
+        </entry>
+       </row>
+       <row>
+        <entry> Charging service </entry>
+        <entry> Create a charging service <draft-comment>(CS_Short_Access_1)</draft-comment> with a
+         counter <draft-comment>(STA-Counter)</draft-comment> and associate it with the threshold
+         profile group and tariff. <draft-comment>(TPG_Access_1)</draft-comment>
+        </entry>
+       </row>
+       <row>
+        <entry> Bundle </entry>
+        <entry> Create a bundle and associate it with hourly subscription lifecycle. </entry>
+       </row>
+       <row>
+        <entry> Lifecycles </entry>
+        <entry> Create a subscription, device, account, lifecycle.
+          <draft-comment>(HourlySubscLC)</draft-comment>
+        </entry>
+       </row>
+       <row>
+        <entry> Device </entry>
+        <entry> Create a device (iPhone) and associate it with device lifecycle.
+          <draft-comment>(DeviceLifeCycle)</draft-comment>
+        </entry>
+       </row>
+       <row>
+        <entry> User </entry>
+        <entry> Create a user (Bob) and associate it with device. </entry>
+       </row>
+       <row>
+        <entry> Account </entry>
+        <entry> Create an account and associate it with account lifecycle.
+          <draft-comment>(AccountLifeCycle)</draft-comment>
+        </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table></p>
+<p>Provision the following data:</p><ol>
+
+<li>
+<p>Configure the notification template, notification preference, and email server on the notification server.</p>
+<p/><ol>
+
+<li>
+Create the notification template as shown in the following figure:
+<!--MMO resource relative URI: ../graphics/Case14_NT_default.png-->
+<image href="../images/case14_nt_default.png"/>
+</li>
+<li>
+Click the <uicontrol>Notification server</uicontrol> tab and select <uicontrol>Email</uicontrol> from the drop-down list.
+<!--MMO resource relative URI: ../graphics/Email_server2_default.png-->
+<image href="../images/email_server2_default.png"/>
+</li>
+<li>
+Create the notification server as shown in the following figure:
+<!--MMO resource relative URI: ../graphics/EMail_server_default.png-->
+<image href="../images/email_server_default.png"/>
+</li>
+<li>
+<p>Create the notification preference and select the notification channel as Email as shown in the following figure:</p>
+<!--MMO resource relative URI: ../graphics/Notification_preference_default.png-->
+<image href="../images/notification_preference_default.png"/>
+<p>Set the notification type and frequency as follows:</p>
+<!--MMO resource relative URI: ../graphics/Notification_preference2_default.png-->
+<image href="../images/notification_preference2_default.png"/>
+</li>
+</ol>
+</li>
+<li>
+Create a threshold profile group following the given steps:<ol>
+
+<li>
+Log into the SM GUI, navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select <uicontrol>Common</uicontrol>. Browse <uicontrol>Thresholds</uicontrol> from the drop-down list.
+</li>
+<li>
+<p>Click 
+<!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+<image href="../images/sdd_button_default.png"/>
+ to create a new threshold profile group as shown in the following figure:</p>
+<!--MMO resource relative URI: ../graphics/Threshold_config_in_use_case14_default.png-->
+<image href="../images/threshold_config_in_use_case14_default.png"/>
+<p>Click <uicontrol>CONTINUE</uicontrol>.</p>
+</li>
+<li>
+Configure the absolute from start threshold profile as shown in the following figure:
+<!--MMO resource relative URI: ../graphics/Case14_TH1_default.png-->
+<image href="../images/case14_th1_default.png"/>
+</li>
+</ol>
+</li>
+<li>
+Create a charging service following the given steps:<ol>
+
+<li>
+Log into the SM GUI, navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select <uicontrol>Charging</uicontrol>. Browse <uicontrol>Charging Services</uicontrol> from the drop-down list.
+</li>
+<li>
+<p>Click 
+<!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+<image href="../images/sdd_button_default.png"/>
+ to create a charging service as shown in the following figure:</p>
+<!--MMO resource relative URI: ../graphics/CS_name_config_use_case14_default.png-->
+<image href="../images/cs_name_config_use_case14_default.png"/>
+<p>Click <uicontrol>CONTINUE</uicontrol>.</p>
+</li>
+<li>
+Associate the counter with threshold as shown in the following figure:
+<!--MMO resource relative URI: ../graphics/Bucket_config_in_CS_use_case14_default.png-->
+<image href="../images/bucket_config_in_cs_use_case14_default.png"/>
+</li>
+<li>
+Define the tariff formula as shown in the following figure:
+<!--MMO resource relative URI: ../graphics/Tariff_config_in_CS_use_case14_default.png-->
+<image href="../images/tariff_config_in_cs_use_case14_default.png"/>
+</li>
+</ol>
+</li>
+<li>
+Create a bundle and associate it with the charging service and lifecycle.
+<!--MMO resource relative URI: ../graphics/Case14_bundle_default.png-->
+<image href="../images/case14_bundle_default.png"/>
+</li>
+<li>
+<p>Create an hourly subscription lifecycle<varname>HourlySubscLC</varname> with one hour validity and states <b>PreActive</b>, <b>Active</b>, and <b>Inactive</b> following the given steps:</p>
+<p/><ol>
+
+<li>
+Log into the SM GUI, navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select <uicontrol>Common</uicontrol> tab. Browse <uicontrol>Lifecycles</uicontrol> from the drop-down list.
+</li>
+<li>
+Click 
+<!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+<image href="../images/sdd_button_default.png"/>
+ to create a lifecycle as shown in the following figure:
+<!--MMO resource relative URI: ../graphics/Case14_LC1_default.png-->
+<image href="../images/case14_lc1_default.png"/>
+</li>
+</ol>
+</li>
+<li>
+Create a user (Bob) in the <uicontrol>Active</uicontrol> state and associate with device (iPhone).
+</li>
+<li>
+Create a device (iPhone) and associate with device lifecycle. 
+</li>
+<li>
+Create an account and associate with account lifecycle.
+</li>
+</ol>
+</section>
+</conbody></concept>

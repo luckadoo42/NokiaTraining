@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9YZ-08540-UG02-PCZZA-d1e30584_variable_replacement_for_rest_interface">
+   <title>Variable replacement for REST interface</title>
+   <conbody>
+
+      <p>The request may contain the variable name and values as key-value pairs within the
+            <codeph>&lt;templateParameter&gt; &lt;/templateParameter&gt;</codeph> tags. Following is
+         an example scenario:</p>
+      <section>
+         <p>
+            <b>Notification template</b>
+         </p>
+         <p>The notification text has three variables as shown in bold in the following text.</p>
+         <fig>
+            <codeblock>Your last call cost was $[<b>CC</b>]; Duration $[<b>CT</b>]; Current balance $[<b>CB</b>]</codeblock>
+         </fig>
+         <p>Where the variables have the following meanings:</p>
+         <parml>
+            <plentry>
+               <pt>CC</pt>
+               <pd>
+                  <p>call cost</p>
+               </pd>
+            </plentry>
+            <plentry>
+               <pt>CT</pt>
+               <pd>
+                  <p>call time</p>
+               </pd>
+            </plentry>
+            <plentry>
+               <pt>CB</pt>
+               <pd>
+                  <p>current balance</p>
+               </pd>
+            </plentry>
+         </parml>
+      </section>
+      <section>
+         <p>
+            <b>Incoming trigger</b>
+         </p>
+         <p>The variables and values are provided in the incoming trigger (indicated as bold) as follows:</p>
+         <fig>
+            <codeblock>&lt;ext:entities xmlns:ext="externalNotificationSPS"&gt;
+	&lt;entity&gt;
+		&lt;id&gt;Test&lt;/id&gt;
+		&lt;type&gt;Device&lt;/type&gt;
+		&lt;templateId&gt;BACK_OFFICE_REST&lt;/templateId&gt;
+		&lt;templateParameters&gt;
+			&lt;templateParameter&gt;
+				<b>&lt;key&gt;CC&lt;/key&gt;
+				&lt;value&gt;2&lt;/value&gt;</b>
+			&lt;/templateParameter&gt;
+			&lt;templateParameter&gt;
+				<b>&lt;key&gt;CT&lt;/key&gt;
+				&lt;value&gt;23M&lt;/value&gt;</b>
+			&lt;/templateParameter&gt;
+			&lt;templateParameter&gt;
+				<b>&lt;key&gt;CB&lt;/key&gt;
+				&lt;value&gt;255&lt;/value&gt;</b>
+			&lt;/templateParameter&gt;
+		&lt;/templateParameters&gt;
+		&lt;attributes&gt;
+			&lt;attribute&gt;
+				&lt;key&gt;TCPIP&lt;/key&gt;
+				&lt;value&gt;TcpIpServerId&lt;/value&gt;
+			&lt;/attribute&gt;
+		&lt;/attributes&gt;
+	&lt;/entity&gt;
+&lt;/ext:entities&gt;</codeblock>
+         </fig>
+      </section>
+      <section>
+         <p>
+            <b>Resulting notification</b>
+         </p>
+         <p>In the outgoing notification, the variables are replaced by the values from the incoming request.</p>
+         <fig>
+            <codeblock>Your last call cost was 2; Duration 23M; Current balance 255.</codeblock>
+         </fig>
+      </section>
+   </conbody>
+</concept>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e198837"><title>Assume positive functionality</title><conbody>
+<section><title>Overview</title>
+<p>This functionality facilitates the allocation of quota for a data session when the site routing
+                fails due to device not found in the charging application. In this case, the NCC
+                system does not drop the call and if the application preference parameter <i>Assume
+                    Positive Flag</i> is enabled, then no error is returned. However, if the
+                    <i>Assume Positive Flag</i> is disabled, then the NCC system returns an error
+                with a predefined amount of quota granted to the Gy request with result code
+                    <systemoutput>2001</systemoutput> in the CCAi response message. If another CCR-U
+                arrives, then the charging application handles it using the uncorrelated CCR-U or
+                CCR-T flag. Otherwise, the call is rejected.</p>
+<note>
+<p>This feature is applicable only to SCUR (volume) calls, and CCR-I for data session (Gy), centralized, and decentralized calls.</p>
+</note>
+</section>
+<section><title>Configuring the assume positive functionality</title>
+<p>Configure the following charging application preferences maintained in the TPASystem to activate the assume positive functionality:</p><ul>
+<li>
+<p>
+<i>Assume Positive Flag</i>: If this flag is set as <varname>True</varname>, then the assume positive functionality is enabled. The supported values of this flag are <varname>True</varname> and <varname>False</varname>.</p>
+</li>
+<li>
+<p>
+<i>Assume Positive GSU</i>: The value of this parameter provides the static GSU to be allocated if the assume positive functionality is enabled. The supported range for this parameter is greater than zero and less than long maximum value.</p>
+</li>
+<li>
+<p>
+<i>Assume Positive VT</i>: The value of this parameter provides the static VT if the assume positive functionality is enabled. The supported range for this parameter is greater than zero and less than long maximum value.</p>
+</li>
+</ul>
+</section>
+<section><title>Examples</title>
+<p>Consider the following examples for a better understanding of the assume positive functionality:</p>
+<sectiondiv>
+<p><b>Example 1: Gy CCR-I fails due to no device found</b></p>
+<p>The NCC system receives a Gy CCR-I call and the call controller looks up the device in the
+                    database. If the device is not found, then the assume positive functionality is
+                    checked based on which the NCC logic is executed.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 2: Assume Positive Flag is enabled</b></p>
+<p>The NCC system handles a call with a predefined GSU (volume only) and VT at each MSCC. It then
+                    provides a static GSU and VT values from the application preferences when the
+                    following configuration is applied:</p><ul>
+<li>
+<p>
+<i>Assume Positive Flag</i> is set as <varname>True</varname>
+</p>
+</li>
+<li>
+<p>
+<i>Assume Positive GSU</i> is set as <varname>30</varname>
+</p>
+</li>
+<li>
+<p>
+<i>Assume Positive VT</i> is set as <varname>50</varname>
+</p>
+</li>
+</ul>
+<p>The Call Controller puts the CDR structure with tag values of <i>Subscription-ID</i> and <i>GSU value (30)</i> and raises an alarm for device not found. After this, the Call Controller processes all the MSCCs on after the other with a predefined GSU (30) and VT (50) for each MSCC from application preferences and creates an MSCC CDR.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 3: Assume Positive Flag is disabled</b></p>
+<p>The call fails with an error in the CDR that a device is not found. Therefore, GSU and VT are not allocated, MSCC is not logged into the CDR, and session is not created.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 4: Uncorrelated CCR-U or CCR-T flag is enabled in a Gy CCR-U message</b></p>
+<p>If a CCR-U call arrives and a device exists, then the call is successful, GSU and VT are provided from rating, CDR is logged with no error found, and a session is created.</p>
+<p>However, if a CCR-U call arrives and a device does not exist, then the call fails, GSU and VT are not allocated, MSCC is not logged in the CDR, and no session is created.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 5: Uncorrelated CCR-U or CCR-T flag is enabled in a Gy CCR-I message</b></p>
+<p>If the <i>Uncorrelated CCR-U/T</i> flag is enabled for a Gy CCR-I message, then there is no impact.</p>
+</sectiondiv>
+</section>
+</conbody></concept>

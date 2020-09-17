@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9YZ-09018-UG00-PCZZA-d1e8012">
+<title>NCC System Redundancy</title>
+<conbody>
+<section>
+<title>Overview</title>
+<p>An NCC system is defined as the set of nodes that make up a single NCC SM, ME, or IG. This
+                                                  includes the pair of OAME, IOH, Application, and
+                                                  various other nodes that may be present in that
+                                                  system. An NCC system is fully redundant with no
+                                                  single points of failure. Some node types are 1+1
+                                                  redundant (active/standby) while other node types
+                                                  are N+K redundant (all active) and horizontally
+                                                  scalable.</p>
+<p>The following lists the combinations of NCC components and how they can be supported:</p>
+<ul>
+<li>
+<p>one SM and one to four MEs separate without geo-redundancy</p>
+</li>
+<li>
+<p>one IG without geo-redundancy</p>
+</li>
+<li>
+<p>two SMs and two or six MEs all separate with geo-redundancy</p>
+</li>
+<li>
+<p>two IG with geo-redundancy</p>
+</li>
+</ul>
+</section>
+<section>
+<title>1+1 Redundant Nodes</title>
+<p>NCC supports node types that are 1+1 redundant. These node types will always have two nodes in
+                                                  the system and will operate in active/standby
+                                                  mode.</p>
+<p>The following node types are configured as 1+1:</p>
+<ul>
+<li>
+<p>OAME (OAM endpoints)</p>
+</li>
+<li>
+<p>IOHD (I/O handlers for Diameter traffic)</p>
+</li>
+<li>
+<p>IOHO (I/O handlers for Other traffic)</p>
+</li>
+</ul>
+<p>The NCC uses keepalived/VRRP virtual IP (VIP) management to monitor and determine which node is
+                                                  currently active and which is standby. When the
+                                                  active node fails, a switchover occurs to the
+                                                  standby node, which now becomes the active node.
+                                                  When the failed node recovers, there is no
+                                                  automatic switching back, as both nodes are
+                                                  equally capable of serving as the active node.</p>
+<p>The HA cluster manages the VIP that is on the NCC backplane interface eth0, and all the VIPs on
+                                                  the external interfaces such as eth1, eth2.  These
+                                                  are plumbed or unplumbed as the HA status of a
+                                                  node becomes active or standby, respectively.</p>
+<p>To be the active node, in a 1+1 pair, a node must meet the following
+                requirements:</p>
+<ul>
+<li>
+<p>All the services monitored locally by this node such as httpd, rsyslog,
+                        snmpd, sps, and so on must be healthy as reported by the monitoring function
+                        and/or the ha-plugin.</p>
+</li>
+<li>
+<p>The keepalived status of the active node must be Master. This means that
+                        VRRP, running exclusively on the backplane interface (eth0) between two HA
+                        nodes, elects this node to own and plumb the internal VIP.</p>
+</li>
+</ul>
+</section>
+<section>
+<title>N+K Redundant Nodes</title>
+<p>The NCC supports node types that are N+K redundant. A system is engineered with N nodes of a
+                                                  given type that are capable of handling the full
+                                                  peak load. An additional K nodes are configured
+                                                  for fault tolerance. All N+K nodes are active and
+                                                  sharing the load. Up to K nodes can fail without
+                                                  impacting the system’s engineered capacity.</p>
+<p>The following node types are configured as N+K:</p>
+<ul>
+<li>
+<p>SM application</p>
+</li>
+<li>
+<p>Policy/Charging application</p>
+</li>
+<li>
+<p>Auxiliary services</p>
+</li>
+<li>
+<p>Common Services</p>
+</li>
+<li>
+<p>CDR server</p>
+</li>
+<li>
+<p>Database nodes</p>
+</li>
+</ul>
+<p>When more than K nodes of a given node type are failed, the system monitoring function will
+                                                  evaluate the situation and its configured
+                                                  parameters to determine the appropriate action.
+                                                  Potential actions range from simply raising an
+                                                  alarm, to declaring this NCC system as OOS. For
+                                                  more information about system monitoring and its
+                                                  configuration, see the NCC Monitoring section in
+                                                  the <i>Administration Guide</i>.</p>
+<p>The Database nodes are configured in two zones for managing data replication within a given NCC
+                                                  system, with each zone configured as N+K. Thus,
+                                                  the database nodes are referred to as 2 * (N+K).
+                                                  See the <i>NCC Installation and Upgrade Guide</i>
+                                                  for more information about configuring “K” for
+                                                  database nodes. See the Architecture section in
+                                                  this guide for overview information about Database
+                                                  nodes.</p>
+</section>
+</conbody>
+</concept>

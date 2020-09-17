@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="btel_backup_and_restore">
+    <title>BTEL backup and restore</title>
+    <body>
+        <p>These instructions assume you installed BTEL after doing the planning, set up the
+                <b>site.conf</b>, and are working in the site directory with those variables
+            initialized. For more information regarding setting up the <codeph>site.conf</codeph>
+            file, see the Backup and Restore Installation section in the NCC CNF Installation
+            Guide.<!--DRAY: FIXME; add a link here.--></p>
+        <p><b>To backup and restore BTEL</b></p>
+        <p>
+            <ol id="ol_f3y_mms_qmb">
+                <li>In centralmanagement, move to the site directory and initialize the variables in the
+                        <codeph>site.conf</codeph>
+                    file.<codeblock>cd &lt;SITE_DIRECTORY>
+. site.conf</codeblock></li>
+                <li>If using Openshift, the app namspace must be the same as the CBUR-master
+                    namespace, or backup and restore will fail. Here, <codeph>ncms</codeph> is the
+                    CBUR-master
+                        namespace.<codeblock>CBUR_MASTER_NAMESPACE=ncms
+RELEASENAME=btel</codeblock><note>The
+                        variable <codeph>NAMESPACE</codeph>, which denotes the app namespace, is
+                        defined in the <codeph>site.conf</codeph> file.</note></li>
+                <li>To backup BTEL, use the following curl
+                    command.<codeblock>curl -v --header 'Accept: application/json' -X POST http://cbur-master-cbur.$CBUR_MASTER_NAMESPACE.svc.cluster.local:80/v2/helm/release/backup/$NAMESPACE/$RELEASENAME?helm_version=3 2>&amp;1 | tee backup_btel.log</codeblock></li>
+                <li>Before restoring BTEL, the CBUR backup folder and Prometheus storage folder must
+                    first be updated. Perform a helm upgrade of BTEL using the same overrides and
+                    options used during installation of BTEL, as well as the following properties
+                    listed for
+                    CPRO.<codeblock>WORKER_COUNT=`kubectl get nodes -l is_worker=true|grep -v STATUS|wc -l`
+helm3 upgrade -n ${NAMESPACE} ${RELEASENAME} btel-chart-20.9.*.tgz --wait --timeout=1200s -f values_btel_sps_${SITE_TYPE}.yaml -f sizing_btel_lab.yaml -f feature_btel_cbur_enable.yaml --set belk.belk-fluentd.fluentd.replicas=$WORKER_COUNT --set cpro.server.persistentVolume.mountPath="/prometheus" --set cpro.server.persistentVolume.mountPath2="/prometheus"  --set cpro.alertmanager.strategy.type=Recreate --set cpro.server.strategy.type=Recreate</codeblock></li>
+                <li>To restore BTEL, use the following curl
+                    command.<codeblock>curl -vkL --header 'Content-Type: multipart/form-data' --header 'Accept: application/json' -X POST --header 'Content-Type: application/x-www-form-urlencoded' -d 'backup_id=&amp;volume=&amp;object_type=&amp;object_name=' http://cbur-master-cbur.$CBUR_MASTER_NAMESPACE.svc.cluster.local:80/v2/helm/release/restore/$NAMESPACE/$RELEASENAME?helm_version=3 2>&amp;1 | tee restore_btel.log</codeblock></li>
+                <li>After restoring BTEL, revert the CBUR backup folder and Prometheus storage
+                    folders so that they both point to <codeph>/data</codeph>. This will allow
+                    Prometheus to work as
+                    usual.<codeblock>helm3 upgrade -n ${NAMESPACE} ${RELEASENAME} btel-chart-20.9.*.tgz --wait --timeout=1200s -f values_btel_sps_${SITE_TYPE}.yaml -f sizing_btel_lab.yaml -f feature_btel_cbur_enable.yaml --set belk.belk-fluentd.fluentd.replicas=$WORKER_COUNT --set cpro.server.persistentVolume.mountPath="/data" --set cpro.server.persistentVolume.mountPath2="/data"  --set cpro.alertmanager.strategy.type=Recreate --set cpro.server.strategy.type=Recreate</codeblock></li>
+            </ol>
+        </p>
+    </body>
+</topic>

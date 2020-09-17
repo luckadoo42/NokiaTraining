@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id ="id9YZ-08540-UG05-PCZZA-d1e63242"><title>Custom data dictionary</title><conbody>
+<section>
+
+<p>Each of the subscriber model entities (device, user, group and account) can have multiple custom data assigned to it. An operator-defined set of custom-data entries in the custom data dictionary is used to provide the custom data. The custom data dictionary is the list of defined entries. Each entry declares the name of the custom data, the value type, the context type to indicate the applicable subscriber model entities, and the domain name to be used by the Rule System Version.</p>
+<p>The custom data dictionary is configurable using the GUI and can be used to add custom data name or value pairs such that they are always available for selection from the GUI. In turn, the GUI calls internal web services that provisions the new attributes in the custom data dictionary. There is no versioning for the custom data dictionary. When a custom data dictionary entry is provisioned, it can be used by any entity immediately. When the rule attribute dictionary is reloaded, all the custom data dictionary attributes are loaded into the rule attribute dictionary and are available for use by rule conditions and actions in the rule system version.</p>
+</section>
+</conbody>
+    <concept id="concept_srl_5yc_1nb">
+        <title>Resolving parameter names between custom data and entities</title>
+        <conbody>
+            <p>For reading subscriber custom data, <varname>Subscriber-Custom-Attribute</varname> is
+                used to avoid confusion with attributes of same name of other entities where custom
+                data is applied. For example, if a custom data definition is created with parameter
+                names same as a parameter names in a group/device then, to avoid confusion, the
+                following configurations must be used in rules:<ul id="ul_kkp_rrc_1nb">
+                    <li>Use
+                            <varname>SPR_DEVICE.Subscriber-Custom-Attribute(“Parameter-Name”)</varname>
+                        in rules when the value from custom data is to be used.</li>
+                    <li>Use <varname>SPR_DEVICE.Parameter-Name</varname> in rules if the default
+                        parameter of group/device is to be used.</li>
+                </ul></p>
+            <p>If no default parameter with the same name as that of custom data exists in
+                device/group, then both
+                    <varname>SPR_DEVICE.Subscriber-Custom-Attribute(“Parameter-Name”)</varname> and
+                    <varname>SPR_DEVICE.Parameter-Name</varname> return parameter name from custom
+                data.</p>
+            <p><b>Example</b></p>
+            <p>Consider a device having parameter name <varname>Language</varname> with value
+                    <varname>English</varname>. Also, there is a custom data definition for device
+                with same name, that is, <varname>Language</varname>, and is attached to device with
+                value <varname>German</varname>.</p>
+            <p>If a rule is applied with condition <varname>SPR_DEVICE.Language =
+                “German”</varname>, then this condition is <varname>False</varname> as default
+                language is <varname>English</varname> and custom data dictionary language is
+                    <varname>German</varname>.</p>
+            <p>In this scenario, <varname>SPR_DEVICE.Language = “English”</varname> and
+                    <varname>SPR_DEVICE. Subscriber-Custom-Attribute(“Language”) =
+                    “German”</varname> gives the result as <varname>True</varname>.</p>
+        </conbody>
+    </concept></concept>

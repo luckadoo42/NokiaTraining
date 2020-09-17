@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="id9YZ-09126-MT00-REZZA-SP2-addschedbackup"><title>Adding a scheduled backup</title><taskbody><prereq>
+<p>Ensure there is sufficient disk space in the place where you intend to dump this data file.  </p>
+                              <p>To add a scheduled backup of the entire VNF perform the following
+                                        steps: </p>
+</prereq><steps>
+<step><cmd>Log in to the CBAM GUI. </cmd><info/></step>
+<step><cmd>Navigate to the CBAM catalogue and select the VNF from the list (the number value under the VNFs label). The VNF-specific window appears.</cmd><info/></step>
+<step><cmd>In the VNF-specific window, click the More button at the end of the line item and select Schedule Backup from the menu.</cmd><info/></step>
+<step><cmd>In the Schedule Backup window, there are two parameters: “schedule_time” and ”schedule_action”. </cmd><info><p>For the Schedule_time parameter, the format is the same as the cronjob in Linux, for example: 00 06 * * * </p><p>For the Schedule_action parameter, the input can be add or remove; when you add one scheduled backup, set it as "add"</p></info></step>
+<step><cmd>Click the “Finish” button.</cmd><info/></step>
+<step><cmd>After adding the scheduled backup finishes successfully, log in to the active OAME node and run the "crontab -l" command. The cron jobs for the scheduled backup will appear as follows:</cmd><info><fig>
+<codeblock>*/5 * * * * /usr/bin/BR/UpdateCustomerPolicy -m
+          00 06 * * * echo /usr/bin/BR/BackupVM /etc/BR/policy/vdu-IOHD.group &gt;&gt; /etc/BR/run/BR_SCHEDULE
+          00 06 * * * echo /usr/bin/BR/BackupVM /etc/BR/policy/vdu-OAME.group &gt;&gt; /etc/BR/run/BR_SCHEDULE
+          00 06 * * * echo /usr/bin/BR/BackupVM /etc/BR/policy/vdu-DB.group &gt;&gt; /etc/BR/run/BR_SCHEDULE
+          00 06 * * * echo /usr/bin/BR/BackupVM /etc/BR/policy/vdu-SMApp.group &gt;&gt; /etc/BR/run/BR_SCHEDULE
+          00 06 * * * echo /usr/bin/BR/BackupVM /etc/BR/policy/vdu-IOHO.group &gt;&gt; /etc/BR/run/BR_SCHEDULE
+          00 06 * * * echo /usr/bin/BR/BackupVM /etc/BR/policy/vdu-CDR.group &gt;&gt; /etc/BR/run/BR_SCHEDULE
+          00 06 * * * echo /usr/bin/BR/BackupVM /etc/BR/policy/vdu-COMSVC.group &gt;&gt; /etc/BR/run/BR_SCHEDULE
+          00 06 * * * echo /usr/bin/BR/BackupVM /etc/BR/policy/vdu-Auxiliary.group &gt;&gt; /etc/BR/run/BR_SCHEDULE
+          00 06 * * * echo /usr/bin/BR/BackupVM /etc/BR/policy/vdu-DiameterApp.group &gt;&gt; /etc/BR/run/BR_SCHEDULE</codeblock>
+</fig><p>It will take approximately 30 minutes to run a scheduled backup of the VNF.</p></info></step>
+</steps>
+</taskbody></task>

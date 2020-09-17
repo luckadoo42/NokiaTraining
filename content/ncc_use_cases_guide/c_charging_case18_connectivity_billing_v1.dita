@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//NSN//DTD DITA Concept//EN" "nsnconcept.dtd">
+		<concept id="id9YZ-09018--PL00-FPZZA-d1e22514"><title>Case 18: Connectivity billing (variant 1)</title><conbody>
+
+<section><title>Overview</title>
+
+<p>The <emphasis>Smart Waste Company</emphasis> is a service provider, which includes a single group that contains 10 configured devices and may support up to thousands of devices. The service provider or the company is the group owner that is billed for connectivity charges that includes recurring monthly charges, such as excess transaction charges and applicable taxes.</p>
+<p>Each device has a monthly fee of 1 United States dollar that includes 10 Mobile Originated (MO) transactions. After a device exceeds 10 MO transactions in a month, the service provider applies a connectivity charge of 0.1 United States dollar per MO transaction. There are no other Mobile Terminated (MT) transactions applied to the device.</p>
+</section>
+<section><title>Flow of events</title>
+
+<p/><ul>
+
+<li>
+The <emphasis>Smart Waste Company</emphasis> service provider has a single group containing 10 configured devices.
+</li>
+<li>
+Each device is allotted a monthly fee of 1 United States dollars that covers 10 free SMS per month.
+</li>
+<li>
+After a device exceeds the consumption of 10 free SMS allowed in a month, the service provider applies a connectivity charge of 0.1 United States dollar per SMS to the device.
+</li>
+</ul>
+</section>
+<section><title>Provisioning</title>
+
+<note type="attention">
+
+<p>Ensure that after creating a record, you distribute it to ME. Otherwise, the provisioning will not be successful.</p>
+</note>
+<table pgwide="1" colsep="1" rowsep="1">
+    <title>Entities for case 18 variant 1</title>
+    <tgroup cols="2">
+     <colspec colname="col1"/>
+     <colspec colname="col2"/>
+     <thead>
+      <row>
+       <entry> Entity </entry>
+       <entry> Action </entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry> Notification preferences </entry>
+       <entry> Select the notification channel as email. </entry>
+      </row>
+      <row>
+       <entry> Notification template </entry>
+       <entry> Create a notification template and define the text to send to devices when the usage
+        exceeds the defined threshold. </entry>
+      </row>
+      <row>
+       <entry> Notification server </entry>
+       <entry> Configure a notification server. </entry>
+      </row>
+      <row>
+       <entry> Cap </entry>
+       <entry> Create a cap to restrict the usage for each device for free SMS to 10 only. </entry>
+      </row>
+      <row>
+       <entry> Rate </entry>
+       <entry> Create a rate, named as <varname>SmartWaste_SMS_Rate</varname> for tracking the SMS
+        volume. </entry>
+      </row>
+      <row>
+       <entry> Charging service </entry>
+       <entry>
+        <p>Create the following charging services:</p>
+        <ul>
+         <li>
+          
+           <varname>Smartwaste_SMSPack</varname>
+          
+         </li>
+         <li>
+          
+           <varname>Smartwaste_Charge_CS</varname>
+          
+         </li>
+        </ul>
+       </entry>
+      </row>
+      <row>
+       <entry> Lifecycles </entry>
+       <entry> Create a lifecycle for accounts, devices, groups, and bundles. </entry>
+      </row>
+      <row>
+       <entry> Bundle </entry>
+       <entry> Create a bundle, named as <varname>SmartWaste_DevicePlan</varname>. </entry>
+      </row>
+      <row>
+       <entry> Slicing profile </entry>
+       <entry> Create a slicing profile. </entry>
+      </row>
+      <row>
+       <entry> Account </entry>
+       <entry> Create an account and associate it with the account lifecycle. </entry>
+      </row>
+      <row>
+       <entry> Group </entry>
+       <entry> Create group, for example, <varname>SmartWasteCompany_SMS</varname> in the current
+        use case and associate it with the group lifecycle. </entry>
+      </row>
+      <row>
+       <entry> Device </entry>
+       <entry> Create the devices and associate them with device lifecycle. </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+<p>Provision the following data:</p><ol>
+
+<li>Create a notification template named as <varname>Free_SMS_Usage_Notification_10</varname>
+     following the given steps:<ol>
+      <li>Create a notification profile with <emphasis>Channel</emphasis> = <varname>Email</varname>
+       and <emphasis>Notification Type</emphasis> = <varname>THRESHOLD</varname> on the notification
+       server. </li>
+      <li>Create a notification template as shown in the following figure: <!--MMO resource relative URI: ../graphics/Case_17_var1_Notification_temp_create_default.png-->
+       <image href="../images/case_17_var1_notification_temp_create_default.png"/>
+      </li>
+      <li>Configure the notification server to send email. </li>
+     </ol></li>
+<li>Create a capping counter named as <varname>Capping_Counter_10SMS</varname> to restrict the usage
+     for each device for free SMS to 10 only. To do this, navigate to <uicontrol> Policy &amp;
+       Charging Configuration</uicontrol> and select the <uicontrol>Common</uicontrol> tab. Browse
+      to select <uicontrol>Cap</uicontrol> and click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+      <image href="../images/sdd_button_default.png"/> to create the capping counter as shown in the
+      following figure:
+     <!--MMO resource relative URI: ../graphics/Case_17_var1_cap_create_default.png-->
+     <image href="../images/case_17_var1_cap_create_default.png"/>
+     <!--MMO resource relative URI: ../graphics/Case_17_var1_cap_config_default.png-->
+     <image href="../images/case_17_var1_cap_config_default.png"/>
+    </li>
+<li>
+<p>Create a charging service named as <varname>Smartwaste_SMSPack</varname> following the given steps:</p>
+<p/><ol>
+
+<li>Navigate to <uicontrol> Policy &amp; Charging Configuration</uicontrol> and select the
+        <uicontrol>Charging</uicontrol> tab. Browse to select <uicontrol>Charging
+        Services</uicontrol> and click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+       <image href="../images/sdd_button_default.png"/> to create the charging service as shown in
+       the following figure: <!--MMO resource relative URI: ../graphics/Case_17_var1_SmartWaste_CS_create_default.png-->
+       <image href="../images/case_17_var1_smartwaste_cs_create_default.png"/>
+      </li>
+<li>
+Configure the counter as shown in the following figure:
+<!--MMO resource relative URI: ../graphics/Case_17_var1_SmartWaste_CS_counter_default.png-->
+<image href="../images/case_17_var1_smartwaste_cs_counter_default.png"/>
+</li>
+<li>
+Configure the tariff formula as shown in the following figure:
+
+
+<!--MMO resource relative URI: ../graphics/Case_17_var1_SmartWaste_CS_tariff_formula_default.png-->
+<image href="../images/var1_smartwaste_cs_tariff_formula_default.png"/>
+</li>
+</ol>
+<p>Similarly, create one more charging services named as <varname>Smartwaste_Charge_CS</varname> with the following configuration:</p>
+<p>
+<uicontrol>Smartwaste_Charge_CS</uicontrol>
+</p>
+ <table pgwide="1" rowsep="1" colsep="1">
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+Parameter
+</entry>
+<entry>
+Value
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+Name
+</entry>
+<entry>
+Smartwaste_Charge_CS
+</entry>
+</row>
+<row>
+<entry>
+Priority
+</entry>
+<entry>
+556
+</entry>
+</row>
+<row>
+<entry>
+Category
+</entry>
+<entry>
+DefaultCategory
+</entry>
+</row>
+<row>
+<entry>
+Applicability Condition
+</entry>
+<entry>
+CALL_COMMON.Call-Type = CallType_SMS
+</entry>
+</row>
+<row>
+<entry>
+Bucket
+</entry>
+<entry>
+None
+</entry>
+</row>
+<row>
+<entry>
+Tariff Formula
+</entry>
+<entry>
+<!--MMO resource relative URI: ../graphics/Case_17_var1_CS2_tariff_formula_default.png-->
+<image href="../images/case_17_var1_cs2_tariff_formula_default.png"/>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</li>
+<li>Create an account named as <varname>SmartWaste_Account</varname>. To do this, navigate to
+       <uicontrol>Subscriber Manager</uicontrol> and select the <uicontrol>Account</uicontrol> tab.
+      Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+      <image href="../images/sdd_button_default.png"/> to create the account as shown in the
+      following figure:
+     <!--MMO resource relative URI: ../graphics/Case17_var1_account_create_default.png-->
+     <image href="../images/case17_var1_account_create_default.png"/>
+    </li>
+<li>Create a group named as <varname>SmartWasteCompany_SMS</varname>. To do this, navigate to
+       <uicontrol>Subscriber Manager</uicontrol> and select the <uicontrol>Groups</uicontrol> tab.
+      Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+      <image href="../images/sdd_button_default.png"/> to create the group as shown in the following
+      figure:
+     <!--MMO resource relative URI: ../graphics/Case18_step5group_default.png-->
+     <image href="../images/case18_step5group_default.png"/>
+    </li>
+<li>Create a device named as <varname>SmartWaste_Device1</varname>. <p>To do this, navigate to
+       <uicontrol>Subscriber Manager</uicontrol> and select the <uicontrol>Device</uicontrol> tab.
+      Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+      <image href="../images/sdd_button_default.png"/> to create the device as shown in the
+      following figure:</p>
+     <!--MMO resource relative URI: ../graphics/Case_17_var1_device_create_default.png-->
+     <image href="../images/case_17_var1_device_create_default.png"/>
+     <p>Similarly, create two more devices named as <varname>SmartWaste_Device2</varname> and
+       <varname>SmartWaste_Device3</varname> with the following configuration:</p>
+     <p>
+      <uicontrol>SmartWaste_Device2</uicontrol>
+     </p>
+     <table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1"/>
+       <colspec colname="col2"/>
+       <thead>
+        <row>
+         <entry> Parameter </entry>
+         <entry> Value </entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry> Name </entry>
+         <entry> SmartWaste_Device2 </entry>
+        </row>
+        <row>
+         <entry> Identifier Type </entry>
+         <entry> IMSI </entry>
+        </row>
+        <row>
+         <entry> Identifier </entry>
+         <entry> 123459999994446 </entry>
+        </row>
+        <row>
+         <entry> Identifier Type </entry>
+         <entry> E164 </entry>
+        </row>
+        <row>
+         <entry> Identifier </entry>
+         <entry> 9999994446 </entry>
+        </row>
+        <row>
+         <entry> Notification Profile </entry>
+         <entry> NotificationProfile </entry>
+        </row>
+        <row>
+         <entry> Lifecycle State </entry>
+         <entry> Active </entry>
+        </row>
+        <row>
+         <entry> Subscription Index </entry>
+         <entry> Group_First </entry>
+        </row>
+        <row>
+         <entry> Owner </entry>
+         <entry> User_SmartWaste </entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p>
+      <uicontrol>SmartWaste_Device3</uicontrol>
+     </p>
+     <table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1"/>
+       <colspec colname="col2"/>
+       <thead>
+        <row>
+         <entry> Parameter </entry>
+         <entry> Value </entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry> Name </entry>
+         <entry> SmartWaste_Device3 </entry>
+        </row>
+        <row>
+         <entry> Identifier Type </entry>
+         <entry> IMSI </entry>
+        </row>
+        <row>
+         <entry> Identifier </entry>
+         <entry> 123459999994447 </entry>
+        </row>
+        <row>
+         <entry> Identifier Type </entry>
+         <entry> E164 </entry>
+        </row>
+        <row>
+         <entry> Identifier </entry>
+         <entry> 9999994447 </entry>
+        </row>
+        <row>
+         <entry> Notification Profile </entry>
+         <entry> NotificationProfile </entry>
+        </row>
+        <row>
+         <entry> Lifecycle State </entry>
+         <entry> Active </entry>
+        </row>
+        <row>
+         <entry> Subscription Index </entry>
+         <entry> Group_First </entry>
+        </row>
+        <row>
+         <entry> Owner </entry>
+         <entry> User_SmartWaste </entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+    </li>
+<li>Create a bundle named as <varname>SmartWaste_DevicePlan</varname>. To do this, navigate to
+       <uicontrol> Policy &amp; Charging Configuration</uicontrol> and select the
+       <uicontrol>Charging</uicontrol> tab. Browse to select <uicontrol>Bundles</uicontrol> and
+      click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+      <image href="../images/sdd_button_default.png"/> to create the bundle as shown in the
+      following figure:
+     <!--MMO resource relative URI: ../graphics/Case_17_var1_bundle_create_default.png-->
+     <image href="../images/case_17_var1_bundle_create_default.png"/>
+    </li>
+<li>Create the <varname>MonthlySubsLC</varname> lifecycle with <uicontrol>Active</uicontrol>,
+      <uicontrol>Disconnected</uicontrol>, <uicontrol>PreActive</uicontrol>, and
+      <uicontrol>Inactive</uicontrol> states and associate it with bundles for other nodes (groups,
+     accounts, devices) in the hierarchy. </li>
+</ol>
+</section>
+</conbody></concept>

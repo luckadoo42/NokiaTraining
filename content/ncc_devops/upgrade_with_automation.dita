@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<<<<<<< HEAD
+<!DOCTYPE task PUBLIC "-//NSN//DTD DITA Task//EN" "nsntask.dtd">
+<task id="id9YZ-09126-MT02-REZZA-d1e4922"><title>Upgrading NCC with automation</title><taskbody id="d1e5055"><context>
+=======
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="id9YZ-09126-MT02-REZZA-d1e4922"><title>Upgrading SPS with automation</title><taskbody id="d1e5055"><context>
+>>>>>>> a136a20478cd190ea11fc8f4c356db2268cfb316
+<sectiondiv>
+<p>This section describes The automated in-service software upgrade (ISU) of the NCC in OpenStack
+                    and in vCloud. The automated NCC ISU follows the NCC in-service upgrade process
+                    described in <emphasis>NCC upgrade</emphasis> chapter in <emphasis>Installation
+                        and Upgrade Guide</emphasis>. In this process, SM sites are upgraded before
+                    ME sites. The automated NCC ISU offers two options to upgrade a site of any
+                    type. One option is to upgrade all the site’s VMs all together. The other option
+                    is to upgrade the site’s VMs sequentially in groups: one group of VMs after
+                    another group of VMs.</p>
+<p> The automated NCC ISU uses DevOps scripts and does the following:</p><ul>
+<li>
+<p>verifies LCM VM list and image_su_with_separated_prepare settings in the VNF Conf file</p>
+</li>
+<li>
+<p>creates the CSAR package of the TO release version</p>
+</li>
+<li>
+<p>downloads and creates the NCC images in OpenStack, or the vApp Template in vCloud</p>
+</li>
+<li>
+<p>installs spsSU-sps tool</p>
+</li>
+<li>
+<p>patches the CSAR package of the FROM release version</p>
+</li>
+<li>
+<p>creates the interim CSAR package</p>
+</li>
+<li>
+<p>uploads CSAR packages to CBAM</p>
+</li>
+<li>
+<p>downloads VNF instantiated info from CBAM</p>
+</li>
+<li>
+<p>configures ISU configs</p>
+</li>
+<li>
+<p>creates the Ansible vault password file for accessing the NCC</p>
+</li>
+<li>
+<p>generates ISU task lists</p>
+</li>
+<li>
+<p>invokes autoSU.py script to execute upgrade, backout, update persisted version and commit tasks defined in ISU task lists</p>
+</li>
+</ul>
+<p>For more information on DevOps scripts, see <!--xref URI: ../Chapters/c-devops-scripts.xml#Scripts-chapter--><xref keyref="id9YZ-09126-MT02-REZZA-Scripts-chapter"/>.</p>
+<p>The following actions that are part of the manual ISU workflow are not being carried out by the
+                    DevOps scripts and have to be performed as separate steps in the automated NCC
+                    ISU procedure:</p><ul>
+<li>
+<p>updating ME version in the SM GUI</p>
+</li>
+<li>
+<p>monitoring DB status</p>
+</li>
+<li>
+<p>checking health of the NCC</p>
+</li>
+</ul>
+				<p>To upgrade the NCC using automation:</p>
+</sectiondiv>
+</context><steps>
+<step><cmd>Log in to the Maestro VM.</cmd><info/></step>
+<step>
+                <cmd>Ensure that the NCC is healthy using the procedure <emphasis>Checking health of
+                        NCC</emphasis> in <emphasis>Installation and Upgrade Guide</emphasis>.</cmd>
+                <info/>
+            </step>
+<step><cmd>Remove the security patch data for the "FROM" release using the “Moving security patches data for the "FROM" release” procedure in the<emphasis> Installation and Upgrade Guide</emphasis>.</cmd><info/></step>
+<step><cmd>For every SM site, do the following:</cmd><info><ul>
+<li>
+<p>If you are upgrading the NCC by upgrading each site’s VMs all together, use the procedure
+                                    <!--xref URI: t-devops-upgrade-all-VMs.xml#Upgrade-all-VMs--><xref
+                                    keyref="id9YZ-09126-MT02-REZZA-Upgrade-all-VMs"/>.</p>
+</li>
+<li>
+<p>If you are upgrading the NCC by upgrading each site’s VMs in groups, use the procedure
+                                    <!--xref URI: t-devops-upgrade-half-of-VMs.xml#Upgrade-half-of-VMs--><xref
+                                    keyref="id9YZ-09126-MT02-REZZA-Upgrade-half-of-VMs"/>.</p>
+</li>
+</ul></info></step>
+<step><cmd>For every ME site, do the following:</cmd><info><ul>
+<li>
+<p/><ul>
+<li>
+<p>If you are upgrading the NCC by upgrading each site’s VMs all together, use the procedure
+                                            <!--xref URI: t-devops-upgrade-all-VMs.xml#Upgrade-all-VMs--><xref
+                                            keyref="id9YZ-09126-MT02-REZZA-Upgrade-all-VMs"/>.</p>
+</li>
+<li>
+<p>If you are upgrading the NCC by upgrading each site’s VMs in groups, use the procedure
+                                            <!--xref URI: t-devops-upgrade-half-of-VMs.xml#Upgrade-half-of-VMs--><xref
+                                            keyref="id9YZ-09126-MT02-REZZA-Upgrade-half-of-VMs"
+                                        />.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Set the ME version to the TO load using the procedure <emphasis>Updating ME version in SM GUI</emphasis> in the <emphasis>Installation and Upgrade Guide</emphasis>.</p>
+</li>
+</ul></info></step>
+<step>
+                <cmd>Ensure that the NCC is healthy using the procedure <emphasis>Checking health of
+                        NCC</emphasis> in the <emphasis>Installation and Upgrade
+                    Guide</emphasis>.</cmd>
+                <info/>
+            </step>
+<step><cmd>For every site in the deployment, commit the upgrade by entering:</cmd><info><p>
+<codeph>maestro ace sps-upgrade -t commit</codeph>
+</p></info></step>
+<step><cmd>For every site in the deployment, cleanup the security patch data from the "FROM release" using the “Cleanup security patch data from the "FROM release" procedure in the <emphasis>Installation and Upgrade Guide</emphasis>.</cmd><info/></step>
+</steps>
+</taskbody></task>

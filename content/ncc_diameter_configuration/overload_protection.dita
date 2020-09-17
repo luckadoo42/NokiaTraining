@@ -1,0 +1,569 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-cn01-tczza-d1e3532"><title>Overload protection</title><conbody>
+<section><title>Overload protection overview</title>
+<p>The NCC supports application overload protection. The application VM monitors response queue
+                lengths for a workload in excess of a configured threshold. When the threshold is
+                exceeded, the overload condition triggers shedding actions that are configured as
+                part of a profile's message filters. The configuration may specify that new messages
+                be discarded or to send a specific response. Critical resources are monitored, such
+                as Diameter message processing, and users can specify message filters to fine-tune
+                the shedding of requests to specific requirements.</p>
+<p>The NCC has three threshold values that are configurable through the Service Manager, as
+                follows:</p><ul>
+<li>
+<p>Low threshold </p>
+</li>
+<li>
+<p>High threshold </p>
+</li>
+<li>
+<p>Resource threshold</p>
+</li>
+</ul>
+<p>If the utilization or value of a resource exceeds an upper threshold, the resource and the associated workstation or VM (the system) are considered to be overloaded. The overloaded state remains until the utilization or value of all monitored resources on the workstation or VM is less than the respective lower threshold of each monitored resource.</p>
+<p>The NCC provides the following overload protection functionality:</p><ul>
+<li>
+<p>System monitoring: System status is reported on a per-workstation or per-VM basis. States are classified as:</p><ul>
+<li>
+<p>Normal-The system is operating normally.</p>
+</li>
+<li>
+<p>Minor-An overload state has been detected.</p>
+</li>
+<li>
+<p>Major-The overload state has continued for a period of time.</p>
+</li>
+<li>
+<p>Critical-The overload state has continued for an extended period of time.</p>
+</li>
+<li>
+<p>Resource Critical-The overload state has reached a level that could stop the Application server.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>System reporting: A change to an overload state, or a return to normal, is reported using a log entry. Overload states are logged at the WARN level. Return to normal state is logged at the INFO level. An "AutoClear" flag is set to "No" for overload related alarms. This means that they need to be cleared manually by the operator.</p>
+</li>
+<li>
+<p>Configurable overload protection escalation interval: The overload protection escalation interval specifies how long the system can remain in a specific overload state before it is escalated to the next higher state, for example, from Minor to Major. The overload protection escalation interval is specified globally.</p>
+</li>
+</ul>
+<p>Downstream overload is a configuration that allows the NCC to attempt to protect a downstream
+                network element from overload. For NCC, on the ingress peer, use the Overload
+                Protection Configurations and Overload Protection Profiles. On the egress peer, use
+                the Downstream Overload Configurations and Downstream Overload Profiles.</p></section>
+<section>
+<p><b>Overload protection profile</b></p>
+<p>Before you begin to configure Overload protection, an <uicontrol>Overload Protection Profile</uicontrol> must be created.</p>
+<p>System overload protection profiles capture the overload parameters for queue levels, shedding percentages, etc. Multiple overload protection profiles may be defined and distributed using the SM.</p>
+<p>The NCC supports a separate profile for each monitored resource such as Diameter message latency,
+                    and Diameter message count, as well as a profile for the shedding actions to be
+                    applied when the system goes into overload.</p>
+<note>Due to the volatile nature of resource usage in a VM environment, CPU overload is not
+        supported in NCC VNF. However, CPU overload is supported in NCC CNF.<p/></note>
+</section>
+<section id="shed">
+                                                <title>Overload shedding</title>
+<p>You can configure message filters as rules to perform the shedding in the <i>Overload Protection Profile</i> for all requests based on the overload state. The higher the overload state, the higher the percentage of requests that are shed. You can use any attribute of the current Diameter message as criteria when deciding whether to reject the request. For example, the peer or IP address that the request was received from, the application and/or command type, or attributes that correspond to AVPs in the request.</p>
+<p>The Overloaded-State attribute allows you to access the current system overload state. The system overload state is returned as one of the following integer values:</p><ul>
+<li>
+<p>0—normal</p>
+</li>
+<li>
+<p>1—minor overload</p>
+</li>
+<li>
+<p>2—major overload</p>
+</li>
+<li>
+<p>3—critical overload</p>
+</li>
+<li>
+<p>4—resource-critical overload</p>
+</li>
+</ul>
+<p>Specify the settings as described in the table below for the shedding profile.</p>
+<table colsep="1" rowsep="1">
+                                                  <tgroup cols="3">
+                                                  <colspec colname="col1"/>
+                                                  <colspec colname="col2"/>
+                                                  <colspec colname="col3"/>
+                                                  <thead>
+                                                  <row>
+                                                  <entry>
+                                                  <p>Parameter</p>
+                                                  </entry>
+                                                  <entry>
+                                                  <p>Description</p>
+                                                  </entry>
+                                                  <entry>
+                                                  <p>Mandatory or Optional</p>
+                                                  </entry>
+                                                  </row>
+                                                  </thead>
+                                                  <tbody>
+                                                  <row>
+                                                  <entry> Profile Name </entry>
+                                                  <entry> Specify the profile name. Maximum
+                                                  characters 50 only. </entry>
+                                                  <entry> Mandatory </entry>
+                                                  </row>
+                                                  <row>
+                                                  <entry> Description </entry>
+                                                  <entry> Specify a description of the profile. </entry>
+                                                  <entry> Optional </entry>
+                                                  </row>
+                                                  <row>
+                                                  <entry> Security Domain </entry>
+                                                  <entry>
+                                                  <p>Specifies the user types that can see the
+                                                  profile records.</p>
+                                                  <p>If no value is specified, the records are
+                                                  public.</p>
+                                                  </entry>
+                                                  <entry> Optional </entry>
+                                                  </row>
+                                                  <row>
+                                                  <entry> Filter Groups </entry>
+                                                  <entry> Specify the filter group associated with
+                                                  the profile. Maximum characters 50 only. </entry>
+                                                  <entry> Mandatory </entry>
+                                                  </row>
+                                                  <row>
+                                                  <entry> Add Message Filter </entry>
+                                                  <entry>
+                                                  <p>Select the criteria.</p>
+                                                  <p>Select the Action attributes.</p>
+                                                  <p>Add values as needed.</p>
+                                                  </entry>
+                                                  <entry/>
+                                                  </row>
+                                                  </tbody>
+                                                  </tgroup>
+                                                  </table>
+<p>The following is an example of a simple message filter rule that could be used to shed 75% of the messages when overloaded:</p>
+<note>The APN is required to identify the GX Emergency call because you do not want to shed
+                                                  emergency calls. The following rule defined below
+                                                  will not shed the emergency calls (Gx should be
+                                                  successful) and 80% of the other non-emergency Gx
+                                                  calls will be shed.</note>
+<p>
+<userinput>if GxCCR.Called-Staion-Id NOT_EQUAL SOS (values)</userinput>
+</p>
+<p>
+<userinput>then DiameterRequest.Reject-With-Percentage</userinput>
+</p>
+<p>
+<userinput>Shedding Percentage =</userinput>
+</p>
+<p>
+<userinput>75</userinput>
+</p>
+<p>
+<userinput>Result-Code = 3004</userinput>
+</p>
+<p>
+<userinput>Vendor Id = 10415</userinput>
+</p>
+<p>See <!--xref URI: #overloadexamp--><xref keyref="id9YZ-09126-CN01-TCZZA-d1e3532/overloadexamp"/>for the configuration example in SM.</p>
+</section>
+<section id="Thresh">
+<p><b>Threshold profile parameters</b></p>
+<p>In the Overload tab, select the type of overload threshold profile to create.</p>
+<p>The options are:</p><ul>
+<li>
+<p>Latency Threshold Profile</p>
+</li>
+<li>
+<p>Message Count Threshold Profile</p>
+</li>
+</ul>
+<note>
+<p>Due to the volatile nature of resource usage in a VM environment, CPU overload is not supported.</p>
+</note>
+<p>Diameter message handling in the NCC declares an overload when a message latency threshold has
+                    been reached, as measured by the time taken between when a Diameter message
+                    arrives and when it begins processing. Specify the settings as described in the
+                    table below for the Diameter latency threshold.</p>
+<table colsep="1" rowsep="1">
+<title>Latency threshold profile parameters</title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<colspec colname="COLSPEC0"/>
+<thead>
+<row>
+<entry>
+<p>Parameter </p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+<entry>
+<p>Mandatory or Optional</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry> Name </entry>
+<entry> Specify the profile name. </entry>
+<entry> Mandatory </entry>
+</row>
+<row>
+<entry> Lower threshold </entry>
+<entry> Specify the threshold, in milliseconds, under which overload
+                                    can be cleared. For latency, the threshold is specified in
+                                    milliseconds. </entry>
+<entry> Mandatory </entry>
+</row>
+<row>
+<entry> Upper threshold </entry>
+<entry> Specify the threshold to trigger a major alarm. </entry>
+<entry> Mandatory </entry>
+</row>
+<row>
+<entry> Resource critical threshold </entry>
+<entry> Specify the threshold to trigger a resource critical alarm. </entry>
+<entry> Mandatory </entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>The message rate for the message queue backlog is configured as based on the aggregate traffic for all the processing VMs. Each processing VM supports a message rate that is the configured rate divided by the number of active processing VMs. For example, when there are five processing VMs sharing the processing load, 10,000 requests per second is applied as 10000/5=2000 requests per second on each processing VM.</p>
+<p>Specify the settings as described in the table below for the message count threshold.</p>
+<table><title>Message count threshold profile parameters</title>
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<colspec colname="COLSPEC0"/>
+<thead>
+<row>
+<entry>
+<p>Parameter </p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+<entry>
+<p>Mandatory or Optional</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+Name
+</entry>
+<entry>
+Specify the profile name.
+</entry>
+<entry>
+Mandatory
+</entry>
+</row>
+<row>
+<entry>
+Lower threshold 
+</entry>
+<entry>
+Specify the threshold, in milliseconds, under which overload can be cleared. For message count, the threshold is in number of messages. 
+</entry>
+<entry>
+Mandatory
+</entry>
+</row>
+<row>
+<entry>
+Upper threshold 
+</entry>
+<entry>
+Specify the threshold to trigger a major alarm.
+</entry>
+<entry>
+Mandatory
+</entry>
+</row>
+<row>
+<entry>
+Resource critical threshold 
+</entry>
+<entry>
+Specify the threshold to trigger a resource critical alarm.
+</entry>
+<entry>
+Mandatory
+</entry>
+</row>
+<row>
+<entry>
+Security Domain
+</entry>
+<entry>
+<p>Specify the user types that can see the profile records.</p>
+<p>If no value is specified, the records are public.</p>
+</entry>
+<entry>
+Optional
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<note>
+<p>Due to the volatile nature of resource usage in a VM environment, CPU overload is not supported.</p>
+</note>
+</section>
+                <section><title>Overload Protection Configuration</title>
+<p>All of the above profiles must be distributed to all the MEs.</p>
+<p>On the <uicontrol>Overload Protection Configuration form</uicontrol> page, provide the following details and distribute it to the MEs.</p>
+<table colsep="1" rowsep="1">
+                                                  <tgroup cols="3">
+                                                  <colspec colname="col1"/>
+                                                  <colspec colname="col2"/>
+                                                  <colspec colname="col3"/>
+                                                  <thead>
+                                                  <row>
+                                                  <entry>
+                                                  <p>Parameter</p>
+                                                  </entry>
+                                                  <entry>
+                                                  <p>Description</p>
+                                                  </entry>
+                                                  <entry>
+                                                  <p>Mandatory or Optional</p>
+                                                  </entry>
+                                                  </row>
+                                                  </thead>
+                                                  <tbody>
+                                                  <row>
+                                                  <entry> Name </entry>
+                                                  <entry> Specify the name of the overload
+                                                  protection configuration. </entry>
+                                                  <entry> Mandatory </entry>
+                                                  </row>
+                                                  <row>
+                                                  <entry> Poll interval (seconds) </entry>
+                                                  <entry> Specify the polling time-interval in
+                                                  seconds. </entry>
+                                                  <entry> Mandatory </entry>
+                                                  </row>
+                                                  <row>
+                                                  <entry> Escalation interval (seconds) </entry>
+                                                  <entry> Specify the escalation time-interval in
+                                                  seconds. </entry>
+                                                  <entry> Mandatory </entry>
+                                                  </row>
+                                                  <row>
+                                                  <entry> Security domain </entry>
+                                                  <entry>
+                                                  <p>Specify the user types that can see the
+                                                  overload protection configuration records.</p>
+                                                  <p>If no value is specified, the records are
+                                                  public.</p>
+                                                  </entry>
+                                                  <entry> Optional </entry>
+                                                  </row>
+                                                  <row>
+                                                  <entry nameend="col3" namest="col1">
+                                                  <uicontrol>Resource Threshold
+                                                  Configuration</uicontrol>
+                                                  </entry>
+                                                  </row>
+                                                  <row>
+                                                  <entry> Message count threshold profile name </entry>
+                                                  <entry>
+                                                  <p>Select the message count profile from the
+                                                  drop-down list.</p>
+                                                  <p>See <!--xref URI: #Thresh--><xref
+                                                  keyref="id9YZ-09126-CN01-TCZZA-d1e3532/Thresh"
+                                                  />for more information.</p>
+                                                  </entry>
+                                                  <entry> Optional </entry>
+                                                  </row>
+                                                  <row>
+                                                  <entry> Latency threshold profile name </entry>
+                                                  <entry>
+                                                  <p>Select the latency threshold profile from the
+                                                  drop-down list.</p>
+                                                  <p>See <!--xref URI: #Thresh--><xref
+                                                  keyref="id9YZ-09126-CN01-TCZZA-d1e3532/Thresh"
+                                                  />for more information.</p>
+                                                  </entry>
+                                                  <entry> Optional </entry>
+                                                  </row>
+                                                  <row>
+                                                  <entry nameend="col3" namest="col1">
+                                                  <uicontrol>Overload Shedding
+                                                  Configuration</uicontrol>
+                                                  </entry>
+                                                  </row>
+                                                  <row>
+                                                  <entry> Overload shedding profile name </entry>
+                                                  <entry>
+                                                  <p>Select the overload shedding profile from the
+                                                  drop-down list.</p>
+                                                  <p>See <!--xref URI: #shed--><xref
+                                                  keyref="id9YZ-09126-CN01-TCZZA-d1e3532/shed"/> for
+                                                  more information.</p>
+                                                  </entry>
+                                                  <entry> Optional </entry>
+                                                  </row>
+                                                  </tbody>
+                                                  </tgroup>
+                                                </table>
+</section>
+                <section><title>Adding the Overload plugin</title>
+<p>Distributed configurations come with a pre-installed overload protection plugin; however, you can add the plugin if it is missing from the distributed setups or if you have a standalone system by following the steps below. </p><ol>
+<li>
+<p>Add the Overload plugin in to your tpa.properties file, for example:</p>
+<p>
+<userinput>dcp.plugins.integrated="systemtype=INTEGRATED%requestsequence=Throttling:Ingres</userinput>
+</p>
+<p>
+<userinput>Overload Protection:,Rule Engine,PCRF Plugin,SPOCSPlugin:%responsesequence=PCRF </userinput>
+</p>
+<p>
+<userinput>Plugin,Rule Engine:"</userinput>
+</p>
+</li>
+<li>
+<p>Truncate and set the dsclocal.DDMPluginsCfgCont and restart the server. The Overload plugin’s entry should appear as below:</p>
+<p>
+<systemoutput>table. select * from dsclocal.DDMPluginsCfgCont</systemoutput>
+</p>
+</li>
+</ol>
+</section>
+<section>
+<p><b>Downstream Overload configurations</b></p>
+<p>Specify the settings as described in the table below.</p>
+<table colsep="1" rowsep="1">
+                                                  <tgroup cols="3">
+                                                  <colspec colname="col1"/>
+                                                  <colspec colname="col2"/>
+                                                  <colspec colname="col3"/>
+                                                  <thead>
+                                                  <row>
+                                                  <entry>
+                                                  <p>Parameter</p>
+                                                  </entry>
+                                                  <entry>
+                                                  <p>Description</p>
+                                                  </entry>
+                                                  <entry>
+                                                  <p>Mandatory or Optional</p>
+                                                  </entry>
+                                                  </row>
+                                                  </thead>
+                                                  <tbody>
+                                                  <row>
+                                                  <entry> Name </entry>
+                                                  <entry> Specify the name of the downstream
+                                                  overload configuration. Maximum characters 50
+                                                  only. </entry>
+                                                  <entry> Mandatory </entry>
+                                                  </row>
+                                                  <row>
+                                                  <entry> Downstream Overload Profile </entry>
+                                                  <entry>
+                                                  <p>Specify the name of the Downstream Overload
+                                                  Profile. Maximum characters 50 only.</p>
+                                                  <p>See <!--xref URI: #downprof--><xref
+                                                  keyref="id9YZ-09126-CN01-TCZZA-d1e3532/downprof"/>
+                                                  for more information.</p>
+                                                  </entry>
+                                                  <entry> Mandatory </entry>
+                                                  </row>
+                                                  <row>
+                                                  <entry> Security Domain </entry>
+                                                  <entry>
+                                                  <p>Specifies the user types that can see the
+                                                  profile records.</p>
+                                                  <p>If no value is specified, the records are
+                                                  public.</p>
+                                                  </entry>
+                                                  <entry> Optional </entry>
+                                                  </row>
+                                                  <row>
+                                                  <entry> Description </entry>
+                                                  <entry> Specify a description of the profile. </entry>
+                                                  <entry> Optional </entry>
+                                                  </row>
+                                                  </tbody>
+                                                  </tgroup>
+                                                </table>
+</section>
+                <section id="downprof"><title>Downstream overload protection profile parameters</title>
+<p>Downstream overload protection profiles capture the overload parameters for egress peers and end destinations. You can add and customize as many message filters as necessary for specific peers and end destinations depending on the desired response.</p>
+<p>Specify the settings as described in the table below.</p>
+<table colsep="1" rowsep="1">
+                                                  <tgroup cols="3">
+                                                  <colspec colname="col1"/>
+                                                  <colspec colname="col2"/>
+                                                  <colspec colname="col3"/>
+                                                  <thead>
+                                                  <row>
+                                                  <entry>
+                                                  <p>Parameter</p>
+                                                  </entry>
+                                                  <entry>
+                                                  <p>Description</p>
+                                                  </entry>
+                                                  <entry>
+                                                  <p>Mandatory or Optional</p>
+                                                  </entry>
+                                                  </row>
+                                                  </thead>
+                                                  <tbody>
+                                                  <row>
+                                                  <entry> Profile Name </entry>
+                                                  <entry> Specify the profile name. Maximum
+                                                  characters 50 only. </entry>
+                                                  <entry> Mandatory </entry>
+                                                  </row>
+                                                  <row>
+                                                  <entry> Description </entry>
+                                                  <entry> Specify a description of the profile. </entry>
+                                                  <entry> Optional </entry>
+                                                  </row>
+                                                  <row>
+                                                  <entry> Security Domain </entry>
+                                                  <entry>
+                                                  <p>Specifies the user types that can see the
+                                                  profile records.</p>
+                                                  <p>If no value is specified, the records are
+                                                  public.</p>
+                                                  </entry>
+                                                  <entry> Optional </entry>
+                                                  </row>
+                                                  <row>
+                                                  <entry> Filter Groups </entry>
+                                                  <entry> Specify the filter group associated with
+                                                  the profile. Maximum characters 50 only. </entry>
+                                                  <entry> Mandatory </entry>
+                                                  </row>
+                                                  <row>
+                                                  <entry> Add Message Filter </entry>
+                                                  <entry>
+                                                  <p>Select the criteria.</p>
+                                                  <p>Select the Action attributes.</p>
+                                                  <p>Add values as needed.</p>
+                                                  </entry>
+                                                  <entry/>
+                                                  </row>
+                                                  </tbody>
+                                                  </tgroup>
+                                                  </table>
+</section>
+<section id="overloadexamp">
+                                                <title>Example of Overload protection shedding
+                                                  configuration</title>
+<fig id="promarch">
+<title>Overload protection profile with shedding example</title>
+<!--MMO resource relative URI: ../Graphics/overloadexample_default.png-->
+<image href="../images/overloadexample_default.png" placement="break" scale="70"/>
+</fig>
+</section>
+</conbody></concept>

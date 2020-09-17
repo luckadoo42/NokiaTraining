@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="performance__footprint_and_scaling">
+    <title>Performance, footprint and scaling</title>
+    <conbody>
+        <p>This section describes the performance, footprint and scaling of NCC CNF.</p>
+        <section id="section_n4m_yr2_llb">
+            <title>Intelligent autoscaling</title>
+            <p>NCC CNF is designed to be a cloud-native solution with containers that can be
+                horizontally scaled-in and scaled-out as appropriate for handling the current
+                offered load. During times of high traffic, the Kubernetes autoscaler spins up more
+                instances of particular pod types as required, and during times of lower traffic,
+                scales-in the number of instances. Therefore, NCC CNF only consumes the resource
+                footprint required to handle the offered load on the system.</p>
+            <p>This autoscaling is especially important considering that CNFs in NCC are typically
+                deployed in pairs, meaning that any particular CNF receives only one-half of the
+                traffic load compared to its engineered capacity. Moreover, the system dimensioning
+                is typically done conservatively to allow for maximum anticipated peak, busy-hour
+                traffic, while the actual traffic is often much lower.</p>
+            <p>NCC CNF therefore consumes a much lower footprint during typical operation,
+                scaling-up only as much as required for the actual load on the system.</p>
+            <p>DB instances (Aerospike and Redis) are excluded from automatic scaling in the initial
+                version. The database might be constrained by the memory required to hold the
+                records for the engineered number of subscribers/devices. Therefore, it is not
+                possible to scale-in those instances as traffic diminishes since the required amount
+                of memory remains unchanged. </p>
+            <p>In future versions, Nokia might enhance scaling to include DB instances. Since
+                Charging is memory-limited, the system might start up with a small number of
+                instances and scale-out additional instances as additional DB records are added, and
+                more memory, that is, more DB instances are required.</p>
+        </section>
+        <section>
+            <p><b>Caching of data</b></p>
+            <p>NCC applications maintain a local cached copy of infrequently changing data that have
+                a small number of records (for example, service bundle definitions, that are
+                system-level records and not per-subscriber nor per-device). This helps further
+                optimize the performance and reduce the load on the database. Cached data must be
+                updated periodically either by polling, or using the data change notification
+                mechanism which leverages Kafka pub/sub functionality to notify interested
+                clients.</p>
+        </section>
+        <section id="section_hbz_zr2_llb">
+            <title>Minimizing footprint</title>
+            <p>NCC CNF minimizes the actual resources required at any particular time by employing
+                Kubernetes autoscaling to scale-in resources to the amount that is required to
+                handle lower traffic loads. </p>
+            <p>In addition, NCC supports a deployment option where SM can be deployed integrated
+                with an ME. This allows the SM and ME to share all the common resources (telemetry,
+                database, ETCD, Kafka, and so on) and therefore reducing the total hardware
+                footprint in the network.</p>
+        </section>
+        <section id="section_kkr_qr2_llb">
+            <title>Data model principles for high performance</title>
+            <p>NCC is designed with best-practice strategies for leveraging NoSQL database
+                technology. An important aspect of this strategy is to create large single records
+                that include all needed data for the most common transactions, rather than have that
+                data spread across many tables or sets. This approach eliminates the need for
+                transaction management for these common transactions, since the operations on this
+                single large record are atomic by definition. It also reduces the number of database
+                accesses for the typical charging transaction. NCC leverages several Aerospike
+                features to achieve this, including lists and maps within the record. </p>
+            <p>NCC groups all data for a particular account (for example, a family with multiple
+                members and several devices and usage plans) into a single record. While this covers
+                the most common use cases and a high percentage of transaction in NCC, there are
+                some use cases with larger enterprise groups that cannot fit into a single record.
+                For these cases, records need to be linked together and then a simple transaction
+                management and rollback capability is required to manage those transactions. </p>
+            <p>NCC data model includes the following several types of data.</p>
+            <p><b>Dynamic data</b></p>
+            <p>This portion of the subscriber model includes data usage counters, account balances,
+                and so on. Nearly every charging transaction impacts one or more of these data
+                items.</p>
+            <p><b>Infrequently changing data</b></p>
+            <p>This portion of the subscriber model includes data such as subscription plans for the
+                group and each of its members. </p>
+            <p><b>Service definition</b></p>
+            <p>This data defines the details of the services that can be subscribed. This data
+                changes infrequently and is not large, compared to the volume of subscriber data.
+                Therefore, this data is typically cached in memory for optimum performance of
+                charging transactions.</p>
+            <p><b>Mapping index tables</b></p>
+            <p>There are several mapping tables for determining which record is to be used,
+                depending on what input is available for a particular transaction (for example,
+                IMSI, MSISDN, and more)</p>
+            <p>Most transactions update only the dynamic data record, using LTM record locking to
+                ensure data integrity with other parallel transactions in the system. A smaller set
+                of use cases might require changes to both the dynamic data and the infrequently
+                changing data records. While a single lock is used for this transaction, transaction
+                management is also required for these use cases to ensure that transaction rollback
+                is possible in case of failures. For more information about the NCC data models, see
+                <i>Subscriber Manager Guide</i> and <i>Charging User Guide</i> in the NCC
+                documentation set.</p>
+            <p> The following figures show an example of data entity relationships and how in
+                database clubbing combines the related data objects of this example into a single
+                set of records.</p>
+            <fig id="fig_jwv_n3g_dmb">
+                <title>Relationships between data entities (example)</title>
+                <image placement="break"
+                    href="../images/cnf_overview_relationships-between-data-entities.GIF"
+                    align="center" id="image_kwv_n3g_dmb" scale="27"/>
+            </fig>
+            <fig id="fig_f1k_53g_dmb">
+                <title>Clubbing data into recores for a database</title>
+                <image placement="break"
+                    href="../images/cnf_overview_clubbing-data-into-records-for-database.GIF"
+                    align="center" id="image_g1k_53g_dmb" scale="25"/>
+            </fig>
+        </section>
+    </conbody>
+</concept>

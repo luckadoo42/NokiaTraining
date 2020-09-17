@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9YZ-09018-UG00-PCZZA-d1e10615">
+<title>Software upgrade and file patching</title>
+<conbody>
+<section id="section_ytk_4vg_jlb">
+<title>Overview</title>
+<p>The NCC can be updated using the following methods as required:</p>
+<ul id="ul_ztk_4vg_jlb">
+<li>
+<p>
+<!--xref URI: #ISU-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e10615/ISU"/>: an in-service software
+                        upgrade (ISU)</p>
+</li>
+<li>
+<p><xref keyref="id9YZ-09018-UG00-PCZZA-d1e10615/spspatchtool"/>: a file-replacement patching
+                                                tool</p>
+</li>
+<li><xref href="software-update.dita"/></li>
+</ul>
+</section>
+<section id="ISU">
+<title>In-service software upgrade (ISU)</title>
+<p>The NCC supports a manual in-service software upgrade (ISU) from one NCC version to a later NCC
+                                version using CBAM as a VNF manager. The NCC is upgraded
+                                sequentially, one site (VNF) at a time and for each ME, SM or IG
+                                site, the upgrade is performed with a group of VMs in parallel.
+                                Currently the software upgrade supports the deployment that consists
+                                of either SM and ME sites, or only one IG site. NCC uses the BVNF
+                                supported Image SU (VM image replacement) mechanism for software
+                                upgrades, where the old software image on a VM is replaced with the
+                                new software image, and the VM is returned to service with the rest
+                                of the VMs, resulting in mixed software versions running together in
+                                the VNF.</p>
+<p>Any update that involves the following are delivered by the In-Service-Upgrade (ISU)
+                procedures. </p>
+<ul id="ul_b5k_4vg_jlb">
+<li>
+<p>DB schema updates</p>
+</li>
+<li>
+<p>BVNF version updates</p>
+</li>
+<li>
+<p>Ansible scripts (which are outside of the VNF)</p>
+</li>
+<li>
+<p>Anything that impacts inter-VNF communication</p>
+</li>
+<li>
+<p>OS patches</p>
+</li>
+<li>
+<p>CSF/3rd party patches that cannot be file-replaced (e.g. if they require RPM
+                        updates)</p>
+</li>
+<li>
+<p>any incompatible updates where new software cannot run at the same time as
+                        the old software</p>
+</li>
+</ul>
+<p>See the “NCC-Upgrade” chapter of the <i>NCC Installation and Upgrade Guide</i> for information
+                                about the in-service software upgrade (ISU).</p>
+</section>
+<section id="spspatchtool">
+<title>SPS-Patching tool</title>
+<p>The NCC supports file-replacement patching using the SPS-Patching tool. This tool supports an LCM
+                                friendly mechanism for delivering cumulative urgent file-replacement
+                                patches. These patches provide file replacement in emergency patch
+                                situations and critical updates to custom plugins. The patch may
+                                include files that can be file-replaced and that are not localized,
+                                such as XML files, tools, scripts, etc, but also jar files. This
+                                type of patch is cumulative and includes the content of all previous
+                                patches since the base version. The base version in this case is the
+                                most recent version deployed via the standard software
+                                update procedure. </p>
+<p>The patching tool allows you to perform an in-service patching operation. The patching operation
+                                is done while the NCC VNF remains in-service without traffic being
+                                diverted to another NCC VNF. You can choose up to half of the VMs
+                                within an applicable VM type group to patch at once but options are
+                                available to allow you control over the number of nodes to patch.
+                                See the “SPS-Tools” chapter of the <i>NCC Administration Guide</i>
+                                for information about the SPS-Patching tool.</p>
+            <sectiondiv><b>SPS-Security-Patching tool</b><p>The NCC also supports file-replacement
+                                        patching using the install-security-patch.sh tool for
+                                        security patches. This tool is used to apply security
+                                        patches (tar of rpms) on all Application (App) nodes, or the
+                                        OAME node, or both types of nodes. This tool does not apply
+                                        to containers. It copies the patch to the Application or
+                                        OAME node if all nodes of the App or OAME type can be
+                                        accessed using SSH. It does not apply a patch to any single
+                                        VM, but does apply the patch to all VMs of the group App or
+                                        OAME. See the “SPS-Tools” chapter of the <i>NCC VNF
+                                                Administration Guide</i> for information about the
+                                        install-security-patch.sh tool.</p></sectiondiv>
+</section>
+</conbody>
+</concept>

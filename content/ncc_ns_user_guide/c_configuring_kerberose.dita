@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9YZ-08540-UG02-PCZZA-d1e47980_configuring_kerberose">
+   <title>Configuring Kerberose</title>
+   <conbody>
+
+      <p>To use Kerberos authentication, the NCCNS Kafka client needs the Kerberos configuration
+         file <filepath>krb5.conf</filepath> and keytab(s) that contain pairs of Kerberos principals
+         and encrypted keys. To make these files available inside the SPSNS containers, copy them to
+         all the comsvc nodes at the path <filepath>/opt/tpa/conf/sac/external/</filepath>.</p>
+      <p>An automated script copies the <filepath>krb5.conf</filepath> file from the
+            <filepath>/opt/tpa/conf/sac/external/</filepath> directory to the
+            <filepath>/etc/krb5.conf</filepath> directory of the SPSNS container.</p>
+      <section>
+         <p>
+            <b>Sample krb5.conf file</b>
+         </p>
+         <codeblock>#---------------------------------------------------------------
+
+#Configuration snippets may be placed in this directory as well
+includedir /etc/krb5.conf.d/
+
+[logging]
+default = FILE:/var/log/krb5libs.log
+kdc = FILE:/var/log/krb5kdc.log
+admin_server = FILE:/var/log/kadmind.log
+
+[libdefaults]
+dns_lookup_realm = false
+ticket_lifetime = 24h
+renew_lifetime = 7d
+forwardable = true
+rdns = false
+pkinit_anchors = /etc/pki/tls/certs/ca-bundle.crt
+default_realm = MYREALM
+default_ccache_name = KEYRING:persistent:%{uid}
+
+[realms]
+MYREALM =
+
+{ kdc = hisingh admin_server = hisingh }
+[domain_realm]
+.hisingh = MYREALM
+hisingh = MYREALM
+#---------------------------------------------------------------
+</codeblock>
+      </section>
+   </conbody>
+</concept>

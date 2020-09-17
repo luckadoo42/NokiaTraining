@@ -1,0 +1,2143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-cn01-tczza-d1e9435"><title>NCC computational contexts</title><conbody>
+<section><title>About computational contexts</title>
+<p>In addition to Diameter AVP manipulation, the NCC can perform other functions to route Diameter
+				messages. For example, the NCC can store the results of routing decisions, look up
+				subscriber information from an external SPR, and mirror a Diameter message. </p>
+<p>Computational contexts are dynamically loaded by the NCC and are automatically made available to
+				support additional manipulation of all Diameter messages. A computational context
+				can be a source context and/or a result context in the NCC. </p>
+<table pgwide="1" rowsep="1">
+<title>Computational contexts</title>
+<tgroup cols="3" colsep="1">
+<colspec colname="1" colnum="1"/>
+<colspec colname="2" colnum="2"/>
+<colspec colname="3" colnum="3"/>
+<thead>
+<row>
+<entry colname="1">
+<p>Computational Context</p>
+</entry>
+<entry colname="2">
+<p>Description</p>
+</entry>
+<entry colname="3">
+<p>Context type</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry colname="1"> Calculator </entry>
+<entry colname="2"> Allows you to write message filters to store and
+								manipulate numbers and strings. </entry>
+<entry colname="3"> Source and result context </entry>
+</row>
+<row>
+<entry colname="1"> Destination mapping </entry>
+<entry colname="2"> Allows you to persist routing decisions in the NCC
+								database and use those decisions as inputs to route Diameter
+								messages in the future. </entry>
+<entry colname="3"> Source and result context </entry>
+</row>
+<row>
+<entry colname="1"> Peer table </entry>
+<entry colname="2"> Allows you to write message filters to access and
+								manipulate the Diameter peer table information on the NCC system. </entry>
+<entry colname="3"> Source and result context </entry>
+</row>
+<row>
+<entry colname="1"> Properties </entry>
+<entry colname="2"> Allows you to write message filters to read from
+								both Java and managed object properties in NCC. </entry>
+<entry colname="3"> Source and result context </entry>
+</row>
+<row>
+<entry colname="1"> System </entry>
+<entry colname="2"> Allows you to write message filters to control
+								specific behavioral aspects of the NCC system. You can also check
+								the geo-state of the local system, and control access to the
+								calendar, system overload state, and Diameter peer table information
+								of the NCC system. </entry>
+<entry colname="3"> Result context </entry>
+</row>
+<row>
+<entry colname="1"> Mirroring </entry>
+<entry colname="2"> Allows you to write message filters to replicate a
+								Diameter message and send a copy to the mirroring servers. </entry>
+<entry colname="3"> Result context </entry>
+</row>
+<row>
+<entry> Downstream Overload Protection </entry>
+<entry> Allows you to write message filters to protect downstream peers
+								or destinations. </entry>
+<entry> Result context </entry>
+</row>
+<row>
+<entry> Logging </entry>
+<entry> Allows you to write message filters, for Tracing, that log
+								information about the current Diameter message that is being
+								processed and/or the state of the NCC. </entry>
+<entry> Result context </entry>
+</row>
+<row>
+<entry> Diameter Logging </entry>
+<entry> Allows you to extend the Logging context functionalitys, for
+								Tracing, to log more information about the Diameter message that is
+								being processed and/or the state of the NCC. </entry>
+<entry> Result context </entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section id="Calculatorcontext"><title>Calculator context</title>
+<p>The Calculator computational context enables you to write message filters to store
+				and manipulate numbers and strings contained in both Diameter request and answer
+				messages.</p>
+<p>The calculator has ten memories for each type of data. The supported data types are:
+				int, long, and string. The Calculator context is available both as a source and a
+				result context in the NCC. It allows you to extract AVPs from a message, perform a
+				sequence of manipulations on the AVP, then put the modified value back into the
+				message. </p>
+<p>The table below describes the calculator context attributes/actions that are
+				available. You can invoke these actions multiple times on a given Diameter request,
+				as required. </p>
+<table pgwide="1" rowsep="1">
+<title>Calculator context attributes/actions</title>
+<tgroup cols="3" colsep="1">
+<colspec colname="1" colnum="1"/>
+<colspec colname="2" colnum="2"/>
+<colspec colname="3" colnum="3"/>
+<thead>
+<row>
+<entry colname="1">
+<p>attribute/action</p>
+</entry>
+<entry colname="2">
+<p>Description</p>
+</entry>
+<entry colname="3">
+<p>Impact on performance</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry colname="1"> Clear-All </entry>
+<entry colname="2"> This action allows you to clear all of the contents
+								of the calculator. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry> Enum.To-Octet </entry>
+<entry> This action converts an enumerated AVP value into an octet
+								string </entry>
+<entry> Low </entry>
+</row>
+<row>
+<entry colname="1"> Int </entry>
+<entry colname="2"> The Int attribute can be invoked for any filter, and
+								allows you to return the value of the integer at the current index. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Int.Add </entry>
+<entry colname="2"> This action allows you to add the given value to the
+								integer value at the current write index. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Int.Clear </entry>
+<entry colname="2"> This action allows you to set the integer value at
+								the current write index to zero. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Int.Divide-By </entry>
+<entry colname="2"> This action allows you to divide the integer value
+								at the current write index by the given value. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Int.Modulo </entry>
+<entry colname="2"> This action allows you to divide the integer value
+								at the current write index by the given value and set the integer
+								value to the modulo of the division. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Int.Multiply-By </entry>
+<entry colname="2"> This action allows you to multiply the given value
+								with the integer value at the current write index. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Int.Negate </entry>
+<entry colname="2"> This action allows you to negate the integer value
+								at the current write index. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Int.Negate-Value </entry>
+<entry colname="2"> This attribute allows you to negate the given
+								integer value. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Int.Null-Value </entry>
+<entry colname="2"> This attribute can be invoked for any Request filter
+								group. It allows you to return a null integer value at the current
+								index. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Int.Read-Index </entry>
+<entry colname="2"> This action allows you to set the current read index
+								for integer values to the new index value specified. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Int.Set </entry>
+<entry colname="2"> This action allows you to set the integer value at
+								the current write index to the given value. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Int.Subtract </entry>
+<entry colname="2"> This action allows you to subtract the given value
+								from the integer value at the current write index. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry> Int.To-Octet </entry>
+<entry> This action converts an integer AVP value into octet string. </entry>
+<entry> Low </entry>
+</row>
+<row>
+<entry colname="1"> Int.To-Long </entry>
+<entry colname="2"> This attribute allows you to convert the given value
+								from the integer value to a long value. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Int.Value-Of-String </entry>
+<entry colname="2"> This action allows you to convert a string value
+								into an integer value and assign it to the integer value at the
+								current write index. If the value cannot be converted, then no
+								change is made to the state of the calculator. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Int.Write-Index </entry>
+<entry colname="2"> This action allows you to set the current write
+								index for integer values to the new write index value specified. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Ints.Add </entry>
+<entry colname="2"> This attribute allows you to add two integer values
+								and return the sum. A null is returned if there was a problem with
+								the input parameters. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Ints.Divide </entry>
+<entry colname="2"> This attribute allows you to divide an integer value
+								by another integer value and return the quotient. A null is returned
+								if there was a problem with the input parameters. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Ints.Modulo </entry>
+<entry colname="2"> This attribute allows you to divide the given
+								integer value by another integer value and return the remainder. A
+								null is returned if there was a problem with the input parameters. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Ints.Multiply </entry>
+<entry colname="2"> This attribute allows you to multiply two integer
+								values and return the product. A null is returned if there was a
+								problem with the input parameters. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Ints.Subtract </entry>
+<entry colname="2"> This attribute allows you to subtract an integer
+								value from the integer value and return the difference. A null is
+								returned if there was a problem with the input parameters. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> IPAddress-Equal </entry>
+<entry colname="2"> This attribute allows you to compare two IP identity
+								or IP address strings for equality. The same IP address can have
+								more than one string representation (for example, Base 10 or
+								Hexidecimal). </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> IPAddress-To-String </entry>
+<entry colname="2">
+<p>This attribute allows you to convert the IP address AVPs into a
+									dot notation format for easier use in message filters.</p>
+<p>The IPAddress-To-String attribute accepts a single parameter,
+									which is the IP address in byte array format. You can reference
+									the attribute and its parameter in the following format:</p>
+<p>IPAddress-To-String (<i>Address to Convert</i>)</p>
+</entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Long </entry>
+<entry colname="2"> The Long attribute can be invoked for any message
+								filter. It returns the long value at the current read index. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Long.Add </entry>
+<entry colname="2"> This action allows you to add the given value to the
+								long value at the current write index. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Long.Clear </entry>
+<entry colname="2"> This action allows you to set the long value at the
+								current write index to zero. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Long.Divide-By </entry>
+<entry colname="2"> This action allows you to divide the long value at
+								the current write index by the given value. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Long.Modulo </entry>
+<entry colname="2"> This action allows you to divide the long value at
+								the current write index by the given value and set the long value to
+								the modulo of the division. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Long.Multiply-By </entry>
+<entry colname="2"> This action allows you to multiply the given value
+								with the long value at the current write index. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Long.Negate </entry>
+<entry colname="2"> This action allows you to negate the long value at
+								the current index. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Long.Negate-Value </entry>
+<entry colname="2"> The attribute allows you to negate the given long
+								value. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Long.Null-Value </entry>
+<entry colname="2"> The attribute can be invoked for any Request filter
+								group. It returns a null long value at the current index. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Long.Read-Index </entry>
+<entry colname="2"> This action allows you to set the current read index
+								for long values. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Long.Set </entry>
+<entry colname="2"> This action allows you to set the long value at the
+								current write index to the given value. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Long.Subtract </entry>
+<entry colname="2"> This action allows you to subtract the given value
+								from the long value at the current write index. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Long.Subtract </entry>
+<entry colname="2"> This action allows you to subtract the given value
+								from the long value at the current write index. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Long.To-Int </entry>
+<entry colname="2"> This attribute allows you to convert a long value to
+								an integer value. There may be a loss of data depending on the long
+								value that was passed in. A null is returned if there was a problem
+								with the input parameters. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Long.Write-Index </entry>
+<entry colname="2"> This action allows you to set the current write
+								index for long values to the new value specified for the write
+								index. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Longs.Add </entry>
+<entry colname="2"> This attribute allows you add two long values and
+								return the sum. A null is returned if there was a problem with the
+								input parameters. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Longs.Divide </entry>
+<entry colname="2"> This attribute allows you to divide a long value by
+								another long value and return the quotient. A null is returned if
+								there was a problem with the input parameters. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Longs.Modulo </entry>
+<entry colname="2"> This attribute allows you to divide a long value by
+								another long value and return the remainder. A null is returned if
+								there was a problem with the input parameters. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Longs.Multiply </entry>
+<entry colname="2"> This attribute allows you to multiply two long
+								values and return the product. A null is returned if there was a
+								problem with the input parameters </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Longs.Subtract </entry>
+<entry colname="2"> This attribute allows you to subtract a long value
+								from another long value and return the difference. A null is
+								returned if there was a problem with the input parameters. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry> Octet.As-String </entry>
+<entry> This action gives the output of input octet string value as it
+								is. For example, if input octet string is <varname>535053</varname>,
+								then the output of <i>CalculatorContext.Octet.As-String</i> is
+									<varname>535053</varname>. </entry>
+<entry> Low </entry>
+</row>
+<row>
+<entry colname="1"> Random.Next-Int </entry>
+<entry colname="2"> The attribute allows you to generate a random number
+								between -2 and 2 to the power -1. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Random.Next-Int-In-Range </entry>
+<entry colname="2"> The attribute allows you to generate a random number
+								between 0 and the specified number, excluding the specified number.
+								If an invalid range is specified, the value returned is the same as
+								from the Random.Next-Int attribute. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Random.Next-Long </entry>
+<entry colname="2"> The attribute allows you to generate a random number
+								between 2 and 2 to the power -1. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Random.Next-Long-In-Range </entry>
+<entry colname="2">
+<p>The attribute allows you to generate a random number between 0
+									and the specified number, excluding the specified number. If an
+									invalid range is specified, the value returned is the same as
+									from the Random.Next-Long attribute.</p>
+<p>
+<b>NOTE: </b>The Next-Long-In-Range is currently limited to a
+									range up to 53 bits, and not the full 63 bit range.</p>
+</entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Random.Seed </entry>
+<entry colname="2"> The action allows you to provide the seed value to
+								use to initialize the random generator. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> String </entry>
+<entry colname="2"> The String attribute can be invoked for any message
+								filter. It returns the value of the string at the current read
+								index. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> String.Append </entry>
+<entry colname="2"> This action allows you to update the string at the
+								current write index with the given string appended to the string at
+								the current write index. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> String.Begin-Substring </entry>
+<entry colname="2"> This action allows you to update the string at the
+								current write index with a substring of the string at the current
+								read index, from the beginning of the string to the specified index
+								minus one. In the case of an invalid index being specified, the
+								calculator state is not updated. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> String.Clear </entry>
+<entry colname="2"> This action allows you to set the string value at
+								the current write index to an empty string. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> String.End-Substring </entry>
+<entry colname="2"> This action allows you to update the string at the
+								current write index with a substring of the string at the current
+								read index, from the specified index to the end of the string. In
+								the case of an invalid index being specified, the calculator state
+								is not updated. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> String.Index-Of </entry>
+<entry colname="2"> This action allows you to determine the index within
+								the string at the current read index of the first occurrence of the
+								specified substring and assign that index to the integer value at
+								the current integer write index. If the substring is not found then
+								the index is -1. (Same as the last indexOf method of String). </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> String.Last-Index-Of </entry>
+<entry colname="2"> This action allows you to determine the index within
+								the string at the current read index of the first occurrence of the
+								specified substring. You can assign that index to the integer value
+								at the current integer write index. If the substring is not found,
+								then the index is -1. (Same behavior as the Index-Of action of
+								String) </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> String.Length </entry>
+<entry colname="2"> This attribute returns the length of the string at
+								the current read index. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> String.Null-Value </entry>
+<entry colname="2"> This attribute returns a null string value. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> String.Prepend </entry>
+<entry colname="2"> This action allows you to update the string at the
+								current write index with the given string prepended to the string at
+								the current write index. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> String.Read-Index </entry>
+<entry colname="2"> This action allows you to specify the current read
+								index for string values. This allows subsequent read actions to be
+								performed on the string value at the current Read-Index </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> String.Set </entry>
+<entry colname="2"> This action allows you to set the string value at
+								the current write index to the given value. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> String.Substring </entry>
+<entry colname="2"> This action allows you to update the string at the
+								current write index with a substring of the string at the current
+								read index, from the specified start index up to but not including
+								the end index. In the case of an invalid index being specified, the
+								calculator state is not updated. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> String.Substring-Of </entry>
+<entry colname="2"> This attribute allows you return a substring of the
+								given string, from the specified start index up to but not including
+								the end index. In the case of an invalid value or index being
+								specified, a null value is returned. Indices are zero-based, so
+								valid indices are 0 to string.length() - 1. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> String.To-Int </entry>
+<entry colname="2"> This attribute allows you to convert a string value
+								to an integer value. A null is returned if the value could not be
+								converted. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> String.To-Long </entry>
+<entry colname="2"> This attribute allows you to convert a string value
+								to a long value. A null is returned if the value could not be
+								converted. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> String.To-Lowercase </entry>
+<entry colname="2"> This action allows you to update the string at the
+								current write index with the string value at the current read index
+								converted to all lower case </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> String.To-Uppercase </entry>
+<entry colname="2"> This action allows you to update the string at the
+								current write index with the string value at the current read index
+								converted to all upper case. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> String.Value-Of-Double </entry>
+<entry colname="2"> This action allows you to convert a double value to
+								a string and assign it to the string value at the current write
+								index. In the case null being specified, no change is made to the
+								state of the calculator. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> String.Value-Of-Float </entry>
+<entry colname="2"> This action allows you to convert a float value to a
+								string and assign it to the string value at the current write index.
+								In the case null being specified, no change is made to the state of
+								the calculator. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> String.Value-Of-Int </entry>
+<entry colname="2"> This action allows you to convert an integer value
+								to a string and assign it to the string value at the current write
+								index. In the case of null being specified, no change is made to the
+								state of the calculator. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> String.Value-Of-Long </entry>
+<entry colname="2"> This action allows you to convert an long value to a
+								string and assign it to the string value at the current write index.
+								In the case of null being specified, no change is made to the state
+								of the calculator. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> String.Write-Index </entry>
+<entry colname="2"> This action allows you to allows you to manipulate
+								the string value at the current Write-Index. All write actions on
+								the string will be on the value at this index. </entry>
+<entry colname="3"> Low </entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>All reads from the calculator take place from the memory at the current read index
+				for the data type, and all writes take place to the memory at the current write
+				index. The index values range from 0 to 9. Indices are initialized to 0 before each
+				message filter is invoked by the NCC. Indices are preserved when you invoke a filter
+				group as an action, so the called filter group can access the current value of the
+				indices. </p>
+<p>You can use the calculator context to write message filters to manipulate the AVPs in
+				a Diameter message. For example, suppose a PCRF is miscalculating a value, you can
+				use the write filters to trigger actions to adjust the value as the message passes
+				through. </p>
+<p>In some cases, you may have to write multiple message filters to perform an action.
+				Specifically, when a message filter criteria or action takes parameters, the values
+				specified for those parameters are not allowed to be attributes/actions that
+				themselves take parameters. For example, suppose you want to Set() action to set the
+				CC-Request-Number to (3 - 1) + (2 * 4) = 2 + 8 = 10. This would require the
+				calculation to be done in steps, with multiple criteria/actions in a sequence in the
+				message filter, as follows:</p>
+<userinput>Calculator.Int.Write-Index (0) Calculator.Set (3) Calculator.Subtract (1)
+				Calculator.Int.Write-Index (1) Calculator.Set (2) Calculator.Multiply-By (4)
+				Calculator.Read-Index (0) Calculator.Int.Add (Calculator.Int) Calculator.Read-Index
+				(1) GxCCR.CC-Request-Number.Set (Calculator.Int)</userinput>
+</section>
+<section><title>Destination Mapping context</title>
+<p>The Destination Mapping computational context allows the user to persist routing decisions to the
+				NCC database and use those decisions as inputs to route Diameter messages in the
+				future. </p>
+<p>The NCC can examine and modify the contents of a message it is routing, including the ultimate
+				destination of the message. Some Policy and Charging Control Diameter messages
+				contain AVPs that uniquely identify the intended subscriber of the message. These
+				AVPs can be used to correlate messages that have a common subscriber but use
+				different Diameter applications. </p>
+<p>When the NCC makes a routing decision for a message, you can use the Destination Mapping context
+				to write message filters to persist the following information from the message into
+				the NCC database:</p><ul>
+<li>
+<p>destination decision</p>
+</li>
+<li>
+<p>point of message origination</p>
+</li>
+<li>
+<p>PCC-related message details</p>
+</li>
+</ul>
+<p>When subsequent messages are received by the NCC, you can write message filter to query the
+				database for the routing decision. If a routing decision matching the information in
+				the current message is found stored in the NCC database, the current message can be
+				modified to be sent to the same destination.</p>
+<p>For example, assume that you specify a destination for a Diameter message when a Gx session
+				establishment message is sent. At this point, the origination and destination
+				information, and the PCC-related details are extracted from the message and stored
+				in the database. Suppose that the NCC later receives an Rx message that has similar
+				(but not identical) PCC-related information. The NCC database can then be queried
+				for previous destination decisions using the PCC information from the current
+				message. If a match is found, the Rx message destination can be modified, thus
+				ensuring that the Rx message is handled by the same Diameter node that handled the
+				Gx message.</p>
+<p>Unless disabled, the configured destination mappings are subject to audit after a specified interval. The audit removes records that have a timestamp that is older than the age specified by the DRA Destination Mapping Inactivity Duration application preference parameter at the time the audit runs.</p>
+<p>The Destination Mapping context implements a stateful deployment and requires more system resources, which can affect system performance. </p>
+<p>Alcatel-Lucent recommends that you use the default stateless deployment for optimal system performance.</p>
+<p>The table below describes the Destination Mapping context attributes/actions that are available.</p>
+<table pgwide="1"><title>Destination Mapping: applicable attributes/actions</title>
+<tgroup cols="3" colsep="1">
+<colspec colname="1" colnum="1"/>
+<colspec colname="2" colnum="2"/>
+<colspec colname="3" colnum="3"/>
+<thead>
+<row>
+<entry colname="1">
+<p>attribute/action</p>
+</entry>
+<entry colname="2">
+<p>Description</p>
+</entry>
+<entry colname="3">
+<p>Impact on performance</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry colname="1">
+Mapping-Exists-By-PCC-Info 
+</entry>
+<entry colname="2">
+<p>The Mapping-Exists-By-PCC-Info attribute indicates if a mapping can be found for the information in the current Diameter message. </p>
+<p>One of the following result codes is returned:</p><ul>
+<li>
+<p>1 if a mapping is found</p>
+</li>
+<li>
+<p>0 if a mapping is not found</p>
+</li>
+</ul>
+</entry>
+<entry colname="3">
+High
+</entry>
+</row>
+<row>
+<entry colname="1">
+Create-Destination-Mapping-For-Message 
+</entry>
+<entry colname="2">
+<p>The Create-Destination-Mapping-For-Message action extracts the user-specified destination mapping information from the origin-host/realm AVPs for a Diameter answer message context and from the destination-host/realm AVPs for a Diameter request message context.</p>
+<p>When a destination mapping is created via a message filter in a request message context, the destination-host and destination-realm are extracted and used as the destination values in the mapping record.If a destination mapping for a Diameter message is not found, you can specify a new destination by updating the values of the destination-host/realm AVPs of the message. These values are then read and stored in the mapping record in the database.</p>
+<p>When a destination mapping is created via a message filter in an answer message context, the origin-host/realm of the answer message are extracted and used as the destination values in the mapping record. The mapping is only created if the Diameter message contains a Diameter result-code AVP indicating that the request is successful (2000-2999).</p>
+</entry>
+<entry colname="3">
+High
+</entry>
+</row>
+<row>
+<entry colname="1">
+Update-Message-With-Destination-From-Mapping 
+</entry>
+<entry colname="2">
+The Update-Message-With-Destination-From-Mapping action updates the Destination-Host/Realm in the current Diameter message with the values previously stored by the Create-Destination-Mapping-For-Message action for a related message.
+</entry>
+<entry colname="3">
+High
+</entry>
+</row>
+<row>
+<entry colname="1">
+Update-Mapping-Timestamp 
+</entry>
+<entry colname="2">
+The Update-Mapping-Timestamp action is used to update the timestamp of a mapping record(s) stored in the database, to prevent the record(s) from being audited out.
+</entry>
+<entry colname="3">
+High
+</entry>
+</row>
+<row>
+<entry colname="1">
+Remove-Mappings-For-Session-Id
+</entry>
+<entry colname="2">
+This action deletes all destination mappings that match the session-id AVP of the current request message. 
+</entry>
+<entry colname="3">
+High
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<sectiondiv>
+<p><b>Parameters to list Destination elements</b></p>
+<p>The following parameters are displayed:</p>
+<table colsep="1" rowsep="1">
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+<p>Parameter</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry> Destination ID </entry>
+<entry> Displays the ID for a destination mapping. </entry>
+</row>
+<row>
+<entry> Destination </entry>
+<entry> Displays the unique ID for a destination mapping. </entry>
+</row>
+<row>
+<entry> Distribution list </entry>
+<entry> Displays the distribution list associated with the
+									destination mapping. </entry>
+</row>
+<row>
+<entry> Actions </entry>
+<entry>
+<p>Displays the actions.</p>
+<p>Select any of the actions and use the buttons:</p>
+<ul>
+<li>
+<p>to modify the selected destination mapping.</p>
+</li>
+<li>
+<p>to delete the selected destination mapping.</p>
+</li>
+<li>
+<p>to provision the selected destination mapping.</p>
+</li>
+</ul>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+</section>
+<section><title>Peer Table context</title>
+<p>The Peer Table context allows you to write message filters to access and manipulate the Diameter
+				peer table information and control peer connectivity on the local NCC system. </p>
+<p>The peer table connectivity aspects that you can manipulate are:</p><ul>
+<li>
+<p>perform a peer disconnect for a given Origin-Host, but allow the peer to immediately reconnect</p>
+</li>
+<li>
+<p>perform a peer disconnect for a given Origin-Host, then prevent the peer from immediately reconnecting</p>
+</li>
+<li>
+<p>perform a check to determine whether a Diameter peer with the given origin-host (FQDN) is connected</p>
+</li>
+<li>
+<p>get/set the per-peer timeout (in milliseconds) when a peer connects</p>
+</li>
+</ul>
+<p>The table below describes the Peer Table context attributes/actions (and where applicable, the associated parameters) that are available. </p>
+<table colsep="1" pgwide="1" rowsep="1">
+<title>Peer Table context attributes/actions</title>
+<tgroup cols="3" colsep="1">
+<colspec colname="1" colnum="1"/>
+<colspec colname="2" colnum="2"/>
+<colspec colname="3" colnum="3"/>
+<thead>
+<row>
+<entry colname="1">
+<p>attribute/action</p>
+</entry>
+<entry colname="2">
+<p>Description</p>
+</entry>
+<entry colname="3">
+<p>Impact on performance</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry> Copy-Peer-To-Capabilities-Exchange </entry>
+<entry>
+<p>Under the result context Peer Table, this action enables you to
+									populate the AVPs of a CER/CEA message with the peer
+									details.</p>
+<p>By using this action, the NCC will present itself to the newly
+									connected peer exactly as the other peer presented itself to the
+									NCC</p>
+<p>For this action to work correctly, the peer whose identity is
+									being copied must be connected to the NCC. The connectivity
+									status of a peer can be checked using the
+									Peer-Table.Is-Connected attribute.</p>
+<p>By also suppressing additions to the Route-Record AVP using the
+									Suppress-Route-Record action for all messages going to the peer,
+									the NCC can effectively make itself invisible, giving the peer
+									the impression that it is directly connected to another peer,
+									and not the NCC.</p>
+<p>Note: The action is applicable to Diameter CER and Diameter CEA
+									rule sets only.</p>
+</entry>
+<entry> Low </entry>
+</row>
+<row>
+<entry colname="1"> Is-Connected (Peer Origin-Host) </entry>
+<entry colname="2"> This action is used to check whether a Diameter peer
+								with the given origin-host (FQDN) is connected. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry> Disconnect(Peer Origin-Host) </entry>
+<entry> Under the result context Peer Table, this action enables you to
+								disconnect the peer with the given Origin-Host with a disconnect
+								cause of 'Do Not Want To Talk To You' in the Disconnect-Peer-Request
+								message. The peer may immediately reconnect. </entry>
+<entry> Low </entry>
+</row>
+<row>
+<entry colname="1"> Quarantine (Peer Origin-Host, Duration) </entry>
+<entry colname="2">
+<p>This action enables you to perform a peer disconnect with the
+									specified Origin-Host. </p>
+<p>The peer is not allowed to reconnect for the duration specified
+									in seconds by one of the following methods:</p>
+<ul>
+<li>
+<p>putting the peer in the peer filter black list (if the
+											peer is the one originating the connection)</p>
+</li>
+<li>
+<p>disabling the peer config for the peer (if the NCC is
+											controlling the peer connection)</p>
+</li>
+</ul>
+<p>If not set, the default maximum quarantine duration is 5
+									minutes.</p>
+<p>
+<b>Note1:</b> You can change these configuration items by
+									deleting the peer from the peer filter black list or by enabling
+									the peer config for the peer. In either case, the peer
+									connection is allowed to be re-established, effectively
+									overriding this action.</p>
+<p>
+<b>Note2:</b> You can also adjust the maximum allowed quarantine
+									duration (in seconds) by adding the Java property
+									"ddm.maxpeerquarantine" to the /opt/tpa/conf/sac/tpa.properties
+									file. You must restart the application server for the change to
+									take effect. </p>
+</entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry> Get-Timeout (Peer Origin-Host) </entry>
+<entry>
+<p>Under the source context Peer Table, this attribute enables you
+									to get the timeout value (in milliseconds) for the specified
+									peer. The timeout controls how long the NCC will wait for a
+									response to requests sent to the peer.</p>
+<p>Enter the Peer Origin-Host as a string.</p>
+<p>Enter the Value as a Number.</p>
+<p>A null is returned if the peer does not exist in the peer table,
+									or if there is no timeout specific to the peer.</p>
+<p>Note: The action is applicable to Diameter CER and Diameter CEA
+									rule sets only.</p>
+</entry>
+<entry/>
+</row>
+<row>
+<entry> Choose-Peer-By-Origin-Host (Peer Origin-Host) </entry>
+<entry>
+<p>An attribute under the source context Peer Table that allows for
+									choosing a peer by Origin-Host. This attribute finds a peer by
+									comparing the given Origin-Host against the configured FQDN
+									values and connected O-H values and returns 1 for chosen and 0
+									for not chosen. The chosen peer is then stored in the current
+									Diameter message.</p>
+<p>Origin-Host is the FQDN when the peer connection is initiated on
+									NCC. When you use a rule with "Choose-Peer-By-...", the FQDN is
+									not required to be same as the Peer Origin-host in Table 19-25
+									Diameter Peers: parameters And when the Peer connection is
+									initiated from a downstream server to the NCC,
+									Choose-Peer-By-Origin-Host will match the connected peer by the
+									OriginHost, and return the first matched peer.</p>
+<p>Enter Origin-Host value as a string in the format: host.realm.
+									Only one chosen peer can be stored per message. Multiple
+									“Choose-Peer-By-...” calls will result in the last successful
+									“Choose-Peer-By-...” call's chosen peer being stored.</p>
+<p>For example:</p>
+<p>
+<userinput>IF
+										(PeerTable.Choose-Peer-By-Origin-Host(Peer-By-Origin-Host=host.realm)
+										= 1)</userinput>
+</p>
+<p>
+<userinput>THEN</userinput>
+</p>
+<p>
+<userinput>Gx CCR.Route-To-Chosen-Peer or</userinput>
+</p>
+<p>
+<userinput>IF (PeerTable.Choose-Peer-By-Origin-Host
+										(Peer-By-Origin-Host=host.realm) = 1)</userinput>
+</p>
+<p>
+<userinput>THEN</userinput>
+</p>
+<p>
+<userinput>Mirroring.Route-To-Chosen-Peer</userinput>
+</p>
+<p>See more usage examples in the following:</p>
+<ul>
+<li>
+<p>Diameter message routing</p>
+</li>
+<li>
+<p>Mirroring context</p>
+</li>
+</ul>
+</entry>
+<entry> Low </entry>
+</row>
+<row>
+<entry> Choose-Peer-By-Origin-Host-And-IP (Peer Origin-Host, IP
+								Identity, Port Number) </entry>
+<entry>
+<p>An attribute under the source context Peer Table that allows for
+									choosing a peer by Origin-Host and IP identity or port number.
+									This attribute returns 1 for chosen and 0 for not chosen. The
+									chosen peer is then stored in the current Diameter message.</p>
+<p>Enter Origin-Host value as a string in the format: Host.realm</p>
+<p>An IP identity can be represented as a domain name (for example,
+									iphost.domain or localhost) or as an IP address. Supported
+									formats for the IP address include:</p>
+<ul>
+<li>
+<p>IPv4 dot notation (127.0.0.1)</p>
+</li>
+<li>
+<p>IPv6 hexadecimal (::1, 0::FFFF:7F00:1)</p>
+</li>
+<li>
+<p>IPv4 hexadecimal (0x7F000001)</p>
+</li>
+<li>
+<p>IPv4 dotted hexadecimal (0x7F.0x00.0x00.0x01)</p>
+</li>
+</ul>
+<p>The Port value is entered as a number. The Port can be Null,
+									which indicates that it is not used in the search. It can be set
+									to null using the “Calculator Context.Int.Null-Value”.</p>
+<p>Other Null values for arguments are errors. Only one chosen peer
+									can be stored per message. Multiple “Choose-Peer-By-...” calls
+									will result in the last successful “Choose-Peer-By-...” call's
+									chosen peer being stored.</p>
+</entry>
+<entry> Low </entry>
+</row>
+<row>
+<entry> Choose-Peer-By-IP (IP Identity, Port Number) </entry>
+<entry>
+<p>An attribute under the source context Peer Table that allows for
+									choosing a peer by IP identity or port number. This attribute
+									returns 1 for chosen and 0 for not chosen. The chosen peer is
+									then stored in the current Diameter message. An IP identity
+									value is entered as a string and can be represented as a domain
+									name (for example, iphost.domain or localhost) or as an IP
+									address. </p>
+<p>Supported formats for the IP address include:</p>
+<ul>
+<li>
+<p>IPv4 dot notation (127.0.0.1)</p>
+</li>
+<li>
+<p>IPv6 hexadecimal (::1, 0::FFFF:7F00:1)</p>
+</li>
+<li>
+<p>IPv4 hexadecimal (0x7F000001)</p>
+</li>
+<li>
+<p>IPv4 dotted hexadecimal (0x7F.0x00.0x00.0x01)</p>
+</li>
+</ul>
+<p>The Port value is entered as a number. The Port can be Null,
+									which indicates that it is not used in the search. It can be set
+									to null using the “Calculator Context.Int.Null-Value”.</p>
+</entry>
+<entry/>
+</row>
+<row>
+<entry> Choose-Peer-By-ID (Diameter Identity, Port Number) </entry>
+<entry> An attribute under the source context Peer Table that allows for
+								choosing a peer by Diameter identity or port number. This attribute
+								returns 1 for chosen and 0 for not chosen. The chosen peer is then
+								stored in the current Diameter message. A Diameter identity value is
+								entered as a string and can be represented as a domain name (for
+								example, hostname.domain or localhost). </entry>
+<entry/>
+</row>
+<row>
+<entry> Chosen-Peer </entry>
+<entry>
+<p>This is an attribute under the source context Peer Table that
+									returns a value that can be used with other Peer Table
+									attributes or actions that accept an origin-host. The value
+									tells that method to use the chosen peer instead of treating the
+									value as an origin-host. You must use one of the
+									“Choose-Peer-By-...” attributes before the Chosen-Peer action
+									will provide meaningful information to other Peer Table context
+									attributes or actions.</p>
+<p>For example:</p>
+<p>IF (PeerTable.Choose-Peer-By-Origin-Host</p>
+<p>(Peer-By-Origin-Host=host.realm) = 1)</p>
+<p>THEN</p>
+<p>Peer Table.Is-Connected (Peer Table.Chosen-Peer)</p>
+</entry>
+<entry/>
+</row>
+<row>
+<entry> Has-Chosen-Peer </entry>
+<entry>
+<p>This is an attribute under the source context Peer Table that
+									returns 1 if the message has a chosen peer and 0 if it does not
+									have a chosen peer.</p>
+<p>For example, on a Diameter Request rule table:</p>
+<p>IF (Peer
+									Table.Choose-Peer-By-Origin-Host(Peer-By-Origin-Host=host.realm)
+									= 1)</p>
+<p>(The peer was found and stored in the message)</p>
+<p>On a Gx CCR rule table, you could use:</p>
+<p>IF (Peer Table.Has-Chosen-Peer = 1)</p>
+<p>(A peer was found while invoking the generic Diameter Request
+									rule table, it was stored in the message and is available for
+									use in the Gx CCR rule table called afterwards).</p>
+</entry>
+<entry/>
+</row>
+<row>
+<entry> Clear-Chosen-Peer </entry>
+<entry>
+<p>This action clears the chosen peer from the Diameter message.</p>
+<p>For example to clear the result of the “Choose-Peer-By-...”
+									attribute, you would use:</p>
+<p>Peer Table.Clear-Chosen-Peer</p>
+<p>Then if Peer Table.Has-Chosen-Peer is executed, the result would
+									be 0 because the Chosen-Peer has been removed from message.</p>
+</entry>
+<entry/>
+</row>
+<row>
+<entry> Get-Peer-Product-Name (Peer Origin-Host) </entry>
+<entry>
+<p>An attribute under the source context Peer Table that retrieves
+									the product name of the peer using the Origin-Host.</p>
+<p>Enter the Peer Origin-Host as a string.</p>
+</entry>
+<entry/>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section><title>Properties context</title>
+<p>The Properties computational context allows you to write message filters to read from both Java and managed object properties in message filters. </p>
+<p>System properties are the configuration properties that you can view or configure to monitor and
+				control system behavior. You can use the SM GUI to view application preferences and
+				change some of the displayed application preference values. The NCC attributes
+				always return the value of the application preferences as strings. </p>
+<p>The table below describes the Properties context attributes/actions that are available. </p>
+<table pgwide="1" rowsep="1">
+<title>Properties context attributes/actions</title>
+<tgroup cols="3" colsep="1">
+<colspec colname="1" colnum="1"/>
+<colspec colname="2" colnum="2"/>
+<colspec colname="3" colnum="3"/>
+<thead>
+<row>
+<entry colname="1">
+<p>attribute/action</p>
+</entry>
+<entry colname="2">
+<p>Description</p>
+</entry>
+<entry colname="3">
+<p>Impact on performance</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry colname="1"> Get-Java-Property </entry>
+<entry colname="2"> This attribute enables you to read the Java property
+								as a string. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Get-Java-Property-With-Default </entry>
+<entry colname="2"> This attribute enables you to read the Java property
+								as a string.In the case where no such Java property exists or the
+								value cannot be retrieved, the default value is returned. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Get-System-Property </entry>
+<entry colname="2"> This attribute enables you read the managed object
+								property in a message filter. </entry>
+<entry colname="3"> Medium </entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section><title>System context</title>
+<p>The System result context allows you to write message filters to access and manipulate specific
+				behavioral aspects of the local NCC system, control filter evaluation, and
+				manipulate peer connectivity. </p>
+<p>You can write message filters to manipulate the following system behavior:</p><ul>
+<li>
+<p>specific calendar (current day, time, etc.)</p>
+</li>
+<li>
+<p>system overload state</p>
+</li>
+<li>
+<p>site name of the local and remote geo-redundant systems</p>
+</li>
+</ul>
+<p>The behaviors that you can manipulate are:</p><ul>
+<li>
+<p>stop current filter processing when exit criteria is met</p>
+</li>
+<li>
+<p>allow a sub-filter to be called as an action of a message filter in a filter group</p>
+</li>
+</ul>
+<p>The table below describes the System context attributes/actions (and where applicable, the
+				associated parameters) that are available on the NCC. </p>
+<table pgwide="1" rowsep="1">
+<title>System context attributes/actions</title>
+<tgroup cols="3" colsep="1">
+<colspec colname="1" colnum="1"/>
+<colspec colname="2" colnum="2"/>
+<colspec colname="3" colnum="3"/>
+<thead>
+<row>
+<entry colname="1">
+<p>attribute/action</p>
+</entry>
+<entry colname="2">
+<p>Description</p>
+</entry>
+<entry colname="3">
+<p>Impact on performance</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry colname="1"> Calendar.Current-Date-Time </entry>
+<entry colname="2"> This attribute allows you to access the current
+								system date and time in milliseconds since Unix epoch (January 1,
+								1970). </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Calendar.Current-Date-Time-String </entry>
+<entry colname="2"> This attribute allows you to access the current
+								system date and time in milliseconds since Unix epoch (January 1,
+								1970) as a string. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Calendar.Current-Day-Of-Month </entry>
+<entry colname="2"> This attribute allows you to return the current day
+								of the month as a number from 1 to 31. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Calendar.Current-Day-Of-Week </entry>
+<entry colname="2"> This attribute allows you to return the current day
+								of the week as a number from 0-6. The actual value returned for a
+								given day will depend on the local settings. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Calendar.Current-Hour-Of-Day </entry>
+<entry colname="2"> This attribute allows you to return the current hour
+								of the day as a number from 0 to 23. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Calendar.Current-Time-Of-Day </entry>
+<entry colname="2"> This attribute allows you to return the current time
+								of day as the number of milliseconds since midnight. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Calendar.Time-Start-Of-Day </entry>
+<entry colname="2"> This attribute allows you to return the number of
+								milliseconds at midnight since epoch. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Geo-Mate-Declared-Down </entry>
+<entry colname="2"> This attribute allows you to access the
+								geo-redundant status of the system. The attribute returns 1 when the
+								geo-mate has been declared down; otherwise, it returns 0. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Is-Overloaded </entry>
+<entry colname="2">
+<p>This attribute allows you to access the current usage state of
+									the system.</p>
+<p>One of the following result codes is returned:</p>
+<ul>
+<li>
+<p>1 if the system is overloaded</p>
+</li>
+<li>
+<p>0 if the system is not overloaded</p>
+</li>
+</ul>
+</entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Overloaded-State </entry>
+<entry colname="2">
+<p>This attribute allows you to access the current system overload
+									state. </p>
+<p>The system overload state is returned as one of the following
+									integer values:</p>
+<ul>
+<li>
+<p>0-normal</p>
+</li>
+<li>
+<p>1-minor overload</p>
+</li>
+<li>
+<p>2-major overload</p>
+</li>
+<li>
+<p>3-critical overload</p>
+</li>
+<li>
+<p>4-resource-critical overload</p>
+</li>
+</ul>
+<p>The NCC rejects all Diameter requests when in a resource-critical
+									overload state.</p>
+</entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Overloaded-Components </entry>
+<entry colname="2">
+<p>This attribute enables you to get the set of names of the system
+									components that are currently overloaded. </p>
+<p>An empty string is returned if the current system overload state
+									is normal (i.e. the Overloaded-State attribute returns a value
+									of 0). </p>
+<p>Otherwise, one or more of the following values is returned as a
+									list of comma-separated strings:</p>
+<ul>
+<li>
+<p>Diameter message count</p>
+</li>
+<li>
+<p>Java Heap Memory Usage</p>
+</li>
+<li>
+<p>CPU Usage</p>
+</li>
+<li>
+<p>Diameter Latency</p>
+</li>
+</ul>
+</entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Possible-Split-Brain </entry>
+<entry colname="2"> This attribute allows you to access the
+								geo-redundant status of the system. The attribute returns 1 when the
+								system is possibly in a split-brain situation; otherwise, it returns
+								0. </entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry> Run-IO-Bound </entry>
+<entry>
+<p>The Run-IO-Bound action allows you to indicate that further rule
+									engine evaluation for the current rule set should be performed
+									in the IO-bound thread pool. If processing is already occurring
+									in the IO-bound thread pool then this action is ignored. </p>
+<p>Note that this action should be very early in a rule system
+									version as the rule engine plugin will be invoked again so the
+									rule set currently being evaluated will be evaluated again.</p>
+</entry>
+<entry> Low </entry>
+</row>
+<row>
+<entry colname="1"> Set-Application-Name </entry>
+<entry colname="2">
+<p>The Set-Application-Name action attribute is used to set the
+									user-specified application name of the Diameter message when the
+									NCC needs to manipulate messages for two applications that share
+									the same Diameter application ID. Once the generic processing by
+									the Diameter-Request/Diameter-Answer filter group is complete,
+									the NCC uses the specified application name to invoke the
+									correct Diameter application filter group to process the
+									message. </p>
+<p>For example, suppose that the NCC gets a Diameter Request message
+									for application 4 and command 272. Since application ID 4 is
+									shared by the Credit-Control CCR and Gy CCR message types, you
+									can use the Set-Application-Name attribute to specify how to
+									interpret the ambiguous information. You can write a message
+									filter in the Diameter-Request filter group as follows:</p>
+<p>
+<b>if app == 4 and command == 272 and origin-realm ==
+										"charging-realm" then</b>
+</p>
+<p>
+<b>RequestContext.Set-Application-Name "Gy"</b>
+</p>
+<p>
+<b>else</b>
+</p>
+<p>
+<b>RequestContext.Set-Application-Name "Credit-Control"</b>
+</p>
+<p>Once the NCC has finished executing the Diameter-Request filter
+									group, it will then execute the Gy CCR message filter.</p>
+<p>If the application/command combination is ambiguous and the
+									application name is not specified, the NCC invokes the filter
+									group set for one of the applications, and it may not be the
+									correct one. </p>
+</entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Set-Default-Application-Name (Application Name,
+								Application Id) </entry>
+<entry colname="2">
+<p>The Set-Default-Application-Name action attribute allows you to
+									associate the specified Diameter application name with the given
+									Diameter application id. When a Diameter message arrives with
+									the given application id, it is then evaluated and processed
+									accordingly.</p>
+<p>This action is available in the `initialization' filter group
+									only.</p>
+<p>The Diameter application names can be found in the
+									/opt/tpa/diameter/definition/ApplicationDefinition&lt;AppName&gt;.xml
+									files. The application names are not case sensitive, but must be
+									spelled correctly.</p>
+<p>
+<b>NOTE:</b> For individual messages, the Set-Application-Name
+									action overrides the application name/id association set by the
+									Set-Default-Application-Name action attribute.</p>
+<p>You can use the Set-Default-Application-Name action to interpret
+									a message with an ambiguous application id when the
+									Set-Application-Name action is not invoked. This is useful when
+									the NCC processes messages for only one application of an
+									ambiguous set (for example, the NCC only processes Gy messages,
+									not Credit Control or Ro messages, though they all share
+									Application Id 4), or when one application of an ambiguous set
+									is the most common (for example, mostly Gy traffic, with some
+									Ro). Using the Set-Default-Application-Name action you can map
+									the application id to application name once, instead of mapping
+									every message with the ambiguous application id.</p>
+</entry>
+<entry colname="3"> Low </entry>
+</row>
+<row>
+<entry colname="1"> Site-Name </entry>
+<entry colname="2">
+<p>This attribute enables you to access the site name of the local
+									system.</p>
+<p>You can configure per-site behavior on two geo-redundant
+									sites.</p>
+</entry>
+<entry colname="3"> Low </entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section><title>Diameter result code context</title>
+<p>The Diameter Result Code context provides rule attributes that check the value of the current Diameter Answer message's Result-Code or Experimental-Result.</p>
+<note>
+<p>All rule attributes on this context will check both the Result-Code and Experimental-Result, unless otherwise noted.</p>
+</note>
+<note>
+<p>All Diameter answer messages defined in vendor-specific applications must include either one Result-Code AVP or one Experimental-Result AVP. However, a Result-Code and Experimental-Result cannot be in a Diameter answer at the same time.</p>
+</note>
+<p>The table below describes the rule attributes provided by Diameter result code context.</p>
+<table colsep="1" pgwide="1"><title>Diameter result code context attribute/actions</title>
+<tgroup cols="3" colsep="1">
+<colspec colname="1" colnum="1"/>
+<colspec colname="2" colnum="2"/>
+<colspec colname="3" colnum="3"/>
+<thead>
+<row>
+<entry colname="1">
+<p>attribute/action</p>
+</entry>
+<entry colname="2">
+<p>Description</p>
+</entry>
+<entry colname="3">
+<p>Impact on performance</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry colname="1">
+Is-Informational
+</entry>
+<entry colname="2">
+<p>Used as a condition, Is-Informational checks for Result-Code and Experimental-Result (expecting to only find one) and then checks if the value is within the 1xxx range. The Is-Informational attribute returns:</p><ul>
+<li>
+<p>1—(true) if the Diameter Answer has a Result-Code value in the Informational series of 1xxx</p>
+</li>
+<li>
+<p>0—(false) if the Diameter Answer does not have a Result-Code value in the Informational series of 1xxx</p>
+</li>
+</ul>
+</entry>
+<entry colname="3">
+Low
+</entry>
+</row>
+<row>
+<entry colname="1">
+Is-Success
+</entry>
+<entry colname="2">
+<p>Used as a condition, Is-Success checks for Result-Code and Experimental-Result (expecting to only find one) and then checks if the value is within the 2xxx range. The Is-Success attribute returns:</p><ul>
+<li>
+<p>1—(true) if the Diameter Answer has a Result-Code value in the Success series of 2xxx</p>
+</li>
+<li>
+<p>0—(false) if the Diameter Answer does not have a Result-Code value in the Success series of 2xxx</p>
+</li>
+</ul>
+</entry>
+<entry colname="3">
+Low
+</entry>
+</row>
+<row>
+<entry colname="1">
+Is-Protocol-Error
+</entry>
+<entry colname="2">
+<p>Used as a condition, Is-Protocol-Error checks for Result-Code and Experimental-Result (expecting to only find one) and then checks if its value is within the 3xxx range. The Is-Protocol-Error attribute returns:</p><ul>
+<li>
+<p>1—(true) if the Diameter Answer has a Result-Code value in the protocol error series of 3xxx</p>
+</li>
+<li>
+<p>0—(false) if the Diameter Answer does not have a Result-Code value in the protocol error series of 3xxx</p>
+</li>
+</ul>
+</entry>
+<entry colname="3">
+Low
+</entry>
+</row>
+<row>
+<entry colname="1">
+Is-Transient-Failure
+</entry>
+<entry colname="2">
+<p>Used as a condition, Is-Transient-Failure checks for Result-Code and Experimental-Result (expecting to only find one) and then checks if its value is within the 4xxx range. The Is-Transient-Failure attribute returns:</p><ul>
+<li>
+<p>1—(true) if the Diameter Answer has a Result-Code value in the transient failure series of 4xxx</p>
+</li>
+<li>
+<p>0—(false) if the Diameter Answer does not have a Result-Code value in the transient failure series of 4xxx</p>
+</li>
+</ul>
+</entry>
+<entry colname="3">
+Low
+</entry>
+</row>
+<row>
+<entry colname="1">
+Is-Permanent-Failure
+</entry>
+<entry colname="2">
+<p>Used as a condition, Is-Permanent-Failure checks for Result-Code and Experimental-Result (expecting to only find one) and then checks if its value is within the 5xxx range. The Is-Permanent-Failure attribute returns:</p><ul>
+<li>
+<p>1—(true) if the Diameter Answer has a Result-Code value in the Permanent failure series of 5xxx</p>
+</li>
+<li>
+<p>0—(false) if the Diameter Answer does not have Result-Code value in the Permanent failure series of 5xxx</p>
+</li>
+</ul>
+</entry>
+<entry colname="3">
+Low
+</entry>
+</row>
+<row>
+<entry>
+Is-Experimental-Result
+</entry>
+<entry>
+<p>Used as a condition, Is-Experimental-Result checks if the response has the Experimental-Result AVP, it does not check values. The Is-Experimental-Result attribute returns:</p><ul>
+<li>
+<p>1—(true) if the Diameter Answer has an Experimental-Result</p>
+</li>
+<li>
+<p>0—(false) if the Diameter Answer does not have an Experimental-Result</p>
+</li>
+</ul>
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Set-Result
+</entry>
+<entry>
+<p>Used as an action, Set-Result creates either a Result-Code AVP or Experimental-Result AVP and may create an Error-Message AVP. The values configured in the parameters determines which AVPs are created as follows:</p><ul>
+<li>
+<p>
+<b>Vendor Id and Result Code value</b> - If the Vendor Id is IETF (i.e., the number 0), Set-Result creates a Result-Code AVP with the configured Result Code value. If the Vendor Id is not IETF (i.e., not the number 0), Set-Result creates an Experimental-Result AVP with the configured Vendor Id and an Experimental-Result-Code set to the configured Result Code value.</p>
+</li>
+<li>
+<p>
+<b>Error Message</b> - If the Error-Message is not null (for example, as provided by Calculator.String.Null), it creates an Error-Message AVP with the configured Error Message.</p>
+</li>
+</ul>
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Is-Destined-To-Host/Realm
+</entry>
+<entry/>
+<entry>
+Low
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section><title>Mirroring context</title>
+<p>The Mirroring computational context allows you to write message filters to replicate a Diameter
+				message and send a copy of the message to the mirroring servers. Mirroring a message
+				does not block the processing of the original message, which continues unimpeded.
+				Once a mirroring requirement is identified, a copy of the original message is made
+				and processed in the background by the NCC mirroring thread pool, which is
+				responsible for handling mirrored messages.</p>
+<p>You can use message filters to configure the following properties of the Mirroring context: </p><ul>
+<li>
+<p>percentage of mirrored messages on the system</p>
+</li>
+<li>
+<p>number of mirroring servers</p>
+</li>
+<li>
+<p>resource allocation for mirroring</p>
+</li>
+</ul>
+<note>Configuring the Mirroring context application preferences is potentially service-affecting.
+				Contact Technical Support before you configure the Mirroring application
+				preferences.<p/></note>
+<p>The Mirroring context provides several attributes/actions that can be invoked for any message filter to replicate Diameter messages.The table below describes the Mirroring context attributes/actions that are available.</p>
+<table colsep="1" pgwide="1"><title>Mirroring context attributes/actions</title>
+<tgroup cols="3" colsep="1">
+<colspec colname="1" colnum="1"/>
+<colspec colname="2" colnum="2"/>
+<colspec colname="3" colnum="3"/>
+<thead>
+<row>
+<entry colname="1">
+<p>attribute/action</p>
+</entry>
+<entry colname="2">
+<p>Description</p>
+</entry>
+<entry colname="3">
+<p>Impact on performance</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry colname="1">
+Set-Destination-Host 
+</entry>
+<entry colname="2">
+<p>The Set-Destination-Host action attribute is used to set the host name of the mirroring server that requires a copy of the current Diameter message. The host does not contain the realm name</p>
+<p>The Set-Destination-Host action attribute is of type string. </p>
+<p>Using the Set-Destination-Host attribute is optional. </p>
+</entry>
+<entry colname="3">
+Low
+</entry>
+</row>
+<row>
+<entry colname="1">
+Set-Destination-Realm 
+</entry>
+<entry colname="2">
+<p>The Set-Destination-Realm action attribute is used to set the user-specified realm name of the mirroring server that requires a copy of the Diameter message.</p>
+<p>The Set-Destination-Realm action attribute is of type string. </p>
+<p>This is a mandatory attribute and must be specified. </p>
+</entry>
+<entry colname="3">
+Low
+</entry>
+</row>
+<row>
+<entry colname="1">
+Send 
+</entry>
+<entry colname="2">
+<p>The send action attribute is used to send the message to the mirroring server.</p>
+<p>It is mandatory to use the Set-Destination-Realm attribute to specify the realm name of the mirroring server before this attribute is called; otherwise, an error is logged and the message processing is terminated.</p>
+</entry>
+<entry colname="3">
+Low
+</entry>
+</row>
+<row>
+<entry>
+Message-Is-A-Mirror
+</entry>
+<entry>
+<p>This attribute returns 1 (true) to signify that the current message is a Mirrored message (a message sent via a Mirroring.Send rule action). If it returns 0, the message is not a mirror.</p>
+<p>
+<b>Caution:</b> If you write a rule that will mirror a mirrored message, author the rule with caution and provide a limit to control the number of mirrors of mirrors created.</p>
+</entry>
+<entry/>
+</row>
+<row>
+<entry>
+Clear-Routing-Peer
+</entry>
+<entry>
+An action used to clear the peer from the message if you have used the Mirroring.Route-To-Chosen-Peer action.
+</entry>
+<entry/>
+</row>
+<row>
+<entry>
+Route-To-Chosen-Peer
+</entry>
+<entry>
+<p>The Route-To-Chosen-Peer action indicates that the diameter message should be routed to the chosen-peer that was stored in the message. When this action is used, the message will bypass the normal host and realm routing mechanisms.</p>
+<p>The Mirroring.Route-To-Chosen-Peer action allows you to write rules that mirror messages to chosen peers in networks where two or more devices in that network use the same Diameter identity.</p>
+<p>For example, if you have two devices with the same identity in your network, you can configure
+									one or both of those devices identities to be different, which
+									allows the NCC to select the correct destination for forwarding
+									the Diameter message to one device, then mirroring the Diameter
+									message to another device. The destination selection can be
+									based on the Origin-Host, IP identity, or a specific Port (or
+									supported combination of the three via the Peer
+									Table.Choose-Peer-By actions) rather than using the diameter
+									routing table.</p>
+<p>A basic usage example for a Mirroring rule where the Diameter message is sent to the chosen peer could be as follows:</p>
+<p>IF (Peer Table.Choose-Peer-By-IP(IP Identity, Port Number) = 1)</p>
+<p>THEN</p>
+<p>Mirroring.Route-To-Chosen-Peer()</p>
+<p>Mirroring.Send()</p>
+</entry>
+<entry/>
+</row>
+<row>
+<entry>
+Set-Default-Policy-Processing
+</entry>
+<entry>
+<p>The Set-Default-Policy-Processing is a Mirror action that is used to set the default for policy processing of mirrored messages. It can only be used with the Initialization rule set.</p>
+<p>The default value is false.</p>
+<p>If this attribute is set to true then those mirrored messages sent via the Mirroring.Send rule action will be processed by policy in the rule engine, by default.</p>
+</entry>
+<entry/>
+</row>
+<row>
+<entry>
+Set-Policy-Processing
+</entry>
+<entry>
+The Set-Policy-Processing action attribute is used to set the policy processing of the mirrored message about to be sent with any Mirroring.Send action for the current message. This value will override the value of the Set-Default-Policy-Processing.
+</entry>
+<entry/>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>You can invoke the Mirroring context to write message filters for any NCC message context to
+				define when to trigger message mirroring. You can mirror a message before and/or
+				after the original message has been modified by other filters on the system. </p>
+<p>When invoked for NCC generic message contexts, the Mirroring context behaviour is as follows:</p><ul>
+<li>
+<p>If the Mirroring context is invoked to write message filters for Diameter request message context filter groups, the mirroring message filter can be configured to execute before and/or after the original Diameter message has been modified by the system. The Diameter message is replicated, regardless of the response to the original message. </p>
+</li>
+<li>
+<p>If the Mirroring context is invoked to write message filters for Diameter answer message context filter groups, the original request message is still accessible, however, it may include updates that have been made by preceding message filters. Invoking the Mirroring context at this point provides you with the opportunity to check the result code of the answer message before mirroring the request.</p>
+</li>
+</ul>
+<p>When invoked for the Diameter application message contexts, you can use the Mirroring context to write message filters against the generic request/answer message context(s), as well as against a more specific message context (for example, Gx CCR or Gx CCA).</p>
+</section>
+<section><title>Request and Answer context</title>
+<p>The Request and Answer context provides rule attributes that check the value of the current Diameter Answer message's Result-Code or Experimental-Result.</p>
+<p>The table below describes the rule attributes provided by Diameter answer code context.</p>
+<table colsep="1" pgwide="1"><title>Request and Answer attributes/actions</title>
+<tgroup cols="3" colsep="1">
+<colspec colname="1" colnum="1"/>
+<colspec colname="2" colnum="2"/>
+<colspec colname="3" colnum="3"/>
+<thead>
+<row>
+<entry colname="1">
+<p>attribute/action</p>
+</entry>
+<entry colname="2">
+<p>Description</p>
+</entry>
+<entry colname="3">
+<p>Impact on performance</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry colname="1">
+Is-Destined-To-Host
+</entry>
+<entry colname="2">
+The attribute name for determining if a request is destined to a given host.
+</entry>
+<entry colname="3">
+Low
+</entry>
+</row>
+<row>
+<entry>
+Is-Destined-To-Realm
+</entry>
+<entry>
+The attribute name for determining if a request is destined to a given realm.
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry colname="1">
+Suppress-Route-Record
+</entry>
+<entry colname="2">
+The annotated action name for suppressing the route-record AVP.
+</entry>
+<entry colname="3">
+Low
+</entry>
+</row>
+<row>
+<entry colname="1">
+Clear-Read-Indices
+</entry>
+<entry colname="2">
+The annotated action name for clearing the read index cache.
+</entry>
+<entry colname="3">
+Low
+</entry>
+</row>
+<row>
+<entry colname="1">
+Clear-Write-Indices
+</entry>
+<entry colname="2">
+The annotated action name for clearing the write index cache.
+</entry>
+<entry colname="3">
+Low
+</entry>
+</row>
+<row>
+<entry colname="1">
+Number-Of-AVPs
+</entry>
+<entry colname="2">
+The annotated attribute name for getting the number of AVPs in a message.
+</entry>
+<entry colname="3">
+Low
+</entry>
+</row>
+<row>
+<entry>
+Peer-Origin-Host
+</entry>
+<entry>
+The annotated attribute name for getting the Origin-Host of the peer that this message was received from.
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Peer-Origin-Realm
+</entry>
+<entry>
+The annotated attribute name for getting the Origin-Realm of the peer that this message was received from.
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Move-AVP-Before
+</entry>
+<entry>
+The annotated action name for moving an AVP in front of another AVP.
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Move-AVP-After
+</entry>
+<entry>
+The annotated action name for moving an AVP behind another AVP.
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Property-Exists
+</entry>
+<entry>
+<p>The annotated attribute name for checking whether a property exists in the message.</p>
+<p>LOw</p>
+</entry>
+<entry/>
+</row>
+<row>
+<entry>
+Get-String-Property
+</entry>
+<entry>
+The annotated attribute name for getting a string property from the message.
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Set-String-Property
+</entry>
+<entry>
+The annotated action name for setting a string property in the message.
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Get-Long-Property
+</entry>
+<entry>
+The annotated attribute name for getting a long property from the message.
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Reception-Address
+</entry>
+<entry>
+ The annotated attribute name for getting the IP address the current Diameter message was received on.
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Set-Long-Property
+</entry>
+<entry>
+The annotated action name for setting a long property in the message.
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Delay
+</entry>
+<entry>
+The annotated action name for delaying the forwarding/answering of a message. This action may only make sense for test deployments, not customer deployments.
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Discard-Delayed-Messages
+</entry>
+<entry>
+The attribute name for getting the resend count. The number of times the Resend-Request action has been used.
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Resend-Count
+</entry>
+<entry>
+The attribute name for getting the resend count. The number of times the Resend-Request action has been used.
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Reprocess-Count
+</entry>
+<entry>
+The attribute name for getting the reprocess count. The number of times the Reprocess-Request action has been used.
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Add-Metrics-Attribute
+</entry>
+<entry>
+The annotated action for adding a metrics attribute for the current message being processed.
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Command
+</entry>
+<entry>
+The annotated action for getting the command of a message.
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Set-Command
+</entry>
+<entry>
+The annotated action for setting the command of a message.
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Command Number
+</entry>
+<entry>
+The name of the parameter for SET_COMMAND_ACTION.
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Application
+</entry>
+<entry>
+The annotated action for getting the application of a message.
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Set-Application
+</entry>
+<entry>
+The annotated action for setting the application of a message.
+</entry>
+<entry>
+Low
+</entry>
+</row>
+<row>
+<entry>
+Log-EDR
+</entry>
+<entry>
+The annotated action name for logging an EDR for the current Diameter message.
+</entry>
+<entry>
+Low
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+</conbody></concept>

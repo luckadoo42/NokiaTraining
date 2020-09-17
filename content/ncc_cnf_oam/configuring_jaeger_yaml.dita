@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="configuring_jaeger_yaml">
+    <title>Jaeger configurations in the values.yaml</title>
+    <conbody>
+        <section id="section_scg_hbf_rlb">
+            <title>Overview</title>
+            <p>Jaeger configurations may be made in the values.yaml file as part of the OpenTracing
+                configurations.</p>
+            <p>The following is an example of the OpenTracing and Jaeger configurations in the
+                values.yaml.<codeblock>opentracing:
+    headers: "x-request-id,x-b3-traceid,x-b3-spanid,x-b3-parentspanid,x-b3-sampled,x-b3-flags,b3"
+    jaeger:
+      endpoint: "http://jaeger-collector.istio-system.svc.cluster.local:14268/api/traces"
+</codeblock></p>
+        </section>
+        <section id="section_e3g_dbf_rlb">
+            <title>Header configuration</title>
+            <p>In the values.yaml, the <codeph>headers</codeph> property can be used to configure
+                which headers are
+                propagated.<codeblock>opentracing:
+    header: &lt;your_headers_here></codeblock></p>
+            <p>Where <codeph>&lt;your_headers_here></codeph> is a comma separated list of headers to
+                propagate.</p>
+            <p>For example, the following is configured to propagate headers
+                    <codeph>x-request-id</codeph>, <codeph>x-b3-traceid</codeph>,
+                    <codeph>x-b3-spanid</codeph>, <codeph>x-b3-parentspanid</codeph>,
+                    <codeph>x-b3-sampled</codeph>, <codeph>x-b3-flags</codeph>, and
+                    <codeph>b3</codeph>.<codeblock>opentracing:
+    headers: "x-request-id,x-b3-traceid,x-b3-spanid,x-b3-parentspanid,x-b3-sampled,x-b3-flags,b3"</codeblock></p>
+        </section>
+        <section id="section_t43_gbf_rlb">
+            <title>Endpoint configuration</title>
+            <p>In the values.yaml, the <codeph>endpoint</codeph> property can be used to configure
+                endpoints, which tell Jaeger where to send traces collected in
+                NCC.<codeblock>opentracing:
+    headers: "x-request-id,x-b3-traceid,x-b3-spanid,x-b3-parentspanid,x-b3-sampled,x-b3-flags,b3"
+    jaeger:
+      endpoint: &lt;endpoint_address></codeblock></p>
+            <p>Where <codeph>&lt;endpoint_address></codeph> is the address of the endpoint to which
+                Jaeger will send traces.</p>
+            <p>For example, the following is configuration sends traces to the endpoint at
+                    <codeph>http://jaeger-collector.istio-system.svc.cluster.local:14268/api/traces</codeph>.<codeblock>opentracing:
+    headers: "x-request-id,x-b3-traceid,x-b3-spanid,x-b3-parentspanid,x-b3-sampled,x-b3-flags,b3"
+    jaeger:
+      endpoint: "http://jaeger-collector.istio-system.svc.cluster.local:14268/api/traces"
+</codeblock></p>
+        </section>
+    </conbody>
+</concept>

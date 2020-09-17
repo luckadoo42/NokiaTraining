@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+		<concept id="id9YZ-09018-IN00-RJZZA-TaskList-specification"><title>TaskList file</title><conbody>
+
+<section><title>Overview</title>
+
+<p>This section describes the TaskList file used in the SU.</p>
+</section>
+<section><title>Syntax</title>
+
+<p>The syntax in the TaskList file is as follows:</p>
+<fig>
+<codeblock>task = command timeout node {parameters}
+command = upgrade/backout/commit/setdbversion/updatevnfinfo/changevnfdversion
+node = VDU-type node-index
+VDU-type = OAM/IOHO/IOHD/DiameterAPP/COMSVC/Auxiliary/DB/SMAPP
+node-index = 1*3 DIGIT; 0 to 255
+parameters = {*parameter
+parameter = pname[:pvalue]
+group-tasks = {1* upgrade-task}/{1*backout-task}/{1*commit-task}
+upgrade-task = task; command = upgrade
+backout-task = task; command = backout
+commit-task  = task; command = commit </codeblock>
+</fig>
+</section>
+<section><title>Group SU</title>
+
+<p>The NCC SU  supports upgrade/backout/commit of a group of VMs in parallel. To support the
+                zone-based parallel SU, a group can be one of the following:</p><ul>
+
+<li>
+<p>VMs with the same availability zone</p>
+</li>
+<li>
+<p>subset of a particular availability zone because of CBAM limited capabilities</p>
+</li>
+</ul>
+<p>The following is an example of the group SU:</p>
+<fig>
+<codeblock>{ 
+upgrade 			OAM  					0
+upgrade 			Auxiliary		2
+upgrade 			DB  					0
+upgrade 			Auxiliary		3
+upgrade 			DB  					2
+}</codeblock>
+</fig>
+</section>
+<section><title>Upgrade task</title>
+
+<p>The upgrade task upgrades a VM to the TO load version. This task consists of the following steps:</p><ol>
+
+<li>
+<p>switchover: to check the HA state of the HA VMs (OAME or IOHO or IOHD) to be upgraded; if the HA state is ACTIVE, then switchover is performed to switch to STANDBY state.</p>
+</li>
+<li>
+<p>change package version: to change to the interim SU package.</p>
+</li>
+<li>
+<p>prepare: to invoke the prepared hook functions of each component on the VM to back up the data and shut down running services gracefully.</p>
+</li>
+<li>
+<p>change package version: to change to the TO load package.</p>
+</li>
+<li>
+<p>update stack:  to update the stack using HEAT with the new HOT and stack parameters. HEAT rebuilds the VM with the specified target Load image and starts the VM with cloud-init.</p>
+</li>
+<li>
+<p>apply: to invoke the apply hook functions for each component on the VM to deploy the and start component service. Then pAutoSU tool will wait here to let operator perform post-install steps on the VM.</p>
+</li>
+<li>
+<p>NCC start service: to confirm the NCC service launch after the postinstall steps, requires an
+                        operator's interaction.</p>
+</li>
+<li>
+<p>switchover: to switchover the upgraded HA VMs (OAME or IOHO or IOHD) to Active, only for upgrade group2.</p>
+</li>
+</ol>
+<p>The following is an example of the upgrade task:</p>
+<fig>
+<codeblock>{ 
+upgrade			OAM			0
+}</codeblock>
+</fig>
+</section>
+<section><title>Backout task</title>
+
+<p>The backout task rolls the upgraded VM back to the latest running point. This task consists of the following steps:</p><ol>
+
+<li>
+<p>switchover: to check the HA state of the HA VMs (OAME or IOHO or IOHD) to be backed out; if the HA state is ACTIVE, then switchover is performed to switch to STANDBY state.</p>
+</li>
+<li>
+<p>change package version: to change to the TO load package.</p>
+</li>
+<li>
+<p>prepare: to invoke the hook functions of each component on the VM to shut down gracefully running services.</p>
+</li>
+<li>
+<p>change package version: to change to the interim SU package.</p>
+</li>
+<li>
+<p>update stack: to update the stack using HEAT with the original HOT and stack parameters. HEAT rebuilds the VM with the from load image and starts the VM with cloud-init. </p>
+</li>
+<li>
+<p>apply: to invoke the apply hook functions for each component on the VM to launch the component service and clean up the SU state and backup data.</p>
+</li>
+<li>
+<p>startService:  to invoke the start service hook functions for each component on the VM to start the component service. Then pAutoSU tool will wait here to let operator perform post-install steps on the VM.</p>
+</li>
+<li>
+<p>NCC start service: need operator's interaction to confirm launch the NCC service after the
+                        post-install steps.</p>
+</li>
+<li>
+<p>switchover: only for backout group3, to perform switchover to make the backed out HA VMs (OAME or IOHO or IOHD) ACTIVE.</p>
+</li>
+</ol>
+<p>The following is an example of the backout task:</p>
+<fig>
+<codeblock>{ 
+backout			OAM			0
+}</codeblock>
+</fig>
+</section>
+<section><title>Commit task</title>
+
+<p>The commit task is invoked after the VM has been upgraded successfully. This task consists of the following steps:</p><ol>
+
+<li>
+<p>commit: to invoke the hook functions of each component to clean up the SU state and backup data.</p>
+</li>
+<li>
+<p>update stack: update the stack parameters to align with the target load.</p>
+</li>
+</ol>
+<p>The following is an example of the commit task:</p>
+<fig>
+<codeblock>{ 
+commit			OAM			0
+}</codeblock>
+</fig>
+</section>
+<section><title>Setdbversion task </title>
+
+<p>The NCC provides a DB wrapper layer to access DB with a configured DB schema. The DB persisted
+                version is set to the “FROM Load” value before the SU. The SU allows the upgraded
+                service to read/write data from/to DB using the “FROM Load” schema, and allows DB
+                replication across NCC sites with the same schema.</p>
+<p>After all the NCC sites have been upgraded, the DB persisted version is changed to “TO Load”.
+                Then the NCC service will access the DB with “TO Load” schema and if the existing
+                data is “FROM Load”, it will convert the data and write it using the “TO Load”
+                schema.</p>
+<p>The setdbversion task sets the DB persisted version in the SDC, and takes effect on the running
+                NCC VMs.</p>
+<p>The following is an example of the setdbversion task, and the value of "LoadVersion" should be statically set to the "fromload":</p>
+<fig>
+<codeblock>setdbversion 	OAM 		0 		{"LoadVersion":"fromload"}</codeblock>
+</fig>
+</section>
+<section><title>Configuration update</title>
+
+<p>The NCC configuration data is defined in JSON format as an element of the VNF Extensions
+                structure. The VNF Extensions should be modified with the updated configuration data
+                in SU preparation. The configuration data is applied into SDC in the upgrade phase
+                with an explicit indication.</p>
+<p>The configuration update is not a standalone task but a parameter of the first upgrade task defined as follows:</p>
+<p>"loadNewConfiguration":"yes"</p>
+<p>The following is an example of how the configuration update is used:</p>
+<fig>
+<codeblock>{ 
+upgrade 		Auxiliary 		2 		{"loadNewConfiguration":"yes"}
+} </codeblock>
+</fig>
+</section>
+<section><title>Change VNFD version</title>
+
+<p>This task changes the VNFD Descriptor for the current VNF. The value is assigned in the "vnfdVersion" parameter with the configuration name in <filepath>su_config.yaml</filepath> file.</p>
+<p>The following is an example of the change VNFD version task:</p>
+<fig>
+<codeblock>changevnfdversion	NA		NA		{"customFromVNFDVersion"}</codeblock>
+</fig>
+</section>
+<section><title>Update VNF info</title>
+
+<p>This task modifies the current VNF info using the VNF Extension file.</p>
+<p>The following is an example of the update VNF info task, and the value of "vnfd_extension_file" should be statically set to "toVNFDExtension" or "fromVNFDExtension".</p>
+<fig>
+<codeblock>updatevnfinfo  NA  NA  {"vnfd_extension_file":"toVNFDExtension"} </codeblock>
+</fig>
+</section>
+<section><title>Upgrade order</title>
+
+<p>In order to speed up the SU, zone-based image SU is introduced. This means that the upgrade order should be the zone upgrade order.</p>
+<p>There are three zones supported in this release, zone-3 includes one of the Auxiliary VMs, and it
+                is the first zone to be upgraded. Zone-1 and zone-2 include half of the left NCC
+                VMs. The second upgrade zone is the one that includes the most standby VMs of OAME,
+                IOHO and IOHD. The left zone is the third upgrading zone.</p>
+<p>The following is an example of the upgrade order:</p>
+<fig>
+<codeblock>changevnfdversion	NA				NA		{"customFromVNFDVersion"}
+updatevnfinfo  		NA  			NA  	{"vnfd_extension_file":"toVNFDExtension"}
+setdbversion				OAM			0		{"LoadVersion":"fromload"}
+@groupname=group1
+{ 
+upgrade               Auxiliary       2   {"loadNewConfiguration":"yes"}
+}
+@groupname=group2
+{
+    upgrade           Auxiliary       0
+    upgrade           Auxiliary       3
+    upgrade              CDR          0
+    upgrade             COMSVC        0
+    upgrade               DB          0
+    upgrade               DB          2
+    upgrade          DiameterAPP      0
+    upgrade              IOHD         0
+    upgrade              IOHO         0
+    upgrade              OAM          0
+}
+@groupname=group3
+{
+    upgrade           Auxiliary       1
+    upgrade           Auxiliary       4
+    upgrade              CDR          1
+    upgrade             COMSVC        1
+    upgrade               DB          1
+    upgrade               DB          3
+    upgrade          DiameterAPP      1
+    upgrade              IOHD         1
+    upgrade              IOHO         1
+    upgrade              OAM          1
+}</codeblock>
+</fig>
+</section>
+<section><title>Commit order</title>
+
+<p>The commit does not impact the service. This means that all the NCC VMs can commit together.</p>
+<p>The following is an example of the commit order:</p>
+<fig>
+<codeblock>{
+    commit        Auxiliary       2
+    commit        Auxiliary       0
+    commit        Auxiliary       3
+    commit           CDR          0
+    commit          COMSVC        0
+    commit            DB          0
+    commit            DB          2
+    commit       DiameterAPP      0
+    commit           IOHD         0
+    commit           IOHO         0
+    commit           OAM          0
+    commit        Auxiliary       1
+    commit        Auxiliary       4
+    commit           CDR          1
+    commit          COMSVC        1
+    commit            DB          1
+    commit            DB          3
+    commit       DiameterAPP      1
+    commit           IOHD         1
+    commit           IOHO         1
+    commit           OAM          1
+}
+</codeblock>
+</fig>
+</section>
+<section><title>Backout order</title>
+
+<p>The backout order for the VMs and zones must be the reverse of the upgrade order. If the rollback of any Active/Standby VM creates the first instance running the old software, it must be made Active immediately after the rollback.</p>
+<p>In the backout tasklist file, after all the backout tasks, add a changevnfdversion task with &lt;vnfdVersion&gt; set to the VNFD version of the FROM load.</p>
+</section>
+</conbody></concept>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9YZ-09018-UG00-PCZZA-d1e10903"><title>Web SSO deployment in Service Manager (SM)</title><conbody>
+<section><title>Overview</title>
+<p>This section describes the Web SSO deployment in the SM application.</p>
+<p>The Web SSO is a bundle that manages users, passwords, and roles in its <i>MariaDB</i> database. The <i>MariaDB</i> database information is replicated between the SM geographical sites.</p>
+<p>The Web SSO server is deployed on the I/O handler nodes in active and standby modes with an internal access to the SM application. The Web SSO adapters running in the SM application validate tokens without contacting the Web SSO server but the token must be issued by the same server that communicates with the adapter.</p>
+<p>The interface between the SM application and Web SSO component is implemented using the following three client modules:</p><ul>
+<li>
+<p>REST server client- Plugs into jax-rs layer of SM REST server</p>
+</li>
+<li>
+<p>GUI server client- Runs as part of the deployed SM GUI servlet and the configuration files are in <filepath>/opt/tpa/osgi/instance/keycloak</filepath>
+</p>
+</li>
+<li>
+<p>GUI browser (javascript) client- Embedded in GUI downloaded code and runs on the same IP host as the SM GUI but on a different port (8666).</p>
+</li>
+</ul>
+<sectiondiv>
+<p><b>REST authentication</b></p>
+<p>The REST API client obtains an encrypted access token from the Web SSO server and uses it in a bearer authentication header while trying to access the SM application.  The SM application interfaces back to the Web SSO server from which it obtains the public key to validate the token.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/REST_authentication_default.png-->
+<image href="../images/rest_authentication_default.png" scale="70"/>
+</fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>GUI authentication</b></p>
+<p>The loaded SM GUI runs an embedded Web SSO client, which redirects the web browser to the Web SSO server to login, and then further redirects it back to the SM GUI application with the access token stored in its database.</p>
+<p>The OAuth protocol defines three different message exchange scenarios and the Javascript adapter uses the authorization code flow, during which, the Web SSO server returns an authorization code (not an authentication token) to the SM application. The Javascript adapter exchanges the code for an access token and a refresh token after the web browser is redirected back to the SM application. The access token is then placed into a bearer authentication HTTP header for REST requests to the SM application server.</p>
+<p>The initial credentials of the SM user are username “smadmin” and password “smadmin”. This is a temporary password, which will be forced to be changed by Web SSO on first time log in.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/GUI_authentication_using_Javascript_adapter_default.png-->
+<image align="left" href="../images/authentication_using_javascript_adapter_default.png" scale="60"/>
+</fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>Token expiration</b></p>
+<p>The <i>Access token</i> is used with requests to the SM application server and has a relatively short expiration time. The access token is configured in the realm on the Web SSO server and defaults to 5 minutes.</p>
+<note>
+<p>The client must request a refreshed token from the Web SSO server at a defined time interval but in case of a Javascript application browser, the request to refresh the token is sent as per the requirement. The process to refresh the token happens per OAuth protocol and is handled between the Javascript adapter in the browser and the Web SSO server, therefore, the SM GUI application is not concerned with these details once it is correctly configured. A token remains valid until it exceeds its configured expiration time and a token issued before the password change remains valid until it expires.</p>
+</note>
+</sectiondiv>
+<sectiondiv>
+<p><b>HTTPS certificates</b></p>
+<p>The SM server and Web SSO server communicates using HTTPS and must have all the compatible certificates installed. The Web SSO server has its own keystore and during the SM installation, this keystore is populated with the same trusted certificates as the SM server (for example, <filepath>dscca.cer</filepath>). This allows both SM and Web SSO servers to communicate with each other and if any changes are made to the SM keystore after installation, then similar changes are passed on to the Web SSO keystore as well.</p>
+<note>
+<p>For a standalone SM server, the <filepath>/sac/tools/bin/installKeycloak</filepath> handles
+                        certificate configurations and generates a separate keystore for the Web SSO
+                        server but continues to use the same root certificate as the NCC server.</p>
+</note>
+</sectiondiv>
+</section>
+<section><title>User administration</title>
+<p>The maintenance of GUI users, passwords, and role mapping are performed using the Web SSO
+                administration GUI. See the <i>NCC Administration Guide</i> for information about
+                user administration.</p>
+</section>
+<section><title>Web SSO Admin Console</title>
+<p>The bulk of your administrative tasks are done through the <i>Web SSO Admin Console</i>. See the
+                    <i>NCC Administration Guide</i> for information about configuring Realm
+                settings, events, SSL mode, export and import operations, and configuring event
+                storage.</p>
+</section>
+</conbody></concept>

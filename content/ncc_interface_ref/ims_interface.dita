@@ -1,0 +1,585 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="ims_interface">
+    <title>IMS interface</title>
+    <concept id="concept_ivb_qvm_5mb">
+        <title>Multiple MSCC</title>
+        <conbody>
+            <p>For IMS interface, NCC recommendation is to use one MSCC only. Behavior of more than
+                one MSCC is not evaluated.</p>
+        </conbody>
+    </concept>
+    <concept id="concept_gpw_rvm_5mb">
+        <title>Centralized &amp; de-centralized support</title>
+        <conbody>
+            <p>Both centralized and de-centralized case are supported for IMS interface. Only
+                CC-Time is supported as unit time inside RSU, GSU and USU.</p>
+            <p>Identification of de-centralized case is done when CCR contains the RSU AVP with
+                CC-Time AVP having some value.</p>
+            <p>Identification of centralized support for IMS is different from that of Gy interface.
+                For IMS interface, If RSU AVP is absent that it is considered as centralized case.  </p>
+            <note type="attention">An empty RSU AVP is considered as error and the CCR is
+                rejected.</note>
+        </conbody>
+    </concept>
+    <concept id="concept_v1c_yvm_5mb">
+        <title>Identification of call type</title>
+        <conbody>
+            <p>Identification of call type (MOC, MTC, or FWD) is done based on the following
+                logic:</p>
+            <table id="table_qvs_zvm_5mb" colsep="1" rowsep="1" frame="all">
+                <title>Call type identification</title>
+                <tgroup cols="2">
+                    <colspec colnum="1" colname="col1" colwidth="1*"/>
+                    <colspec colnum="2" colname="col2" colwidth="1.66*"/>
+                    <thead>
+                        <row>
+                            <entry>Call type</entry>
+                            <entry>AVP</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>Mobile Originating Call (MOC)</entry>
+                            <entry>Service-Information/IMS-Information/Role-Of-Node = 0</entry>
+                        </row>
+                        <row>
+                            <entry>Mobile Terminating Call (MTC)</entry>
+                            <entry>Service-Information/IMS-Information/Role-Of-Node = 1</entry>
+                        </row>
+                        <row>
+                            <entry>Forwarding Call (FWD)</entry>
+                            <entry>
+                                <p>Service-Information/IMS-Information/Role-Of-Node = 2</p>
+                                <p>OR</p>
+                                <p>Service-Information/IMS-Information/Role-Of-Node = 0 and
+                                    Service-Information/MMTel-Information/Supplemantary-Service/MMTel-SService-Type=6</p>
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </conbody>
+    </concept>
+    <concept id="concept_qdx_yvm_5mb">
+        <title>Identification of call answer</title>
+        <conbody>
+            <p>On IMS interface, arrival of the first CCR-U is considered as call answer and this
+                CCR-U must have Used-Service-Unit = 0.</p>
+        </conbody>
+    </concept>
+    <concept id="concept_xwx_yvm_5mb">
+        <title>Identification of audio and video call</title>
+        <conbody>
+            <p>To identify the media type of the VoLTE call, the following logic is used:</p>
+            <p>The media type identification is used in two steps of the call.</p>
+            <ul id="ul_c2g_dwm_5mb">
+                <li>Initial media type used for the call.</li>
+                <li>Media change during the call to another media type.</li>
+            </ul>
+            <p>The media type used for the call, whether initial or at media change, is read from
+                the AVP Service-Information/IMS-Information/SDP-Media-Component/SDP-Media-Name. The
+                following media types are supported for the VoLTE calls:</p>
+            <ul id="ul_d2g_dwm_5mb">
+                <li>Audio</li>
+                <li>Video</li>
+            </ul>
+            <p>Following are some example values of the AVP for <i>m</i> line:</p>
+            <ul id="ul_jtc_3zm_5mb">
+                <li>Audio: 49170 RTP/AVP 0</li>
+                <li>Video:  49170/2 RTP/AVP 31</li>
+            </ul>
+            <p>The first string in the AVP value gives the media type for the call. In case there
+                are multiple SDP-Media-Name AVPs in the CCR message reported with both the audio and
+                video media names, then the call is considered as a video call.</p>
+            <p>The media type determination is done at each CCR message received at the OCS.</p>
+            <p>If SDP-Media-Component AVP is not present, media is considered as audio.</p>
+            <p>Video (ViLTE) call can also lead to generation of CCR over Gy interface. This CCR is
+                used to charge the volume of video call. The CCR over Gy interface must comply with
+                the exiting Gy interface supported by NCC. For video calls, if CCRs exist on both Gy
+                and IMS Ro interfaces, then they can be co-related using:<ul id="ul_jq5_vqs_wmb">
+                    <li>For Gy CCR, value of
+                        Multiple-Services-Credit-Control/AF-Correlation-Information/AF-Charging-Identifier
+                        would match with the value of IMS-Information/IMS-Charging-Identifier over
+                        IMS Ro.</li>
+                    <li>Both AVPs in the two interfaces are of different type. Their values must be
+                        decoded correctly for appropriate co-relation. Value of these AVPs are also
+                        stored in the CDR generated for Gy and IMS Ro interface, respectively.</li>
+                </ul></p>
+            <p> </p>
+        </conbody>
+    </concept>
+    <concept id="concept_hcy_yvm_5mb">
+        <title>Identification of calling and called party</title>
+        <conbody>
+            <p>Calling and called party for a call are identified as following:</p>
+            <table id="table_mrh_2wm_5mb" colsep="1" rowsep="1" frame="all">
+                <title>Identification of calling and called party</title>
+                <tgroup cols="3">
+                    <colspec colnum="1" colname="col1"/>
+                    <colspec colnum="2" colname="col2"/>
+                    <colspec colnum="3" colname="col3"/>
+                    <thead>
+                        <row>
+                            <entry>Call type</entry>
+                            <entry>Calling party number</entry>
+                            <entry>Called party number</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>MOC</entry>
+                            <entry>Subscription-Id/Subscription-Id-Data</entry>
+                            <entry>Service-Information/IMS-Information/Called-Party-Address</entry>
+                        </row>
+                        <row>
+                            <entry>MTC</entry>
+                            <entry>
+                                <p>Service-Information/IMS-Information/Calling-Party-Address</p>
+                                <note>As per standards, Calling-Party-Address AVP may appear
+                                    multiple time. In such cases, the first one is processed.</note>
+                            </entry>
+                            <entry>Subscription-Id/Subscription-Id-Data</entry>
+                        </row>
+                        <row>
+                            <entry>FWD</entry>
+                            <entry>
+                                <p>Service-Information/IMS-Information/Calling-Party-Address</p>
+                                <note>For call forwarding, actual calling party is provided by this
+                                    AVP. For charging, calling party is taken from
+                                    Subscription-Id/Subscription-Id-Data AVP.</note>
+                            </entry>
+                            <entry>Service-Information/IMS-Information/Called-Party-Address</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <p>It is recommended that the Calling-Party-Address and Called-Party-Address AVPs have
+                the value in international format. IMS TAS performs all kinds of number formatting
+                before sending the CCR request to NCC.</p>
+        </conbody>
+    </concept>
+    <concept id="concept_uhy_yvm_5mb">
+        <title>Support for short number call</title>
+        <conbody>
+            <p>Short number calls are applicable for MOC and FWD calls. The short code dialed by
+                the subscriber is translated to a TEL_URI/SIP_URI by the IMS TAS and then the CCR
+                message containing the calling party number, the short code dialed, and the
+                translated number is sent to the NCC.</p>
+            <p>The translated number could be voice mail number or any premium service number.</p>
+            <p>The Service-Information/IMS-Information/Requested-Party-Address AVP contains the
+                short code dialed by the subscriber. The presence of this AVP indicates that it is
+                a short number call.</p>
+            <p>The Called-Party-Address AVP may or may not be same as the Requested-Party-Address
+                AVP. Generally, Called-Party-Address has the translated number and not the short
+                code dialed by the subscriber.</p>
+        </conbody>
+    </concept>
+    <concept id="concept_jm1_zvm_5mb">
+        <title>Support of conference call</title>
+        <conbody>
+            <p>NCC supports conference call, which includes three-party and multi-party conference
+                both. Identification of conference call is done as per the logic provided in the
+                following table:</p>
+            <table id="table_dcm_fwm_5mb" colsep="1" rowsep="1" frame="all">
+                <title>Conference call identification</title>
+                <tgroup cols="2">
+                    <colspec colnum="1" colname="col1" colwidth="1*"/>
+                    <colspec colnum="2" colname="col2" colwidth="2.23*"/>
+                    <thead>
+                        <row>
+                            <entry>Conference Call Type</entry>
+                            <entry>Identification</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>3 Party</entry>
+                            <entry>
+                                <p>Service-Information/MMTel-Information/Supplementary-Service/MMTel-SService-Type
+                                    = 10 &amp;
+                                    Service-Information/MMTel-Information/Supplementary-Service/Service-Node
+                                    = 11</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>Multi Party</entry>
+                            <entry>
+                                <p>Service-Information/MMTel-Information/Supplementary-Service/MMTel-SService-Type
+                                    = 10 &amp;
+                                    Service-Information/MMTel-Information/Supplementary-Service/Service-Node
+                                        <b>!=</b> 11</p>
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <p>Number of participant in the conference call is taken from
+                Service-Information/MMTel-Information/Supplemantary-Service/Number-Of-Participant.</p>
+        </conbody>
+    </concept>
+    <concept id="concept_er1_zvm_5mb">
+        <title>Announcement support</title>
+        <conbody>
+            <p>For IMS, NCC supports announcement for MOC and FWD call types. Announcement-related
+                AVP as provided in table <xref
+                    href="c_msg_manipul.dita#concept_fwz_3gm_5mb/table_ndd_mgm_5mb"/>, are
+                configured in NCC rules based on the applicable condition.</p>
+        </conbody>
+    </concept>
+    <concept id="concept_sw1_zvm_5mb">
+        <title>IMS-Information AVP</title>
+        <conbody>
+            <p>The IMS-Information AVP must be available in each CCR-I/U/T. Support for AVPs under
+                IMS-Information is shown in the following table:</p>
+            <table id="table_bhp_yxm_5mb" colsep="1" rowsep="1" frame="all">
+                <title>IMS-Information AVP support</title>
+                <tgroup cols="3">
+                    <colspec colnum="1" colname="col1" colwidth="2.33*"/>
+                    <colspec colnum="2" colname="col2" colwidth="1*"/>
+                    <colspec colnum="3" colname="col3" colwidth="3.65*"/>
+                    <thead>
+                        <row>
+                            <entry>AVP</entry>
+                            <entry>Category</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>Event-Type</entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Role-Of-Node </entry>
+                            <entry>M</entry>
+                            <entry>Supported as per 3GPP by NCC rules and logic</entry>
+                        </row>
+                        <row>
+                            <entry>Node-Functionality</entry>
+                            <entry>M</entry>
+                            <entry>Supported as per 3GPP by NCC rules and logic</entry>
+                        </row>
+                        <row>
+                            <entry> User-Session-Id </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules </entry>
+                        </row>
+                        <row>
+                            <entry> Outgoing-Session-Id </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules </entry>
+                        </row>
+                        <row>
+                            <entry> Session-Priority </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules </entry>
+                        </row>
+                        <row>
+                            <entry>Calling-Party-Address </entry>
+                            <entry>M</entry>
+                            <entry>Supported as per 3GPP by NCC rules and logic. As per 3gpp, both
+                                SIP_URI and TEL_URI format supported. All number formatting is
+                                supposed to be done by IMS TAS and calling party number is presented
+                                in International format. It is multiple occurrence AVP, but its 1st
+                                occurrence is considered by NCC.</entry>
+                        </row>
+                        <row>
+                            <entry>Called-Party-Address </entry>
+                            <entry>M</entry>
+                            <entry>Supported as per 3GPP by NCC rules and logic. As per 3gpp, both
+                                SIP_URI and TEL_URI format supported. All number formatting is
+                                supposed to be done by IMS TAS and called party number is presented
+                                in International format</entry>
+                        </row>
+                        <row>
+                            <entry>Called-Asserted-Identity </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules </entry>
+                        </row>
+                        <row>
+                            <entry>Called-Identity-Change </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules </entry>
+                        </row>
+                        <row>
+                            <entry>Number-Portability-Routing-Information </entry>
+                            <entry>Om</entry>
+                            <entry>Supported as per 3GPP by NCC rules and logic. Mandatory for
+                                MNP</entry>
+                        </row>
+                        <row>
+                            <entry>Carrier-Select-Routing-Information </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules </entry>
+                        </row>
+                        <row>
+                            <entry>Alternate-Charged-Party-Address </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules </entry>
+                        </row>
+                        <row>
+                            <entry>Requested-Party-Address </entry>
+                            <entry>Om</entry>
+                            <entry>Supported as per 3GPP by NCC rules and logic. It is must for
+                                short number calls. It is multiple occurrence AVP, but its 1st
+                                occurrence is considered by NCC.</entry>
+                        </row>
+                        <row>
+                            <entry>Associated-URI </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Time-Stamps </entry>
+                            <entry>M</entry>
+                            <entry>Supported as per 3GPP by NCC rules and logic</entry>
+                        </row>
+                        <row>
+                            <entry>SIP-Request-Timestamp</entry>
+                            <entry>M</entry>
+                            <entry>Supported as per 3GPP by NCC rules and logic</entry>
+                        </row>
+                        <row>
+                            <entry>SIP-Response-Timestamp</entry>
+                            <entry>M</entry>
+                            <entry>Supported as per 3GPP by NCC rules and logic</entry>
+                        </row>
+                        <row>
+                            <entry>SIP-Request-Timestamp-Fraction</entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules and logic</entry>
+                        </row>
+                        <row>
+                            <entry>SIP-Response-Timestamp-Fraction</entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules and logic</entry>
+                        </row>
+                        <row>
+                            <entry>Application-Server-Information </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Application-Server </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Application-Provided-Called-Party-Address </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Status- AS-Code </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Inter-Operator-Identifier </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Originating-IOI</entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Terminating-IOI</entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Transit-IOI-List </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>IMS-Charging-Identifier </entry>
+                            <entry>M</entry>
+                            <entry>Supported as per 3GPP by NCC rules and logic</entry>
+                        </row>
+                        <row>
+                            <entry>SDP-Session-Description </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>SDP-Media-Component </entry>
+                            <entry>M</entry>
+                            <entry>Supported as per 3GPP by NCC rules and logic</entry>
+                        </row>
+                        <row>
+                            <entry>SDP-Media-Name</entry>
+                            <entry>M</entry>
+                            <entry>Supported as per 3GPP by NCC rules and logic</entry>
+                        </row>
+                        <row>
+                            <entry>Served-Party-IP-Address </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Server-Capabilities </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Trunk-Group-ID </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Bearer-Service </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Service-Id </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Service-Specific-Info </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Message-Body </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Cause-Code </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Reason-Header </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Access-Network-Information </entry>
+                            <entry>M</entry>
+                            <entry>Supported as per 3GPP by NCC rules and logic. It is used for
+                                Location identification e.g. HOME or ROAMING and also derving RAT
+                                Type, CellID etc.</entry>
+                        </row>
+                        <row>
+                            <entry>Cellular-Network-Information </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Early-Media-Description </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>IMS-Communication-Service-Identifier </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>IMS-Application-Reference-Identifier </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Online-Charging-Flag </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Real-Time-Tariff-Information </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Account-Expiration </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Initial-IMS-Charging-Identifier </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>NNI-Information </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>From-Address </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>IMS-Emergency-Indicator </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>IMS-Visited-Network-Identifier </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Access-Transfer-Information </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Related-IMS-Charging-Identifier </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Related-IMS-Charging-Identifier-Node </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Route-Header-Received </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Route-Header-Transmitted </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>Instance-Id </entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                        <row>
+                            <entry>TAD-Identifier</entry>
+                            <entry>O</entry>
+                            <entry>Supported as per 3GPP by NCC rules</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <note>
+                <ul id="ol_obk_1gm_5mb">
+                    <li>“Not Supported” indicates that NCC does not perform any logic processing for
+                        these AVPs.</li>
+                    <li>“Supported by NCC rules” indicates that value of such AVPs can be used in
+                        rules for decision making. It does not mean there is any core logic exist in
+                        NCC around these AVPs.</li>
+                    <li>All AVPs that are of multiple occurrence type, only the first occurrence is
+                        supported in rule.</li>
+                    <li>For the AVPs tagged with “M”, NCC does not reject the request if this is
+                        absent. It indicates that some potential use cases are not satisfied if
+                        these AVPs are absent.</li>
+                </ul>
+            </note>
+        </conbody>
+    </concept>
+</concept>

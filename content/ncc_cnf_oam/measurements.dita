@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="measurement_collection_overview">
+    <title>Measurements</title>
+    <conbody>
+        <section id="section_s4k_jrw_llb">
+            <title>Overview </title>
+            <p>NCC collects a broad range of measurements to provide a rich set of data for
+                understanding the load and behavior of the system and its network integration.
+                Network operators can leverage these metrics to monitor the system’s behavior, as
+                well as for engineering analysis of the system’s processing and capacity. The
+                metrics are available to examine on the NCC itself and can also be retrieved by
+                external systems for offboard analysis.</p>
+            <p>Deployment of the optional NCC telemetry package provides further options for
+                measurement collection, storage, and retrieval.</p>
+            <p>The following topics will be covered in this section:<ul id="ul_itp_4rw_llb">
+                    <li>Measurement structure and optional labels</li>
+                    <li>Measurement collection (NCC telemetry package)</li>
+                    <li>Storage and retrieval of measurements in 3GP XML files (NCC telemetry
+                        package)</li>
+                </ul></p>
+            <p>NCC measurement pegging is performed by Prometheus, a widely used third-party metrics
+                and monitoring software package that is integrated in the Nokia Common Software
+                Foundation (CSF).</p>
+            <p>The following Prometheus components are used in NCC for platform metrics:<ul
+                    id="ul_a3m_xrw_llb">
+                    <li>
+                        <p>Push gateway: configured on both AdminCLI pods at port 9091, for
+                            supporting short-lived jobs.</p>
+                        <p> The Prometheus push gateway exists to allow ephemeral and batch jobs to
+                            expose their metrics to Prometheus. These kinds of jobs may not exist
+                            long enough to be scraped, so they can instead push their metrics to a
+                            push gateway. The push gateway then exposes these metrics to Prometheus.
+                            See
+                                <i>https://github.com/prometheus/pushgateway/blob/master/README.md</i>
+                            for more information.</p>
+                    </li>
+                </ul></p>
+            <p>Optionally, if the NCC telemetry package is deployed, NCC measurement collection can
+                also be performed by Prometheus.</p>
+            <p>The following Prometheus components are optionally used in NCC for platform
+                metrics:</p>
+            <p>
+                <ul id="ul_wrv_wgm_1mb">
+                    <li>Grafana: to allow for data visualization with multiple modes of graphing and
+                        dashboarding support</li>
+                    <li>Alertmanager: to handle alerts</li>
+                    <li>Gen3GPPXML: generates 3GPP XML file according to the customized metric set,
+                        the metric value is retrieved from the Prometheus server through its REST
+                        API</li>
+                </ul>
+            </p>
+            <p>The NCC measurements system includes the popular and powerful Grafana third-party
+                platform for querying and visualizing the NCC metrics stored in Prometheus. Grafana
+                includes built-in Prometheus support with features that include a query editor with
+                metric name lookup and templating queries for generic dashboards. See “Getting
+                started with Grafana technology” for a high level description of getting started
+                with Grafana in NCC.</p>
+            <p>If the optional NCC telemetry package is deployed, NCC is also capable of generating
+                alarms when a given metric has exceeded a configured threshold. The configuration
+                data controls which metrics, at what thresholds, have what alert severities. See
+                “Alarms when measurements cross a threshold” for a high level description of
+                generating alarms when a given metric has exceeded a configured threshold in
+                NCC.</p>
+        </section>
+        <section id="section_syk_rzw_llb">
+            <title>Measurement Structure and Optional Labels</title>
+            <p>NCC measurements are structured with an object model that consolidates a rich set of
+                information into a small number of measurements. This is achieved by virtue of
+                adding labels to the measurements that provide several more levels of detail. For
+                example, there is a single Diameter Inbound Count measurement, but there are labels
+                for recording the Application (Gx, Gy, Sy, etc.), the Command (CCR, AAR, RAR, etc.),
+                the RequestType (Initial Request, Update Request, etc.), Result code (Diameter
+                Success, Diameter Limited Success, etc.), as well as information about the peer host
+                and realm.</p>
+            <p>With this wealth of data, users can then examine the NCC measurements from a variety
+                of dimensions to gain a detailed understanding of the system traffic and behavior.
+                Questions such as the following can be answered:<ul id="ul_n2q_tzw_llb">
+                    <li>How many Diameter requests succeeded or failed?</li>
+                    <li>How many CCR requests failed?</li>
+                    <li>How many CCR requests failed from a given Diameter realm?</li>
+                </ul></p>
+            <p>In addition, some measurements are defined with a Custom Label. This provides an
+                open-ended way of recording additional data in AVPs, with multiple AVPs able to be
+                stored as a single Custom Label.</p>
+        </section>
+        <section id="section_dks_kzw_llb">
+            <title>Measurement collection (NCC telemetry package)</title>
+            <p>If using the optional NCC telemetry package, metrics are gathered onto the central
+                Prometheus server pods in each NCC. Both Prometheus server pods run the Prometheus
+                server and both actively collect measurement data from the clients and store the
+                data in their own local databases, such that all measurements data continues to be
+                available following a failure of one Prometheus server pods. A Prometheus client
+                runs on all the nodes that are recording metrics to be collected by the Prometheus
+                server.</p>
+            <p>Prometheus provides a multi-dimensional data model with time series data identified
+                by metric name and key/value pairs. A flexible query language is supported for
+                retrieving data from the database.</p>
+            <p>The Prometheus GUI URL can be configured using the helm charts on installation. For
+                more information, see the <i>NCC CNF Installation Guide</i>.</p>
+            <p>For more details about Prometheus, its configuration, tools, and features, please
+                refer to information found on the internet.</p>
+        </section>
+        <section id="section_qq1_wzw_llb">
+            <title>Storage and Retrieval of Measurements in 3GPP XML files (NCC telemetry
+                package)</title>
+            <p>Each NCC SM and ME system periodically (for example, every 5 minutes) retrieves
+                measurements data from Prometheus and records it into 3GPP XML files that are then
+                made available for northbound OSS systems to retrieve by SFTP. This is achieved via
+                the Gen3GPPPXML script that is called from the /usr/local/etc/Gen3GPPXML.json
+                file.</p>
+            <p>See the <i>NCC Installation Guide</i> for information about configuring the key
+                parameter values required for the Gen3GPPXML file.</p>
+            <p>Gen3GPPXML creates measurements files and stores them in the /appdata directory with
+                a path. These files are available to be retrieved and processed by northbound OSS
+                systems, including Nokia NetAct.</p>
+            <p>The files are named as
+                follows:<codeblock>&lt;date>.&lt;starttime>-&lt;endtime>_&lt;sitename>-&lt;nodename></codeblock></p>
+            <p>where:<codeblock>&lt;date> = YYYYMMDD
+&lt;starttime> = HHMMZ (where Z is a timezone for example, -0700)
+&lt;endtime> = HHMMZ (where Z is a timezone for example, -0700)
+&lt;sitename> = The name given to the NCC site.
+&lt;nodename> = The node name or container name in NCC that recorded the
+measurement.</codeblock></p>
+            <p>For example:
+                <codeph>A20190131.1800+0000-1805+0000_sps-me-1-diameterapp-13</codeph></p>
+            <p>Gen3GPPXML generates one XML file for one node by default. The node name is appended
+                to the filename. If the postFix is set with an non-empty value all the measurement
+                data for all the nodes is written into one XML file, then “gen3gppxmlDefaultPostFix”
+                is appended to the filename; for example:</p>
+            <p>A20181226.1849+0000-1850+0000_gen3gppxmlDefaultPostFix</p>
+            <p>Inside the XML file, there are indicators for the end time of the collection interval
+                and the duration of that interval, in seconds. There may be multiple measurements in
+                each group, with their names and measurement values clearly indicated.</p>
+            <p>There is a separate XML entry for each combination of metric values recorded during
+                this interval. If a “Last Interval” type metric value (for example,
+                diameter_inbound_average_latency_last_interval) has not changed during the last
+                interval, it will not appear in the XML file. Metric values for other metrics are
+                continually recorded in the XML file.</p>
+            <p>The following shows an example format within the XML files. Each metric has many
+                labels but each metric has a single value and in the XML
+                file.<codeblock>&lt;granPeriod duration="PT300S" endTime="2019-02-05T06:55:00+00:00" />
+&lt;repPeriod duration="PT300S" />
+&lt;measType p="1">diameter_inbound_sum&lt;/measType>
+&lt;measType p="2">diameter_inbound_count&lt;/measType>
+&lt;measType p="3">diameter_inbound_rate&lt;/measType>
+&lt;measType p="4">diameter_inbound_average_latency_overall&lt;/measType>
+&lt;measType p="5">diameter_inbound_average_latency_last_interval&lt;/measType>
+&lt;measValue measObjLdn="app=1, dia=1, host=ME-2-diameterapp-0,
+Application=Gx, Command=CCR, RequestType=INITIAL_REQUEST (1),
+Result=DIAMETER_SUCCESS, OriginHost=NA, IngressPeerOriginHost=NA,
+CustomLabel={}">
+&lt;r p="1">1390744&lt;/r>
+&lt;r p="2">109246&lt;/r>
+&lt;r p="3">2.7228070175438592&lt;/r>
+&lt;r p="4">12.73076500430395&lt;/r>
+&lt;r p="5">11.13917525773196&lt;/r>
+&lt;/measValue>
+</codeblock></p>
+        </section>
+    </conbody>
+</concept>

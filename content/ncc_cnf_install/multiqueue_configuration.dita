@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="multiqueue_configuration">
+    <title>Multi-queue configuration</title>
+    <conbody>
+        <p>Nokia recommends to enable multi-queue functionality in your NCC CNF deployment because
+            it increases your operational efficiency. </p>
+        <p>For example, in OpenStack environment the virtio-net multi-queue allows to scale the
+            network performance with increased number of vCPUs by letting them transfer packets
+            through more than one virtqueue pair at a time. To allow the virtio-net multi-queue
+            functionality, this functionality has to be configured for all the QCOW2 images when you
+            create them in OpenStack by entering: <codeph>--property
+                hw_vif_multiqueue_enabled=true</codeph>.</p>
+        <p>Example:</p>
+        <codeblock>S glance image-create --name &lt;NCC CNF image> \
+--disk-format qcow2 \
+--file &lt;NCC CNF image>.qcow2 \
+--container-format bare --property hw_vif_multiqueue_enabled=true</codeblock>
+        <p>In NCC CNF, the multi-queue NCC setting allows to configure the virtio-net multi-queue
+            functionality in OpenStack. When localization is established at startup, the multi-queue
+            setting is attempted to configure. If OpenStack configuration is overcommitted for CPU
+            and RAM, the VMs might use the lesser value than specified by NCC.</p>
+        <note>
+            <ul id="ul_nsp_wyx_5lb">
+                <li>
+                    <p>The multi-queue NCC setting must be enabled for all CNFs in the
+                        deployment.</p>
+                </li>
+                <li>
+                    <p>The multi-queue NCC setting is used only if you added  <codeph>--property
+                            hw_vif_multiqueue_enabled=true</codeph> when you created images in
+                        OpenStack.</p>
+                </li>
+            </ul>
+        </note>
+    </conbody>
+</concept>

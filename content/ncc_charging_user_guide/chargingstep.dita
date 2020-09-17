@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-chargingstep"><title>Charging Step</title><conbody>
+<section><title>Overview</title>
+<p>The charging step entity allows you to configure bucket amount from bundles in steps. The reference of charging step must be present in the bucket definition. For example, consider that you define 5 steps:</p><ol>
+<li>
+<p>Step 1 -&gt; 1 GB</p>
+</li>
+<li>
+<p>Step 2 -&gt; 1 GB</p>
+</li>
+<li>
+<p>Step 3 -&gt; 1 GB</p>
+</li>
+<li>
+<p>Step 4 -&gt; 2 GB</p>
+</li>
+<li>
+<p>Step 5 -&gt; 15 GB</p>
+</li>
+</ol>
+<p>Initially, only 1 GB is available to the user. Once this 1 GB of bundle is exhausted, the next available resource is checked, that is, other bundles. If there is no amount available, then step-up is used and the step bucket is moved to Step 2 and has 1 GB available for usage. This process continues until all the data available is exhausted. Note that the SM bundle is moved to Step 2 only when the call does not consume any bytes in between from another bucket.</p>
+<p>The steps are maintained in a list and used to change the initial value of the step charge bucket instance. The charging step must have at least one step. The same charging step can be referenced from multiple buckets. Addition, deletion, modification of steps is allowed, but you cannot reduce the step from 1 to 0.</p>
+<p>The current step and step up time increments for every step up performed. If the <uicontrol>Unlimited</uicontrol> flag is true, then the current step can be more than the number of steps defined in the charging step entity. For example, consider that a step entity has three steps defined as follows:</p>
+<fig>
+<codeblock>Step Size = 10, Step Fee = NULL
+Step Size = 20, Step Fee = 2
+Step Size = 30, Step Fee = 3
+Unlimited = True</codeblock>
+</fig>
+<p>After four step ups are performed (20, 30, 30, 30), the value of <uicontrol>currentStep</uicontrol> = <varname>4</varname> (which is greater than the number of steps defined) and <uicontrol>currentStepUpTime</uicontrol> contains the time of last (fourth) step-up performed.</p>
+<note>
+<p>After creating a subscription, it is not recommended to add, remove, or replace a <i>ChargingStep</i> in a bucket (within a charging service).</p>
+</note>
+</section>
+<section><title>Configuration</title>
+<p>Log into the SM GUI, navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> &gt;
+     <uicontrol>CHARGING</uicontrol> tab and select <uicontrol>Charging Step</uicontrol> from the
+    hamburger menu ( <!--MMO resource relative URI: ../../Global_Configurations/Graphics/hamburgermenu_default.png-->
+    <image href="../images/img9yz-09126-ug01-pczza-sp1-hamburgermenu_default.png" scale="40"/>
+    ).</p>
+<p>To define a new charging step, click <!--MMO resource relative URI: ../Graphics/Release_18.0/Add_button_default.png-->
+    <image href="../images/img9yz-09126-ug01-pczza-sp1-add_button_default.png" scale="45"/> to add
+    the details as described in the following table:</p>
+<table pgwide="1" colsep="1" rowsep="1">
+    <title>Parameters for charging step</title>
+    <tgroup cols="4">
+     <colspec colname="col1"/>
+     <colspec colname="COLSPEC0"/>
+     <colspec colname="COLSPEC1"/>
+     <colspec colname="col2"/>
+     <thead>
+      <row>
+       <entry>
+        <p>Parameter</p>
+       </entry>
+       <entry>
+        <p>Description</p>
+       </entry>
+       <entry>
+        <p>Options</p>
+       </entry>
+       <entry>
+        <p>Mandatory/Optional</p>
+       </entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry> Name </entry>
+       <entry> This parameter indicates the name of the charging step. </entry>
+       <entry> String </entry>
+       <entry> Mandatory </entry>
+      </row>
+      <row>
+       <entry> Description </entry>
+       <entry> This provides a description for the charging step. </entry>
+       <entry> String </entry>
+       <entry> Optional </entry>
+      </row>
+      <row>
+       <entry rowsep="1"> Unit </entry>
+       <entry rowsep="1">
+        <p>This parameter indicates the unit type of charging step.</p>
+        <p>For more information on unit type, see the <!--xref URI: #REUnitType--><xref
+          keyref="id9YZ-09126-UG01-PCZZA-SP1-REUnitType"/> section.</p>
+       </entry>
+       <entry rowsep="1"> ENUM </entry>
+       <entry rowsep="1"> Mandatory </entry>
+      </row>
+      <row>
+       <entry rowsep="1"> Security domain </entry>
+       <entry rowsep="1"> This parameter indicates the security domain associated with the charging
+        steps entity. </entry>
+       <entry rowsep="1">
+        <p>String</p>
+        <p>Select the required security domain from the predefined security domains in the drop-down
+         list.</p>
+       </entry>
+       <entry rowsep="1"> Optional </entry>
+      </row>
+      <row>
+       <entry nameend="col2" namest="col1" rowsep="1">
+        <p>
+         <uicontrol>Steps</uicontrol>
+        </p>
+        <p>Configure the charging steps for a bucket. If a bucket has its initial value set, then it
+         overrides the first step value.</p>
+       </entry>
+      </row>
+      <row>
+       <entry rowsep="1"> Step Size </entry>
+       <entry rowsep="1">
+        <p>This parameter indicates the value of each step to be used as the initial value of
+         bucket.</p>
+        <p>The value of last step size defined cannot be zero when the
+          <uicontrol>Unlimited</uicontrol> flag is true. Any other step (except last step) can be
+         zero even if the <uicontrol>Unlimited</uicontrol> flag is true. For example, the following
+         configuration is allowed:</p>
+        <codeblock>Step size = 10, Step fee = NULL
+Step size = 0, Step fee = 0
+Step size = 20, Step fee = 2, Unlimited = true</codeblock>
+        <p>But, if you configure the last step size = 0 with <uicontrol>Unlimited</uicontrol> flag =
+         true, then such configuration is not allowed as shown in the following example:</p>
+        <codeblock>Step size = 10, Step fee = NULL
+Step size = 0, Step fee = 0
+Step size = 0, Step fee = 2, Unlimited = true</codeblock>
+        <p>Note that this parameter cannot have a negative value.</p>
+       </entry>
+       <entry rowsep="1"> Big decimal </entry>
+       <entry rowsep="1"> Mandatory </entry>
+      </row>
+      <row>
+       <entry rowsep="1"> Step Fee </entry>
+       <entry rowsep="1">
+        <p>This parameter indicates the fee for the step. If a value is defined, then this value
+         gets deducted from the account before step up.</p>
+        <p>You can configure fee for step 1 when there is only one step configured in charging step
+         entity and the <uicontrol>Unlimited</uicontrol> flag is true.</p>
+        <p>Note that this parameter cannot have negative value.</p>
+       </entry>
+       <entry rowsep="1"> Big decimal </entry>
+       <entry rowsep="1"> Optional </entry>
+      </row>
+      <row>
+       <entry rowsep="1"> Unlimited </entry>
+       <entry rowsep="1"> If this flag is selected, then the charging step entity has infinite steps
+        starting with initial defined steps and followed by infinite number of last defined step. </entry>
+       <entry rowsep="1"> Enum </entry>
+       <entry rowsep="1"> Optional </entry>
+      </row>
+      <row>
+       <entry nameend="col2" namest="col1" rowsep="0"> Click <uicontrol>ADD STEP</uicontrol> to
+        introduce more steps. </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+</section>
+<section><title>Actions associated with a charging step</title>
+<table pgwide="1" colsep="1" rowsep="1">
+    <tgroup cols="2">
+     <colspec colname="col1" colwidth="1*"/>
+     <colspec colname="col2" colwidth="2.56*"/>
+     <thead>
+      <row>
+       <entry>
+        <p>Action</p>
+       </entry>
+       <entry>
+        <p>Description</p>
+       </entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry> Create </entry>
+       <entry> Creates a charging step entity in database. </entry>
+      </row>
+      <row>
+       <entry> Read </entry>
+       <entry> Displays a particular charging step entity as per the data retrieved from database.
+       </entry>
+      </row>
+      <row>
+       <entry> Update </entry>
+       <entry> Updates a particular charging step entity with provisioning to MEs. </entry>
+      </row>
+      <row>
+       <entry> Delete </entry>
+       <entry> Deletes a particular charging step entity from database. </entry>
+      </row>
+      <row>
+       <entry> Provision </entry>
+       <entry> Processes the update request for charging step entity for provisioning. </entry>
+      </row>
+      <row>
+       <entry> retryprovision </entry>
+       <entry> Retries provisioning of charging step entity to an ME that was previously failed.
+       </entry>
+      </row>
+      <row>
+       <entry> resetprovision </entry>
+       <entry> Clears the provisioning status for failed provisioning attempt on ME. </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+<note>
+<p>These actions are valid for only for internal purposes and cannot be accessed using the SM GUI.</p>
+</note>
+</section>
+</conbody></concept>

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id ="id9YZ-08540-UG05-PCZZA-d1e67365"><title>Remote OSI Audits</title><conbody>
+<section>
+
+<p>Changes to the Origin-State-Id are detected in one of two ways&#8211;either a Diameter message (request or response) has a new OSI or a capabilities exchange message from a peer contains a new OSI. Both cases result in the same behavior, where the DiameterPeerManager on each application blade detects the change and updates itself with the latest OSI for the peer. All application blades try to update the database with the latest OSI for the peer, but only one will be successful. Any old or stale peer entry is marked with a timestamp to indicate that a cleanup audit of it is underway starting now as part of updating the database.</p>
+<p>The application blade that succeeded in doing the database update will start a background task that queries for all session containers that contain any sessions that reference the now stale or out-of-date peer. A record is created for each session container. The timestamps of the records are for the near future (a configurable amount of time) and are spread over a configurable range of time such that the audit tasks execute at a configured event rate. If it turns out that the result of the query indicates that there are no session containers that contain sessions referencing the stale or out-of-date peer, the peer object is deleted. This means that when a remote OSI change is detected and an audit is initiated, the stale peer object is not cleaned up by that audit. It will be cleaned up later by a subsequent nightly audit. An alternate solution to indicate to clean up the stale peer is to create a different record for the inactive peer and when the record notification for the
+inactive peer arrives, the application checks for sessions. If there are no sessions associated with the peer, the inactive peer is deleted; otherwise, the timestamp is updated in the record.</p>
+<p>As the records come up for auditing, a notification to the application blades for each session container to be audited is generated. The application blade fetches the session container, searches for the session object(s) that reference the stale peer, and create an appropriate remote OSI audit task for the session.</p>
+<p>The work for controlling, monitoring, and providing audits is continuously performed according to how you set the system preferences for the audit. Configuration of the system preferences is performed in the Global Configurations application.<table colsep="1" rowsep="1"><title>System Preference for Remote OSI Audits</title>
+
+
+<tgroup cols="3">
+<colspec colname="col1" />
+<colspec colname="col2" />
+<colspec colname="col3" />
+<thead>
+<row>
+<entry>
+<p>System Preference</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+<entry>
+<p>Options</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+Remote-OSI-Audit-Start- Offset-time (seconds)
+</entry>
+<entry>
+The delay that can be added to the audit start time task from when a peer is detected to have a new OSI. It configures how far in the future from that time the auditing tasks should begin.
+</entry>
+<entry>
+<p>Integer</p>
+<p>Default: 600</p>
+</entry>
+</row>
+<row>
+<entry>
+Remote-OSI-Audit-max-event-rate (audits/second)
+</entry>
+<entry>
+The number of audits/second that should be generated across all application blades (each application blade generates 1/N of the events).
+</entry>
+<entry>
+<p>Integer</p>
+<p>Default: 1000</p>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table></p>
+<sectiondiv>
+<p><b>Scheduled remote OSI audits</b></p>
+<p>Since remote OSI cleanup audits can be difficult, a daily remote OSI clean up task can be scheduled to run once per day at a configurable time on all application blades. The task checks for Diameter peer objects marked as stale or out-of-date with an <i>auditTriggerTime </i> that is so old that it indicates the audit for that peer must have failed. </p>
+<p>The task updates the <i>auditTriggerTime </i> and on success, starts the query that is used to find stale sessions for the peer. Only one application blade succeeds in updating a very old timestamp to a new value. When stale sessions for the peer are found, the audit proceeds as described for any Remote OSI Audit. The Diameter peer record contains the <i>Long auditTriggerTime</i>. It is the time in milliseconds since epoch that a remote OSI audit was initiated to clean up sessions related to this now stale or out-of-date peer.</p>
+<p>The work for controlling, monitoring, and providing audits is continuously performed according to how you set the system preferences for the audit. Configuration of the system preferences is performed in the Global Configurations application.<table colsep="1" rowsep="1"><title>System Preference for scheduled remote OSI audits</title>
+
+
+<tgroup cols="3">
+<colspec colname="col1" />
+<colspec colname="col2" />
+<colspec colname="col3" />
+<thead>
+<row>
+<entry>
+<p>System Preference</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+<entry>
+<p>Options</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+Remote-OSI-Audit-Trigger-Time-Out-Of-Date-Interval (seconds) 
+</entry>
+<entry>
+The age that an <i>auditTriggerTime </i> field in a stale/out-of-date Diameter peer object can be before it is assumed that the audit is no longer running, but has failed or has been aborted.
+</entry>
+<entry>
+Default: 86400 (1 day)
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table></p>
+</sectiondiv>
+</section>
+</conbody></concept>

@@ -1,0 +1,586 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9YZ-09018-UG00-PCZZA-d1e9419">
+<title>Cross-Datacenter Replication (XDR) in NCC</title>
+<conbody>
+<section>
+<title>Namespaces for data and Cross-Datacenter Replication (XDR)</title>
+<p>The following table lists namespaces used in the NCC databases and describes if they support
+                Cross-Datacenter Replication (XDR). XDR replicates data between the configured
+                source and destination across geographical zones in geo-redundant deployments. XDR
+                is used to keep the source and destination synchronized to provide for disaster
+                recovery or for bringing data close to where it will be consumed.</p>
+<table colsep="1" rowsep="1" scale="80">
+                <title>NCC namespaces</title>
+                <tgroup cols="4">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <colspec colname="col3"/>
+                    <colspec colname="col4"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <b>Namespace</b>
+                            </entry>
+                            <entry>
+                                <b>ME</b>
+                            </entry>
+                            <entry>
+                                <b>SM</b>
+                            </entry>
+                            <entry>
+                                <b>XDR enabled</b>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>
+                                <filepath>dsclocal</filepath>
+                            </entry>
+                            <entry> Stores the records provisioned by SM that are not subscriber
+                                related, i.e. service definition data. </entry>
+                            <entry> Not used </entry>
+                            <entry> No </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <filepath>dsc</filepath>
+                            </entry>
+                            <entry> Default namespace, any record not assigned to other namespaces
+                                are stored in this namespace. </entry>
+                            <entry> Default namespace. In SM, this is the only used namespace. </entry>
+                            <entry> Two-way replicated if the current site has a mate site. In a
+                                production setup, this should always be the case. The mate site of a
+                                site is defined in the SDC system scope key:
+                                    <filepath>config/topology/spssite/&lt;current-site-id&gt;/matesite</filepath>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <filepath>dscglobal</filepath>
+                            </entry>
+                            <entry> N-way replicated records such as Device and destination mapping
+                                records. </entry>
+                            <entry> Not used </entry>
+                            <entry> N-way replicated. If the network is divided into NCC regions,
+                                then N-way within a region </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p>
+                                    <filepath>spspd1 to spspdXYZ,</filepath>
+                                </p>
+                                <p>(where XYZ is the max partition number defined in the network and
+                                    can be value between 0 and 127. See “partitionid” in the “NCC
+                                    topology partition data parameters” section of the <i>NCC
+                                        Installation and Upgrade Guide</i> for more information.</p>
+                            </entry>
+                            <entry> Subscriber related data (DynamicData or SessionContainer)
+                                divided into a number of partitions. </entry>
+                            <entry> Not used </entry>
+                            <entry> Always two-way replicated between the sites associated with the
+                                partition. In 1+1 deployments, if a partition is associated with M
+                                sites, the data is M-way replicated. </entry>
+                        </row>
+                        <row>
+                            <entry rowsep="0"> spsundologs </entry>
+                            <entry rowsep="0"> Stores transaction logs.  This is a memory only
+                                namespace. </entry>
+                            <entry rowsep="0"> Not used </entry>
+                            <entry rowsep="0"> No </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<p>In a stable network operating normally, XDR replication keeps all data synchronized across the
+                relevant NCC for a given set of data, whether that data is 1+1 replicated or N-way
+                replicated. Transient replication slowdowns are tolerated and synchronization may be
+                temporarily slowed, but not to the point of data consistency issues. Normally
+                synchronization occurs very quickly across the network.</p>
+<p>Various application preferences are available for control over XDR thresholds and
+                intervals in the system, as follows:</p>
+<ul>
+<li>
+<p>XDR remote site ship destination error threshold (count)</p>
+</li>
+<li>
+<p>XDR remote site ship source error threshold (count)</p>
+</li>
+<li>
+<p>XDR remote site average ship latency threshold (ms)</p>
+</li>
+<li>
+<p>XDR remote site timelag high-watermark (secs)</p>
+</li>
+<li>
+<p>XDR remote site timelag low-watermark (secs)</p>
+</li>
+<li>
+<p>Aerospike XDR Metrics Query Interval (secs)</p>
+</li>
+<li>
+<p>Aerospike XDR Remote Status Polling Interval (secs)</p>
+</li>
+</ul>
+<p>See the Global configuration Guide for more information about these application
+                preferences.</p>
+<p>The NCC creates an information exchange between the NCC XDR peers in the network to reflect the
+                dc_timelag and dc_state of that NCC toward each of its connected data center peers.
+                The database has a separate XDR digest log in every database node in the cluster.
+                (An NCC with 40 database nodes will have 40 digest logs.) However, there is only one
+                digest log that covers all namespaces. The XDR digest log contains replication
+                entries waiting to be synchronized with a remote data center. The XDR digest log is
+                configured to handle at least three days of XDR entries.</p>
+<p>The NCC monitors its digest log size on each database node at approximately 15-second intervals
+                and alarms when the log size reaches 25%, 50%, 90%, and 100% of its configured size.
+                Only one alarm per site per threshold level is raised, not one for each node that
+                actually detects this condition. The alarm is cleared only when all nodes return to
+                a normal state. The XDR is considered caught up when the XDR Digest Log size is at
+                an 11% threshold of its total size. See the Alarm chapter in the Operations,
+                Administration, and Maintenance guide for information about the “XDR. Digest Log
+                size exceeded allowable threshold.” alarm.</p>
+<p>The NCC maintains the aggregate XDR dc_timelag, about an NCC view of all other remote NCCs
+                configured as XDR peers. The aggregate site value is the worst-case (least digest
+                log free space) across the database nodes. There is one entry per remote data
+                center. NCC uses the dc_timelag metric for a per-data center view of whether XDR is
+                keeping up or falling behind. “dc_timelag” and “dc_state” are kept on each node in
+                the database cluster, for each of the XDR peer data centers. See the XDR
+                measurements section in the Operations, Administration, and Maintenance guide for
+                information about XDR metrics.</p>
+<p>The aggregate state is computed as:</p>
+<ul>
+<li>
+<p>If at least one node is reporting CLUSTER_DOWN for a given remote data center
+                        (DC), then the aggregate state for that remote DC is CLUSTER_DOWN.</p>
+</li>
+<li>
+<p>Else if at least one node is reporting CLUSTER_WINDOW_SHIP for a given remote
+                        DC, then the aggregate state for that remote DC is CLUSTER_WINDOW_SHIP.</p>
+</li>
+<li>
+<p>Else if at least one node is reporting CLUSTER_INACTIVE for a given remote
+                        DC, then the aggregate state for that remote DC is CLUSTER_INACTIVE.</p>
+</li>
+<li>
+<p>Else (all nodes are reporting CLUSTER_UP, an unexpected state, or not
+                        responding), then the aggregate state for that remote DC is CLUSTER_UP.</p>
+</li>
+</ul>
+<p>When an NCC is recovering, it must first ensure its local data is up-to-date with the other NCCs
+                in the network prior to changing its state back to In-Service and enabling its
+                incoming Diameter traffic. Given that there is continuous traffic in the network,
+                there will always be a small amount of update traffic queued up, so NCC will
+                determine that it is "back to a stable steady state" with only a small amount of
+                remaining XDR traffic queued in the Aerospike XDR digest log. A recovering NCC
+                monitors the external views of the recovering NCC data center and only comes back
+                in-service when the other active XDR peer NCC indicates an acceptably low dc_timelag
+                and a CLUSTER_UP dc state.</p>
+<p>Anytime the local NCC is transitioning from an OOS state toward an IS state, the local NCC polls
+                its XDR peer NCCs to determine if it is in need of disaster recovery, or if it is in
+                need of getting its data synchronized, or if its data is synchronized and it is
+                allowed to return to service. This applies to a normal system initialization as well
+                as, all other scenarios when an NCC is transitioning from an OOS state toward an IS
+                state.</p>
+<p>There is a specialized CLI tool for manually setting whether the NCC accepts or rejects XDR
+                traffic. See the Tools section in the Operations, Administration, and Maintenance
+                Guide for information about the xdr-traffic-control command.</p>
+<sectiondiv>
+<p><b>In Service/Out of Service determination states</b></p>
+<p>Sometimes it is necessary for an SM or NCC with a database that is not up to date to take itself
+                    OOS. Replication could fall behind due to WAN congestion or WAN outage, causing
+                    one SM or NCC to take itself OOS so that transactions through the other SM or
+                    NCC are using consistent data. For example, the In Service SM or NCC may change
+                    itself to the Out Of Service - Waiting for Resync state, which means it will go
+                    back In Service as soon as replication catches up. </p>
+<p>The XDR monitoring service maintains two states–an internal state and a service
+                    state. The internal state is derived from XDR metrics that come from its peer
+                    sites. The service state is the standard service state monitored by the service
+                    state monitoring framework and can be either UP or DOWN. The internal state can
+                    be one of the following:</p>
+<ul>
+<li>
+<p>
+<b>Current</b>:</p>
+<p>Service is normal and XDR is up-to-date.</p>
+</li>
+<li>
+<p>
+<b>Behind</b>:</p>
+<p>Service is normal but XDR is falling behind. </p>
+</li>
+<li>
+<p>
+<b>Overflowed</b>:</p>
+<p>Service is not normal and the XDR is overflowing. </p>
+</li>
+<li>
+<p>
+<b>OOS-WFR</b>:</p>
+<p>Out of Service Waiting for Resync state means the system is trying to go
+                            In Service but is waiting for the XDR to catch up so its data is
+                            current. XDR replication between the SM systems continues even when the
+                            ME is in the OOS - Waiting for Resync state. The XDR is considered
+                            current after the XDR framework checks the dc_timelag metric against the
+                            "XDR remote site timelag high-watermark (secs)" threshold and the metric
+                            is lower than the threshold.</p>
+</li>
+<li>
+<p>
+<b>OOS-DRR</b>:</p>
+<p>Out Of Service-Disaster Recovery Required means the system needs a complete copy of its Aerospike
+                            data from other systems; you will see this in the “XDR. Digest Log size
+                            exceeded allowable threshold.” alarm with a Critical severity. The
+                            additional text for the alarm states: “Digest Log with size 97% has
+                            exceeded allowable threshold, for one or more remote NCC site(s). The
+                            Disaster Recovery procedure is required on these site(s) to re-sync
+                            their data with this NCC.” The XDR is considered caught up when the XDR
+                            Digest Log size is at an 11% threshold of its total size.</p>
+</li>
+<li>
+<p>
+<b>OOS-WFR-HOLD</b>
+</p>
+<p>This is a state available to the SM only. It is a "delay" state that only
+                            one site of an SM pair uses to prevent both sites from oscillating
+                            between IS and OOS when the XDR backlog hovers around the "behind"
+                            threshold.</p>
+</li>
+</ul>
+<p>An SM or NCC in the OOS-WFR or OOS-DRR state will automatically transition to an In Service state
+                    if the other SM or NCC is found to be in any OOS state according to the
+                    heartbeat mechanism.</p>
+<p>There is an xdr-status tool that allows you to display XDR metrics and status or
+                    override the OOS-WFR and OOS-DRR states. See the XDR metrics section and the
+                    tools section in the Operations, Administration, and Maintenance Guide for more
+                    information.</p>
+</sectiondiv>
+</section>
+<section>
+<title>Handling local and remote destination node loss</title>
+<p>The following are two failure situations that XDR handles. Each produces a trail of
+                logs as the events are processed.</p>
+<ul>
+<li>
+<p>
+<b>Failed Node Processing</b>: For a local node failure at the source
+                        cluster, it’s neighbours take the reign of shipping the records on behalf of
+                        this failed node. Each failed node gets it’s own failed node shipper thread
+                        on the remaining nodes in the cluster.</p>
+</li>
+<li>
+<p>
+<b>Window Shipping Processing</b>: For a remote destination that becomes
+                        unreachable, XDR keeps track of the window for which the destination cluster
+                        is not reachable. When it finally becomes reachable, XDR picks up shipping
+                        for that window. Each failed datacenter spawns a window shipper thread.</p>
+</li>
+</ul>
+<sectiondiv>
+<p><b>Failed Node Processing flow of events</b></p>
+<p>The flow of events is as follows:</p>
+<ol>
+<li>
+<p>Local peer node fails on the source cluster. The alive nodes report the
+                            last ship time from the dead node so that the alive node can resume
+                            shipping the (prole) records on it’s behalf, for example:</p>
+<ul>
+<li>
+<p>Jun 14 2016 22:00:15 GMT: INFO (xdr): (xdr.c:4578) Node
+                                    bb99358aa4f1006 <b>failed at time</b> 1465941915190 (2016-06-14
+                                    22:05:15.190 GMT). Its <b>lastshiptime</b>=1465941608716
+                                    (2016-06-14 22:00:08.716 GMT) <b>for DC=REMOTE_DC_1</b>
+</p>
+</li>
+<li>
+<p>Jun 14 2016 22:00:15 GMT: <b>WARNING</b> (xdr):
+                                    (xdr_serverside.c:285) <b>XDR last ship time of this node for DC
+                                        0 went back to</b> 1465941308716 <b>from</b>
+                                    1465941609863</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Alive nodes begin the failed node processing:</p>
+<ul>
+<li>
+<p>Jun 14 2016 22:00:16 GMT: INFO (xdr): (xdr.c:3298) <b>Performing:
+                                        Failed node processing in window</b> [1465941579646
+                                    (2016-06-14 21:59:39.646 GMT):1465941915190 (2016-06-14
+                                    22:05:15.190 GMT)] of node bb99358aa4f1006</p>
+</li>
+<li>
+<p>Jun 14 2016 22:00:16 GMT: INFO (xdr): (xdr.c:3332) <b>Failed node
+                                        recovery for</b> bb99358aa4f1006 <b>pending</b>, 5700
+                                        <b>records left to check</b> (at 0/s, ~0s left)</p>
+</li>
+<li>
+<p>Jun 14 2016 22:00:17 GMT: INFO (xdr): (xdr.c:3427)
+                                        <b>process_failednode : Waiting to finish shipping of
+                                        records already scheduled. Records queued</b>=2797,
+                                    finished=4</p>
+</li>
+<li>
+<p>Jun 14 2016 22:00:18 GMT: INFO (xdr): (xdr.c:3427)
+                                        <b>process_failednode : Waiting to finish shipping of
+                                        records already scheduled. Records queued</b>=2797,
+                                    finished=30</p>
+</li>
+<li>
+<p>...</p>
+</li>
+<li>
+<p>Jun 14 2016 22:00:45 GMT: INFO (xdr): (xdr.c:3427)
+                                        <b>process_failednode : Waiting to finish shipping of
+                                        records already scheduled. Records queued</b>=2797,
+                                    finished=2784</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Failed node processing is marked as completed once the records from the
+                            dead nodes last-shipped are all sent across to the destination
+                            cluster(s):</p>
+<ul>
+<li>
+<p>Jun 14 2016 22:00:47 GMT: INFO (xdr): (xdr_serverside.c:1000)
+                                        <b>XDR failed node processing completed for node</b>
+                                    bb99358aa4f1006</p>
+</li>
+<li>
+<p>Jun 14 2016 22:00:47 GMT: INFO (xdr): (xdr.c:3456) <b>Finished:
+                                        Failed node processing in window</b> [1465941308716
+                                    (2016-06-14 21:55:08.716 GMT):1465941915190 (2016-06-14
+                                    22:05:15.190 GMT)] of node bb99358aa4f1006. <b>Shipped 2797
+                                        records</b>
+</p>
+</li>
+</ul>
+</li>
+<li>
+<p>On bringing the stopped peer node back up, it will resume shipping from
+                            the digestlog it has and the last-ship time of the node is updated on
+                            it’s peers. It’s always recommended to do a clean restart if a node was
+                            down for an exceptionally long time to avoid stale data making it’s way
+                            into the destination:</p>
+<ul>
+<li>
+<p>Jun 14 2016 23:12:07 GMT: INFO (xdr): (xdr.c:4307) <b>replication
+                                        service ready</b>: and now you have icing!</p>
+</li>
+<li>
+<p>Jun 14 2016 23:12:08 GMT: WARNING (xdr): (xdr_serverside.c:285)
+                                    XDR last ship time of this node for DC 0 went back to
+                                    1465945047644 from 1465945927448</p>
+</li>
+<li>
+<p>Jun 14 2016 23:12:08 GMT: WARNING (xdr): (xdr_serverside.c:285)
+                                        <b>XDR last ship time of this node for DC 1 went back to</b>
+                                    1465945047644 from 1465945927448</p>
+</li>
+</ul>
+</li>
+</ol>
+</sectiondiv>
+<sectiondiv>
+<p><b>Window Shipping Processing flow of events</b></p>
+<p>The flow of events is as follows:</p>
+<ol>
+<li>
+<p>Local cluster identifies a destination that is no longer reachable, marks
+                            the remote DC as CLUSTER_DOWN:</p>
+<ul>
+<li>
+<p>Jun 14 2016 23:00:40 GMT: INFO (xdr): (xdr.c:2844) <b>Connection
+                                        error when writing to cluster REMOTE_DC_2. Checking its
+                                        health</b>. </p>
+</li>
+<li>
+<p>Jun 14 2016 23:00:40 GMT: INFO (xdr): (xdr.c:2873) <b>Changing
+                                        state of cluster REMOTE_DC_2 to CLUSTER_DOWN</b>
+</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Local cluster spawns a Windowshipper thread to save the last known
+                            timestamp where the remote destination received the records
+                            successfully:</p>
+<ul>
+<li>
+<p>Jun 14 2016 23:00:40 GMT: WARNING (xdr): (xdr.c:2903) <b>Cluster
+                                        REMOTE_DC_2 is down! Spawning a thread</b>. </p>
+</li>
+<li>
+<p>Jun 14 2016 23:00:41 GMT: INFO (xdr): (xdr.c:2294)
+                                        <b>Windowshipper: Added a new window from</b> 1465944737502
+                                    (2016-06-14 22:52:17.502 GMT). <b>Waiting for DC to be UP</b>.
+                                </p>
+</li>
+<li>
+<p>Jun 14 2016 23:00:41 GMT: INFO (xdr): (xdr.c:2296)
+                                        <b>Windowshipper: Cluster REMOTE_DC_2: Number of windows on
+                                        list 1</b>
+</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Once the remote destination cluster is reachable again, XDR identifies
+                            the window shipping that is required:</p>
+<ul>
+<li>
+<p>Jun 14 2016 23:01:17 GMT: INFO (xdr): (xdr.c:2399)
+                                        <b>Windowshipper: Cluster REMOTE_DC_2 has come up</b> : 0
+                                </p>
+</li>
+<li>
+<p>Jun 14 2016 23:01:17 GMT: INFO (xdr): (xdr.c:2409)
+                                        <b>Windowshipper: Changing state of cluster REMOTE_DC_2 to
+                                        CLUSTER_WINDOW_SHIP</b>
+</p>
+</li>
+<li>
+<p>Jun 14 2016 23:01:17 GMT: INFO (xdr): (xdr.c:2314) <b>Setting end
+                                        marker=1465945577009 (2016-06-14 23:06:17.009 GMT) for the
+                                        window with start marker</b>=1465944737502 (2016-06-14
+                                    22:52:17.502 GMT) </p>
+</li>
+<li>
+<p>Jun 14 2016 23:01:17 GMT: INFO (xdr): (xdr.c:2431)
+                                        <b>Windowshipper: Cluster REMOTE_DC_2: For node id 0, start
+                                        window shipping between</b> 1465944737502 (2016-06-14
+                                    22:52:17.502 GMT) and 1465945577009 (2016-06-14 23:06:17.009
+                                    GMT) Jun 14 2016 23:01:17 GMT: INFO (xdr): (xdr.c:2433)
+                                        <b>Windowshipper: Cluster REMOTE_DC_2: Number of windows on
+                                        list 1</b>
+</p>
+</li>
+<li>
+<p>Jun 14 2016 23:01:17 GMT: INFO (xdr): (xdr.c:2433)
+                                        <b>Windowshipper: Cluster REMOTE_DC_2: Number of windows on
+                                        list 1</b>
+</p>
+</li>
+</ul>
+</li>
+<li>
+<p>It begins shipping for that windows and identifies the time remaining as
+                            well:</p>
+<ul>
+<li>
+<p>Jun 14 2016 23:01:17 GMT: INFO (xdr): (xdr.c:2089) <b>Start
+                                        xdr_do_windowship</b>
+</p>
+</li>
+<li>
+<p>Jun 14 2016 23:01:17 GMT: INFO (xdr): (xdr.c:2103)
+                                        <b>Windowshipper: Start digest timestamp</b> 1465945035212
+                                    (2016-06-14 22:57:15.212 GMT)</p>
+</li>
+<li>
+<p>Jun 14 2016 23:01:17 GMT: INFO (xdr): (xdr.c:2148) <b>Data center
+                                        recovery for REMOTE_DC_2 pending, 18900 records left to
+                                        check</b> (at 0/s, ~0s left)</p>
+</li>
+<li>
+<p>Jun 14 2016 23:01:17 GMT: INFO (xdr): (xdr.c:2844)<b> Connection
+                                        error when writing to cluster REMOTE_DC_2. Checking its
+                                        health.</b>
+</p>
+</li>
+<li>
+<p>Jun 14 2016 23:01:27 GMT: INFO (xdr): (xdr.c:2148) <b>Data center
+                                        recovery for REMOTE_DC_2 pending, 17100 records left to
+                                        check </b>(at 176/s, ~1m37s left)</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Destination cluster is set to CLUSTER_WINDOW_SHIP state during the
+                            process:</p>
+<ul>
+<li>
+<p>Jun 14 2016 23:01:28 GMT: INFO (xdr): (xdr.c:1995)
+                                        <b>[REMOTE_DC_2] CLUSTER_WINDOW_SHIP : timelag</b> 533 secs
+                                    : lst 1465944737502 (2016-06-14 22:52:17.502 GMT) : mlst
+                                    1465945085186 (2016-06-14 22:58:05.186 GMT) : fnlst 0 (-) :
+                                    wslst 1465944737502 (2016-06-14 22:52:17.502 GMT) : shlat 0
+                                    ms</p>
+</li>
+</ul>
+</li>
+<li>
+<p>XDR continues shipping until it has processed all the records in the
+                            window:</p>
+<ul>
+<li>
+<p>Jun 14 2016 23:01:37 GMT: INFO (xdr): (xdr.c:2148) <b>Data center
+                                        recovery for REMOTE_DC_2 pending</b>, 14200 records left to
+                                    check (at 284/s, ~50s left)</p>
+</li>
+<li>
+<p>...</p>
+</li>
+<li>
+<p>Jun 14 2016 23:02:23 GMT: INFO (xdr): (xdr.c:2148) Data center
+                                    recovery for REMOTE_DC_2 pending, 200 records left to check (at
+                                    235/s, ~0s left)</p>
+</li>
+<li>
+<p>Jun 14 2016 23:02:24 GMT: INFO (xdr): (xdr.c:2240)
+                                        <b>Windowshipper : Waiting to finish shipping of records
+                                        already scheduled. Records queued</b>=10442,
+                                    finished=6922</p>
+</li>
+<li>
+<p>...</p>
+</li>
+<li>
+<p>Jun 14 2016 23:02:41 GMT: INFO (xdr): (xdr.c:2240) Windowshipper
+                                    : Waiting to finish shipping of records already scheduled.
+                                    Records queued=10442, finished=10312</p>
+</li>
+<li>
+<p>Jun 14 2016 23:02:42 GMT: INFO (xdr): (xdr.c:2240)
+                                        <b>Windowshipper : Waiting to finish shipping of records
+                                        already scheduled. Records queued</b>=10442,
+                                    finished=10382</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Once completed, local source cluster is notified with the completion of
+                            the window shipping and cluster state changes from CLUSTER_WINDOW_SHIP
+                            state to CLUSTER_UP:</p>
+<ul>
+<li>
+<p>Jun 14 2016 23:02:43 GMT: INFO (xdr): (xdr.c:2460)
+                                        <b>Windowshipper: Cluster REMOTE_DC_2: For node id 0, done
+                                        window shipping between</b> 1465944737502 (2016-06-14
+                                    22:52:17.502 GMT) and 1465945577009 (2016-06-14 23:06:17.009
+                                    GMT). <b>Shipped 10442 records</b>
+</p>
+</li>
+<li>
+<p>Jun 14 2016 23:02:43 GMT: INFO (xdr): (xdr.c:2470) Windowshipper:
+                                    Cluster REMOTE_DC_2: Number of windows on list 0</p>
+</li>
+<li>
+<p>Jun 14 2016 23:02:43 GMT: INFO (xdr): (xdr.c:2474)
+                                        <b>Windowshipper: Cluster REMOTE_DC_2: Done with shipping of
+                                        all windows. Shipped 10442 </b>records</p>
+</li>
+<li>
+<p>Jun 14 2016 23:02:43 GMT: INFO (xdr): (xdr.c:2512)
+                                        <b>Windowshipper: Changing state of cluster REMOTE_DC_2 to
+                                        CLUSTER_UP</b>
+</p>
+</li>
+</ul>
+</li>
+</ol>
+</sectiondiv>
+</section>
+</conbody>
+</concept>

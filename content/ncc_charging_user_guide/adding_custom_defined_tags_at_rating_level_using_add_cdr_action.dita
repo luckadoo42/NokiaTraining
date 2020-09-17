@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="adding_custom_defined_tags_at_rating_level_using_add_cdr_action">
+    <title>Adding custom-defined tags at rating level using Add-CDR action</title>
+    <conbody>
+        <section id="section_uqr_tss_wmb">
+            <title>Overview</title>
+            <p>This feature enables to add custom-defined CDR tags at rating level using
+                    <varname>Add-CDR</varname> action. These CDR tags are dynamically updated for a
+                Gy request call.</p>
+            <p>A new trigger <i>RESOURCE_POST_PROCESSING</i> has been introduced and the
+                    <varname>Add-CDR</varname> action supports the functionality to add a CDR tag at
+                rating level only in case of <i>RESOURCE_POST_PROCESSING</i> trigger at:</p>
+            <ul id="ul_ljg_qgs_wmb">
+                <li>CHARGING_SERVICE_LEVEL</li>
+                <li>RESOURCE_LEVEL</li>
+            </ul>
+            <p>The <i>RESOURCE_POST_PROCESSING</i> is evaluated after the consumption of resource
+                (for example, bucket, counter, <i>No-Charge</i>, or main account balance) only in
+                UPDATE and TERMINATE calls, and not in INITIAL call.</p>
+            <p>For a resource-level tag, the resource type (such as, bucket, <i>No-Charge</i>, main
+                account balance, <varname>Device</varname> counter, <varname>Device- Group</varname>
+                counter, <varname>Group</varname> counter, <varname>Multi-bundle</varname> counter,
+                or <varname>Subscription</varname> counter) must be defined.</p>
+            <note>
+                <p>Apart from <varname>Subscription</varname> type of counter, the custom-defined
+                    CDR tags are not dumped at charging service level for other types of
+                    counters.</p>
+            </note>
+            <sectiondiv>
+                <p><b>Override parameter</b></p>
+                <p>If multiple <varname>Call-Result.Add-CDR</varname> actions are configured with
+                    same tag name, then all of them are logged in the CDR, which means it is
+                    possible to have multiple custom CDR entries with same tag name, at a given
+                    level in the CDR.</p>
+                <p>An optional parameter <i>Override</i> is introduced to overwrite the custom tags
+                    with same name. This parameter is only supported in the
+                        <i>RESOURCE_POST_PROCESSING</i> trigger, and all triggers of
+                        <varname>Add-CDR</varname> for MSCC level.</p>
+                <p>If this parameter is configured and set to <varname>OVERRIDE</varname>, then only
+                    the last tag-value pair is logged in the CDR. This parameter is supported for
+                    other rule triggers at MSCC level.</p>
+            </sectiondiv>
+        </section>
+        <section id="section_njf_5ss_wmb">
+            <title>Additional information</title>
+            <p>Following are some important points regarding this functionality:</p>
+            <ul id="ul_nqr_pts_wmb">
+                <li>
+                    <p>The <i>RATING_POST_PROCESSING</i> trigger is not used for this feature
+                        configuration.</p>
+                </li>
+                <li>
+                    <p>This functionality is not applicable to threshold execution using
+                        provisioning interface, such as Gy request calls.</p>
+                </li>
+                <li>
+                    <p>The existing functionality of <varname>Add-CDR</varname> action continues the
+                        same way to ensure backward compatibility.</p>
+                </li>
+                <li>
+                    <p>The <varname>Add-CDR</varname> functionality on threshold is considered only
+                        for COMMIT scenarios and not on reservation for threshold or other rule
+                        sets.</p>
+                </li>
+                <li>
+                    <p>The threshold configuration model is a threshold profile group with only one
+                            <i>Threshold Profile Type</i>, such as <varname>Percentage</varname>,
+                            <varname>Absolute from Start</varname>, or <varname>Absolute from
+                            End</varname>.</p>
+                </li>
+                <li>
+                    <p>When multiple thresholds are crossed in a single threshold profile group, the
+                        last threshold crossed is considered for triggering the action.</p>
+                </li>
+                <li>
+                    <p>This feature supports only the following consumption resources:</p>
+                    <ul id="ul_rkw_l5s_wmb">
+                        <li>Bucket</li>
+                        <li>Counter (<varname>Device</varname>, <varname>Device- Group</varname>,
+                                <varname>Group</varname>, <varname>Multi-bundle</varname>, or
+                                <varname>Subscription</varname> type)</li>
+                        <li>
+                            <p>Main account balance</p>
+                        </li>
+                        <li>
+                            <p><i>No-Charge</i> (with applicable rule variables)</p>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <p>In case of multiple thresholds of different <i>Threshold Profile Type</i>
+                        with same value, the last threshold crossed is considered as per the
+                        following order of threshold profile: <varname>Absolute from Start</varname>
+                        → <varname>Percentage</varname> → <varname>Absolute from End</varname>.</p>
+                </li>
+            </ul>
+        </section>
+        <section id="section_umb_wss_wmb">
+            <title>Examples</title>
+            <p>Consider the following examples for better understanding of this feature:</p>
+            <p/>
+            <sectiondiv>
+                <p><b>Example 1: Custom-defined tag dumped at charging service level when a charging
+                        service matches with a complex map configuration for
+                        RESOURCE_POST_PROCESSING trigger</b></p>
+                <p>This example states the support of <i>RESOURCE_POST_PROCESSING</i> trigger and
+                    the new variables for executing the <varname>Add-CDR</varname> action as per
+                    resource and the custom-defined tag <varname>CStariffAMACode</varname> is dumped
+                    at the charging service level when a charging service matches with a complex map
+                    configuration.</p>
+                <p><b>Provisioning:</b></p>
+                <ol id="ol_dpx_zds_wmb">
+                    <li>
+                        <p>Create the following charging services:</p>
+                        <ol id="ol_ofy_52s_wmb">
+                            <li>
+                                <p><varname>BBProfesNat_CS</varname> and apply bucket
+                                        <varname>bucket3</varname> to it with a value of 10
+                                    bytes:</p>
+                                <image placement="break" href="../images/cslevel1.png"
+                                    id="image_cxf_c3s_wmb"/>
+                                <image placement="break" href="../images/cslevel1bucket.png"
+                                    id="image_jbw_c3s_wmb"/>
+                            </li>
+                            <li>
+                                <p><varname>BBProfesNat_CS1</varname> and apply bucket
+                                        <varname>bucket1</varname> to it with a value of 200
+                                    bytes:</p>
+                                <image placement="break" href="../images/cslevel2.png"
+                                    id="image_j2b_23s_wmb"/>
+                                <image placement="break" href="../images/cslevel2bucket.png"
+                                    id="image_sqr_23s_wmb"/>
+                            </li>
+                        </ol>
+                    </li>
+                    <li>
+                        <p>Create a bundle <varname>bundle1</varname> with
+                                <varname>BBProfesNat_CS</varname> and
+                                <varname>BBProfesNat_CS1</varname> charging services.</p>
+                    </li>
+                    <li>
+                        <p>Subscribe a device to the bundle as shown in the following figure:</p>
+                        <image placement="break" href="../images/devicesubscriptiontobundle.png"
+                            id="image_q2f_g3s_wmb"/>
+                    </li>
+                    <li>
+                        <p>Create a complex map <varname>CS_AMA_mapping</varname> with the following
+                            configuration:</p>
+                        <image placement="break" href="../images/complexmapconfig1.png"
+                            id="image_hqf_h3s_wmb" scale="65"/>
+                        <p/>
+                        <image placement="break" href="../images/complexmapconfig2.png"
+                            id="image_dlz_h3s_wmb" scale="65"/>
+                    </li>
+                    <li>
+                        <p>Create a rule under the <i>RESOURCE_POST_PROCESSING</i> trigger, and
+                            suitable rule variables and Rating Group:</p>
+                        <image placement="break" href="../images/triggerrsv1.png"
+                            id="image_ovb_l3s_wmb"/>
+                        <p/>
+                        <image placement="break" href="../images/triggerrsv2.png"
+                            id="image_zd1_m3s_wmb" scale="65"/>
+                        <p/>
+                        <image placement="break" href="../images/triggerrsv3.png"
+                            id="image_czy_m3s_wmb" scale="65"/>
+                        <p/>
+                        <image placement="break" href="../images/triggerrsv4.png"
+                            id="image_gzt_n3s_wmb" scale="65"/>
+                    </li>
+                    <li>
+                        <p>Execute a multi-MSCC call in roaming state of the device:</p>
+                        <p><varname>CCR (I) - RG - 3300, RSU = 10</varname></p>
+                        <p><varname>CCR (I) - RG - 3310, RSU = 10</varname></p>
+                        <p><varname>CCR (U1) - RG - 3300, RSU = 10 , USU = 10</varname></p>
+                        <p><varname>CCR (U1) - RG - 3310, RSU = 10, USU = 10</varname></p>
+                        <p><varname>CCR (T) - RG – 3300 , USU – 10 and RG – 3310 , USU =
+                                10</varname></p>
+                    </li>
+                </ol>
+                <p><b>Verification:</b></p>
+                <ol id="ol_urj_zfs_wmb">
+                    <li>
+                        <p>Check that for CCR(U1) for RG <varname>3300</varname>, the
+                                <varname>CSTariffAMACode 483</varname> tag is getting dumped.</p>
+                        <image placement="break" href="../images/result1example1.png"
+                            id="image_bc2_bms_wmb"/>
+                    </li>
+                    <li>
+                        <p>Check that for CCR(U1) for RG <varname>3310</varname>, the
+                                <varname>CSTariffAMACode 485</varname> tag is getting dumped.</p>
+                    </li>
+                    <li>
+                        <p>Check that for CCR(T) requests for RG <varname>3300</varname> and
+                                <varname>3310</varname>, the <varname>CSTariffAMACode 485</varname>
+                            is getting dumped.</p>
+                        <image placement="break" href="../images/resultexample1.png"
+                            id="image_wwz_r3s_wmb" align="left"/>
+                    </li>
+                </ol>
+                <p/>
+            </sectiondiv>
+            <sectiondiv>
+                <p/>
+                <p><b>Example 2: Custom-defined tag dumped at bucket level in accordance with the
+                        threshold crossed</b></p>
+                <p>This example states that there is a step-bucket having only one threshold profile
+                    group, which is further associated with 3 types of threshold profiles (
+                        <varname>Percentage</varname>, <varname>Absolute from Start</varname>, or
+                        <varname>Absolute from End</varname>) with <varname>Percentage</varname>
+                    threshold being the first crossed threshold. A custom-defined tag
+                        <varname>crossedThresholdAMACode</varname> is properly dumped at the bucket
+                    level in accordance with the threshold crossed.</p>
+                <p><b>Provisioning:</b></p>
+                <ol id="ol_xdn_nct_wmb">
+                    <li>
+                        <p>Create a charging step <varname>ChargingStep</varname> with following
+                            configuration:</p>
+                        <image placement="break" href="../images/chargingstepconfig.png"
+                            id="image_ayy_s3t_wmb" scale="65"/>
+                    </li>
+                    <li>
+                        <p>Create a threshold profile group <varname>TPG1</varname> having following
+                            three types of thresholds:</p>
+                        <ul id="ul_nrb_zct_wmb">
+                            <li>Percentage type threshold (<varname>ThresholdPercent1</varname>) is
+                                set at 30%</li>
+                            <li>
+                                <p>Absolute from End type threshold
+                                        (<varname>AbsoluteEndThreshold1</varname>) is set at 60</p>
+                            </li>
+                            <li>
+                                <p>Absolute from start thresold
+                                        (<varname>AbsoluteStartThreshold1</varname>) is set at
+                                    60</p>
+                            </li>
+                        </ul>
+                        <image placement="break" href="../images/thresholdprofilegroupconfig.png"
+                            id="image_syx_53t_wmb" scale="60"/>
+                        <p/>
+                        <image placement="break" href="../images/thresholdprofilegroupconfig1.png"
+                            id="image_opn_w3t_wmb" scale="60"/>
+                        <p/>
+                        <image placement="break" href="../images/thresholdprofilegroupconfig2.png"
+                            id="image_bj3_1kt_wmb" scale="60"/>
+                    </li>
+                    <li>
+                        <p>Create a bucket <varname>bucket1</varname> and select the charging step
+                                <varname>ChargingStep</varname> and threshold
+                                <varname>TPG1</varname> inside it. The initial value of bucket is
+                            100.</p>
+                        <image placement="break" href="../images/bucketconfig.png"
+                            id="image_xzb_3jt_wmb" scale="65"/>
+                        <p/>
+                        <image placement="break" href="../images/initialbucketvalue.png"
+                            id="image_akt_3jt_wmb" scale="65"/>
+                    </li>
+                    <li>
+                        <p>Create a step-up bucket with following configuration:</p>
+                        <image placement="break" href="../images/stepupbucketconfig1.png"
+                            id="image_ulf_fmt_wmb"/>
+                        <p/>
+                        <image placement="break" href="../images/stepupbucketconfig2.png"
+                            id="image_sx3_gmt_wmb"/>
+                        <p/>
+                        <image placement="break" href="../images/stepupbucketconfig3.png"
+                            id="image_k2b_hmt_wmb"/>
+                        <p/>
+                        <image placement="break" href="../images/stepupbucketconfig4.png"
+                            id="image_t1s_hmt_wmb" scale="60"/>
+                        <p/>
+                        <image placement="break" href="../images/stepupbucketconfig5.png"
+                            id="image_aly_3mt_wmb" scale="65"/>
+                    </li>
+                    <li>
+                        <p>Create a charging service <varname>CS1</varname> and select
+                                <varname>bucket1</varname> to it.</p>
+                        <image placement="break" href="../images/chargingserviceconfig.png"
+                            id="image_jrj_pjt_wmb" scale="60"/>
+                    </li>
+                    <li>
+                        <p>Create a bundle, account, and device as shown in the following
+                            figure:</p>
+                        <image placement="break" href="../images/bundleconfig.png"
+                            id="image_xyv_tjt_wmb" scale="65"/>
+                        <p/>
+                        <image placement="break" href="../images/devicesubscriptionconfig.png"
+                            id="image_xrq_vjt_wmb" scale="65"/>
+                    </li>
+                    <li>
+                        <p>Create a complex map with following configuration:</p>
+                        <image placement="break" href="../images/complexmapconfig3.png"
+                            id="image_vhp_hkt_wmb" scale="60"/>
+                        <p/>
+                        <image placement="break" href="../images/complexmapconfig4.png"
+                            id="image_lqv_4kt_wmb" scale="60"/>
+                    </li>
+                    <li>
+                        <p>Create another complex map with following configuration:</p>
+                        <image placement="break" href="../images/complexmapconfig5.png"
+                            id="image_d3j_zmt_wmb"/>
+                        <p/>
+                        <image placement="break" href="../images/complexmapconfig6.png"
+                            id="image_v2d_1nt_wmb"/>
+                        <p>Subscription description:</p>
+                        <image placement="break" href="../images/subscriptiondescription1.png"
+                            id="image_a1z_jnt_wmb"/>
+                        <p/>
+                        <image placement="break" href="../images/subscriptiondescription3.png"
+                            id="image_jgf_lnt_wmb"/>
+                    </li>
+                    <li>
+                        <p>Create a rule object with rule variable and rule group under the
+                                <i>RESOURCE_POST_PROCESSING</i> trigger:</p>
+                        <image placement="break" href="../images/ruletriggerconfig.png"
+                            id="image_fcf_vkt_wmb" scale="60"/>
+                        <p/>
+                        <image placement="break" href="../images/thresholdcrossedcomplexmap.png"
+                            id="image_atp_ykt_wmb" scale="60"/>
+                        <p/>
+                        <image placement="break" href="../images/thresholdcrossedcomplexmap2.png"
+                            id="image_wl2_zkt_wmb" scale="60"/>
+                    </li>
+                    <li>
+                        <p>Execute a multi-MSCC decentralized SCUR call with
+                                <varname>RG=3300</varname> and <varname>RG=3310</varname>:</p>
+                        <p><varname>CCR(I): RG=3300 : RSU= 10 bytes , GSU=10 bytes , RG=3310 : RSU=
+                                10 bytes, GSU=10 bytes</varname></p>
+                        <p><varname>CCR(U1):</varname></p>
+                        <p><varname>RG=3300 : USU=10 bytes, RSU= 10 bytes, GSU=10
+                            bytes</varname></p>
+                        <p><varname>RG=3310 : USU=10 bytes, RSU= 10 bytes, GSU= 10
+                            bytes</varname></p>
+                        <p><varname>CCR(U2):</varname></p>
+                        <p><varname>RG=3300 : USU= 10 bytes, RSU= 10 bytes, GSU=10 bytes</varname>
+                                (<varname>ThresholdPercent1</varname> is reached here as total usage
+                            is 30 bytes)</p>
+                        <p><varname>RG=3310 : USU= 10 bytes, RSU = 10 bytes, GSU= 10 bytes</varname>
+                                (<varname>AbsoluteEndThreshold1</varname> is reached here as total
+                            usage is 40 bytes) </p>
+                        <p><varname>CCR(T'):</varname></p>
+                        <p><varname>RG=3300 : USU=10 bytes</varname></p>
+                        <p><varname>RG=3310 : USU=10 bytes</varname>
+                                (<varname>AbsoluteStartThreshold1</varname> is reached here as total
+                            usage is 60 bytes)</p>
+                    </li>
+                </ol>
+                <p><b>Verification:</b></p>
+                <ul id="ul_ahr_fht_wmb">
+                    <li>
+                        <p>Check that in CCR(U2) when 10 bytes are consumed for RG 3300 then
+                            threshold is crossed for <varname>ThresholdPercent1</varname> and tag
+                                <varname>crossedThresholdAMACode</varname> with value 5467 is dumped
+                            at bucket level.</p>
+                        <image placement="break" href="../images/crossedthresholdamacode1.png"
+                            id="image_nbs_jlt_wmb"/>
+                    </li>
+                    <li>
+                        <p>Check that in CCR(U2) when 10 bytes are consumed for RG 3310 then
+                            threshold is crossed for <varname>AbsoluteEndThreshold1</varname> and
+                            tag <varname>crossedThresholdAMACode</varname> with value 5469 is dumped
+                            at bucket level.</p>
+                        <image placement="break" href="../images/crossedthresholdamacode2.png"
+                            id="image_bbm_klt_wmb"/>
+                    </li>
+                    <li>
+                        <p>Check that in CCR(T) when 10 bytes are consumed for RG 3310 then
+                            threshold is crossed for <varname>AbsoluteStartThreshold1t</varname> and
+                            tag <varname>crossedThresholdAMACode</varname> with value 5468 is dumped
+                            at bucket level.</p>
+                        <image placement="break" href="../images/crossedthresholdamacode3.png"
+                            id="image_j2c_llt_wmb"/>
+                    </li>
+                    <li>
+                        <p>Check that the <varname>stepAMACode</varname> tag is dumped at charging
+                            service level for the step-up bucket.</p>
+                        <image placement="break" href="../images/stepupbucketamacode.png"
+                            id="image_vfr_kmt_wmb"/>
+                    </li>
+                    <li>
+                        <p>Check that the <varname>CStariffAMACode</varname> tag is dumped at
+                            charging service level when subscription description matches with the
+                            complex map configuration:</p>
+                        <image placement="break" href="../images/result1example21.png"
+                            id="image_bj5_snt_wmb"/>
+                        <p/>
+                        <image placement="break" href="../images/result1example22.png"
+                            id="image_rtt_tnt_wmb"/>
+                    </li>
+                </ul>
+            </sectiondiv>
+        </section>
+    </conbody>
+</concept>

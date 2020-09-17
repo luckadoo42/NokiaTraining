@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="cnf_chf-status">
+    <title>chf-status</title>
+    <conbody>
+        <section id="section_pjq_g2r_nlb">
+            <title>Description</title>
+            <p>This tool displays composite status information for an NCC system. Information
+                includes the site name and the status of all installed components (SM/ME). For each
+                component, each type of service that makes up the component is then listed,
+                indicating how many instances are configured, and of those, which ones have a status
+                of UP or DOWN.<note>For NCC-SM nodes, it is the intended behavior that if the NCC-SM
+                    status is down, the Provisioning port remains up and ready to process incoming
+                    REST requests. For NCC-ME nodes, it is the intended behavior that if the NCC-ME
+                    status is down, the Diameter port remains up and ready to process
+                call.</note></p>
+            <p>This tool may be run on an NCC that has only the SM or ME component installed, or on
+                an NCC that has an integrated SM/ME system (IG). Output will differ based on the
+                installed components.<note>This tool will query the system monitoring service
+                    running on the active Central Management pod. At least one Central Management
+                    pod must be up and running along with the SDC/ETCD component.</note></p>
+        </section>
+        <section id="section_orf_kgr_nlb">
+            <title>Syntax</title>
+            <p>
+                <codeblock>chf-status [-h][-j]</codeblock>
+            </p>
+            <p>Where:<table frame="all" rowsep="1" colsep="1" id="table_fmx_lgr_nlb">
+                    <tgroup cols="2">
+                        <colspec colname="c1" colnum="1" colwidth="1*"/>
+                        <colspec colname="c2" colnum="2" colwidth="1*"/>
+                        <thead>
+                            <row>
+                                <entry>Option</entry>
+                                <entry>Description</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry><codeph>No arguments</codeph></entry>
+                                <entry>Displays usage/help information.</entry>
+                            </row>
+                            <row>
+                                <entry><codeph>-h</codeph></entry>
+                                <entry>Displays usage/help information.</entry>
+                            </row>
+                            <row>
+                                <entry><codeph>-j</codeph></entry>
+                                <entry>This option outputs status in JSON form.</entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table></p>
+        </section>
+        <section id="section_rgl_m5r_nlb">
+            <title>ME Output Description</title>
+            <p>The following terms may be seen in the output for an ME:<ul id="ul_akh_sxr_nlb">
+                    <li>Site Name: This displays the name for this NCC system site.</li>
+                    <li>Component ME State: This displays the component for which the status is
+                        collected.</li>
+                    <li>State: This displays the composite state for this NCC component. This is the
+                        state that is used by the heartbeat mechanism for communicating status with
+                        others in the network. Possible values are UP or DOWN.</li>
+                    <li>Active SM: This displays the name of the active SM serving this ME. </li>
+                    <li>Service: The type of service. A service may have multiple instances in the
+                        site, configured as STANDALONE, ONEPLUSONE, or NPLUSK. The summary table
+                        shows the composite state for each service, as well as the total configured
+                        instances, and the number that are UP and DOWN.<ul id="ul_jst_5xr_nlb">
+                            <li>AEROSPIKE_CLUSTER: The Aerospike cluster is the NCC database.</li>
+                            <li>CDR: The Charging Data Report node for Charging Data Reports and
+                                Call Detail Reports.</li>
+                            <li>CHARGING: Charging application.</li>
+                            <li>DIAMETERIO: Input/output on the IOHD for Diameter traffic.</li>
+                            <li>ETCD_CLUSTER: The distributed key-value store.</li>
+                            <li>HTTPIO: Input/output on the IOHD for http/2 traffic.</li>
+                            <li>KAFKA: A distributed messaging platform, for handling various
+                                real-time events. The Kafka health monitor runs on the active OAME.
+                                At a high level, It periodically produces and receives messages from
+                                Kafka. If multiple attempts are unsuccessful, the monitoring system
+                                will mark the service as down.</li>
+                            <li>LOADBALANCER: The load balancer on the IOHO of the ME.</li>
+                            <li>LTM: Lock and Transaction Manager, which secures locks for database
+                                access and provides transaction management for data integrity.</li>
+                            <li> NOTIFICATION: The Notification server is a non-vital service that
+                                is part of the Common Services node. It sends smart notifications to
+                                end users based on predefined notification templates selected after
+                                ART rule evaluation. It receives triggers from NCC applications
+                                (Charging, Policy) and other applications (for example, SurePay,
+                                external PCRF) for sending notifications.</li>
+                            <li>POLICY: Policy application.</li>
+                            <li>PROVISIONING: Part of the Common Services node, responsible for
+                                carrying out all the provisioning work of NCC.</li>
+                            <li>ROLLBACK: Rollback manager is part of transaction manager,
+                                responsible for rolling back database transactions in case of
+                                failures. </li>
+                            <li>ROLLBACK: Rollback manager is part of transaction manager,
+                                responsible for rolling back database transactions in case of
+                                failures.</li>
+                            <li>TRSCHEDULER: As part of DB Layer it is used to control the DB
+                                background I/O intensive activities to minimize I/O spikes and
+                                optimize database performance.</li>
+                            <li>XDR: The cross-data-replication (XDR) from the database.</li>
+                        </ul></li>
+                    <li>State: Displays the state for this service. Possible values are UP or
+                        DOWN.</li>
+                    <li>Vital: States whether or not the service is required; each service is
+                        described as vital or not, 'vital' meaning a problem with the service can
+                        put the site out-of-service.</li>
+                    <li>Mode: States whether the node is configured as STANDALONE, 1+1, or N+K.</li>
+                    <li>Instance: Identifies the instance, whether it is up or down, and for 1+1
+                        configurations, displays whether it is the Active or Standby. The
+                        ACTIVE/ACTIVE and STANDBY/STANDBY instance for SM NPLUSK configuration shows
+                        whether the SM is acting as the Primary or Secondary SM. This information is
+                        used by Ud plugins for processing various types of Ud distributions.</li>
+                    <li> Composing States: Composing states are taken from multiple monitoring jobs
+                        to detect some soft failure scenarios at the container level. These soft
+                        failure scenarios impact the ability to provide adequate service. If there
+                        are any container-based composite statuses in the monitored items that are
+                        DOWN, then the instance status will also be DOWN. These composite states
+                        provide insight as to what actions are required to recover the container and
+                        allow the NCC to provide adequate service. These composing states can
+                            include:<ul id="ul_ixr_5ds_nlb">
+                            <li>whether the service is UP or DOWN</li>
+                            <li>whether the aerospike client is UP or DOWN</li>
+                            <li>whether the ltm client is UP or DOWN</li>
+                        </ul></li>
+                </ul><note>Whether the service instance status is UP or DOWN does not have a bearing
+                    on whether the component is In-service; however, if there are enough instances
+                    that are DOWN, the component status will eventually be DOWN or Out-of-service as
+                    well.</note></p>
+        </section>
+        <section id="section_vdv_12s_nlb">
+            <title>SM Output Description</title>
+            <p>The following terms may be seen in the output for an SM:<ul id="ul_ar3_c2s_nlb">
+                    <li>Site Name: This displays the name for this NCC system site.</li>
+                    <li>Component SM: This displays the NCC component type.</li>
+                    <li>State: This displays the composite state for this NCC component in the site.
+                        This is the state that is used by the heartbeat mechanism for communicating
+                        status with others in the network. Possible values are UP or DOWN.</li>
+                    <li>GeoRole: This displays whether or not this NCC component is ACTIVE.</li>
+                    <li>Service: The type of service. A service may have multiple instances in the
+                        site, configured as STANDALONE, ONEPLUSONE, or NPLUSK. The summary table
+                        shows the composite state for each service, as well as the total configured
+                        instances, and the number that are UP and DOWN..<ul id="ul_fld_h2s_nlb">
+                            <li>AEROSPIKE_CLUSTER: The Aerospike cluster is the NCC database.</li>
+                            <li>CKEY_CLUSTER: The CKEY monitoring service status. CKEY service
+                                running on IOHO nodes is a service monitored from the AdminCLI pod at
+                                specified intervals with the default interval being every 5 seconds.
+                                CKEY is available on the SM components list only. CKEY is not
+                                available for ME deployments where SM is not available.</li>
+                            <li>CMDB_CLUSTER: The MariaDB (CMDB) monitoring service status. CMDB
+                                instances running on IOHO nodes are monitored from the AdminCLI pod at
+                                specified intervals with the default interval being every 5
+                                seconds.</li>
+                            <li>ETCD_CLUSTER: The distributed key-value store.</li>
+                            <li>KAFKA: A distributed messaging platform, for handling various
+                                real-time events. The Kafka health monitor runs on the active OAME.
+                                At a high level, It periodically produces and receives messages from
+                                Kafka. If multiple attempts are unsuccessful, the monitoring system
+                                will mark the service as down.</li>
+                            <li>LOADBALANCER: The loadbalancer on the IOHO of the SM.</li>
+                            <li>LTM: Lock and Transaction Manager, which secures locks for database
+                                access and provides transaction management for data integrity.</li>
+                            <li>SM: The Service Manager server.</li>
+                            <li>TRSCHEDULER: As part of DB Layer it is used to control the DB
+                                background I/O intensive activities to minimize I/O spikes and
+                                optimize database performance.</li>
+                            <li>XDR: The cross-data-replication (XDR) from the database.</li>
+                        </ul></li>
+                    <li>State: Displays the state for this service. Possible values are UP or
+                        DOWN.</li>
+                    <li>Vital: states whether or not the service is required; each service is
+                        described as vital (true) or not (false), 'vital' meaning a problem with the
+                        service can put the site out-of-service.</li>
+                    <li>Mode: states whether the node is configured as STANDALONE, ONEPLUSONE, or
+                        NPLUSK.</li>
+                    <li>Instance: Identifies the instance, whether it is up or down, for NPLUSK
+                        displays Active/Active, or Standby/Standby, and for 1+1 configurations,
+                        displays whether it is the Active or Standby.</li>
+                    <li>Composing States: Composing states are taken from multiple monitoring jobs
+                        to detect some soft failure scenarios at the container level. These soft
+                        failure scenarios impact the ability to provide adequate service. If there
+                        are any container-based composite statuses in the monitored items that are
+                        DOWN, then the instance status will also be DOWN. These composite states
+                        provide insight as to what actions are required to recover the container and
+                        allow the NCC to provide adequate service. These composing states can
+                            include:<ul id="ul_bnw_rks_nlb">
+                            <li>whether the service is UP or DOWN</li>
+                            <li>whether the aerospike client is UP or DOWN</li>
+                            <li>whether the ltm client is UP or DOWN</li>
+                        </ul></li>
+                </ul></p>
+        </section>
+    </conbody>
+</concept>

@@ -1,0 +1,1303 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9YZ-09018-UG00-PCZZA-d1e15186">
+<title>Construction of conditions and actions using attributes</title>
+<conbody>
+<section>
+<title>Overview</title>
+<p>The NCC rule engines provide profile oriented provisioning and rule editor provisioning that
+                allows you to enter basic details for the instance that you are configuring a rule
+                for according to the application plugin that is active. For example, if you are
+                configuring a rule for the active Diameter Routing plugin, your choice of source
+                context and result context narrows to Diameter Request and Diameter Answer, whereas
+                if you are in the Policy application, there are many source and result contexts
+                grouping the attributes under various Triggers. </p>
+<p>For profile oriented provisioning, when the basic details of the profile are correct,
+                you can configure the Triggers, Rule Groups and the Rule in the accompanying rule
+                editor window. Triggers cause the rule engine to act. Each profile contains a rule
+                editor window where you can author the Conditions and Actions for the application.
+                The rule editor window in a profile or rule variable usually includes the “if”
+                statement on one line and the “then” statement on the next line; you only need to
+                add the criteria and actions.</p>
+<p>For rule editor provisioning, the Triggers, Rule Groups and the Rules are configured
+                using the rule editor available on the Rule System Version. The rule editor window
+                that is part of each selection box usually requires you to type in the full rule
+                syntax (if/then) statement as shown in the following figure.</p>
+<fig>
+<title>Rule Editor window</title>
+<!--MMO resource relative URI: ../Graphics/ruleeditor_default.png-->
+<image href="../images/ruleeditor_default.png"/>
+</fig>
+<p>The NCC provides a set of supported attributes in the system’s application-specific rule
+                dictionaries, along with the ability to add other attributes that may have been
+                created by customers or other vendors in custom dictionaries, which feed the
+                auto-complete functionality when composing the rules. </p>
+<p>The editor highlights the syntax of rule entry, and flags most errors as editing
+                proceeds, highlighting where the error is located in the buffer, and displaying a
+                message that describes what is wrong (appearing on hover over the error icon). An
+                auto-complete appears as you enter text, which internally consults a dictionary of
+                possible entries based on context. If you suspect that you have made an error in
+                entering the rule text, move the cursor over the error icon to check the reason.</p>
+<p>All attributes are defined in rule attribute dictionaries using XML. Rules are constructed in a
+                simple format whereby the conditions result in an action, which can be combined for
+                multi-tiered policy and charging behavior. The multi-tiered behavior is governed by
+                the action precedence that the NCC uses.</p>
+<p>There are two types of attributes, Criteria and Action. A Criteria Attribute is used
+                in conditions. An Action Attribute is used in results. Condition criteria
+                definitions include a source context and attribute. Action attribute definitions
+                include a result context and action attribute. </p>
+<p>A condition has a right hand side (RHS) and left hand side (LHS), separated by a
+                relational operator. Multiple conditions can be combined with the combination
+                operator and/or. Multiple conditions can be grouped with parentheses. The
+                combination operator has to be the same for all conditions within a group in
+                parentheses, but the groups can be combined with either operator.  E.g. (A or B or
+                C) and (D and E and F).  The groupings can also be nested, e.g. (A or (B and C)).A
+                rule action is specified as an attribute with a parameter list. If there is only one
+                parameter, it is depicted in the rule editor as CONTEXTNAME.Attribute-Name = arg. 
+                If there are multiple parameters, it is depicted as CONTEXTNAME.Attribute-Name (
+                arg1, arg2 ).</p>
+<p>The following figure illustrates the rule authoring process.</p>
+<fig>
+<title>Rule construction</title>
+<!--MMO resource relative URI: ../Graphics/ruleconstruct2_default.gif-->
+<image href="../images/ruleconstruct2_default.gif"/>
+</fig>
+<p>To build an entire rule with conditions, you must type “if” along with the criteria
+                attributes. If you do not type “if” in the first line, you are building an
+                action.</p>
+<p>In NCC you can copy/paste rules in the rule editor windows when adding multiple rules and use the
+                Expand All button to expand or collapse the view of the rules.</p>
+</section>
+<section>
+<title>Auto-complete</title>
+<p>When composing rules following the correct rule syntax, suggestions for input appear
+                below the cursor. The dictionary may define a particular parameter in the rule as
+                optional. You can omit the parameter, but you must enter a comma as a place holder.
+                When entering an attribute that has optional parameters, just after typing in the
+                CONTEXT.Attribute-Name you will see two suggestions for parameter-templates instead
+                of one. The second has optional parameters missing. </p>
+<p>Suggestions pop-up automatically in some cases, but you can also press the
+                &lt;control&gt; + &lt;space&gt; keys to generate suggestions on demand or to invoke
+                an argument template list. The action provides either one or a list of possible
+                contexts, attributes, Enums, or operators, depending on where the cursor is
+                positioned in the rule editing area. Any list displayed is compiled according to the
+                position of your cursor in the rule editor (you may need to add a space to be in the
+                correct syntactical position; see the section <!--xref URI: #RuleSyntax--><xref keyref="id9YZ-09018-UG00-PCZZA-d1e15186/RuleSyntax"/>).</p>
+<p>For example, the following shows how you would choose the EPC_IDENTITY_BIT enum when
+                creating criteria for a rule with the AF-Requested-Data attribute:</p>
+<p>You enter the conditional statement by typing the word “if”. Nokia recommends that
+                you type “if” on the first line in the editor and then type the “Return” key to move
+                the cursor to the next line and enter condition criteria. On the new line, type or
+                choose the source context and attributes from the auto-complete selections. Wait for
+                the system to prompt you with the correct attributes. The SM always suggests
+                attributes without concern for the position of the cursor. The auto-complete will
+                suggest what it thinks is the next entry that should be entered. </p>
+<fig>
+<title>Example rule construction with auto-complete sequence step 1</title>
+<!--MMO resource relative URI: ../Graphics/arglist1_default.png-->
+<image href="../images/arglist1_default.png"/>
+</fig>
+<p>Select the suggestion, then highlight the Bit_Name_ENUM (double click it or drag
+                across it) as shown in the next figure:</p>
+<fig>
+<title>Example rule construction with auto-complete sequence step 2</title>
+<!--MMO resource relative URI: ../Graphics/arglist2_default.png-->
+<image href="../images/arglist2_default.png"/>
+</fig>
+<p>Now type a space, or control-space, or the delete key to delete the selected text
+                (any modification triggers it) and you get a suggestion for the argument where the
+                cursor is situated:</p>
+<fig>
+<title>Example rule construction with auto-complete sequence step 3</title>
+<!--MMO resource relative URI: ../Graphics/arglist3_default.png-->
+<image href="../images/arglist3_default.png"/>
+</fig>
+<p>Now enter an operator (would have to be = or != for enum). It is best if you type a
+                space between entries as needed. </p>
+<fig>
+<title>Example rule construction with auto-complete sequence step 4</title>
+<!--MMO resource relative URI: ../Graphics/arglist4_default.png-->
+<image href="../images/arglist4_default.png"/>
+</fig>
+<p>When finished with the conditions, type the “Return” key to move the cursor to the
+                next line, choose “then” from the auto-complete and then type the “Return” key to
+                move the cursor to the next line to add the result context and complete the rule
+                with an action.</p>
+<fig>
+<title>Example rule construction with auto-complete sequence step 5</title>
+<!--MMO resource relative URI: ../Graphics/arglist5_default.png-->
+<image href="../images/arglist5_default.png"/>
+</fig>
+<p>You will notice that there is a validation indicator just above the rule editor
+                window that is green with a check mark in it, if you have entered the rule properly
+                with the correct syntax. However, if you have entered an unsupported attribute or
+                have made a mistake with spacing of the attribute, the validation indicator will
+                change color with an error icon added to the circle instead of a check mark
+                indicating that you have not entered the information correctly.</p>
+<p>The list of suggested attributes is filtered based on compatibility in the context of
+                the statement according to the trigger. For example, specific attributes appear
+                under specific triggers, an attribute on the right side of a condition must be
+                compatible with the left hand side, or attributes in an argument list need to be
+                compatible with the dictionary definition of the arguments.</p>
+<p>If the prompts are failing to make suggestions, go back (delete what you have
+                entered) and look again for the prompt.</p>
+</section>
+<section id="RuleSyntax">
+<title>Rule syntax</title>
+<p>Rule authoring is not case sensitive, but Nokia recommends that you use lower case
+                letters in the SM GUI; the SM rule editor will correct the case as necessary. All
+                rules follow the same If/Then model as follows:</p>
+<p>
+<userinput>if </userinput>
+</p>
+<p>
+<userinput>&lt;source_context&gt;.&lt;attribute&gt; &lt;operator&gt;
+                    &lt;value&gt;</userinput>
+</p>
+<p>
+<userinput>then </userinput>
+</p>
+<p>
+<userinput>&lt;result_context&gt;.&lt;attribute&gt; &lt;operator&gt;
+                    &lt;value&gt;</userinput>
+</p>
+<p>The “if” statement is the condition and the “then” statement represents the action in the rule.
+                Action attributes represent the action that the NCC sets when a condition is matched
+                successfully. You can add just an action by omitting the “if” statement in the rule
+                editor. Simply use the auto-complete functionality to add the action attributes and
+                values required.</p>
+<p>The syntax of a rule consists of optional conditions followed by one or more actions.
+                The conditions are preceded with the “if” keyword and the actions begin after the
+                “then” keyword. The if/then keywords are entered as seen in the interface; that is,
+                a rule in a profile may be entered using lowercase keywords (if, then) or using
+                uppercase keywords (IF, THEN) in a stand-alone rule depending on the application.
+                The SM interprets that which is input and applies the proper case automatically. In
+                some instances, the keywords are automatically configured in the interface and in
+                some cases, you must enter the keywords. </p>
+<p>Multiple conditions in the rule are combined with either “and” or “or” logical
+                operators. Multiple actions are separated by the “and’ logical operator. </p>
+<p>Language elements other than keywords are of these types:</p>
+<ul>
+<li>
+<p>Context.attribute typically entered via auto-suggest. These attributes are defined by the system
+                        for use in rules, and are maintained in a dictionary, which the GUI can
+                        access. Attributes are segregated into contexts to make selection easier as
+                        the NCC supports thousands of attributes. There is a context defined for
+                        each type of Diameter interface, a system context, and some support
+                        contexts</p>
+</li>
+<li>
+<p>String literal enclosed in quotes if contains punctuation characters</p>
+</li>
+<li>
+<p>Numeric integer value</p>
+</li>
+<li>
+<p>IP Address an IPV4 or IPV6 formatted address</p>
+</li>
+<li>
+<p>Date/Time a literal value representing a date/time is entered as a number, in
+                        units of milliseconds from epoch in UTC time zone.</p>
+</li>
+<li>
+<p>Managed Object references to objects are represented in text form as
+                        objectType # objectName. For example, a reference to a rule group, which is
+                        entered as RuleTable#name (where name is the name of a rule group. Other MO
+                        type references appear as objectName # objectType.</p>
+</li>
+<li>
+<p>Lists of numbers or strings or IP addresses</p>
+</li>
+</ul>
+<p>Use parentheses to group parameters that apply to the preceding attribute or to
+                combine multiple conditions that are joined with the “and or “or” logical operator.
+                Multiple actions are separated by “and’. The following table shows the usage of some
+                rule syntax elements.</p>
+<table colsep="1" pgwide="1" rowsep="1">
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<colspec colname="col3"/>
+<thead>
+<row>
+<entry>
+                                Element
+                            </entry>
+<entry>
+                                Valid for 
+                            </entry>
+<entry>
+                                Description
+                            </entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry> // </entry>
+<entry> Top lines </entry>
+<entry> Lines beginning with // at the top of the rule text are stored
+                                in the description field of the rule. </entry>
+</row>
+<row>
+<entry>
+<p>word containing one or more</p>
+<p>“.” characters</p>
+</entry>
+<entry> all </entry>
+<entry> The portion before the first “.” is interpreted as a (source or
+                                destination) context identifier. The remaining portion is
+                                interpreted as an attribute name within the context. </entry>
+</row>
+<row>
+<entry>
+<p>word with no leading or</p>
+<p>trailing “.”</p>
+</entry>
+<entry> all </entry>
+<entry> a string literal </entry>
+</row>
+<row>
+<entry> ( ) </entry>
+<entry>
+<p>Valid:</p>
+<ul>
+<li>
+<p>Following an attribute, for grouping associated
+                                            parameters</p>
+</li>
+<li>
+<p>Following a relational operator, for grouping subsequent
+                                            conditions</p>
+</li>
+</ul>
+</entry>
+<entry>
+<p>This parameter:</p>
+<ul>
+<li>
+<p>specifies parameters to be passed to the attribute</p>
+</li>
+<li>
+<p>groups conditions to which a single combination operator
+                                            applies (and/or)</p>
+</li>
+</ul>
+</entry>
+</row>
+<row>
+<entry> [ ] </entry>
+<entry> Lists of literals: strings, numbers or IP addresses, on right
+                                side of conditions or actions, or in arguments/parameters </entry>
+<entry> The right hand side of some conditions and actions accept a list
+                                of literals where a single value normally applies.  See List section
+                                below for details. </entry>
+</row>
+<row>
+<entry> “ </entry>
+<entry> quote character </entry>
+<entry> Delimits a string literal. The quote character can be embedded
+                                by preceding it with a backslash (\) character; for example:
+                                "x\"yz". </entry>
+</row>
+<row>
+<entry nameend="col3" namest="col1">
+<b>Relational Operators</b>
+</entry>
+</row>
+<row>
+<entry> &gt; </entry>
+<entry morerows="3"> dates, times or numbers </entry>
+<entry> Greater than </entry>
+</row>
+<row>
+<entry> &lt; </entry>
+<entry> Less than </entry>
+</row>
+<row>
+<entry> &gt;= </entry>
+<entry> Greater than or equal </entry>
+</row>
+<row>
+<entry> &lt;= </entry>
+<entry> Less than or equal </entry>
+</row>
+<row>
+<entry> = or equal or == </entry>
+<entry> any </entry>
+<entry> Prefix with ~ for case insensitive, prefix with ! to negate
+                            </entry>
+</row>
+<row>
+<entry> not equal </entry>
+<entry> any </entry>
+<entry> Prefix with ~ for case insensitive </entry>
+</row>
+<row>
+<entry> contains </entry>
+<entry/>
+<entry> The Contains operator is only applied to collection (multivalue)
+                                type attributes to search sets of values. It returns true when the
+                                value is equal to one of the attribute values. For example,
+                                [192.168.1.1, 1234::5:6] contains 192.168.10.1 </entry>
+</row>
+<row>
+<entry> contains netmask </entry>
+<entry/>
+<entry> The Contains Netmask operator is only applied to collection
+                                (multivalue) type attributes and returns true when any of the values
+                                are matched by the specified netmask. For example, [123.123.123.123,
+                                124.124.124.124] Contains Netmask 123.123.123.0/24 </entry>
+</row>
+<row>
+<entry> contains pattern match </entry>
+<entry/>
+<entry>
+<p>The Contains Pattern Match operator is only applied to collection
+                                    (multivalue) type attributes and returns true when at least one
+                                    of the strings in the set matches the regular expression. The
+                                    Contains Pattern Match operator allows you to write a regular
+                                    expression that defines a search for an entire pattern. The
+                                    pattern can match only one time.</p>
+<p>After a source character is used in a match, it cannot be reused.
+                                    For example, the regular expression “123” matches the string
+                                    (123), or *.123.* matches the string "543412345" one time
+                                    (_123_), or as another example, the regular expression 123.*
+                                    matches (123_) on the first occurrence of 123.</p>
+<p>The Attribute Value type is not a valid option when you use the
+                                    regular expression operator Contains pattern Match. See Appendix
+                                    28 for information about writing regular expressions.</p>
+</entry>
+</row>
+<row>
+<entry> does not contain </entry>
+<entry> collection (multivalue) type attributes </entry>
+<entry> The Does Not Contain operator is only applied to collection
+                                (multivalue) type attributes and returns true if the value is not
+                                equal to any of the attribute’s values. For example, [193.167.1.1,
+                                1234::5:6] does not contain 192.168.10.1 </entry>
+</row>
+<row>
+<entry> does not contain substring </entry>
+<entry> collection (multivalue) type attributes </entry>
+<entry> The Does Not Contain operator is only applied to collection
+                                (multivalue) type attributes and returns true if the value is not
+                                equal to any of the attribute’s values. For example, [193.167.1.1,
+                                1234::5:6] does not contain 192.168.10.1 </entry>
+</row>
+<row>
+<entry> match_substring </entry>
+<entry> string </entry>
+<entry>
+<p>The Match Substring operator searches for an instance of a string
+                                    inside another string. For example, the substring “cde” matches
+                                    when the string “abcdef” is searched.</p>
+<p>Prefix with ! to negate</p>
+</entry>
+</row>
+<row>
+<entry> match_pattern </entry>
+<entry> string </entry>
+<entry>
+<p>The Match Pattern operator returns true if the entire string
+                                    matches the pattern in the regular expression. The Match Pattern
+                                    operator allows you to write a regular expression that defines a
+                                    search pattern for strings. </p>
+<p>The pattern can match one time or not at all for the specified
+                                    string and only returns true if the entire string can be
+                                    matched. For example, “abcd” Match Pattern “ab.*” will match as
+                                    will it match “abcd”. However, it does not match patterns “ab”
+                                    or “a” The Attribute Value Type is not a valid option when you
+                                    use the regular expression operator Match Pattern.</p>
+<p>Prefix with ! to negate</p>
+</entry>
+</row>
+<row>
+<entry> present </entry>
+<entry> message-based contexts </entry>
+<entry>
+<p>The Present operator should only be used with a message-based
+                                    contexts such as Gx Message or Rx Message. Using this operator
+                                    with another type of context may return unexpected results. The
+                                    Present operator returns true when the specified attribute has a
+                                    value. </p>
+<p> For example: Gx message.Framed-IP-Address Present </p>
+<p>Some criteria attributes are considered opaque objects for which
+                                    only the Present and Not Present operators are available. You
+                                    cannot directly access the object and the size and shape of the
+                                    object are not visible. For attributes that always have a value,
+                                    the Present operator is not allowed.</p>
+<p> For example: Account.Account-ID Present</p>
+</entry>
+</row>
+<row>
+<entry> not present </entry>
+<entry> message-based contexts </entry>
+<entry>
+<p>The Not Present operator should only be used with message-based
+                                    contexts such as Gx Message or Rx Message. Using this operator
+                                    with another type of context may return unexpected results. The
+                                    Not Present operator returns true when the specified attribute
+                                    has no value.</p>
+<p>For example, "Gx message.Framed-IPv6-Prefix Not Present"</p>
+<p>Some criteria attributes are considered opaque objects for which
+                                    only the Present and Not Present operators are available. You
+                                    cannot directly access the object and the size and shape of the
+                                    object are not visible. For attributes that always have a value,
+                                    the Not Present operator is not allowed.</p>
+<p>For example: "Account.Reset-Day-Of-Month Not Present"</p>
+</entry>
+</row>
+<row>
+<entry> case-insensitive equal (equal ignore case) </entry>
+<entry> ~= </entry>
+<entry> The Equal Ignore Case operator compares two strings, ignoring
+                                the case of the characters, and returns true when the strings are
+                                equal. For example, “ABC” Equal Ignore Case “abc” or “ABC” Equal
+                                Ignore Case “ABC” The comparison is not case sensitive such that
+                                when it compares two values, it considers A-Z to be the same as a-z.
+                            </entry>
+</row>
+<row>
+<entry> case-insensitive not equal (not equal ignore case) </entry>
+<entry> !~= </entry>
+<entry> The Not Equal Ignore Case operator compares two strings,
+                                ignoring the case of the string, and returns true when the strings
+                                are not equal. For example, “ABC” Not Equal Ignore Case “dfg”
+                            </entry>
+</row>
+<row>
+<entry> within netmask </entry>
+<entry> IP addresses </entry>
+<entry>
+<p>The Within Netmask operator returns true when the address is
+                                    matched by the netmask. For example, 123.123.123.123 Within
+                                    Netmask 123.123.123.0/24</p>
+<p>Prefix with ! to negate</p>
+</entry>
+</row>
+<row>
+<entry nameend="col3" namest="col1">
+<b>Combination operators</b>
+</entry>
+</row>
+<row>
+<entry> and </entry>
+<entry> between multiple conditions or actions </entry>
+<entry> Combines conditions logically or used to separate actions.
+                            </entry>
+</row>
+<row>
+<entry> or </entry>
+<entry> between multiple conditions </entry>
+<entry> Combines conditions such that one or the other is a valid
+                                attribute for the rule. </entry>
+</row>
+<row>
+<entry nameend="col3" namest="col1">
+<b>Adjustment operators</b>
+</entry>
+</row>
+<row>
+<entry> + </entry>
+<entry morerows="3"> Numbers </entry>
+<entry>
+<p>Add</p>
+<p>For numeric type values such as Number, Decimal, Date Time, and
+                                    Custom Data values, this operator allows you to use addition (+)
+                                    to adjust values.</p>
+</entry>
+</row>
+<row>
+<entry> - </entry>
+<entry>
+<p>Subtract</p>
+<p>For numeric type values such as Number, Decimal, Date Time, and
+                                    Custom Data values, this operator allows you to use subtraction
+                                    (-) to adjust values.</p>
+</entry>
+</row>
+<row>
+<entry> * </entry>
+<entry>
+<p>Multiply</p>
+<p>For numeric type values such as Number, Decimal, Date Time, and
+                                    Custom Data values, this operator allows you to use
+                                    multiplication (x) to adjust values.</p>
+</entry>
+</row>
+<row>
+<entry> % </entry>
+<entry>
+<p>Modulus</p>
+<p>The Modulus (%) operator allows you to adjust the criteria by the
+                                    remainder of a division when one number is divided by another.
+                                    For example, if you have two positive number integers, in a
+                                    condition, that when divided by the result in a quotient with a
+                                    remainder, the remainder is the modulo of the division. For
+                                    example, the expression 9 modulus 2 would evaluate to 1 because
+                                    9 divided by 2 leaves a quotient of 4 and a remainder of 1,
+                                    while 9 modulus 3 would evaluate to 0 because the division of 9
+                                    by 3 has a quotient of 3 with a remainder of 0. If the divisor
+                                    is 0, the operator will return null. Operations with negative
+                                    numbers are supported. If you apply multiple modulus adjustment
+                                    values, the expression evaluates to (((value mod ADJ-1) mod
+                                    ADJ-2) mod ADJ-3).</p>
+</entry>
+</row>
+<row>
+<entry> concat </entry>
+<entry> Strings </entry>
+<entry>
+<p>Concatenate</p>
+<p>For string values only, the operator allows you to concatenate
+                                    rule condition or action values, or rule condition and action
+                                    adjustment values, that exist as strings for both Attribute and
+                                    non-Attribute values. For example, if you had a list of ordered
+                                    strings, string “ca”, and a number of other strings (x100,
+                                    x200,x300) that you want to join to the string “ca”, you can
+                                    concatenate (ca, x100, x200, x300) to join the strings for a
+                                    value of “cax100x200x300”. You can create an action that builds
+                                    the predefined PCC rule name based on concatenating strings from
+                                    available context. This approach is useful when the predefined
+                                    rule depends on subscriber information. For example, the
+                                    subscriber record can contain two attributes:[Category =
+                                    VIP/Gold/Silver/Bronze, P2P=Improved/Normal/Limited] requiring
+                                    you to write a total of 12 rules. Using the Concatenate operator
+                                    reduces the 12 rules to 1 rule.</p>
+</entry>
+</row>
+<row>
+<entry> union </entry>
+<entry> LIST </entry>
+<entry>
+<p>For List values only (custom data, IP addresses, and strings),
+                                    allows you to provide ORing functionality within a list such
+                                    that a value(s) within the list can be adjusted to satisfy:</p>
+<p>A = B or C.</p>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section>
+<title>Lists</title>
+<p>Rules support lists as follows:</p>
+<ul>
+<li>
+<p>Some condition attributes are defined in the dictionary to be of a list
+                        type.  For this, you use the contains operator and a single- or list-value
+                        on the right-hand side (RHS).  Note, the '=' operator is not appropriate for
+                        these attributes. To test for multiple values, use multiple conditions
+                        combined with 'or'.</p>
+</li>
+<li>
+<p>For condition attributes not of list type, you can use either a single value
+                        or a list on the RHS.  The rules engine treats applies the operator to each
+                        and combines them with logical or.</p>
+</li>
+<li>
+<p>For action attributes of list type, you can assign either a list-literal or a
+                        single value.</p>
+</li>
+<li>
+<p>Variable definitions are also considered to be of list type, so can be
+                        assigned single values or a list.</p>
+</li>
+<li>
+<p>Some action-parameters and condition-arguments are defined as list types in
+                        the dictionary as well.  For these, either a single value or list literal
+                        can be used.</p>
+</li>
+<li>
+<p>For the equal (=) operator in a condition, a single-value on the LHS is
+                        required.</p>
+</li>
+<li>
+<p>For the contains operator, a list-type value on the left-hand side (LHS) is
+                        required.</p>
+</li>
+<li>
+<p>For the union operator, a list-type value on both sides is required.</p>
+</li>
+</ul>
+</section>
+<section>
+<title>Condition containers</title>
+<p>Rule conditions are criteria that can be configured in a Condition Container to
+                represent the “If” statement in the processing logic. The Condition Containers group
+                your condition criteria into single entities as a list using brackets and allows for
+                separation between criteria attributes in the condition. Within a condition
+                container, the conditions and condition containers are ordered. When the container
+                is evaluated, the conditions will be evaluated first, and if necessary, the other
+                sub-containers are evaluated second.</p>
+<p>If you need to set multiple conditions with an AND operation along with conditions
+                for an OR operation that result in an action, you can use the AND and OR
+                functionality to derive a complex logical function for any number of criteria. For
+                example, if you need to disable the Offline function when the
+                ((Count-Of-Unique-QCIs-In-PCC-Rules equals 3) AND
+                (Count-Of-PCC-Rules-For-IP-CAN-Session equals 6)) OR
+                (Count-Of-AF-Sessions-For-IP-CAN-Session equals 100). The rule logic to be
+                configured in this example is as follows:</p>
+<p>
+<userinput>IF (DSC.Count-Of-AF-Sessions-For-IP-CAN-Session equals 100) OR
+                </userinput>
+</p>
+<p>
+<userinput>((DSC.Count-Of-Unique-QCIs-In-PCC-Rules equals 3) AND </userinput>
+</p>
+<p>
+<userinput>(DSC.Count-Of-PCC-Rules-For-IP-CAN-Session equals 6)) </userinput>
+</p>
+<p>
+<userinput>Then</userinput>
+</p>
+<p>
+<userinput>Disable Offline</userinput>
+</p>
+<p>The Or and AND statements are explicit. Notice that each Condition Container used is
+                represented by brackets. The first container will have single brackets around the
+                conditions and the next condition will be contained in double brackets. You can have
+                multiple containers in one logical expression. </p>
+</section>
+<section>
+<title>Values</title>
+<p>The Value parameter defines how the value(s) are input for the comparison or
+                collection. Adjustments can be made on the value as well by selecting an adjustment
+                operator and configuring the adjustment value. The value appears in the Value column
+                of the Conditions panel after the condition is configured.</p>
+<note>
+<p>All criteria operators support Lists as a value type. When you choose a criteria
+                    that first appears with a singular Value Type; for example, Number, Enum,
+                    String, or IP Address, you can change the Value Type to List and enter a list of
+                    values.</p>
+<p>Enums that are compiled into a List value type must be of the same type.</p>
+<p>Certain criteria attributes have been flagged as non-nullable types. These
+                    attributes do not have default values and are not given a value until they are
+                    given a value; for example, attributes for system time and session count.</p>
+<p>When you use a List value type with a condition, the list always forms an OR
+                    statement. For example, if you use a multivalue type attribute such as
+                    Framed-IP-Address with an Equal operator and Value type of List, you can enter
+                    the list of framed IP addresses such as [192.168.1.1, 1234::5:6]. The following
+                    rule condition is generated to indicate that the AF Session.Framed-IP-Address
+                    can be equal to one of the IP addresses in the list:</p>
+<p>IF (AF Session.Framed-IP-Address Equal [123.123.123.123 OR 234.234.234.234 OR
+                    345.345.345.345])</p>
+<p>THEN</p>
+<p>Perform action</p>
+<p>When you use a List operator with a negated condition value, (for example, Not
+                    Equal), the list forms an AND statement. For example, if you use a multivalue
+                    type attribute such as Framed-IP-Address with a Not Equal operator and a Value
+                    type of List, you can enter the list of framed IP addresses such as
+                    [192.168.1.1, 1234::5:6]. The following rule condition is generated to indicate
+                    that the AF Session.Framed-IP-Address cannot be equal to any of the IP addresses
+                    in the list:</p>
+<p>if (AF Session.Framed-IP-Address Not Equal</p>
+<p> [123.123.123.123 AND 234.234.234.234 AND 345.345.345.345])</p>
+<p>then</p>
+<p>Perform action</p>
+<p>Lists of numbers and lists of enums are not applicable for the substring
+                    operators.</p>
+</note>
+<p>The values can be input as:</p>
+<ul>
+<li>
+<p>
+<b>Attribute </b>
+</p>
+<p>Attributes are pre-defined in the system and selectable from a Rule Attribute
+                        table that lists the attribute names, which can be filtered by Source
+                        Context and Domain. When you choose the Attribute option, you can choose an
+                        attribute from the Rule Attributes table. To open the Rule Attributes table,
+                        click on the Select Object button beside the parameter. The Rule Attributes
+                        table has three columns that you can use to determine and choose the Name of
+                        the attribute from the choices available using the filters at the top of the
+                        Source Context and Domain Type columns. The contents of the columns are
+                        dynamic based on the Criteria parameter that you chose when defining the
+                        conditions. </p>
+<p>Value arguments may also appear in the form depending on the attribute that
+                        you choose in the Value panel. The value arguments have predefined names and
+                        require you to configure the type and value for each.</p>
+</li>
+<li>
+<p>
+<b>Decimal</b>
+</p>
+<p>When you choose the Decimal option, you can enter any set of numbers that
+                        contains a decimal; for example: 1.0456. That is, any value of a
+                        floating-point type, taking into account both precision and magnitude.</p>
+<p>You can also change the Type parameter to the List option and enter a list of
+                        Decimal values. To create a list of multiple Decimal value types, enter each
+                        value in the list using the “+” icon. To remove items from the list, click
+                        on the “x” icon.</p>
+<p>See
+                        http://java.sun.com/docs/books/jls/third_edition/html/typesValues.html#4.2.3
+                        for more information about floating-point values.</p>
+</li>
+<li>
+<p>
+<b>Enum </b>
+</p>
+<p>When you choose the Enum option for the Value Type parameter, an enumeration
+                        type appears in the Value panel and provides you with a list of Enum values.
+                        Enumeration types are pre-defined in the system. The types are available
+                        depending on the specified Criteria attribute.</p>
+<p>You can also change the Type parameter to the List option and enter a list of
+                        Enums. Enums that are compiled into a List value type must be of the same
+                        type. For example, you can list three RATType3Gpp Enums, each with a
+                        different value. To create a list of multiple Enums, enter each Enum with
+                        its value in the list using the “+” icon. When presented, you can use the
+                        Argument Template to choose a specific enum value from that made available
+                        in the auto-suggest panel. In this case you are given an argument template
+                        related to the attribute that you provision, place your curser within the
+                        bracketed template, and press the CTRL + space bar to get the one or a list
+                        of enums that you need. To remove items from the list, click on the “x”
+                        icon.</p>
+</li>
+<li>
+<p>
+<b>IP Address </b>
+</p>
+<p>When you choose the IP Address option for the Value Type parameter, you can
+                        enter a single IP address in any of the accepted IP address formats. </p>
+<p>You can also change the Type parameter to the List option and enter a list of
+                        IP addresses for the comparison. The Value text box that appears only
+                        accepts correctly formatted IPv4 and IPv6 addresses. </p>
+<p>To create a list of multiple IP addresses, enter each IP address to the list
+                        using the “+” icon. To remove items from the list, click on the “x” icon.
+                        The list treats each IP address as an OR logical operation. In the following
+                        example, the comma represents the OR operation:</p>
+<p>[123.123.123.123, 124.124.124.124, 125.125.125.125]</p>
+<p>You can enter IPv4 and IPv6 addresses with or without subnet masks in the
+                        following formats:</p>
+<ul>
+<li>
+<p>
+<b>IPv4—dotted-decimal-notation</b>; for example:
+                                xxx.xxx.xxx.xxx/zz</p>
+</li>
+<li>
+<p>
+<b>IPv6—standard notation</b>; eight 16-bit hexadecimal words
+                                separated by colons; for example,
+                                FEDC:BA98:0332:0000:CF8A:000C:2154:7313</p>
+</li>
+<li>
+<p>
+<b>IPv6—compressed notation</b>; uses a double colon to represent a
+                                single contiguous group of zero fields in an IPv6 address; for
+                                example, FF01::CA:0:0:2:1</p>
+</li>
+<li>
+<p>
+<b>IPv6—Mixed notation</b>; IPv4 addresses that are encapsulated in
+                                IPv6 addresses; for example, 25:1:5:0:9:0:127.32.67.25, or with
+                                zeros such as 0:0:0:0:0:0:127.32.67.15, or compressed without the
+                                zeros using the double colons such as, “::127.32.67.15”</p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<b>Number</b>
+</p>
+<p>When you choose the number option for the Value Type parameter, you can enter
+                        any whole number for example: 123. You can enter Long values of up to a
+                        maximum of 4503599627370495, or 2<sup>52</sup>, in the parameter field for
+                        this parameter. This is a GUI limitation only; the server handles all 64
+                        bits.</p>
+<p>You can also change the Type parameter to the List option and enter a list of
+                        Numbers. To create a list of Number value types, enter each value in the
+                        list using the “+” icon. To remove items from the list, click on the “x”
+                        icon.</p>
+</li>
+<li>
+<p>
+<b>String </b>
+</p>
+<p>When you choose the String option for the Value Type parameter, you can enter
+                        a text string of the exact value that you require for the criteria or a
+                        wildcard. When you choose the String option for a criteria, you can enter
+                        the string that you require in either ASCII or Hexadecimal (0xFFFF) formats.
+                        You can also use the ASCII or Hexadecimal (0xFFFF) options to convert
+                        between an ASCII and Hexadecimal (0xFFFF) value. You can also enter null
+                        values as data in the ASCII input field to be converted to HEX. Enter the
+                        value as ASCII with the characters &lt;NUL&gt; positioned where needed in
+                        the string. The conversion from Hexadecimal (0xFFFF) to ASCII is only
+                        available to the strings that contain printable characters.</p>
+<p>You can also change the Type parameter to the List option and enter a list of
+                        strings. When you change to the List option, you can enter the multiple
+                        strings in either ASCII or Hexadecimal (0xFFFF) formats. You can convert
+                        lists of ASCII or Hexadecimal (0xFFFF) values from one format to another.
+                        The Value text box that appears accepts any type of string with any type of
+                        character. The text box appears in the value area with “+” and “x” icons
+                        that allow you to add and remove values from the list. </p>
+<p>To create a list of multiple strings, enter each string into the list using
+                        the “+” icon. To remove items from the list, click on the “x” icon. The list
+                        treats each string as an OR logical operation. In the following example, the
+                        comma represents the OR operation:</p>
+<p>[abc, acd, afe12]</p>
+</li>
+<li>
+<p>
+<b>Time Of Day</b>
+</p>
+<p>When you choose the Time Of Day option, you can enter the value for a 24-h
+                        clock in the format: hh:mm:ss.</p>
+</li>
+<li>
+<p>
+<b>Time Duration</b>
+</p>
+<p>When you choose the Time Duration option, you can enter the value as a period
+                        of time; for example, 2h 30min 20s.</p>
+</li>
+<li>
+<p>
+<b>Date Time </b>
+</p>
+<p>When you choose Date Time option, you can choose a date from the calendar and
+                        enter the time in the format: hh:mm:ss. The time zone of the local client is
+                        automatically included in the configuration. On the GUI display, the values
+                        indicate the local time zone.</p>
+</li>
+<li>
+<p>
+<b>List</b>
+</p>
+<p>When you choose the List option, you must also choose the type of list. The
+                        options for type of list are as follows:</p>
+<ul>
+<li>
+<p>Decimal—allows you to enter a list of decimal numbers</p>
+</li>
+<li>
+<p>Enum—allows you to enter a list of Enums</p>
+</li>
+<li>
+<p>IP Address—allows you to enter a list of IP addresses</p>
+</li>
+<li>
+<p>Number—allows you to enter a list of numbers</p>
+</li>
+<li>
+<p>String—allows you to enter a list of strings</p>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+<section>
+<title>Adjustment operators</title>
+<p>Numbers, enums, custom data, lists of IP addresses, lists of strings and so on can be
+                configured to include Adjustment Operators. The Adjustment Operator parameter
+                appears for most criteria and action selections and can be applied to criteria
+                values and action values. When you use any of the adjustment operators, an
+                Adjustment Value panel appears for entry of the adjustment values. You can enter
+                multiple values in some cases and single values in others, which is apparent by the
+                type of field displayed when you choose the adjustment operator. When you click on
+                the Add item button in the Adjustment Value panel, the Adjustment Value form
+                appears. You can then enter the Adjustment Data Type and a value in the Adjustment
+                Value form.</p>
+<p>You cannot use a list of numbers as an adjustment value. However, you can use a
+                number as an adjustment value that can be applied to a list of numbers. Adjustment
+                values appear in the Criteria list and Action list as well as in the Summary
+                windows.</p>
+<p>The Adjustment Operators are:</p>
+<ul>
+<li>
+<p>
+<b>Add</b>— For numeric type values such as Number, Decimal, Date Time, and
+                        Custom Data values, this operator allows you to use addition (+) to adjust
+                        values.</p>
+</li>
+<li>
+<p>
+<b>Subtract</b>—For numeric type values such as Number, Decimal, Date Time,
+                        and Custom Data values, this operator allows you to use subtraction (-) to
+                        adjust values.</p>
+</li>
+<li>
+<p>
+<b>Multiply</b>—For numeric type values such as Number, Decimal, Date Time,
+                        and Custom Data values, this operator allows you to use multiplication (x)
+                        to adjust values.</p>
+</li>
+<li>
+<p>
+<b>Union</b>—For List values only (custom data, IP addresses, and strings),
+                        the operator allows you to provide OR functionality within a list so that a
+                        value within the list can be adjusted to A = B or C. </p>
+</li>
+<li>
+<p>
+<b>Concatenate</b>—For string values only, the operator allows you to
+                        concatenate (Concat) rule condition or action values, or rule condition and
+                        action adjustment values, that exist as strings for both Attribute and
+                        non-Attribute values. For example, if you had a list of ordered strings,
+                        string “ca”, and a number of other strings (x100, x200, x300) that you want
+                        to join to the string “ca”, you can concatenate (ca, x100, x200, x300) to
+                        join the strings for a value of “cax100x200x300”. You can create an action
+                        that builds the predefined PCC rule name based on concatenating strings from
+                        available context. This approach is useful when the predefined rule depends
+                        on subscriber information. For example, the subscriber record can contain
+                        two attributes [Category = VIP/Gold/Silver/Bronze,
+                        P2P=Improved/Normal/Limited] requiring you to write a total of 12 rules.
+                        Using the Concatenate operator reduces the 12 rules to 1 rule. </p>
+</li>
+<li>
+<p>
+<b>Modulus</b>
+</p>
+<p>The Modulus (%) operator allows you to adjust the criteria by the remainder
+                        of a division when one number is divided by another. For example, if you
+                        have two positive number integers, in a condition, that when divided by the
+                        result in a quotient with a remainder, the remainder is the modulo of the
+                        division. For example, the expression 9 modulus 2 would evaluate to 1
+                        because 9 divided by 2 leaves a quotient of 4 and a remainder of 1, while 9
+                        modulus 3 would evaluate to 0 because the division of 9 by 3 has a quotient
+                        of 3 with a remainder of 0. If the divisor is 0, the operator will return
+                        null. Operations with negative numbers are supported.</p>
+<p>If you apply multiple modulus adjustment values, the expression evaluates to
+                        (((value mod ADJ-1) mod ADJ-2) mod ADJ-3).</p>
+</li>
+</ul>
+</section>
+<section>
+<title>Attribute and operator usage for adjustments</title>
+<p>The items available for the type of value associated with the criteria, criteria
+                argument, or action for the Adjustment Operator is displayed in the auto-suggest.
+                For example, if the value type is String for the criteria that you have configured,
+                only the concatenate adjustment operator is applicable, and therefore displayed as
+                the only option to include. The following defines how the options are available:</p>
+<ul>
+<li>
+<p>When the type of value is "List", only the Union adjustment operator is
+                        applicable.</p>
+</li>
+<li>
+<p>When the type of value is "String", only the Concatenate adjustment operator
+                        is applicable.</p>
+</li>
+<li>
+<p>When the type of value is Numeric (for example, Number, Time of Day, Time
+                        Duration, Date Time, and Decimal) only the numeric adjustment operators are
+                        applicable.</p>
+</li>
+<li>
+<p>Any other types do not have adjustments; for example, "IP Address" and "Enum"
+                        do not have adjustment operators.</p>
+</li>
+</ul>
+<p>The following table lists the relationships between value types, operators, and
+                adjustment values based on the criteria, action, or Attribute types that are
+                adjusted. For example, if you choose a criteria type other than custom and then
+                choose an attribute value for the condition, the attribute value type can be a
+                number added to or subtracted from a number.</p>
+<table colsep="1" pgwide="1" rowsep="1">
+<title>Attribute and operator usage for adjustment values</title>
+<tgroup cols="4" colsep="1">
+<colspec colname="1" colnum="1"/>
+<colspec colname="2" colnum="2"/>
+<colspec colname="3" colnum="3"/>
+<colspec colname="4" colnum="4"/>
+<thead>
+<row>
+<entry colname="1">
+                                Criteria or ActionType
+                            </entry>
+<entry colname="2">
+                                Attribute Value Type
+                            </entry>
+<entry colname="3">
+                                Operator
+                            </entry>
+<entry colname="4">
+                                Adjustment Value
+                            </entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry colname="1" morerows="6"> All </entry>
+<entry colname="2" morerows="1">
+<p>Number</p>
+<p>Time of Day</p>
+<p>Time Duration</p>
+<p>Date Time</p>
+<p>Custom</p>
+</entry>
+<entry colname="3">
+<p>Add</p>
+<p>Subtract</p>
+</entry>
+<entry colname="4">
+<p>Number</p>
+<p>Time of Day</p>
+<p>Time Duration</p>
+<p>Date Time</p>
+<p>Custom</p>
+</entry>
+</row>
+<row>
+<entry colname="3">
+<p>Multiply</p>
+<p>Modulus</p>
+</entry>
+<entry colname="4">
+<p>Number</p>
+<p>Time of Day</p>
+<p>Time Duration</p>
+<p>Date Time</p>
+<p>Decimal</p>
+<p>Custom</p>
+</entry>
+</row>
+<row>
+<entry colname="2"> Decimal </entry>
+<entry colname="3">
+<p>Add</p>
+<p>Subtract</p>
+<p>Multiply</p>
+<p>Modulus</p>
+</entry>
+<entry colname="4">
+<p>Decimal</p>
+<p>Custom</p>
+</entry>
+</row>
+<row>
+<entry colname="2"> String </entry>
+<entry colname="3"> Concatenate </entry>
+<entry colname="4">
+<p>String</p>
+<p>List String</p>
+<p>Attribute</p>
+</entry>
+</row>
+<row>
+<entry colname="2"> List String </entry>
+<entry colname="3"> Union </entry>
+<entry colname="4">
+<p>List String</p>
+<p>Custom</p>
+</entry>
+</row>
+<row>
+<entry colname="2"> List IP Address </entry>
+<entry colname="3"> Union </entry>
+<entry colname="4">
+<p>List IP Address</p>
+<p>Custom</p>
+</entry>
+</row>
+<row>
+<entry colname="2"> List Enum </entry>
+<entry colname="3"> Union </entry>
+<entry colname="4">
+<p>List Enum</p>
+<p>Custom</p>
+</entry>
+</row>
+<row>
+<entry colname="1" morerows="1">
+<p>Number</p>
+<p>Time of Day</p>
+<p>Time Duration</p>
+<p>Date Time</p>
+<p>Custom</p>
+</entry>
+<entry colname="2" morerows="1"> Custom </entry>
+<entry colname="3">
+<p>Add</p>
+<p>Subtract</p>
+</entry>
+<entry colname="4">
+<p>Number</p>
+<p>Time of Day</p>
+<p>Time Duration</p>
+<p>Date Time</p>
+<p>Custom</p>
+</entry>
+</row>
+<row>
+<entry colname="3">
+<p>Multiply</p>
+<p>Modulus</p>
+</entry>
+<entry colname="4">
+<p>Number</p>
+<p>Time of Day</p>
+<p>Time Duration</p>
+<p>Date Time</p>
+<p>Custom</p>
+<p>Decimal</p>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>The following table shows the relationships between comparison operators, adjustment
+                operators, and types given the List value types with Custom as both the criteria
+                type and Attribute Value Type.</p>
+<table colsep="1" pgwide="1" rowsep="1">
+<title>Usage for custom-custom condition attribute types</title>
+<tgroup cols="3" colsep="1">
+<colspec colname="1" colnum="1"/>
+<colspec colname="2" colnum="2"/>
+<colspec colname="3" colnum="3"/>
+<thead>
+<row>
+<entry colname="1">
+                                Comparison Operator
+                            </entry>
+<entry colname="2">
+                                Adjustment Operator
+                            </entry>
+<entry colname="3">
+                                Type
+                            </entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry colname="1">
+<p>Within Netmask</p>
+<p>Not Within Netmask</p>
+<p>Contains Netmask</p>
+<p>Does Not Contain Netmask</p>
+</entry>
+<entry colname="2"> Union </entry>
+<entry colname="3">
+<p>List IP Address</p>
+<p>Custom</p>
+</entry>
+</row>
+<row>
+<entry colname="1">
+<p>Contains Substring</p>
+<p>Does Not Contain Substring</p>
+<p>Match Substring</p>
+<p>Does Not Match Substring</p>
+</entry>
+<entry colname="2"> Union </entry>
+<entry colname="3">
+<p>List String</p>
+<p>Custom</p>
+<p>List Decimal</p>
+</entry>
+</row>
+<row>
+<entry colname="1">
+<p>Contains Substring</p>
+<p>Does Not Contain Substring</p>
+<p>Match Substring</p>
+<p>Does Not Match Substring</p>
+</entry>
+<entry colname="2"> Concatenate </entry>
+<entry colname="3">
+<p>List String</p>
+<p>Custom</p>
+</entry>
+</row>
+<row>
+<entry colname="1">
+<p>Equal </p>
+<p>Equal Ignore Case</p>
+<p>Not Equal </p>
+<p>Not Equal Ignore Case</p>
+<p>Greater than </p>
+<p>Less than </p>
+<p>Greater than or equal to </p>
+<p>Less than or equal to </p>
+<p>Present </p>
+<p>Not Present </p>
+</entry>
+<entry colname="2">
+<p>Add</p>
+<p>Subtract</p>
+<p>Multiply</p>
+<p>Modulus</p>
+</entry>
+<entry colname="3">
+<p>Number</p>
+<p>Time of Day</p>
+<p>Time Duration</p>
+<p>Date Time</p>
+<p>Decimal</p>
+<p>Custom</p>
+<p>List Decimal</p>
+<p>List Number</p>
+</entry>
+</row>
+<row>
+<entry colname="1">
+<p>Contains</p>
+<p>Does not contain</p>
+</entry>
+<entry colname="2"> Union </entry>
+<entry colname="3">
+<p>List String</p>
+<p>List IP Address</p>
+<p>Custom</p>
+<p>List Decimal</p>
+<p>List Enum</p>
+<p>List Number</p>
+</entry>
+</row>
+<row>
+<entry colname="1">
+<p>Contains</p>
+<p>Does not contain</p>
+</entry>
+<entry colname="2"> Concatenate </entry>
+<entry colname="3">
+<p>List String</p>
+<p>Custom</p>
+</entry>
+</row>
+<row>
+<entry colname="1" morerows="2">
+<p>Equal </p>
+<p>Equal Ignore Case</p>
+<p>Not Equal </p>
+<p>Not Equal Ignore Case</p>
+</entry>
+<entry colname="2">
+<p>Add</p>
+<p>Subtract</p>
+<p>Multiply</p>
+<p>Modulus</p>
+</entry>
+<entry colname="3">
+<p>Number</p>
+<p>Time of Day</p>
+<p>Time Duration</p>
+<p>Date Time</p>
+<p>Decimal </p>
+<p>Custom</p>
+<p>List Decimal</p>
+<p>List Number</p>
+</entry>
+</row>
+<row>
+<entry colname="2"> Union </entry>
+<entry colname="3">
+<p>List String</p>
+<p>List IP Address</p>
+<p>Custom</p>
+</entry>
+</row>
+<row>
+<entry colname="2"> Concatenate </entry>
+<entry colname="3">
+<p>List String</p>
+<p>Custom</p>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+</conbody>
+</concept>

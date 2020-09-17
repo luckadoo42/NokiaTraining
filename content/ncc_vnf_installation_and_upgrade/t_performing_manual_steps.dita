@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+		<task id="id9YZ-09018-IN00-RJZZA-Performing-manual-steps"><title>Checking DB VMs </title><taskbody id="d1e10824"><context><sectiondiv>
+				<p><b>Overview</b></p>
+				<p>This procedure provides instructions on how to check the DB VMs after these VMs
+					have been upgraded in one rack</p>
+			</sectiondiv>To check the DB VMs:</context><steps>
+
+<step><cmd>Log in to the Active OAME VM as <b>tpaadmin</b> and enter:</cmd><info><p>
+<codeph>/opt/tpa/bin/db-stats -s all | grep Migration </codeph>
+</p><p>
+<b>Expected outcome if migration is not in progress</b>
+</p><p>
+<systemoutput>Migration in progress   NO</systemoutput>
+</p><p>
+<b>Expected outcome if migration is in progress</b>
+</p><p>
+<systemoutput>Migration in progress   YES</systemoutput>
+</p></info></step>
+<step><cmd>If </cmd><info><p>
+<systemoutput>Migration in progress   YES</systemoutput>
+</p><p>is the output, wait for a while and repeat the previous step. Continue repeating step 1 every few minutes until Migration in progress is NO. Then move to step 3 to verify that all DB nodes are responding.</p></info></step>
+<step><cmd>Enter:</cmd><info><p>
+<codeph>/opt/tpa/bin/db-stats -s all | grep responding</codeph>
+</p><p>
+<b>Expected outcome</b>
+</p><p>
+<systemoutput>DB nodes responding:    number</systemoutput>
+</p><p>where <systemoutput>number</systemoutput> is the number of responding DB VMs.</p></info></step>
+<step><cmd>If the number of responding DB VMs is not equal to the number of all the DB VMs in one rack, repeat the previous step again. If none of the DB VMs are responding, the entire DB may be DOWN. If the state is persistent, check the DB status using the “db-stats tool” described in the Tools chapter of the <i>Administration Guide</i> for information to assist with troubleshooting.</cmd><info/></step>
+</steps>
+</taskbody></task>

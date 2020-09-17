@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="SPS_CDR_Streams_Operation_and_Maintenance_Guide_defining_splitting_criteria">
+<title>Defining splitting criteria</title>
+<body>
+                
+                <p>Splitting criteria are reusable expressions which can be used by any number of
+                    file groups. Criteria are used for matching output records to correct
+                    distribution rules.</p>
+                <p>To create or modify criteria, update the ‘Split Criteria’ lookup table. </p>
+        <p>To update the dataset configuration used by split criteria (column ‘Dataset’), update the
+            dataset lookup table, either through the UI or by importing data as described in <xref
+                href="updating_lookup_tables.dita#updating_lookup_tables"/>.</p>
+                <table>
+            <title>Columns in ‘Split Criteria’ lookup table</title>
+                    <tgroup cols="4">
+                        <thead>
+                            <row>
+                                <entry colsep="1" rowsep="1">Column name</entry>
+                                <entry colsep="1" rowsep="1">Description</entry>
+                                <entry colsep="1" rowsep="1">Valid value</entry>
+                                <entry colsep="1" rowsep="1">Optional</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry colsep="1" rowsep="1">CriteriaId</entry>
+                                <entry colsep="1" rowsep="1">All criteria must have a unique
+                            identifier so they can be used by the file groups.</entry>
+                                <entry colsep="1" rowsep="1">Any unique string.</entry>
+                                <entry colsep="1" rowsep="1">No</entry>
+                            </row>
+                            <row>
+                                <entry colsep="1" rowsep="1">OutputFieldName</entry>
+                                <entry colsep="1" rowsep="1">The name of the field whose value is
+                            used for the comparison.</entry>
+                                <entry colsep="1" rowsep="1">
+                            <p>Field name present in the output record.</p>
+                            <p>If the field is not present, the criteria is evaluated as false.</p>
+                        </entry>
+                                <entry colsep="1" rowsep="1">No</entry>
+                            </row>
+                            <row>
+                                <entry colsep="1" rowsep="1">CriteriaType</entry>
+                                <entry colsep="1" rowsep="1">The type of comparison.</entry>
+                                <entry colsep="1" rowsep="1">See the following table.</entry>
+                                <entry colsep="1" rowsep="1">No</entry>
+                            </row>
+                            <row>
+                                <entry colsep="1" rowsep="1">CriteriaValue</entry>
+                                <entry colsep="1" rowsep="1">For simple comparisons, this is the
+                            fixed value that the record field value is compared against.</entry>
+                                <entry colsep="1" rowsep="1">See the following table.</entry>
+                                <entry colsep="1" rowsep="1">Empty if this is a dataset comparison.
+                            Otherwise mandatory.</entry>
+                            </row>
+                            <row>
+                                <entry colsep="1" rowsep="1">Dataset</entry>
+                                <entry colsep="1" rowsep="1">For dataset comparisons this is the
+                            name of the lookup table that contains the dataset to be used.</entry>
+                                <entry colsep="1" rowsep="1">The name of an existing lookup table
+                            that contains a single column.</entry>
+                                <entry colsep="1" rowsep="1">Empty if this is a simple comparison.
+                            Otherwise mandatory.</entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+        <note>
+            <p>Because Data Refinery does not support empty values in lookup tables, they must be
+                specified by using the dash (-) character.</p>
+        </note>
+                <table>
+            <title>Criteria types and values</title>
+                    <tgroup cols="3">
+                        <thead>
+                            <row>
+                                <entry colsep="1" rowsep="1">Criteria type</entry>
+                                <entry colsep="1" rowsep="1">Description</entry>
+                                <entry colsep="1" rowsep="1">Valid values</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry colsep="1" rowsep="1">EXACT_MATCH</entry>
+                                <entry colsep="1" rowsep="1">A strict case-sensitive
+                            comparison.</entry>
+                                <entry colsep="1" rowsep="1">
+                            <p>Any string.</p>
+                            <p><b>Example:</b> abc</p>
+                        </entry>
+                            </row>
+                            <row>
+                                <entry colsep="1" rowsep="1">REG_EX_MATCH</entry>
+                                <entry colsep="1" rowsep="1">
+                            <p>A pattern match against a regular expression.</p>
+                            <p>For more information on the allowed regular expressions, see the
+                                documentation for java.util.regex.Pattern.</p>
+                        </entry>
+                                <entry colsep="1" rowsep="1">A valid regular expression.
+                                <b>Example:</b> abc.*def</entry>
+                            </row>
+                            <row>
+                                <entry colsep="1" rowsep="1">GREATER_THAN</entry>
+                                <entry colsep="1" rowsep="1">A numeric comparison.</entry>
+                                <entry colsep="1" rowsep="1">
+                            <p>A valid integer value.</p>
+                            <p><b>Example:</b> 1</p>
+                        </entry>
+                            </row>
+                            <row>
+                                <entry colsep="1" rowsep="1">LESS_THAN</entry>
+                                <entry colsep="1" rowsep="1">A numeric comparison.</entry>
+                                <entry colsep="1" rowsep="1">
+                            <p>A valid integer value.</p>
+                            <p><b>Example:</b> 1000</p>
+                        </entry>
+                            </row>
+                            <row>
+                                <entry colsep="1" rowsep="1">DATA_SET_EXACT_MATCH</entry>
+                                <entry colsep="1" rowsep="1">Check that the field value matches
+                            (case-sensitive) any entry in the specified lookup table.</entry>
+                                <entry colsep="1" rowsep="1">
+                            <p>The name of an existing lookup table that contains a single
+                                column.</p>
+                            <p><b>Example:</b> LT_MSISDN_LIST</p>
+                        </entry>
+                            </row>
+                            <row>
+                                <entry colsep="1" rowsep="1">DATA_SET_STARTS_WITH_MATCH</entry>
+                                <entry colsep="1" rowsep="1">Check that the field value starts with
+                            (case-sensitive) any entry in the specified lookup table.</entry>
+                                <entry colsep="1" rowsep="1">
+                            <p>The name of an existing lookup table that contains a single
+                                column.</p>
+                            <p><b>Example:</b> LT_MSISDN_LIST</p>
+                        </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+            </body>
+</topic>

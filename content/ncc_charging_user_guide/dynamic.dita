@@ -1,0 +1,640 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-dynamic"><title>Dynamic slicing functionality</title><conbody>
+<section><title>Overview</title>
+<p>Dynamic slicing allows the operators to organize the networks to efficiently address different use cases. It also allow the operators to design, deploy, customize, optimize the network slices running in the network, and dynamically allocate network resources that can maximize customer value; thus, increasing revenue opportunities. Operators can distribute the network slices quickly on demand. These slices can support the 5G’s network requirements for bandwidth, throughput, latency, and availability that provides opportunities for use cases such as IoT, smart cities. </p>
+<p>In NCC, for dynamic slicing, the dynamic quota algorithm provides a mechanism to allocate the
+                right quota size for a reasonable amount of time. This approach avoids blocking of
+                quota for sessions not using it. </p>
+<p>For centralized charging, when the call controller receives a network request with an empty RSU from the Packet Data Gateway (PGW), then depending on the different parameters specified in the charging system such as resources, different RAT type, heavy user, light user, medium group, large group, the slice size is computed accordingly. The quota allocation can be provided to both group and individual resources of prepaid or postpaid accounts. Both static and dynamic quota allocation can be provided based on the customer network. </p>
+<p>The different quota allocation algorithms are available such as <i>BASIC_ALGO</i>,
+                    <i>BUCKET_ALGO</i>, <i>DYNAMIC_ALGO</i>, or <i>DYNAMIC_ALGO_2</i>. See
+                    <!--xref URI: #dsv--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-dynamic/dsv"/> for
+                different variants available in NCC. </p>
+<note><ul>
+<li>
+<p>It is recommended not to configure the <i>DefaultAction</i> with <i>Algo-Name</i>. However, if configured, then the <i>Algo-Name</i> is ignored.</p>
+</li>
+<li>
+<p>It is recommended not to configure <i>VT</i> as <varname>0</varname> in the slicing profile entity rule. If <i>VT</i> is configured as <varname>0</varname>, then it is not considered as <varname>NOK</varname> scenario and the final value is read from the slicing profile entity, bypassing the processing of <i>DefaultAction</i>.</p>
+</li>
+</ul>
+</note>
+</section>
+<section><title>Computation of dynamic slice output</title>
+<p>The following figure provides details on how the dynamic slice size gets computed.</p>
+<fig>
+<title>Dynamic slicing</title>
+<!--MMO resource relative URI: ../Graphics/Release_19.6/Dynamic_slice_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-dynamic_slice_default.png"/>
+</fig>
+<p>NCC receives a Gy request with an empty RSU. NCC considers this as a centralized call and uses
+                the algorithm configured in the slicing profile or the defined static values to
+                calculate the slice size. The name of the slicing profile is present in the
+                    <filepath>TPA_system properties</filepath> file. </p>
+<p>The slicing profile uses the following three kind of inputs to compute the dynamic quota:</p><ul>
+<li>
+<p>Gy AVPs with group type such as RAT, rating group.</p>
+</li>
+<li>
+<p>Specific algorithm with input parameters.</p>
+</li>
+<li>
+<p>Selection of quota allocation algorithm.</p>
+</li>
+</ul>
+<p>Along with the slicing profile inputs, the OCS static data such as tariff, defined milestones
+                (thresholds) are sent as input to the rule engine. The rule engine with the help of
+                three main components namely past usage pattern of the device, bucket, and algorithm
+                engine, computes the dynamic quota slice.</p>
+</section>
+<section id="dsv"><title>Dynamic slicing algorithm configuration and variants</title>
+<p>Dynamic algorithm calculates the slice size to be given to a device. The subsequent sections provide information on the configuration, different approaches followed for slice computation such as slicing profile, dynamic algorithm, and parameterized dynamic algorithm (<i>DYNAMIC_ALGO_2</i>) used to calculate the slice size.</p>
+<note type="important">
+<p>It is recommended not to use slice reduction along with <i>DYNAMIC_ALGO</i> or <i>DYNAMIC_ALGO_2</i> because slice reduction is itself an algorithm, which reduces the slice size based on upcoming Threshold/Cap. However, if configured together, the behavior might change and it may lead to unexpected results.</p>
+</note>
+<sectiondiv>
+<p><b>Configuring the dynamic slicing functionality</b></p>
+<p>Configure the desired algorithm in the <uicontrol>Slicing Profile</uicontrol> entity in the SM GUI to configure the dynamic slicing functionality.</p>
+<note><ul>
+<li>
+<p>It is recommended not to configure the <i>DefaultAction</i> with <i>Algo-Name</i>. If configured, then the <i>Algo-Name</i> is ignored.</p>
+</li>
+<li>
+<p>It is recommended not to configure VT as 0 in the slicing profile entity rule. If VT is 0, then it is not considered as NOK scenario and the final value is read from the slicing profile entity, bypassing the processing of <i>DefaultAction</i>.</p>
+</li>
+</ul>
+</note>
+<p>If you want to customize the minimum and maximum slice size values using the <uicontrol>Select-Algo</uicontrol> parameter, which is available for the <i>DYNAMIC_SLICE</i> ruleset that allows you to select the <i>DYNAMIC_ALGO_2</i> and contains the following three parameters:</p><ul>
+<li>
+<p>
+<uicontrol>Algo-Name</uicontrol>: Currently, only <varname>DYNAMIC_ALGO_2</varname> is supported, which is not case sensitive.</p>
+</li>
+<li>
+<p>
+<uicontrol>Min Slice</uicontrol>: It is an optional parameter, which indicates the minimum slice to be provided.</p>
+</li>
+<li>
+<p>
+<uicontrol>Max Slice</uicontrol>: It is an optional parameter, which restricts the size of slice from algorithm. The max value up to 9223372036854775807 is supported for Max slice value.</p>
+</li>
+</ul>
+<p>If both <uicontrol>Min Slice</uicontrol> and <uicontrol>Max Slice</uicontrol> are not configured, then the <i>DYNAMIC_ALGO_2</i> algorithm behaves as <i>DYNAMIC_ALGO</i>.</p>
+<p>If customization to the slice size is not needed, then you can select either <i>DYNAMIC_ALGO</i>, <i>BASIC_ALGO</i>, or <i>BUCKET_ALGO</i> using the <i>DYNAMIC_SLICE.Algo-Name</i> in the ruleset.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Slicing profile</b></p>
+<p>This is the basic default configuration that is easy to use and covers most common cases. In case of centralized charging, rules are defined to calculate the exact value to be used in the dynamic slicing profile and these rules contain algorithms that calculate the dynamic quota slice. </p>
+<p>The rules defined in the slicing profile entity provide flexibility to configure the dynamic
+                    slicing parameter based on different configuration. The slicing profile entity
+                    is not created at the time of NCC installation and has to be configured. The
+                    default slicing profile name must be created with dynamic profile name
+                    configured in <filepath>TPA_system</filepath> properties file. You can modify
+                        <filepath>TPA_properties</filepath> file and change the name mentioned as
+                    default_profile to a new name.</p>
+<p>Rules defined in the slicing profile have the highest priority. They are checked one-by-one and the first rule to satisfy the condition is picked up for processing. These inputs are available in the Dynamic Slice context in the Slicing profile entity.</p>
+<p>Rules define the slice based on the applicability condition and context. The rules in dynamic slicing profile contain the dynamic slicing algorithm configured to calculate the dynamic slice size or dynamic network parameters, such as Validity Time (VT) or Quota Holding Time (QHT). The applicability condition may use Radio Access Type (RAT) and device ID derived from AVPs. For example, we can either have a slicing algorithm or a rule for 2G smart phones and IoT devices, 3G smart phones and IoT devices, and 4G smart phones and IoT devices. The context can be source context, bucket context, group context, device context, and session context.</p>
+<note>
+<p>VT defines the time for which the dynamic quota remains active in the network, thus controlling the effective allocation of resources. QHT defines the time for which the call session remains in the idle state. Once QHT expires, the network reports back the usage and gets a new dynamic quota allocated.</p>
+</note>
+</sectiondiv>
+<sectiondiv>
+<p><b>Types of dynamic slicing algorithm</b></p>
+<p>Following are the types of dynamic slicing algorithm:</p><ul>
+<li>
+<p>
+<i>BASIC_ALGO</i>: The basic algorithm does not consider any dynamic values. This algorithm returns the static values - Slice Size = 2000, VT = 35, and QHT is Null.</p>
+</li>
+<li>
+<p>
+<i>BUCKET_ALGO</i>: This algorithm considers only the first bucket value if the current bucket value is greater than or equal to the value preconfigured in the algorithm. For example, if Slice Size = 1000, then the algorithm returns Slice Size = 1000, VT = 30, QHT is set as Null. Else, if the current bucket value is less than the slice size, it returns the default slice size preconfigured in the slicing profile.</p>
+</li>
+<li><p>
+                            <i>DYNAMIC_ALGO</i>: This algorithm computes the dynamic slice depending
+                            upon the group type, maximum number of devices in group, validity time,
+                            and other inputs.</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_19.6/Dynamic_algo_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-dynamic_algo_default.png"
+                        />
+                    </li>
+</ul>
+</sectiondiv>
+<sectiondiv>
+<p><b>Parameterized dynamic algorithm</b></p>
+<p>
+<uicontrol>DYNAMIC_ALGO_2</uicontrol>
+</p>
+<p>The <i>DYNAMIC_ALGO_2</i> algorithm facilitates operators to avoid the following situations by providing two configurable parameters, <uicontrol>Minimum Slice Size</uicontrol> and <uicontrol>Maximum Slice Size</uicontrol>.</p><ul>
+<li>
+<p>Consider that an active session is using a bucket and when the bucket current value reduces such that 20% of volume is available, then algorithm computes very small slices which leads to high TPS in the network. To avoid this situation, minimum slice size can be used.</p>
+</li>
+<li>
+<p>There may be device starvation when a session with low volume consumption blocks its reserved volume data while the second session with higher volume consumption uses up its Granted Service Unit (GSU). To avoid this situation, maximum slice size can be used, which allows capping the maximum slice for the sessions.</p>
+</li>
+</ul>
+<p>The <i>DYNAMIC_ALGO_2</i> uses the <i>DYNAMIC_ALGO</i> to calculate the slice size and provides flexibility for operators to configure two additional optional parameters, <uicontrol>Minimum Slice Size</uicontrol> and <uicontrol>Maximum Slice Size</uicontrol> configured in the slicing profile rule. It ensures that the calculated slice size is in between minimum and maximum slice size configured. This algorithm is same as <i>DYNAMIC_ALGO</i> with an addition of two configurable minimum slice size and maximum slice size parameters.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_19.6/Dynamic_algo2_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-dynamic_algo2_default.png"/>
+</fig>
+<p>The value slice size is set based on the configurations made:</p><ul>
+<li>
+<p>If you configure only the <uicontrol>Minimum Slice Size</uicontrol> with <i>DYNAMIC_ALGO_2</i>, then the default value for <uicontrol>Maximum Slice Size</uicontrol> is the total volume of the bucket.</p>
+</li>
+<li>
+<p>If you configure only the <uicontrol>Maximum Slice Size</uicontrol>, then the value of <uicontrol>Minimum Slice Size</uicontrol> is zero.</p>
+</li>
+<li><p>If you configure the <uicontrol>Minimum Slice Size</uicontrol> greater than Maximum slice
+                            size or <uicontrol>Minimum Slice Size</uicontrol> equal to
+                                <uicontrol>Maximum Slice Size</uicontrol>, then the configuration is
+                            considered as invalid and algorithm performs the following actions:</p><ul>
+                            <li>
+                                <p>Does not compute the slice size but returns the static slice
+                                    size, if configured in the same rule</p>
+                            </li>
+                            <li>
+                                <p>Otherwise, static slice configured in the slicing profile entity
+                                    is returned</p>
+                            </li>
+                        </ul><p>The following figure shows an invalid configuration where the
+                                <uicontrol>Minimum Slice Size</uicontrol> is greater than the
+                                <uicontrol>Maximum Slice Size</uicontrol>. In this case, the
+                                <i>DYNAMIC_ALGO_2</i> is not executed and the static slice size
+                            defined in the rule, which is 20 in the current case is returned.</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_19.6/Min_max_slice_invalid_default.png-->
+                        <image
+                            href="../images/img9yz-09126-ug01-pczza-sp1-min_max_slice_invalid_default.png"
+                            scale="50"/>
+                    </li>
+<li>
+<p>Following is the valid configuration for <uicontrol>Minimum Slice Size</uicontrol> and <uicontrol>Maximum Slice Size</uicontrol>:</p><ul>
+<li>
+<p>
+<uicontrol>Minimum Slice Size</uicontrol> must be less than the <uicontrol>Maximum Slice Size</uicontrol>.</p>
+</li>
+<li>
+<p>Both the <uicontrol>Minimum Slice Size</uicontrol> and <uicontrol>Maximum Slice Size</uicontrol> must be greater than zero</p>
+</li>
+</ul>
+<p>
+<i>Example</i>: <uicontrol>Minimum Slice Size</uicontrol> = <varname>10</varname> and <uicontrol>Maximum Slice Size</uicontrol> = <varname>200</varname> is a valid configuration. </p>
+</li>
+</ul>
+<p>The algorithm does not compute slice size more than bucket total available balance. For cases where the bucket available balance is less than <uicontrol>Minimum Slice Size</uicontrol> configured, the bucket available balance is returned and not the <uicontrol>Minimum Slice Size</uicontrol>.</p>
+<p>Note the following points:</p><ul>
+<li>
+<p>For the idle sessions where a Payment Gateway reports its usage as zero by sending USU zero in update request (CCR-U), the <i>DYNAMIC_ALGO_2</i> returns the <uicontrol>Minimum Slice Size</uicontrol> configured. </p>
+</li>
+<li><p>For the idle sessions where a Payment Gateway reports its usage as zero by sending USU zero
+                            in update request (CCR-U) and <i>DYNAMIC_ALGO</i> is configured, then
+                            the <i>DYNAMIC_ALGO</i> returns the static slice size configured in the
+                            rule or static slice size configured in the slicing profile entity. The
+                            following figure shows the configuration of static slice size in the
+                            rule.</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_19.6/Dynamic_slice_USU_default.png-->
+                        <image
+                            href="../images/img9yz-09126-ug01-pczza-sp1-dynamic_slice_usu_default.png"
+                            scale="55"/>
+                    </li>
+</ul>
+<note type="attention">
+<p>The maximum and minimum slices can increase the Transactions Per Second (TPS). Therefore, it is recommended to configure the algorithm to its best optimized parameters.</p>
+</note>
+<p>See the <!--xref URI: c-Service_Model.xml#additionalinfo--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-Slicing_Profile/additionalinfo"/> for important points related to slicing profile parameters.</p>
+</sectiondiv>
+</section>
+<section><title>Dynamic quota algorithm priority</title>
+<p>The following shows the order in which the quota is allocated based on the slicing algorithm.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_19.6/Algo_order_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-algo_order_default.png"/>
+</fig>
+<p>The highest priority is given to the dynamic quota based on the rule action. That is, whenever a rule is defined, it is given the highest priority and the algorithm associated is executed, therefore, that slice is computed. The next priority is given to the default rule action in which the static quota is provided. This is followed by the slicing profile in which the static value is defined in the slicing profile entity.</p>
+</section>
+<section><title>Dynamic algorithm parameters</title>
+<p>Following are the parameters for the DYNAMIC_ALGO algorithm. <table pgwide="1" colsep="1"
+                    rowsep="1">
+                    <tgroup cols="2">
+                        <colspec colname="col1"/>
+                        <colspec colname="col2"/>
+                        <thead>
+                            <row>
+                                <entry>
+                                    <p>Parameter</p>
+                                </entry>
+                                <entry>
+                                    <p>Description</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry valign="top"> Usage of device </entry>
+                                <entry>
+                                    <p>This parameter decides the slice size for a device. It is
+                                        derived from the speed by which data is consumed by the
+                                        device with respect to time. For example, if one device
+                                        consumes 10 MB in 10 minutes gets bigger slice size than the
+                                        device which consumes 10 MB in 30 minutes.</p>
+                                    <p>There are two ways by which resources are allocated. They are
+                                        as follows: </p>
+                                    <ul>
+                                        <li>
+                                            <p>
+                                                <uicontrol>Group subscription</uicontrol>: The slice
+                                                size is calculated by considering the usage of
+                                                device (for a particular MSCC) with respect to the
+                                                complete usage of all the devices (of all MSCCs) of
+                                                same group.</p>
+                                        </li>
+                                        <li>
+                                            <p>
+                                                <uicontrol>Device subscription</uicontrol>: Diameter
+                                                call from a device comes for different rating groups
+                                                or MSCCs. The device usage for different MSCCs is
+                                                tracked separately. The slice size for a call for
+                                                one MSCC is calculated by considering the usage of
+                                                the device for all other MSCCs.</p>
+                                        </li>
+                                    </ul>
+                                    <p>
+                                        <uicontrol>Note</uicontrol>: The data stored in for Dynamic
+                                        Past Usage of devices related to rating group gets cleared
+                                        when the device is removed from NCC.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry valign="top"> Bucket milestones </entry>
+                                <entry>
+                                    <p>Milestone (Threshold) defined at bucket to restrict the slice
+                                        computed and send Adaptive RARs. Milestone is a percentage
+                                        threshold applied on bucket with dynamic milestone flag set
+                                        to true and empty rule container in the Threshold Profile
+                                        Group. </p>
+                                    <p>Milestone ensures that the slice size should not be
+                                        completely calculated on the device usage only. If the slice
+                                        size gets calculated completely based on device’s usage and
+                                        the usage of device is fast, then other devices in the group
+                                        cannot get slice for usage. If the consumption of bucket is
+                                        about to reach a milestone, then to avoid deprivation of
+                                        slices to other devices in the group, the algorithm reduces
+                                        the slice size of device even if the usage of device is
+                                        fast.</p>
+                                    <p>Note the following important points related to the bucket
+                                        milestones parameter:</p>
+                                    <ul>
+                                        <li>
+                                            <p>If a milestone (threshold) is configured, then the
+                                                milestone (threshold) is crossed when the committed
+                                                ratio is less than or equal to milestone and commit
+                                                and reservation ratio is greater than or equal to
+                                                milestone and error range (1%).</p>
+                                            <p>
+                                                <userinput>Milestone crossed = committed ratio &lt;=
+                                                  milestone and committed ratio + reservation ratio
+                                                  &gt;= (milestone + error range (1%))</userinput>
+                                            </p>
+                                            <p>Committed ratio = (Bucket initial value - Bucket
+                                                unused value) / Bucket initial value. Bucket unused
+                                                value means bucket balance without reservation. </p>
+                                            <p>Committed ratio + reservation ratio = (Bucket initial
+                                                value - Bucket current value) / Bucket initial
+                                                value. Bucket current value means bucket balance
+                                                with reservation.</p>
+                                        </li>
+                                        <li>
+                                            <p>If a milestone is not configured with slicing
+                                                profile, then a default milestone of 100% is
+                                                considered. </p>
+                                            <p>The milestone is crossed when the committed ratio is
+                                                less than milestone and commit and reservation ratio
+                                                is greater than or equal to milestone. The error
+                                                range is not considered in this case of 100%
+                                                milestone.</p>
+                                            <p>
+                                                <userinput>Milestone crossed = committed ratio &lt;=
+                                                  milestone and committed ratio + reservation ratio
+                                                  &gt;= milestone</userinput>
+                                            </p>
+                                        </li>
+                                    </ul>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry valign="top"> Validity time of a session </entry>
+                                <entry>
+                                    <p>A configurable time of the session validity and one of the
+                                        key parameter for reducing the slice size to avoid slice
+                                        deprivation conditions. </p>
+                                    <p>Consider that a slice size calculated for a device by the
+                                        algorithm can be consumed in x hours. This slice size is
+                                        adjusted based on the Validity Time of the session of the
+                                        device. For example: Consider the slice calculated as per
+                                        device characteristics is 100 MB. It gets consumed in 4
+                                        hours by the device. But the validity of session for that
+                                        device is only 2 hours. Therefore, slice size is adjusted
+                                        according to 2 hours of consumption of device rather than 4
+                                        hours. Reduction of slice size on the basis of validity time
+                                        is a part of post calculation of algorithm.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry valign="top"> Number of lines (N) </entry>
+                                <entry>
+                                    <p>Line represents the Devices with rating group, that is, the
+                                        number of lines represents the number of devices with rating
+                                        groups in a group that share a group resource. For example,
+                                        if there are 4 devices in a group and each device creates
+                                        two sessions each from two different rating groups, then the
+                                        number of lines is 4 * 2 = 8.</p>
+                                    <p>Even if the number of devices in a group is different than
+                                        the maximum number of lines in slicing profile, the number
+                                        of lines mentioned in slicing profile is considered in the
+                                        slice size calculation. It does not consider the number of
+                                        devices that exist in a group.</p>
+                                    <p>For example, consider that there is a group with 10 devices
+                                        and the maximum number of lines in slicing profile is
+                                        mentioned 15. Then, for algorithm, the number of devices
+                                        consuming from group resource is 15 and not 10.</p>
+                                    <p>
+                                        <uicontrol>Note</uicontrol>: Bigger the value of N, smaller
+                                        the slice that gets allocated to the devices in a group.</p>
+                                </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table></p>
+<p>The DYNAMIC_ALGO_2 has the following optional parameters in addition to the parameters listed in the preceding table.</p>
+<table frame="all" pgwide="1" colsep="1" rowsep="1">
+                <tgroup cols="2">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Parameter</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> Min Slice Size </entry>
+                            <entry morerows="1">
+                                <p>
+                                    <uicontrol>Min Slice Size</uicontrol> and <uicontrol>Max Slice
+                                        Size</uicontrol> parameters are available in the slicing
+                                    profile entity. An input to the algorithm from the rule that is
+                                    used to ensure that the slice size calculated is within the min
+                                    and max slice size range. </p>
+                                <p>If the <uicontrol>Min Slice Size</uicontrol> is
+                                        <varname>y</varname> and the calculated slice size by
+                                    algorithm is <varname>x</varname>, then x is always greater than
+                                    or equal to y. If the <uicontrol>Max Slice Size</uicontrol> is
+                                        <varname>z</varname> and the calculated slice size by
+                                    algorithm is x, then x is always less than or equal to z.</p>
+                                <p>
+                                    <uicontrol>Note</uicontrol>: The <uicontrol>Min Slice
+                                        Size</uicontrol> and <uicontrol>Max Slice Size</uicontrol>
+                                    are optional parameters used only for <i>DYNAMIC_ALGO_2</i>.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Max Slice Size </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<p>For dynamic algorithm parameters used in slicing profile, see <!--xref URI: c-Service_Model.xml#Slicing_Profile--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-Slicing_Profile"/>.</p>
+<p>Note the following points:</p><ul>
+<li>
+<p>The dynamic slice calculation considers that the given bucket resource can be consumed in 30 days (where 30 days is taken as a reference as a month). This is applicable even if the days in a month are 28/29/31 (such as February, January and so on) where the lifecycle of bucket resource is monthly or any other periodicity of lifecycle, that is, hourly/daily/weekly/yearly. Thus, the quota calculated is not as per the actual bill cycle of the bucket resource but always 30 days is considered for internal calculations.</p>
+</li>
+<li>
+<p>In case of bucket switching, the applicable bucket is considered as a new resource and the device past usage is not considered to compute the slice size. That is, the computed slice size for the new bucket does not consider the speed at which the data was being consumed by the device (usage per hour) from the previous resource or bucket.</p>
+<p>Bucket switching can happen in many scenarios and some of them are highlighted as follows :</p><ul>
+<li>
+<p>Bucket is configured with the Charging step entity and a step-up operation is done on it. For details, see <!--xref URI: #scf--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-scf"/>.</p>
+</li>
+<li>
+<p>Bucket of type volume is exhausted and switched to the next applicable and available resource volume bucket. Note that, for dynamic slicing, only volume type bucket is applicable.</p>
+</li>
+<li>
+<p>Bucket switching happens when a bucket of high priority is topped up or renewed in between the Diameter calls.</p>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+<section><title>Examples</title>
+<p>Consider the following examples to get a better understanding of this feature:</p>
+<sectiondiv>
+<p><b>Example 1: RAR is sent correctly when slice is calculated using dynamic algorithm</b></p>
+<p>This example shows that the RAR messages are sent correctly when the dynamic algorithm is used to calculate the slice size.</p>
+<p>
+<b>Preconditions</b>:</p>
+<p>Provision the following entities using the SM GUI:</p><ol>
+<li><p>Create a slicing profile entity with <uicontrol>default_profile</uicontrol> having a rule
+                            with parameters: <i>Min Slice Size</i> = <varname>4096 Bytes (4
+                                KB)</varname>, <i>Max Slice Size</i> = <varname>1048576000 Bytes
+                                (1000 MB)</varname> and <i>Algo Name</i> =
+                                <varname>DYNAMIC_ALGO_2</varname>, <i>VT</i> = <varname>7200
+                                seconds</varname>, and <i>Max-Number-Of-Devices-In-Group</i> =
+                                <varname>10</varname>.</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_19.6/Slice_profile_ex_default.jpg-->
+                        <image
+                            href="../images/img9yz-09126-ug01-pczza-sp1-slice_profile_ex_default.jpg"
+                        />
+                    </li>
+<li><p>Create a threshold with <uicontrol>Dynamic Milestone Flag</uicontrol> set to
+                                <varname>True</varname>, <uicontrol>Kind of Unit</uicontrol> as
+                                <varname>VOLUME</varname> with 70% and 90% thresholds as shown in
+                            the following figure.</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_19.6/Threshold_milestone_default.jpg-->
+                        <image
+                            href="../images/img9yz-09126-ug01-pczza-sp1-threshold_milestone_default.jpg"/>
+                        <p/><!--MMO resource relative URI: ../Graphics/Release_19.6/Threshold_percentage_default.jpg-->
+                        <image
+                            href="../images/img9yz-09126-ug01-pczza-sp1-threshold_percentage_default.jpg"
+                        />
+                    </li>
+<li>
+<p>Create a charging service with bucket of <varname>7516192768 Bytes (7 GB)</varname> and associate the milestone threshold created.</p>
+</li>
+<li>
+<p>Create a bundle with the charging service created in the previous step.</p>
+</li>
+<li>
+<p>Create an account.</p>
+</li>
+<li><p>Create a group having subscription of the created bundle with account created.</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_19.6/Group_bucket_default.jpg-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-group_bucket_default.jpg"
+                            scale="55"/>
+                    </li>
+<li>
+<p>Create four devices having parent group created in the previous step.</p>
+</li>
+</ol>
+<p>
+<uicontrol>Post-conditions</uicontrol>:</p><ol>
+<li>
+<p>A centralized SCUR call is triggered from device 1 such that CCR-I1: RSU = Empty, GSU = 4175663 bytes.</p>
+</li>
+<li>
+<p>A centralized SCUR call is triggered from device 2 such that CCR-I: RSU = Empty, GSU = 4175663 bytes</p>
+</li>
+<li>
+<p>CCR-U1 is executed from device 1 such that CCR-U1: USU= 5261334936 Bytes, RSU = Empty. USU is 70% of bucket initial value, that is, committed ratio is equal to 70% milestone.</p>
+</li>
+<li>
+<p>CCR-I2 is triggered from device 1 with a different session where RSU = Empty. In this case, RAR is triggered for active session of Group resource for milestone 70. Since committed ratio is 0.70 which is equal to milestone 70 and committed + reserve ratio is greater than milestone 70 + error, that is, 0.01.</p>
+<p>
+<uicontrol>Note</uicontrol>: The committed ratio is calculated by subtracting the available balance value (without reservation) from total balance of bucket. The committed + reservation ratio is calculated by subtracting the available balance value (with reservation) from total initial volume of bucket.</p>
+</li>
+<li>
+<p>A centralized SCUR call is triggered from device 3 such that CCR-I: RSU = Empty.</p>
+</li>
+<li>
+<p>CCR-U2 is triggered from device 1 such that CCR-U1: USU= 1503238554 Bytes, RSU = Empty. USU is 90% of bucket initial value, that is, committed ratio is equal to 90% milestone. </p>
+<p>In this case, RAR is triggered for active session of Group resource for milestone 90. Since the committed ratio is 0.90 which is equal to milestone 90 and committed ratio + reserve ratio is greater than milestone 90 + error, that is, 0.01</p>
+</li>
+<li>
+<p>A centralized SCUR call is triggered from device 4 such that CCR-I: RSU = Empty.</p>
+</li>
+<li>
+<p>CCR-T is executed for all active sessions. The Dynamic Past Usage (DPU) object and bucket instance are set correctly. </p>
+</li>
+</ol>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 2: Minimum slice is considered as RSU when output of dynamic algorithm 2 is less than minimum slice size</b></p>
+<p>This example shows that the minimum slice defined in the slicing profile is used if the dynamic algorithm 2 output is less than the minimum slice.</p>
+<p>
+<b>Preconditions:</b>
+</p>
+<p>Provision the following entities using the SM GUI.</p><ol>
+<li><p>Create a slicing profile entity with name <userinput>default_profile</userinput> having a
+                            rule with parameters: Algo Name = DYNAMIC_ALGO_2, Min Slice Size =
+                            4194304 Bytes (4 MB), Max Slice Size = 6442450944 Bytes (6 GB),
+                            Max-Number-Of-Devices-In-Group = 10, and VT = 5400 seconds as shown in
+                            the following figure.</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_19.6/Dynamic_algo_ex4_1_default.png-->
+                        <image
+                            href="../images/img9yz-09126-ug01-pczza-sp1-dynamic_algo_ex4_1_default.png"
+                        />
+                    </li>
+<li><p>Create a threshold with <uicontrol>Dynamic Milestone Flag</uicontrol> set to
+                                <userinput>TRUE</userinput>, <uicontrol>Kind of Unit</uicontrol> is
+                                <userinput>VOLUME</userinput>, with 70% and 100% thresholds as shown
+                            in the following figure.</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_19.6/Dynamic_algo_ex4_2_default.png-->
+                        <image
+                            href="../images/img9yz-09126-ug01-pczza-sp1-dynamic_algo_ex4_2_default.png"
+                            scale="65"/>
+                    </li>
+<li>
+<p> Create a charging service with bucket of 1 GB and associate the milestone threshold created in the previous step.</p>
+</li>
+<li>
+<p>Create a bundle with the charging service created in the previous step.</p>
+</li>
+<li>
+<p>Create an account and set the balance to 100.</p>
+</li>
+<li>
+<p>Create a group and associate the subscription (bundle) created and link the created account to it.</p>
+</li>
+<li>
+<p>Create a device with parent group created in the previous step.</p>
+</li>
+</ol>
+<p>
+<b>Post-conditions:</b>
+</p><ul>
+<li>
+<p>Bob makes a data call from the device created. This triggers NCC to receive a centralized call
+                            with empty RSU, CCR-I. The CCR-U has USU of 2 bytes, RSU is empty. CCR-T
+                            is 10 bytes.</p>
+</li>
+<li><p>NCC uses the default_profile configuration for processing the call. The <i>DYNAMIC_ALGO_2</i>
+                            output from CCR-I is 447392 is compared with the minimum slice size
+                            defined, which is 4194304. Since the output of algorithm 2 is less than
+                            the minimum slice size configured, the final slice size is the minimum
+                            slice size, which is 4194304. Since commit is done in CCR-U with less
+                            data, that is, 2 bytes, device usage becomes small and the output
+                            calculated from algorithm 2 is 2702 which is less than the minimum slice
+                            size configured. Therefore, the final slice size is minimum slice size,
+                            which is 4194304. The result code <systemoutput>2001
+                                (DIAMETER_SUCCESS)</systemoutput> is sent.</p><p>The dynamic past
+                            usage value and the values in bucket instance are set correctly, sample
+                            shown in the following figure.</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_19.6/Dynamic_algo_ex4_3_default.png-->
+                        <image
+                            href="../images/img9yz-09126-ug01-pczza-sp1-dynamic_algo_ex4_3_default.png"
+                        />
+                    </li>
+</ul>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 3: Successful dynamic slicing call with dynamic algorithm and 3G RAT_Type using group resource volume bucket</b></p>
+<p>This example verifies the centralized SCUR call is successful with a dynamically calculated slice size determined using the DYNAMIC_ALGO for RG = 10 with RAT-Type= 1 for 3G using group resource volume bucket.</p>
+<p>
+<b>Preconditions:</b>
+</p>
+<p>The slicing profile entity is provisioned as follows:</p><ul>
+<li>
+<p>Group <varname>Nokia</varname> has a big volume bucket attached to the subscription.</p>
+</li>
+<li>
+<p>Set the default dynamic slicing profile name as <varname>default_profile</varname> in <filepath>TPA_systemprop</filepath>.</p>
+</li>
+<li>
+<p>
+<i>RSV configuration</i>:</p><ul>
+<li>
+<p>
+<varname>Rating-Group</varname> = <varname>10</varname> and <varname>Call-Sub-Type</varname>= <varname>Volume_Based</varname>; <varname>RSU-Unit-Type</varname> = <varname>UnitType.TVOL</varname>
+</p>
+</li>
+<li>
+<p>
+<varname>Default-Roaming-Decision</varname> = <varname>HOME</varname>
+</p>
+</li>
+</ul>
+</li>
+<li>
+<p>
+<i>Slicing Profile</i>:</p><ul>
+<li>
+<p>
+<varname>Name</varname> = <varname>default_profile</varname>
+</p>
+</li>
+<li>
+<p>
+<i>Rule0</i> is configured with <varname>Call-Sub-Type</varname>= <varname>Volume_Based</varname> and <varname>RAT-Type</varname> = <varname>1 for 3G</varname> and <varname>Call-Roaming-Status</varname> = <varname>HOME</varname>, <varname>SPR_GROUP.GROUP_TYPE</varname> = <varname>LARGE</varname> result the action to be; <varname>Algo-Name</varname> = <varname>AlgoName.Dynamic_Algo</varname>, <varname>Max-Number-Of-Devices-In-Group</varname> = <varname>1000</varname>, and <varname>VT</varname>= <varname>28800</varname>.</p>
+</li>
+<li>
+<p>
+<i>Rule1</i> is configured with <varname>Call-Sub-Type</varname> = <varname>Volume_Based</varname> and <varname>RAT-Type</varname>= <varname>6 for 4G</varname> and <varname>Call-Roaming-Status</varname>= <varname>HOME</varname>, <varname>SPR_GROUP.GROUP_TYPE</varname> = <varname>MEDIUM</varname> result the action to be; <varname>Algo-Name</varname>= <varname>AlgoName.BUCKET_ALGO</varname>, <varname>Max-Number-Of-Devices-In-Group</varname> = <varname>500</varname>, and <varname>VT</varname>= <varname>86400</varname>.</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>
+<b>Post-conditions:</b>
+</p><ul>
+<li>
+<p>Centralized volume based call is triggered for devices of LARGE group, such that Rule0 conditions are met. Dynamic slice algorithm computes the slice size considering the <varname>Max-Number-Of-Devices-In-Group</varname> = <varname>1000</varname> and <varname>VT</varname> = <varname>28800 (8 hours)</varname>.</p>
+</li>
+<li>
+<p>Centralized volume based call is triggered for devices of MEDIUM group such that Rule1 conditions are met. Dynamic slice algorithm computes the slice size considering the <varname>Max-Number-Of-Devices-In-Group</varname> = <varname>500</varname> and <varname>VT</varname> = <varname>86400 (24 hours)</varname>.</p>
+</li>
+</ul>
+</sectiondiv>
+</section>
+</conbody></concept>

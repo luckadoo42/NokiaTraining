@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e192931"><title>Roaming</title><conbody>
+<section><title>Overview</title>
+<p>Roaming refers to a situation where a subscriber accesses services while it is attached to a visited network, or VPLMN, but it is charged by its home network (the network where the account(s) of the subscriber are managed). Roaming allows you to adapt the charging and rating applied to the user when located in a visited network that the home operator has a roaming agreement. </p>
+<p>Roamer handling is similar to the way users in their home PLMN are handled. The users trigger the data service, whether they are in their home PLMN or in a visited PLMN and the location of the user is identified by the MCC (Mobile Country Code) and MNC (Mobile Network Code) or (if the MCC/MNC is missing) by the IP address of the SGSN.</p>
+<p>The <i>PS-Information</i> AVP value in incoming requests received by the External Equipment is used for roaming identification in the following order:</p><ul>
+<li>
+<p>
+<i>PS-Information\3GPP-SGSN-MCC-MNC</i>
+</p>
+</li>
+<li>
+<p>
+<i>PS-Information\SGSN-Address</i>
+</p>
+</li>
+<li>
+<p>
+<i>PS-Information\3GPP-SGSN-Address</i>
+</p>
+</li>
+</ul>
+<p>If the location matches a foreign network with a roaming agreement, the service allows for the configuration of a specific Event Type for this service that identifies it as a roaming trigger (<i>MCC-MNC</i> equals <varname>Visited PLMN</varname> and <i>networkType</i> equals <varname>ROAMING</varname>). Then the Rating Engine provides a specific rating, tariff, and charging policy for the service.</p>
+<p>If an incoming MCC-MNC location matches a visited network configured with no roaming agreement, the user is considered as being attached to the Home PLMN (HPLMN).</p>
+<p>If an incoming MCC-MNC location matches no configured visited network, then the request is rejected with the appropriate Result-Code.</p>
+<p>The call controller roaming decision as to whether or not the call is a roaming scenario, is made internally using configured rules.</p>
+<p>The following figure illustrates the flow for roaming status.</p>
+<fig>
+<title>Roaming decision flow</title>
+<!--MMO resource relative URI: ../Graphics/Release_18.5/Roamingdecision_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-roamingdecision_default.png"/>
+</fig>
+<p>Using the rule configuration, a rule can be included to determine the roaming decision as
+                    follows:<table pgwide="1" colsep="1" rowsep="1">
+                    <tgroup cols="2">
+                        <colspec colname="col1" colwidth="1*"/>
+                        <colspec colname="col2" colwidth="1.22*"/>
+                        <thead>
+                            <row>
+                                <entry>
+                                    <p>If...</p>
+                                </entry>
+                                <entry>
+                                    <p>Then...</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry> The <i>GY_MESSAGE.Service-Context-Id</i> =
+                                        <varname>32274@3gpp.org</varname>, </entry>
+                                <entry> The <i>CALL_RESULT.Default-Roaming-Decision</i> =
+                                        <varname>RoamingDecision HOME</varname>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> The value is <varname>REJECT</varname>
+                                </entry>
+                                <entry> The request is rejected with result code <systemoutput>5012
+                                        - DIAMETER_UNABLE_TO_COMPLY</systemoutput> with the error
+                                    message: <systemoutput>Rejected because the system cannot get
+                                        roaming status</systemoutput>. </entry>
+                            </row>
+                            <row>
+                                <entry> The value is <varname>ROAMING</varname> or
+                                        <varname>HOME</varname>, </entry>
+                                <entry> The call controller sets the roaming status. </entry>
+                            </row>
+                            <row>
+                                <entry> The action does not exist, </entry>
+                                <entry> The default value is <varname>REJECT</varname>. </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table></p>
+<p>Roaming attributes can be configured using the complex map, that is, mapping tables entity in the SM GUI.</p>
+<p>The default roaming decision can be configured in the SM GUI. Navigate to <uicontrol>Policy &amp;
+                    Charging Configuration</uicontrol> &gt; <uicontrol>Policy</uicontrol> tab and
+                select <uicontrol>Rules And Variables</uicontrol> from the hamburger menu ( <!--MMO resource relative URI: ../../Global_Configurations/Graphics/hamburgermenu_default.png-->
+                <image href="../images/img9yz-09126-ug01-pczza-sp1-hamburgermenu_default.png"
+                    scale="40"/> ).</p>
+<fig>
+<title>RSV configured for default roaming decision</title>
+<!--MMO resource relative URI: ../Graphics/Release_18.5/RSV_Charging_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-rsv_charging_default.png"/>
+</fig>
+</section>
+<section><title>Timing determination</title>
+<p>The timing determination is the definition of time delay for roaming cases based on either the code of the country where the end-user is calling from (if provided) or on the address of the IP SGSN provided by the network from where the end user is calling. A table is hosted by the service data to associate a time difference with the country codes. You can configure the service to rate either on the timing of the visited network or on the timing of the home network. </p>
+</section>
+<section><title>Notification for specific roaming cases</title>
+<p>Subscribers can subscribe international roaming subscriptions that are active when subscriber is in a particular zone and uses a specific operator. Notifications can be sent once the subscriber tries to use the subscription when in a different zone or uses a different operator. Note that, MCC-MNC or SGSN IP can be used to determine the location of a subscriber. This can be configured in the Mapping tables.</p>
+<p>For example, consider that a subscriber has a subscription of day pass bundle that is active only for zone1 and ABC operator. An SMS notification is sent in the following cases:</p><ul>
+<li>
+<p>If the subscriber tries to use the subscription when not in zone1, then the call is rejected.</p>
+</li>
+<li>
+<p>If a subscriber is in a valid network but not allowed to make calls in this network, then the call is rejected.</p>
+</li>
+</ul>
+<p>The notification includes the data defined in the notification template that can indicate that the subscriber is in wrong network. </p>
+<p>Whenever there is an error in MCC-MNC or SGSN IP match, the notification can be sent to a subscriber using the rule set RATING_POST_PROCESSING. See the subsequent section with examples for more information.</p>
+<sectiondiv>
+<p><b>Common configuration examples:</b></p>
+<p>Ensure that the following entities are configured:</p><ul>
+<li><p>Create a Charging Service as shown in the following figure.</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_20.0/mod-449_cs1_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-mod-449_cs1_default.png"
+                            scale="50"/>
+                        <!--MMO resource relative URI: ../Graphics/Release_20.0/mod-449_cs2_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-mod-449_cs2_default.png"
+                            scale="60"/>
+                        <!--MMO resource relative URI: ../Graphics/Release_20.0/mod-449_cs3_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-mod-449_cs3_default.png"/>
+                        <!--MMO resource relative URI: ../Graphics/Release_20.0/mod449-cs4_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-mod449-cs4_default.png"/>
+                        <!--MMO resource relative URI: ../Graphics/Release_20.0/mod-449_cs5_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-mod-449_cs5_default.png"
+                        />
+                    </li>
+<li><p>Create the following mapping tables.</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_20.0/mod-449_map1_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-mod-449_map1_default.png"/>
+                        <p>
+                            <uicontrol>Mapping table 1</uicontrol>
+                        </p>
+                        <!--MMO resource relative URI: ../Graphics/Release_20.0/mod-449_map2_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-mod-449_map2_default.png"
+                            scale="55"/>
+                        <!--MMO resource relative URI: ../Graphics/Release_20.0/mod-449_map3_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-mod-449_map3_default.png"
+                            scale="55"/>
+                        <p>
+                            <uicontrol>Mapping table 2</uicontrol>
+                        </p>
+                        <!--MMO resource relative URI: ../Graphics/Release_20.0/mod-449_map4_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-mod-449_map4_default.png"
+                            scale="55"/>
+                        <!--MMO resource relative URI: ../Graphics/Release_20.0/mod-449_map5_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-mod-449_map5_default.png"
+                            scale="55"/>
+                    </li>
+<li>
+<p>Create the notification templates.</p>
+</li>
+<li>
+<p>Create a subscription lifecycle to be linked to the bundle.</p>
+</li>
+<li>
+<p>Create a bundle and attach the previously created charging service and lifecycle.</p>
+</li>
+<li>
+<p>Create a device and account.</p>
+</li>
+</ul>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 1: MCC collected from network has null value</b></p>
+<p>If the MCC is null, the result code 40010 (RULE_NOT_APPLICABLE) is returned and a notification is sent. Following is the rule configuration for <uicontrol>RATING_POST_PROCESSING</uicontrol> trigger:</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_20.0/mod449_mccnotpresent_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-mod449_mccnotpresent_default.png"
+                        scale="50"/>
+                </fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 2: Roaming to wrong PLMN</b></p>
+<p>If a subscriber tries to make calls when in wrong network, the result code 40010 is returned and a notification is sent and the call is terminated. Following is the rule configuration for <uicontrol>RATING_POST_PROCESSING</uicontrol> trigger:</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_20.0/mod449_unknown1_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-mod449_unknown1_default.png"
+                        scale="50"/>
+                </fig>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_20.0/mod449_unknown2_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-mod449_unknown2_default.png"
+                        scale="50"/>
+                </fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 3: Roaming to correct PLMN without a valid bundle</b></p>
+<p>If a subscriber is in the correct network but has no bundle to be used for the call, then the defined result code is returned and a notification is sent and the call is terminated. Following is the rule configuration for <uicontrol>RATING_POST_PROCESSING</uicontrol> trigger:</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_20.0/mod449_ratingfailed1_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-mod449_ratingfailed1_default.png"
+                        scale="55"/>
+                </fig>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_20.0/mod449_ratingfailed2_default.png-->
+                    <image
+                        href="../images/img9yz-09126-ug01-pczza-sp1-mod449_ratingfailed2_default.png"
+                        scale="55"/>
+                </fig>
+</sectiondiv>
+</section>
+</conbody></concept>

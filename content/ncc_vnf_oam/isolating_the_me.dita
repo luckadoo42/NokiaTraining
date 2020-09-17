@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="id9YZ-09126-MT00-REZZA-SP2-d1e83797"><title>Isolating the ME</title><taskbody>
+<steps>
+<stepsection><b>Steps</b></stepsection>
+<step><cmd>Log in to the SM GUI and navigate to Policy and Charging Configuration→Common→LDAP External Server:</cmd><info><p>
+<userinput>https://&lt;IOHO-FloatingIPAddress&gt;:8443/servicemanager/v18_7/</userinput>
+</p></info></step>
+<step><cmd>Choose the Edit LDAP Server button in the line item for the configured LDAP server that appears.</cmd><info/></step>
+<step><cmd>In the LDAP External SPR window change the Admin State from Enabled to Disabled, and click on the “Save” button.</cmd><info/></step>
+<step><cmd>Click on the Distribution icon in the line item for the configured LDAP server, you will see the LDAP server distributed to both the MEs. </cmd><info>
+                    <ol id="ol_u1b_qsx_tmb">
+                        <li>Select the ME you wish to Isolate</li>
+                        <li>Tap the arrow in the direction of the “Available Managed Elements” side
+                            of the dialog. The selected ME now appears in the “Available Managed
+                            Elements” side of the dialog.</li>
+                        <li>Tap the Update button. The server is now undistributed.</li>
+                        <li>Tap on the Distribution icon again, you will see the LDAP server is not
+                            distributed to any MEs.</li>
+                    </ol></info></step>
+<step><cmd>Run the “configure-manual-oos” tool using the following command:</cmd><info><p>
+<userinput>$ ./configure-manual-oos - d ME</userinput>
+</p><note>
+<p>See the <!--xref URI: #confMOOS--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-confMOOS"/> section in this guide for more information about changing the ME state to M-OOS using this tool. </p>
+</note><note>
+<p>When the ME enters the M-OOS state, the Diameter interfaces are shutdown. The ME will continue to report an OOS state through the Heartbeat infrastructure.</p>
+</note><note>
+<p>The state of the ME is also displayed as Component ME State: DOWN via monitoring on the Active OAM of the ME using the sps-status tool. As the tpaadmin user, enter the command:</p>
+<p>
+<userinput>./sps-status</userinput>
+</p>
+<p>See the <!--xref URI: #spsstatus--><xref keyref="id9YZ-09126-MT00-REZZA-SP2-spsstatus"/>section in this guide for more information about getting the status of the ME. </p>
+</note></info></step>
+<step>
+                <cmd>This is an optional step. Perform this section to disable the incoming XDR
+                    traffic on the NCC. This procedure will allow any database changes to be queued
+                    up during the Isolation. The script modifies the firewall by rejecting all XDR
+                    traffic.</cmd>
+                <info>
+                    <note>Breaking XDR replication for extended periods of time may result in the
+                        Digest logs overflowing.</note>
+                    <ol id="ol_txs_xsx_tmb">
+                        <li>Log in to the active OAME node of the recovering ME site as the tpaadmin
+                            user and navigate to the /opt/tpa/bin directory.<p>
+                                <userinput>$ cd /opt/tpa/bin</userinput>
+                            </p></li>
+                        <li>Disable the incoming XDR traffic with the following command:<p>
+                                <userinput>$ sudo ./xdr-traffic-control -r</userinput>
+                            </p><p>Output similar to the following will appear:</p><fig
+                                id="fig_qws_1tx_tmb">
+                                <codeblock>Doing precheck....
+Precheck ok, atleast 1 DB Host '192.168.3.104'is active
+INFO: Starting to Stop XDR on '192.168.3.104'
+INFO:Backup firewall successful.
+Stop incoming XDR traffic successful on this host.
+Stop XDR traffic on '192.168.3.104' successful
+INFO: Starting to Stop XDR on '192.168.3.105'
+INFO:Backup firewall successful.
+Stop incoming XDR traffic successful on this host.
+Stop XDR traffic on '192.168.3.105' successful
+INFO: Starting to Stop XDR on '192.168.3.102'
+INFO:Backup firewall successful.
+Stop incoming XDR traffic successful on this host.
+Stop XDR traffic 
+on '192.168.3.102' successful
+INFO: Starting to Stop XDR on '192.168.3.103'
+INFO:Backup firewall successful.
+Stop incoming XDR traffic successful on this host.
+Stop XDR traffic on '192.168.3.103' successful</codeblock>
+                            </fig></li>
+                        <li>As root, log into one of databases of the recovering site and verify the
+                            firewall was successfully modified using the following command: <p>
+                                <userinput>#cat/etc/firewalld/direct.xml</userinput>
+                            </p><p>The direct.xml file should be successfully updated and should
+                                contain entries similar to the following:</p><fig
+                                id="fig_ibv_btx_tmb">
+                                <codeblock>&lt;rule priority="20" table="filter" ipv="ipv4" chain="ALATPAascustomizationXDR"&gt; -s 10.76.70.142 -j REJECT -m comment --comment 'Allow inbound XDR connection'&lt;/rule&gt;
+&lt;rule priority="21" table="filter" ipv="ipv4" chain="ALATPAascustomizationXDR"&gt; -s 10.76.70.143 -j REJECT -m comment --comment 'Allow inbound XDR connection'&lt;/rule&gt;
+&lt;rule priority="22" table="filter" ipv="ipv4" chain="ALATPAascustomizationXDR"&gt; -s 10.76.70.144 -j REJECT -m comment --comment 'Allow inbound XDR connection'&lt;/rule&gt;
+&lt;rule priority="23" table="filter" ipv="ipv4" chain="ALATPAascustomizationXDR"&gt; -s 10.76.70.144 -j REJECT -m comment --comment 'Allow inbound XDR connection'&lt;/rule&gt;</codeblock>
+                            </fig></li>
+                    </ol>
+                </info>
+            </step>
+</steps>
+</taskbody></task>

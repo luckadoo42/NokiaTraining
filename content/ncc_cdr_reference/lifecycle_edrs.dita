@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+		<concept id="d1e2511"><title>Lifecycle EDRs</title>
+    <concept id="concept_glm_jx5_23b">
+        <title>Overview</title>
+        <conbody>
+            <p>NCC-Charging generates lifecycle Event Data Records (EDRs) to track changes that
+                occur in lifecycle entities. The lifecycle entities are accounts, subscriptions,
+                devices, groups, and users. Every lifecycle EDR contains attributes that identify
+                the triggering event that caused the change and all the information related to the
+                change that took place, including the transitions and states used. Each lifecycle
+                EDR corresponds to one triggering event but might contain records related to more
+                than one entity.</p>
+            <p>The lifecycle EDRs are produced in the following scenarios:</p>
+            <ul id="ul_t3p_kx5_23b">
+                <li>
+                    <p>Subscription:</p>
+                    <ul id="ul_hn1_mw1_cmb">
+                        <li>
+                            <p>Subscription is created via lifecycle.</p>
+                        </li>
+                        <li>
+                            <p>Subscription is added.</p>
+                        </li>
+                        <li>
+                            <p>Subscription addition failed due to the following reasons:</p>
+                            <ul id="ul_u3p_kx5_23b">
+                                <li>
+                                    <p>Device/Group is in <varname>final</varname> state or barred
+                                        with <varname>IgnoreBarredDeviceOrGroup</varname> set to
+                                            <varname>false</varname>
+                                    </p>
+                                </li>
+                                <li>
+                                    <p>Account is in <varname>final</varname> state or barred with
+                                            <varname>IgnoreBarredAccount</varname> set to
+                                            <varname>false</varname>
+                                    </p>
+                                </li>
+                            </ul>
+                        </li>
+                        <li>
+                            <p>Subscription is renewed.</p>
+                        </li>
+                        <li>
+                            <p>Subscription renewal failed due to the following reasons:</p>
+                            <ul id="ul_v3p_kx5_23b">
+                                <li>
+                                    <p>All Devices or Groups attached to reference Subscription are
+                                        in <varname>final</varname> state or barred with
+                                            <varname>IgnoreBarredDeviceOrGroup</varname> set to
+                                            <varname>false</varname>
+                                    </p>
+                                </li>
+                                <li>
+                                    <p>Account is in <varname>final</varname> state or barred with
+                                            <varname>IgnoreBarredAccount</varname> set to
+                                            <varname>false</varname>
+                                    </p>
+                                </li>
+                            </ul>
+                            <ul id="ul_dr4_kxd_dlb">
+                                <li>When max renewal for the Subscription Lifecycle with Renew
+                                    Subscription action reaches.</li>
+                            </ul>
+                            <ul id="ul_er4_kxd_dlb">
+                                <li>When max renewal for the Account Lifecycle with Renew
+                                    Subscription action reaches.</li>
+                            </ul>
+                        </li>
+                        <li>
+                            <p>Subscription is deleted.</p>
+                        </li>
+                        <li>
+                            <p>Subscription is reset.</p>
+                        </li>
+                        <li>
+                            <p>Subscription reset failed as the attached Device or Group is in
+                                    <varname>final</varname> state or barred with
+                                    <varname>IgnoreBarredDeviceOrGroup</varname> set to
+                                    <varname>false</varname>
+                            </p>
+                        </li>
+                        <li>
+                            <p>Subscription is emptied.</p>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <p>Lifecycle entity is deleted.</p>
+                </li>
+                <li>Fee:<ul id="ul_tvm_vw1_cmb">
+                        <li>
+                            <p>Fee is charged.</p>
+                        </li>
+                        <li>
+                            <p>Fee could not be charged due to insufficient credit.</p>
+                        </li>
+                    </ul></li>
+                <li>
+                    <p>Billing cycle is calculated for the lifecycle entity.</p>
+                </li>
+                <li>
+                    <p>Current scheduled transition is rescheduled using Lifecycle Extend timer
+                        API.</p>
+                </li>
+                <li>
+                    <p>Plan is changed</p>
+                </li>
+                <li>Account:<ul id="ul_erw_3x1_cmb">
+                        <li>
+                            <p>Account reset is successful.</p>
+                        </li>
+                        <li>
+                            <p>Account reset fails as account overage limit is greater than the
+                                reset value.</p>
+                        </li>
+                    </ul></li>
+                <li>Expired entity is deleted:<ul id="ul_i3l_s4c_cmb">
+                        <li>Entity is deleted by Account</li>
+                        <li>Entity is deleted by Device</li>
+                        <li>Entity is deleted by Group</li>
+                        <li>Entity is deleted by Subscription</li>
+                    </ul></li>
+            </ul>
+            <p>If the subscription is added (or has failed) though the SM GUI, then a CDR is
+                generated per subscription with a result as <varname>Success/Fail</varname>. </p>
+            <p>If the subscription is renewed/reset/added through an Action, then the CDR is
+                generated with <varname>Success/Fail</varname> Subscription request at sub-level
+                with <varname>result</varname> and <varname>reason</varname> (if applicable), and at
+                root level the result is recorded as <varname>Success</varname> if at least one
+                subscription request is successful. Otherwise, the result is
+                <varname>Fail</varname>. </p>
+            <p>Most commonly, the lifecycle EDRs are triggered by lifecycle actions.</p>
+        </conbody>
+    </concept></concept>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="routing_4g_transactions">
+    <title>Routing outbound 4G transactions through Drouter</title>
+    <conbody>
+        <p></p>
+        <section id="section_esf_dj5_wmb">
+            <p>For all incoming messages to OCS through Drouter, Drouter info (FQDN) to
+                corresponding session is saved to database if the <b>Store Diameter Router
+                    Identity</b> is checked. Once OCS is set to send a Diameter outbound message
+                (RAR, ASR, SNR), list of all active routes is fetched based on realm based routes
+                configured (see <xref
+                    href="routing.dita#id9yz-09126-cn01-tczza-d1e2823/section_ftw_nc2_pmb"/>  for
+                provisioning details). If a matching route to Drouter info saved in session is
+                found, in our case, is the primary route, alternate routes are all active routes
+                having same priority as that of the primary route.</p>
+            <p>There can be one or more alternate route for a primary route towards Drouter.</p>
+            <p>See <xref href="routing.dita#id9yz-09126-cn01-tczza-d1e2823/section_r3c_qg5_wmb"/>
+                for parameter details.</p>
+            <sectiondiv><b>Primary (last used Drouter) route is down</b><p>If the primary route is
+                    down, its availability is checked in database for the Drouter information
+                    available in session. If found, alternate Drouter routes are the ones with same
+                    priority as that of the primary one. In this case, the Diameter message
+                    (RAR,ASR,SNR) are sent only to alternate Drouters and not primary
+                one.</p></sectiondiv>
+            <sectiondiv><b>No route available to Drouters (primary and alternate)</b><p>If the
+                    feature flag <b>Store Diameter Router Identity</b> is set and all routes towards
+                    Drouters are down, OCS sends Diameter outbound messages using the default logic.
+                    If p-gateway is directly connected, then it will be selected as the peer to send
+                    messages else it will search for most eligible route (route that is active and
+                    has the highest priority, route with priority 2 is selected over route with
+                    priority 3).</p></sectiondiv>
+            <sectiondiv><b>Order of selection of alternate routes</b><p>The alternate route towards
+                    Drouters are of the same priority as of the primary route (Drouter FQDN saved in
+                    session). In this case, the order in which the alternate routes are picked to
+                    send RAR/ASR/SNR is random order.</p><p>For example, if there are two alternate
+                    routes other than primary one, then the order is as follows:</p><ol
+                    id="ol_ekf_xk5_wmb">
+                    <li>Drouter1(dr1.realm1) priority : 3 (primary)</li>
+                    <li>Drouter2(dr2.realm2) priority : 3 (alternate)</li>
+                    <li>Drouter3(dr3.realm3) priority : 3 (alternate)</li>
+                </ol><p>On receiving RAA/ASA/SNA failure/timeout from Drouter1, next Drouter route
+                    selected to send diameter message can be either Drouter2 or Drouter3.</p><p>The
+                    order of selection of routes for sending diameter messages to Drouter is
+                    evaluated once while sending it for the first time and it remains same during
+                    the complete retry process.</p></sectiondiv>
+            <sectiondiv><b>Retry when feature is OFF</b><p>If the <b>Store Diameter Router
+                        Identity</b> in retry configuration entity is not set, OCS retries diameter
+                    outbound message using default logic. If p-gateway is directly connected, then
+                    it will be selected as the peer to send message else it will search for most
+                    eligible route (route that is active and has the highest priority, route with
+                    priority 2 is selected over route with priority 3). The number of times the
+                    diameter message can be retried is determined by the Retry Configuration
+                    entity.</p></sectiondiv>
+            <sectiondiv><b>Examples</b><p>Consider that the <b>Store Diameter Router Identity</b> is
+                    set to True, RAR Retry Count = 3, No Retry Error Code List =
+                    DIAMETER_UNKNOWN_SESSION_ID. Two DRouters are connected to OCS with same
+                    priority and active. Drouter1(dr1.realm1) priority : 3, Drouter2 (dr2.realm2)
+                    priority : 3, GY, CCR-I from Drouter1 and dr1.realm1 are saved to session in
+                    database.</p><p>In failure/timeout case, the following order is followed to
+                    retry and select the route for sending diameter messages to Drouter:</p><ol
+                    id="ol_bgb_fq5_wmb">
+                    <li>Diameter RAR is sent to Drouter1, RAA with DIAMETER_UNABLE_DELIVER result
+                        code</li>
+                    <li>Diameter RAR is sent to Drouter2, RAA with DIAMETER_UNABLE_DELIVER result
+                        code</li>
+                    <li>Diameter RAR is sent to Drouter1 RAA with DIAMETER_UNABLE_DELIVER result
+                        code</li>
+                    <li>Diameter RAR is sent to Drouter2 again, RAA with DIAMETER_UNABLE_DELIVER
+                        result code.</li>
+                </ol></sectiondiv>
+        </section>
+    </conbody>
+</concept>

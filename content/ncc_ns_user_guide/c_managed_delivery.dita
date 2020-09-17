@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9YZ-08540-UG02-PCZZA-d1e32811_managed_delivery">
+   <title>Managed delivery</title>
+   <conbody>
+
+      <p>This mechanism is used for guaranteed delivery of notification. That is, the notification service waits for the successful delivery acknowledgement to from the email/SMS server.</p>
+      <section>
+         <p>
+            <b>SMS</b>
+         </p>
+         <p>The notification service waits for the successful delivery acknowledgement to be received from the SMS server. The status of the SMS delivery is sent by SMS server in the <userinput>QUERY_SM</userinput> message. Operators can select the total number of times the system must retry to send the notification.</p>
+         <p>Configure the following parameters:</p>
+         <ul>
+
+            <li>
+               <p>In the TPA_System property, configure the <uicontrol>Notification Delivery Mode</uicontrol>: <varname>MANAGED</varname> and <uicontrol>Managed Delivery Retry Count</uicontrol>: <varname>Number of pdu</varname>. The <varname>SUBMIT_SM</varname> will be always the first PDU to be sent to SMSC and the subsequent PDU will be either <varname>SUBMIT_SM</varname> or <varname>QUERY_SM</varname>. The retry count is for the subsequent PDU.</p>
+            </li>
+            <li>
+               <p>In the SMPP server entity, configure the <uicontrol>QuerySmFrequency</uicontrol> parameter. This parameter has the frequency for the <varname>QUERY_SM</varname> message in milliseconds.</p>
+            </li>
+         </ul>
+      </section>
+      <section>
+         <p>
+            <b>Email</b>
+         </p>
+         <p>The notification service waits for the successful delivery acknowledgement to be received from the email server. A delivery status notification is sent by the email server using the <userinput>mail.smtp.dsn.notify</userinput> session property.</p>
+         <p>Operators has to configure the email ID for receiving the delivery notification. In this case, operator is the sender of email to the user. Configure the <uicontrol>From</uicontrol> email ID parameter in the email server entity to send the delivery receipt. The delivery receipt is generated in case of managed delivery only. The notification service does not try for retry if the delivery receipt is not received by operator.</p>
+         <note>
+
+            <p>To generate the delivery receipt, set the <uicontrol>Notification Delivery Mode</uicontrol> to <varname>MANAGED</varname> in the application preferences.</p>
+         </note>
+      </section>
+   </conbody>
+</concept>

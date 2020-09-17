@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="smsupportforregioncapacity">
+    <title>SM support for regional capacity-based distribution</title>
+    <conbody>
+        <section id="section_akq_z5g_smb">
+            <title>Overview</title>
+            <p>This feature provides a new distribution mechanism through SM to find a specific
+                region of an ME where a device can be provisioned. The new devices can be added
+                through the SM to be assigned based on a region mentioned as per the configured
+                mapping table. Once assigned to a region, the devices are assigned to the least
+                loaded ME within that defined region.</p>
+            <p>To activate this distribution mechanism, a mapping table is defined in the SM GUI,
+                which performs the following functions:</p>
+            <ul id="ul_b1k_qjh_smb">
+                <li>Identifies the destination ME on which the device is created based on the custom
+                    data region defined for that device.</li>
+                <li>Assigns new objects to a region based on the information included with the
+                    associated create request as the table includes mapping of the selected input
+                    field value to a region ID.</li>
+            </ul>
+            <note>
+                <p>The mapping table is one of its kind to contain the key as the custom data at
+                    device level representing the ME region and value as the ME name. Therefore,
+                    each ME known to an SM can be assigned to a specific region ID with the region
+                    identified by the same ID referenced in the mapping table from the list.</p>
+            </note>
+            <p/>
+            <p>Currently, the SM supports capacity-based distribution, which means the ability to
+                balance distribution of new objects across all the MEs supported by an SM. This
+                feature provides an enhancement that allows to define separate sets of MEs (or
+                regions) so that when a new create request is received, the SM first selects a
+                region (based on info in the request received from the upstream system) and then, it
+                uses the capacity-based distribution to select the final ME to receive the new
+                device creation as per the existing logic.</p>
+        </section>
+        <section id="section_d5n_jym_smb">
+            <title>Configuring the functionality</title>
+            <p>Follow the given steps to configure this functionality using the SM GUI:</p>
+            <ol id="ol_s2t_mym_smb">
+                <li>
+                    <p>Define a set of MEs.</p>
+                    <p>For example, we define the following MEs as shown in the following image.
+                        Every ME has a specific ID but they have different regions. Suppose,
+                            <varname>ME1</varname> and <varname>ME2</varname> are XDR replicated and
+                        belong to the same region <varname>Region1</varname>; whereas,
+                            <varname>ME3</varname> belongs to <varname>Region2</varname> and
+                            <varname>ME4</varname> belongs to <varname>Region4</varname>.</p>
+                    <image placement="break" href="../images/smsupportimg1.png"
+                        id="image_qyr_1y5_smb" scale="45"/>
+                    <p/>
+                    <p>Following are the ME group lists:</p>
+                    <image placement="break" href="../images/smsupportimg10.png"
+                        id="image_omt_zyv_xmb" scale="45"/>
+                </li>
+                <li>
+                    <p>Once the name of the mapping table is defined in the <uicontrol>Subscriber
+                            Routing Mapping Table Name</uicontrol> application preference, go to
+                            <uicontrol>Policy &amp; Charging</uicontrol> ><uicontrol>
+                            Common</uicontrol> and select <uicontrol>Mapping Tables</uicontrol> from
+                        the hamburger menu (<!--MMO resource relative URI: ../../Global_Configurations/Graphics/hamburgermenu_default.png-->
+                        <image
+                            href="../images/img9yz-09126-ug01-pczza-sp1-hamburgermenu_default.png"
+                            scale="40" id="image_xmw_mkw_xmb"/>).</p>
+                    <image placement="break" href="../images/smsupportimg3.PNG"
+                        id="image_m5c_2y5_smb"/>
+                    <p>Define the mapping table and specify a key (for example,
+                            <varname>CustomData</varname>) and its value (for example,
+                            <varname>GROUP</varname> or <varname>REGION</varname>) to which the ME
+                        belongs. The following figure shows an example of the same:</p>
+                    <image placement="break" href="../images/smsupportimg4.png"
+                        id="image_ejx_fy5_smb"/>
+                    <note>The reason for using the <varname>CustomData</varname> as the prefix in
+                        the <uicontrol>Map Keys</uicontrol> value is to be able to differentiate
+                        this map key as a custom data from other keys. The
+                            <varname>CustomData</varname> prefix is followed by the name of the
+                        custom data that needs to be associated with the device. For example,
+                            <varname>CustomData-IMSGROUPID</varname>. The value of
+                            <varname>CustomData-IMSGROUPID</varname> is the region or ME belonging
+                        to that region.</note>
+                </li>
+                <li>
+                    <p>To activate this feature, there is an SM application preference under the
+                            <uicontrol>Subscriber Routing Configuration</uicontrol> named as
+                            <uicontrol>Subscriber Routing Mapping Table Name</uicontrol> as shown in
+                        the following figure:</p>
+                    <image placement="break" href="../images/smsupportimg2.PNG"
+                        id="image_hmt_cy5_smb"/>
+                    <p>In the <uicontrol>Subscriber Routing Mapping Table Name</uicontrol>
+                        application preference, specify the name of the mapping table (which is,
+                        user configurable). When the name of a mapping table is specified in this
+                        application preference, this new mechanism of device creation based on
+                        region is activated.</p>
+                </li>
+            </ol>
+            <note>The custom data must be properly provisioned for configuring this feature.</note>
+        </section>
+        <section id="section_cz4_j4n_smb">
+            <title>Additional information</title>
+            <p>Following are some important points to note for this feature:</p>
+            <ul id="ul_iyx_4pn_smb">
+                <li>
+                    <p>This feature is applicable only to <i>CreateDevice</i> or
+                            <i>CreateProfile</i> API. The <i>createAccount</i>, <i>createUser</i>,
+                        or <i>createGroup</i> APIs are not supported for this feature.</p>
+                </li>
+                <li>It only considers the custom data for a device entity, and any other custom data
+                    associated to different entities are not supported for this feature.</li>
+                <li>When this feature is enabled, the new mechansim of device creation is applicable
+                    to all newly created devices. However, the existing capacity-based distribution
+                    (which identifies the least used ME) is still used to assign the ME once the
+                    region is determined.</li>
+                <li>
+                    <p>No EDRs are generated at SM and therefore, no EDR is generated for
+                            <varname>NOK</varname> scenarios of this feature. Also, no additional
+                        information is loaded for <varname>OK</varname> scenarios of this
+                        feature.</p>
+                </li>
+                <li>After configuring this feature, ensure that in during any device update or
+                    profile upate, the custom data attached to the device (for example,
+                        <varname>CustomData-IMSGROUPID</varname>) continues to exist. Otherwise,
+                    this custom data may get removed.</li>
+                <li>Ensure that the ME region-based group configured in the mapping table is also
+                    paritition based. Otherwise, the existing partition-based algorithm in SM
+                    selects the ME as per the paritition lying in a different region. In general,
+                    each pair have all MEs configured in the same region.</li>
+                <li>If a regional mapping table is already defined and it is selected to be used in
+                    SM to create devices, then irrespective of whether the <i>CreateDevice</i> API
+                    contains the custom data or not, the device creation request is rejected. The
+                    device is not created even when the ME name is mentioned in the
+                        <i>CreateDevice</i> API request.</li>
+            </ul>
+        </section>
+        <section id="section_vm2_k4n_smb">
+            <title>Examples</title>
+            <p>Consider the following examples for better understanding of this feature:</p>
+            <sectiondiv>
+                <p><b>Example 1: Device creation as per the new mechanism</b></p>
+                <p><b>Provisioning:</b></p>
+                <ol id="ol_ejh_124_smb">
+                    <li>
+                        <p>Follow the steps listed in the <xref
+                                href="#smsupportforregioncapacity/section_d5n_jym_smb" format="dita"
+                            /> section.</p>
+                    </li>
+                    <li>
+                        <p>Create a device <varname>D99</varname> as shown in the following
+                            figure:</p>
+                        <image placement="break" href="../images/smsupportimg5.png"
+                            id="image_t23_hy5_smb" scale="70"/>
+                    </li>
+                    <li>
+                        <p>Associate a custom data <varname>IMSGROUPID</varname>, which is the same
+                            custom data as mentioned in the mapping table
+                                <varname>MappingGroup</varname>. For this device, the value of
+                                <varname>IMSGROUPID</varname> custom data is
+                            <varname>200</varname>.</p>
+                        <p>Following is the custom data value:</p>
+                        <image placement="break" href="../images/smsupportimg11.png.jpg"
+                            id="image_ehj_fzv_xmb" scale="65"/>
+                    </li>
+                </ol>
+                <p><b>Result:</b></p>
+                <p>Verify that the device is created on the correct ME (for example,
+                        <varname>ME3</varname>) as per the corresponding region (for example,
+                        <varname>200</varname>) shown in the following figure:</p>
+                <image placement="break" href="../images/smsupportimg6.png" id="image_dd5_jy5_smb"
+                    scale="55"/>
+            </sectiondiv>
+            <sectiondiv>
+                <p/>
+                <p><b>Example 2: Device is not created when no region is matched</b></p>
+                <p><b>Provisioning:</b></p>
+                <ol id="ol_jtf_qh4_smb">
+                    <li>
+                        <p>Follow the steps listed in the <xref
+                                href="#smsupportforregioncapacity/section_d5n_jym_smb" format="dita"
+                            /> section.</p>
+                    </li>
+                    <li>
+                        <p>Create a device with custom data <varname>IMSGROUPID</varname> and value
+                            as <varname>400</varname>.</p>
+                    </li>
+                </ol>
+                <p><b>Result:</b></p>
+                <p>Verify that SM server sends an error response as shown in the following
+                    figure:</p>
+                <image placement="break" href="../images/smsupportimg7.png" id="image_mjv_ly5_smb"/>
+            </sectiondiv>
+            <sectiondiv>
+                <p/>
+                <p><b>Example 3: ME offline scenario of device creation</b></p>
+                <p><b>Provisioning:</b></p>
+                <ol id="ol_sgz_pj4_smb">
+                    <li>
+                        <p>Follow the steps listed in the <xref
+                                href="#smsupportforregioncapacity/section_d5n_jym_smb" format="dita"
+                            /> section.</p>
+                    </li>
+                    <li>
+                        <p>Create a device <varname>D123</varname> with custom data
+                                <varname>IMSGROUPID</varname> and a region value of <varname>100
+                                UX</varname>.</p>
+                    </li>
+                </ol>
+                <p><b>Result:</b></p>
+                <p>Verify that corresponding ME (for example, <varname>NCC-ME1</varname>) becomes
+                    offline on creation of device as shown in the following figure:</p>
+                <image placement="break" href="../images/smsupportimg8.png" id="image_zpq_my5_smb"
+                    scale="55"/>
+            </sectiondiv>
+            <sectiondiv>
+                <p/>
+                <p><b>Example 4: Device not created when custom data value is null</b></p>
+                <p><b>Provisioning:</b></p>
+                <ol id="ol_w3t_1k4_smb">
+                    <li>
+                        <p>Follow the steps listed in the <xref
+                                href="#smsupportforregioncapacity/section_d5n_jym_smb" format="dita"
+                            /> section.</p>
+                    </li>
+                    <li>
+                        <p>Create a device with custom data <varname>IMSGROUPID</varname> and value
+                            as null.</p>
+                    </li>
+                </ol>
+                <p><b>Result:</b></p>
+                <p>Verify that device is not created and SM server sends an error response as shown
+                    in the following figure:</p>
+                <image placement="break" href="../images/smsupportimg9.png" id="image_exv_ny5_smb"/>
+            </sectiondiv>
+        </section>
+    </conbody>
+</concept>

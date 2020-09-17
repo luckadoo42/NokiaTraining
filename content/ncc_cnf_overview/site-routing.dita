@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+		<concept id="id9YZ-09018-UG00-PCZZA-d1e8646">
+    <title>Site routing</title>
+    <conbody>
+        <p>To ensure consistent transactions and avoid race conditions in the network that could
+            result in incorrect results from two different MEs operating on transactions for the
+            same device simultaneously, the NCC network strategy is to serialize all transactions
+            through a home ME assigned for each particular device, group, or account.</p>
+        <p>When an ME receives an incoming message, the first action is to determine whether this
+            local ME is the currently active home ME for the subscriber/device in the message, or
+            whether this message needs to be forwarded to a different ME that is the current active
+            home. This processing and logic is referred to as site routing.</p>
+        <p>The following figure shows site routing and the data replication within each CNF in NCC,
+            and across the geographically redundant CNFs in NCC.</p>
+        <fig id="fig_hts_jt5_cmb">
+            <title>Site routing and data replication between CNFs</title>
+            <image placement="break"
+                href="../images/cnf_overview_site-routing-and-data-replication.GIF" scale="27"
+                align="center" id="image_its_jt5_cmb"/>
+        </fig>
+        <p>Site routing allows routing decisions that are made within geo-redundant NCC sites to be
+            persisted. The task of site routing is performed by the Site Routing plugin. When a 4G
+            Diameter or 5G HTTP/2 message is received, some part of that message is extracted for
+            routing and might be stored in the NCC database for future use. The message is checked
+            to see whether it has reached the appropriate site and if so, the message is processed.
+            If it has not reached the appropriate site, the message is checked to see whether it can
+            be forwarded. The message can be forwarded to the primary site or the secondary site if
+            the primary site is down.</p>
+        <p>Site routing decisions can be based solely on the parameters extracted from the incoming
+            message and the mapping tables of the current active home ME, or NCC can be configured
+            to enable an optional feature that stores session mapping records and uses them, rather
+            than only the current message parameters, for site routing of later messages in that
+            same session. This session mapping feature is enabled by default.</p>
+        <p>Session mapping records might include all applicable information for the network and are
+            automatically created or deleted by the ME. These records include sufficient data to
+            identify the primary ME and the secondary ME. Any cause of missing mapping records
+            results in an error response, for example, replication falling behind, failed
+            replication, or inadvertently deleted records. Session mapping records are deleted when
+            a session ends. If for some reason that fails, the mapping is audited out.</p>
+        <p>Turning off the session mapping option for site routing reduces the amount of data stored
+            in the local system as well as the volume of replicated data with the mate system.</p>
+        <p>Site routing logic is provided with the help of the Site Routing plugin. This is an
+            application plugin that runs in the charging pod that gets invoked for incoming CHF
+            messages. The Site Routing plugin is in the request sequence chain before the Charging
+            plugins. </p>
+        <p>Successful routing depends on the timely replication of mapping records, so it is
+            imperative to troubleshoot and correct lagging replication to ensure proper message
+            routing. For more information about site routing, see <i>CNF Operation, Administration,
+                and Maintenance Guide </i> in the NCC documentation set.</p>
+    </conbody>
+</concept>

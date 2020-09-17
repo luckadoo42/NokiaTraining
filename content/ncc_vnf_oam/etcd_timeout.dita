@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-d1e84967"><title>ETCD timeout</title><conbody>
+<section><title>Overview</title>
+<p>The NCC stores configuration data and alarms in the ETCD backend. In the NCC, an ETCD error
+    message or a timeout log might occur due to storage I/O performance. The following example shows
+    how to check whether or not the storage I/O is reasonable.</p>
+<fig>
+<title>Storage I/O example</title>
+<codeblock>
+<userinput>curl http://etcd_server_IP:2379/metrics | grep etcd_disk_wal_fsync_duration
+</userinput>
+#HELP etcd_disk_wal_fsync_duration_seconds The latency distributions of fsync called by wal.
+#TYPE etcd_disk_wal_fsync_duration_seconds histogram 
+ etcd_disk_wal_fsync_duration_seconds_bucket{le="0.001"} 0
+ etcd_disk_wal_fsync_duration_seconds_bucket{le="0.002"} 869
+ etcd_disk_wal_fsync_duration_seconds_bucket{le="0.004"} 4003
+ etcd_disk_wal_fsync_duration_seconds_bucket{le="0.008"} 4439
+ etcd_disk_wal_fsync_duration_seconds_bucket{le="0.016"} 4548
+ etcd_disk_wal_fsync_duration_seconds_bucket{le="0.032"} 4557
+ etcd_disk_wal_fsync_duration_seconds_bucket{le="0.064"} 4559
+ etcd_disk_wal_fsync_duration_seconds_bucket{le="0.128"} 4560
+ etcd_disk_wal_fsync_duration_seconds_bucket{le="0.256"} 4570
+ etcd_disk_wal_fsync_duration_seconds_bucket{le="0.512"} 4576
+ etcd_disk_wal_fsync_duration_seconds_bucket{le="1.024"} 4576
+ etcd_disk_wal_fsync_duration_seconds_bucket{le="2.048"} 4577
+ etcd_disk_wal_fsync_duration_seconds_bucket{le="4.096"} 4577
+ etcd_disk_wal_fsync_duration_seconds_bucket{le="8.192"} 4577
+ etcd_disk_wal_fsync_duration_seconds_bucket{le="+Inf"} 4578
+ etcd_disk_wal_fsync_duration_seconds_sum 45.02197152199995
+ etcd_disk_wal_fsync_duration_seconds_count 4578
+</codeblock>
+</fig>
+<p>The output shows a histogram of storage I/O performance. In this output, <systemoutput>le="abc"</systemoutput> is the duration in seconds and the following integer indicates how many I/O operations are shorter than this duration. For example, <systemoutput>etcd_disk_wal_fsync_duration_seconds_bucket{le="0.002"} 869</systemoutput> means that there are 869 I/O operations that are shorter than 0.002 seconds. According to the author of ETCD, "Usually you need 99% &lt; 10 ms, 99.9% &lt; 100 ms (99.999% &lt; 1 s)". Otherwise, there will be I/O contentions on the machine. For more information on ETCD issues, see ETCD documentation.</p>
+</section>
+</conbody></concept>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="id9YZ-09126-MT02-REZZA-Preparing-VMware-environment"><title>Configuring clouds-config.yaml file</title><taskbody id="d1e3408"><context>
+            <p>This procedure provides instructions on how to configure
+                    <filepath>clouds-config.yaml</filepath> file. The template of this file is
+                located in <filepath>spsinstantiate</filepath> container.</p>
+            <p>To configure clouds-config.yaml:</p>
+        </context><steps>
+<step><cmd>Log in to the Maestro VM as <codeph>spsops</codeph> and then switch to <codeph>root</codeph> by entering:</cmd><info><p>
+<codeph>sudo -i</codeph>
+</p></info></step>
+<step><cmd>Enter:</cmd><info><p>
+<codeph>maestro ace cp /usr/local/maestro/clouds-config.yaml /opt/sps/configs</codeph>
+</p></info></step>
+<step><cmd>From the Maestro VM, go to <codeph>/opt/sps/configs</codeph> and open <filepath>clouds-config.yaml</filepath> file.</cmd><info/></step>
+<step><cmd><draft-comment>FIXME - put an instruction here</draft-comment></cmd><info>
+<note>
+<p>If using IPv6, make sure that the IPv6 address is surrounded by square brackets. For example, CBAM_IP: [2016:2016::1]</p>
+</note>
+<p>In <filepath>clouds-config.yaml</filepath> file, update CBAM API information as follows:</p><ul>
+<li>
+<p>Set <varname>CBAM_IP</varname> to the newly created CBAM IP address.</p>
+</li>
+<li>
+<p>Set <varname>CLIENT</varname> to the newly created client.</p>
+</li>
+<li>
+<p>Set <varname>SECRET</varname> to the secret string captured in the procedure <!--xref URI: t-devops-deployment-creating-client-on-CBAM.xml#Creating-SPS-client-on-CBAM--><xref keyref="id9YZ-09126-MT02-REZZA-Creating-SPS-client-on-CBAM"/>.</p>
+</li>
+</ul>
+</info></step>
+<step><cmd>In <filepath>clouds-config.yaml</filepath> file, update the credentials for the ISU procedure as follows:</cmd><info><ul>
+<li>
+<p>Set <varname>ROOT_PSWD</varname> to the encrypted password.</p>
+</li>
+<li>
+<p>Set <varname>TPAADMIN_PSWD</varname> to the encrypted password.</p>
+</li>
+</ul><note>
+<p>To encrypt the plain-text passwords of <varname>ROOT_PSWD</varname> and <varname>TPAADMIN_PSWD</varname> from CLI use <codeph>printf</codeph> and <codeph>base64</codeph>. For example, to encrypt plain-text <varname>r00t</varname> password, enter:</p>
+<p>
+<codeph>printf r00t | base64</codeph>
+</p>
+</note></info></step>
+<step><cmd>In <filepath>clouds-config.yaml</filepath> file, depending on whether you are deploying in OpenStack or VMware, update the following:</cmd><info><ul>
+<li>
+<p>If you are deploying in OpenStack, set <varname>OS_KEYSTONE_FILE</varname> to the full path of the OpenStack keystone file.</p>
+</li>
+<li>
+<p>If you are deploying in VMware vCloud, update vCloud API information with customer values as follows:</p><ul>
+<li>
+<p>Set <varname>VC_HOST</varname> to vCloud host, for example <varname>1.2.3.4</varname>
+</p>
+</li>
+<li>
+<p>Set <varname>VC_VERSION</varname> to vCloud version, for example, <varname>29.0</varname>
+</p>
+</li>
+<li>
+<p>Set <varname>VC_USERNAME</varname> to the username in vCloud.</p>
+</li>
+<li>
+<p>Set <varname>VC_PASSWORD</varname> to the password in vCloud.</p>
+</li>
+<li>
+<p>Set <varname>VC_ORG</varname> to the organization name in vCloud.</p>
+</li>
+<li>
+<p>Set <varname>VC_CATALOG</varname> to the name of the catalogue in vCloud.</p>
+</li>
+</ul>
+</li>
+</ul></info></step>
+</steps>
+</taskbody></task>

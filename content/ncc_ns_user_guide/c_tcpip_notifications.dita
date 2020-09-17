@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9YZ-08540-UG02-PCZZA-d1e33745_overview">
+   <title>TCP/IP notifications</title>
+   <conbody>
+
+      <p>In this case, the back office uses TCP/IP for sending the notification message to the external server. TCP/IP allows the notification service to send notifications to external systems in XML format as TCP/IP outbound requests. A TCP/IP client is used for sending a notification message to the external server.</p>
+      <p>All required parameters in the TCP/IP outbound entity (see <xref
+            href="c_tcpip_server_configuration.dita"/>) must be defined. </p>
+      <table rowsep="1" colsep="1">
+         <title>Request and response format for TCP/IP notification</title>
+
+         <tgroup cols="2">
+            <colspec colname="col1"/>
+            <colspec colname="col2"/>
+            <thead>
+               <row>
+                  <entry>
+                     <p>Request</p>
+                  </entry>
+                  <entry>
+                     <p>Response</p>
+                  </entry>
+               </row>
+            </thead>
+            <tbody>
+               <row>
+                  <entry>
+The request is in XML format.
+</entry>
+                  <entry>
+The response of the service is XML or String.
+</entry>
+               </row>
+            </tbody>
+         </tgroup>
+      </table>
+      <section>
+				     <p>
+            <b>Sample request</b>
+         </p>
+				     <codeblock>&lt;ext:entities xmlns:ext="externalNotificationSPS"&gt;
+         &lt;entity&gt;
+           &lt;id&gt;Test&lt;/id&gt;
+            &lt;type&gt;Device&lt;/type&gt;
+           &lt;templateId&gt;TcpIP&lt;/templateId&gt;
+           &lt;templateParameters&gt;
+            &lt;templateParameter&gt;
+              &lt;key&gt;CC&lt;/key&gt;
+              &lt;value&gt;45&lt;/value&gt;
+            &lt;/templateParameter&gt;
+           &lt;templateParameter&gt;
+              &lt;key&gt;CB&lt;/key&gt;
+              &lt;value&gt;567&lt;/value&gt;
+           &lt;/templateParameter&gt;
+         &lt;/templateParameters&gt;
+         &lt;/entity&gt;
+         &lt;/ext:entities&gt;</codeblock>
+			   </section>
+      <section>
+         <p>
+            <b>Response for success</b>
+         </p>
+         <p>On success, the response from the TcpOutBound server is returned.</p>
+      </section>
+      <section>
+         <p>
+            <b>Response for failure</b>
+         </p>
+         <table rowsep="1" colsep="1" pgwide="1">
+            <title>Back office TCP/IP notifications: Example response for failure</title>
+
+            <tgroup cols="2">
+               <colspec colname="col1"/>
+               <colspec colname="col2"/>
+               <thead>
+                  <row>
+                     <entry>
+                        <p>Error</p>
+                     </entry>
+                     <entry>
+                        <p>Description</p>
+                     </entry>
+                  </row>
+               </thead>
+               <tbody>
+                  <row>
+                     <entry>
+Unable to establish connection with TCP/IP server: &lt;IP address&gt; and &lt;port&gt;.
+</entry>
+                     <entry>
+The socket could not establish connection between the server and the client.
+</entry>
+                  </row>
+                  <row>
+                     <entry>
+No response received from TCP/IP server. Connection timeout.
+</entry>
+                     <entry>
+The client was able to connect with the sever. However, after sending a message it did not get any response form. The client waits for a specific time (configure in the timeout field in Target Server entity) and then returns error.
+</entry>
+                  </row>
+                  <row>
+                     <entry>
+Trying to connect to unknown host.
+</entry>
+                     <entry>
+The IP address was wrong.
+</entry>
+                  </row>
+               </tbody>
+            </tgroup>
+         </table>
+      </section>
+   </conbody>
+</concept>

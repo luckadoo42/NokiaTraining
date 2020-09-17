@@ -1,0 +1,794 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="xdr_status">
+    <title>xdr-status</title>
+    <body>
+        <section id="section_tsc_wfj_bmb">
+            <title>Description</title>
+            <p>This command displays Aerospike Cross Datacenter Replication (XDR) metrics along with
+                both local and remote sites XDR status. This tool can also be used to override the
+                XDR state of OOS-WFR.</p>
+            <note>All metrics are for information purpose, except for lag. Only lag may be used to
+                determine whether XDR is falling behind or not.</note>
+        </section>
+        <section id="section_ymv_yfj_bmb">
+            <title>Syntax</title>
+            <p><codeph>xdr-status<!-- [-d ] [-w ]--> [-h]</codeph><table frame="all" rowsep="1" colsep="1"
+                    id="table_ont_cdr_cmb">
+                    <tgroup cols="2">
+                        <colspec colname="c1" colnum="1" colwidth="1*"/>
+                        <colspec colname="c2" colnum="2" colwidth="1*"/>
+                        <thead>
+                            <row>
+                                <entry>Option</entry>
+                                <entry>Description</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry><codeph>No arguments</codeph></entry>
+                                <entry>Display XDR metrics and status for the local site and the
+                                    remote sites.</entry>
+                            </row>
+                            <row>
+                                <entry><codeph>-h</codeph></entry>
+                                <entry>This help output.</entry>
+                            </row>
+                            <!--row>
+                                <entry><codeph>-d &lt;OOS-DRR></codeph></entry>
+                                <entry>The OOS-DRR override value, it can be true or false</entry>
+                            </row-->
+                            <!--row>
+                                <entry><codeph>-w &lt;OOS-WFR></codeph></entry>
+                                <entry>The OOS-WFR override value, it can be true or false.</entry>
+                            </row-->
+                        </tbody>
+                    </tgroup>
+                </table></p>
+        </section>
+        <section id="section_lbf_wy4_ymb"><title>Output examples</title><b>ME example</b><p>
+                <codeblock>Date: Fri Aug  7 14:57:10 UTC 2020
+XDR replication status (local site towards remote sites):
+-------------------------------------------------------
+Collection Time: 2020-08-07 14:57:10 +0000
+Destination site name: spssite4:
+..sync up state: CURRENT
+..lag: 0
+..latency_ms: 33
+..retry_conn_reset: 9527
+..retry_dest: 0
+..success: 342190
+..in_queue: 0
+
+XDR replication status (remote sites toward local site):
+-------------------------------------------------------
+Source site name: spssite4
+..Polling time: 2020-08-07 14:57:10 +0000
+..site service state: IN_SERVICE
+..collection time: 2020-08-07 14:57:10 +0000
+..sync up state: CURRENT
+..lag: 0
+..latency_ms: 39
+..retry_conn_reset: 0
+..retry_dest: 0
+..success: 341355
+..in_queue: 0
+
+Overall States:
+---------------
+Service State: UP
+Internal service state: Current
+</codeblock>
+                <table frame="all" rowsep="1" colsep="1" id="table_q3z_bry_zmb">
+                    <title>ME output line-by-line explanation</title>
+                    <tgroup cols="2">
+                        <colspec colname="c1" colnum="1" colwidth="1*"/>
+                        <colspec colname="c2" colnum="2" colwidth="1*"/>
+                        <thead>
+                            <row>
+                                <entry>Line</entry>
+                                <entry>Description</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry><codeph>Date: Fri Aug 7 14:57:10 UTC 2020</codeph></entry>
+                                <entry>
+                                    <p>Date and time at which the command was executed</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>XDR replication status (local site towards remote
+                                        sites):</codeph></entry>
+                                <entry>
+                                    <p>Header for XDR replication status metrics, indicating that
+                                        part of the xdr-status output is the local site’s view of
+                                        xdr to the remote site</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>-------------------------------------------------------</codeph></entry>
+                                <entry>
+                                    <p>Formatting line</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>Collection Time: 2020-08-07 14:57:10
+                                    +0000</codeph></entry>
+                                <entry>
+                                    <p>Date and time at which the metrics where collected</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>Destination site name: spssite4:</codeph></entry>
+                                <entry>
+                                    <p>Name of the destination site</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>..sync up state: CURRENT</codeph></entry>
+                                <entry>
+                                    <p>The XDR sync state with mate site with respect to the local
+                                        site. Possible values are:<ul id="ul_udy_lzd_1nb">
+                                            <li><codeph>CURRENT</codeph>: When local site's XDR sync
+                                                up with mate site, does not have any lag.</li>
+                                            <li><codeph>BEHIND</codeph>: When local site's digest
+                                                log is overflowed, and XDR sync up with mate site,
+                                                has timelag</li>
+                                        </ul></p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>..lag: 0</codeph></entry>
+                                <entry>
+                                    <p>Greatest lag in seconds between the remote and local
+                                        sites</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>..latency_ms: 33</codeph></entry>
+                                <entry>
+                                    <p>Greatest average network latency for the successfully shipped
+                                        latency</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>..retry_conn_reset: 9527</codeph></entry>
+                                <entry>
+                                    <p>Greatest number of records whose shipment is retried due to a
+                                        reset of the connection to the remote datacenter</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>..retry_dest: 0</codeph></entry>
+                                <entry>
+                                    <p>Greatest number of records retried due to a temporary error
+                                        returned by destination node</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>..success: 342190</codeph></entry>
+                                <entry>
+                                    <p>Number of records successfully shipped to remote sites</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>..in_queue: 0</codeph></entry>
+                                <entry>
+                                    <p>Number of records in the in-memory transaction queue still to
+                                        be processed</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>XDR replication status (remote sites toward local
+                                        site):</codeph></entry>
+                                <entry>
+                                    <p>Header for XDR replication status metrics, indicating that
+                                        part of the xdr-status output is the remote site’s view of
+                                        xdr to the local site</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>-------------------------------------------------------</codeph></entry>
+                                <entry>
+                                    <p>Formatting line</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>Source site name: spssite4</codeph></entry>
+                                <entry>
+                                    <p>Name of the source site</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>..Polling time: 2020-08-07 14:57:10
+                                    +0000</codeph></entry>
+                                <entry>
+                                    <p>Date and time at which polling took place</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>..site service state: IN_SERVICE</codeph></entry>
+                                <entry>
+                                    <p>The heart beat service status. Possible values are:<ul
+                                            id="ul_sbq_nzd_1nb">
+                                            <li><codeph>IN_SERVICE</codeph>: Member is in
+                                                service.</li>
+                                            <li><codeph>OUT_OF_SERVICE</codeph>: Member is out of
+                                                service.</li>
+                                            <li><codeph>UNKNOWN</codeph>: Member has not yet been
+                                                reached. This could occur on first startup of the
+                                                application service, before it has retrieved the
+                                                status the OAM heartbeat service or if the OAM
+                                                service has not yet received a response from the
+                                                site.</li>
+                                        </ul></p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>..collection time: 2020-08-07 14:57:10
+                                    +0000</codeph></entry>
+                                <entry>
+                                    <p>Date and time at which the metrics where collected</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>..sync up state: CURRENT</codeph></entry>
+                                <entry>
+                                    <p>The XDR sync state with mate site with respect to the local
+                                        site. Possible values are:<ul id="ul_r1v_2zd_1nb">
+                                            <li><codeph>CURRENT</codeph>: When local site's XDR sync
+                                                up with mate site, does not have any lag.</li>
+                                            <li><codeph>BEHIND</codeph>: When local site's digest
+                                                log is overflowed, and XDR sync up with mate site,
+                                                has timelag</li>
+                                        </ul></p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>..lag: 0</codeph></entry>
+                                <entry>
+                                    <p>Greatest lag in seconds between the local and remote
+                                        sites</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>..latency_ms: 39</codeph></entry>
+                                <entry>
+                                    <p>Greatest average network latency for the successfully shipped
+                                        latency</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>..retry_conn_reset: 0</codeph></entry>
+                                <entry>
+                                    <p>Greatest number of records whose shipment is retried due to a
+                                        reset of the connection to the remote datacenter</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>..retry_dest: 0</codeph></entry>
+                                <entry>
+                                    <p>Greatest number of records retried due to a temporary error
+                                        returned by destination node</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>..success: 341355</codeph></entry>
+                                <entry>
+                                    <p>Number of records successfully shipped to remote sites</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>..in_queue: 0</codeph></entry>
+                                <entry>
+                                    <p>Number of records in the in-memory transaction queue still to
+                                        be processed</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>Overall States:</codeph></entry>
+                                <entry>
+                                    <p>Header for overall state results</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>---------------</codeph></entry>
+                                <entry>
+                                    <p>Formatting line</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>Service State: UP</codeph></entry>
+                                <entry>
+                                    <p>The corresponding service state, which maps into the string
+                                        representation of the <codeph>Internal service
+                                            state</codeph>. Possible values are:<ul
+                                            id="ul_wyh_4h2_1nb">
+                                            <li><codeph>CURRENT</codeph>: The current site is update
+                                                to date with respect to all of its source sites</li>
+                                            <li><codeph>BEHIND</codeph>: The current site is behind
+                                                with respect to at least one of its source
+                                                sites</li>
+                                            <li><codeph>OVERFLOWED</codeph>: At least one of the
+                                                source sites XDR digest log is overflowed</li>
+                                            <!--li><codeph>OOS_WFR</codeph>: The site is in OOS and
+                                                waiting for resync state</li>
+                                            <li><codeph>OOS_WFR_HOLD</codeph>: OOS-WFR and holding,
+                                                one side of geo pair uses this extra state to avoid
+                                                glaring state transitions between OOS-WFR and
+                                                CURRENT</li>
+                                            <li><codeph>OOS_DRR</codeph>: The site is in OOS and
+                                                disaster recovery is required state</li>
+                                            <li><codeph>OOS_DRR_HOLD</codeph>: OOS-DRR and holding,
+                                                one side of geo pair uses this extra state to avoid
+                                                glaring state transitions between OOS-DRR and
+                                                OVERFLOW</li-->
+                                        </ul></p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>Internal service state: Current</codeph></entry>
+                                <entry>
+                                    <p>The string representation of the following internal state.<ul
+                                            id="ul_ev2_x11_1nb">
+                                            <li><codeph>Current</codeph>: The current site is update
+                                                to date with respect to all of its source sites</li>
+                                            <li><codeph>BEHIND</codeph>: The current site is behind
+                                                with respect to at least one of its source
+                                                sites</li>
+                                            <li><codeph>OVERFLOWED</codeph>: At least one of the
+                                                source sites XDR digest log is overflowed</li>
+                                            <!--li><codeph>OOS_WFR</codeph>: The site is in OOS and
+                                                waiting for resync state</li>
+                                            <li><codeph>OOS_WFR_HOLD</codeph>: OOS-WFR and holding,
+                                                one side of geo pair uses this extra state to avoid
+                                                glaring state transitions between OOS-WFR and
+                                                CURRENT.</li>
+                                            <li><codeph>OOS_DRR</codeph>: The site is in OOS and
+                                                disaster recovery is required state</li>
+                                            <li><codeph>OOS_DRR_HOLD</codeph>: OOS-DRR and holding,
+                                                one side of geo pair uses this extra state to avoid
+                                                glaring state transitions between OOS-DRR and
+                                                OVERFLOW</li-->
+                                        </ul></p>
+                                </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+            </p><b>SM example</b><p>
+                <codeblock>Date: Fri Aug  7 14:57:58 UTC 2020
+XDR replication status (local site towards remote sites):
+-------------------------------------------------------
+Collection Time: 2020-08-07 14:57:50 +0000
+Destination site name: spssite3:
+..sync up state: CURRENT
+..lag: 0
+..latency_ms: 4
+..retry_conn_reset: 65837
+..retry_dest: 0
+..success: 63
+..in_queue: 0
+
+XDR replication status (remote sites toward local site):
+-------------------------------------------------------
+Source site name: spssite3
+..Polling time: 2020-08-07 14:57:50 +0000
+..site service state: IN_SERVICE
+..collection time: 2020-08-07 14:57:50 +0000
+..sync up state: CURRENT
+..lag: 0
+..latency_ms: 0
+..retry_conn_reset: 0
+..retry_dest: 0
+..success: 20
+..in_queue: 0
+
+Overall States:
+---------------
+Service State: UP
+Internal service state: Current
+</codeblock>
+            </p><table frame="all" rowsep="1" colsep="1" id="table_edw_gyz_zmb">
+                <title>SM output line-by-line explanation</title>
+                <tgroup cols="2">
+                    <colspec colname="c1" colnum="1" colwidth="1*"/>
+                    <colspec colname="c2" colnum="2" colwidth="1*"/>
+                    <thead>
+                        <row>
+                            <entry>Line</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry><codeph>Date: Fri Aug  7 14:57:58 UTC 2020</codeph></entry>
+                            <entry>
+                                <p>Date and time at which the command was executed</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>XDR replication status (local site towards remote
+                                    sites):</codeph></entry>
+                            <entry>
+                                <p>Header for XDR replication status metrics, indicating that part
+                                    of the xdr-status output is the local site’s view of xdr to the
+                                    remote site</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>-------------------------------------------------------</codeph></entry>
+                            <entry>
+                                <p>Formatting line</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>Collection Time: 2020-08-07 14:57:50
+                                +0000</codeph></entry>
+                            <entry>
+                                <p>Date and time at which the metrics where collected</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>Destination site name: spssite3:</codeph></entry>
+                            <entry>
+                                <p>Name of the destination site</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>..sync up state: CURRENT</codeph></entry>
+                            <entry>
+                                <p>The XDR sync state with mate site with respect to the local site.
+                                    Possible values are:<ul id="ul_atp_h52_1nb">
+                                        <li><codeph>CURRENT</codeph>: When local site's XDR sync up
+                                            with mate site, does not have any lag.</li>
+                                        <li><codeph>BEHIND</codeph>: When local site's digest log is
+                                            overflowed, and XDR sync up with mate site, has
+                                            timelag</li>
+                                    </ul></p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>..lag: 0</codeph></entry>
+                            <entry>
+                                <p>Greatest lag in seconds between the remote and local sites</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>..latency_ms: 4</codeph></entry>
+                            <entry>
+                                <p>Greatest average network latency for the successfully shipped
+                                    latency</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>..retry_conn_reset: 65837</codeph></entry>
+                            <entry>
+                                <p>Greatest number of records whose shipment is retried due to a
+                                    reset of the connection to the remote datacenter</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>..retry_dest: 0</codeph></entry>
+                            <entry>
+                                <p>Greatest number of records retried due to a temporary error
+                                    returned by destination node</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>..success: 63</codeph></entry>
+                            <entry>
+                                <p>Number of records successfully shipped to remote sites</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>..in_queue: 0</codeph></entry>
+                            <entry>
+                                <p>Number of records in the in-memory transaction queue still to be
+                                    processed</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>XDR replication status (remote sites toward local
+                                    site):</codeph></entry>
+                            <entry>
+                                <p>Header for XDR replication status metrics, indicating that part
+                                    of the xdr-status output is the remote site’s view of xdr to the
+                                    local site</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>-------------------------------------------------------</codeph></entry>
+                            <entry>
+                                <p>Formatting line</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>Source site name: spssite3</codeph></entry>
+                            <entry>
+                                <p>Name of the source site</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>..Polling time: 2020-08-07 14:57:50
+                                +0000</codeph></entry>
+                            <entry>
+                                <p>Date and time at which polling took place</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>..site service state: IN_SERVICE</codeph></entry>
+                            <entry>
+                                <p>The heart beat service status. Possible values are:<ul
+                                        id="ul_vwp_h52_1nb">
+                                        <li><codeph>IN_SERVICE</codeph>: Member is in service.</li>
+                                        <li><codeph>OUT_OF_SERVICE</codeph>: Member is out of
+                                            service.</li>
+                                        <li><codeph>UNKNOWN</codeph>: Member has not yet been
+                                            reached. This could occur on first startup of the
+                                            application service, before it has retrieved the status
+                                            the OAM heartbeat service or if the OAM service has not
+                                            yet received a response from the site.</li>
+                                    </ul></p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>..collection time: 2020-08-07 14:57:50
+                                +0000</codeph></entry>
+                            <entry>
+                                <p>Date and time at which the metrics where collected</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>..sync up state: CURRENT</codeph></entry>
+                            <entry>
+                                <p>The XDR sync state with mate site with respect to the local site.
+                                    Possible values are:<ul id="ul_gyp_h52_1nb">
+                                        <li><codeph>CURRENT</codeph>: When local site's XDR sync up
+                                            with mate site, does not have any lag.</li>
+                                        <li><codeph>BEHIND</codeph>: When local site's digest log is
+                                            overflowed, and XDR sync up with mate site, has
+                                            timelag</li>
+                                    </ul></p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>..lag: 0</codeph></entry>
+                            <entry>
+                                <p>Greatest lag in seconds between the local and remote sites</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>..latency_ms: 0</codeph></entry>
+                            <entry>
+                                <p>Greatest average network latency for the successfully shipped
+                                    latency</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>..retry_conn_reset: 0</codeph></entry>
+                            <entry>
+                                <p>Greatest number of records whose shipment is retried due to a
+                                    reset of the connection to the remote datacenter</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>..retry_dest: 0</codeph></entry>
+                            <entry>
+                                <p>Greatest number of records retried due to a temporary error
+                                    returned by destination node</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>..success: 20</codeph></entry>
+                            <entry>
+                                <p>Number of records successfully shipped to remote sites</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>..in_queue: 0</codeph></entry>
+                            <entry>
+                                <p>Number of records in the in-memory transaction queue still to be
+                                    processed</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>Overall States:</codeph></entry>
+                            <entry>
+                                <p>Header for overall state results</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>---------------</codeph></entry>
+                            <entry>
+                                <p>Formatting line</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>Service State: UP</codeph></entry>
+                            <entry>
+                                <p>The corresponding service state, which maps into the string
+                                    representation of the <codeph>Internal service state</codeph>.
+                                    Possible values are:<ul id="ul_sbq_h52_1nb">
+                                        <li><codeph>CURRENT</codeph>: The current site is update to
+                                            date with respect to all of its source sites</li>
+                                        <li><codeph>BEHIND</codeph>: The current site is behind with
+                                            respect to at least one of its source sites</li>
+                                        <li><codeph>OVERFLOWED</codeph>: At least one of the source
+                                            sites XDR digest log is overflowed</li>
+                                        <!--li><codeph>OOS_WFR</codeph>: The site is in OOS and
+                                                waiting for resync state</li>
+                                            <li><codeph>OOS_WFR_HOLD</codeph>: OOS-WFR and holding,
+                                                one side of geo pair uses this extra state to avoid
+                                                glaring state transitions between OOS-WFR and
+                                                CURRENT</li>
+                                            <li><codeph>OOS_DRR</codeph>: The site is in OOS and
+                                                disaster recovery is required state</li>
+                                            <li><codeph>OOS_DRR_HOLD</codeph>: OOS-DRR and holding,
+                                                one side of geo pair uses this extra state to avoid
+                                                glaring state transitions between OOS-DRR and
+                                                OVERFLOW</li-->
+                                    </ul></p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>Internal service state: Current</codeph></entry>
+                            <entry>
+                                <p>The string representation of the following internal state.<ul
+                                        id="ul_mcq_h52_1nb">
+                                        <li><codeph>Current</codeph>: The current site is update to
+                                            date with respect to all of its source sites</li>
+                                        <li><codeph>BEHIND</codeph>: The current site is behind with
+                                            respect to at least one of its source sites</li>
+                                        <li><codeph>OVERFLOWED</codeph>: At least one of the source
+                                            sites XDR digest log is overflowed</li>
+                                        <!--li><codeph>OOS_WFR</codeph>: The site is in OOS and
+                                                waiting for resync state</li>
+                                            <li><codeph>OOS_WFR_HOLD</codeph>: OOS-WFR and holding,
+                                                one side of geo pair uses this extra state to avoid
+                                                glaring state transitions between OOS-WFR and
+                                                CURRENT.</li>
+                                            <li><codeph>OOS_DRR</codeph>: The site is in OOS and
+                                                disaster recovery is required state</li>
+                                            <li><codeph>OOS_DRR_HOLD</codeph>: OOS-DRR and holding,
+                                                one side of geo pair uses this extra state to avoid
+                                                glaring state transitions between OOS-DRR and
+                                                OVERFLOW</li-->
+                                    </ul></p>
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <!--table frame="all" rowsep="1" colsep="1" id="table_kml_zz4_ymb">
+                <title>Output metrics descriptions</title>
+                <tgroup cols="2">
+                    <colspec colname="c1" colnum="1" colwidth="1*"/>
+                    <colspec colname="c2" colnum="2" colwidth="1*"/>
+                    <thead>
+                        <row>
+                            <entry>Metric</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry><codeph>lag</codeph></entry>
+                            <entry>
+                                <p>Lag in seconds between the destination and the source sites.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>in_queue</codeph></entry>
+                            <entry>
+                                <p>Number of records in the in-memory transaction queue still to be
+                                    processed.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>in_progress</codeph></entry>
+                            <entry>
+                                <p>Number of records that are pending completion.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>success</codeph></entry>
+                            <entry>
+                                <p>Number of records successfully shipped to remote sites.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>abandoned</codeph></entry>
+                            <entry>
+                                <p>Number of records abandoned because of permanent failure at the
+                                    destination.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>not_found</codeph></entry>
+                            <entry>
+                                <p>Number of local records not found by XDR when attempting to read
+                                    them.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>filtered_out</codeph></entry>
+                            <entry>
+                                <p>Number of local records that are skipped after having been read
+                                    but before actual shipment.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>retry_conn_reset</codeph></entry>
+                            <entry>
+                                <p>Number of records whose shipment is retried due to a reset of the
+                                    connection to the remote datacenter.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>retry_dest</codeph></entry>
+                            <entry>
+                                <p>Number of records retried due to a temporary error returned by
+                                    destination node.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>recoveries</codeph></entry>
+                            <entry>
+                                <p>Number of partitions that are recovered by reducing the primary
+                                    index of that partition.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>recoveries_pending</codeph></entry>
+                            <entry>
+                                <p>Number of recoveries currently pending.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>hot_keys</codeph></entry>
+                            <entry>
+                                <p>Number of times a record write is skipped from processing because
+                                    that record is already pending processing.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>uncompressed_pct</codeph></entry>
+                            <entry>
+                                <p>Running average percentage of records not compressed because they
+                                    are below the compression threshold (100) or failed to be
+                                    compressed at all.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>compression_ratio</codeph></entry>
+                            <entry>
+                                <p>Running average compression ratio.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>throughput</codeph></entry>
+                            <entry>
+                                <p>Number of records successfully shipped per second.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>latency_ms</codeph></entry>
+                            <entry>
+                                <p>Average network latency for the successfully shipped latency.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><codeph>lap_us</codeph></entry>
+                            <entry>
+                                <p>Time in microseconds (μsecs) taken to process records across
+                                    partitions in one lap (processing cycle).</p>
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table-->
+        </section>
+    </body>
+</topic>

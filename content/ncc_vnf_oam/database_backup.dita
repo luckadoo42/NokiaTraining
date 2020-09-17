@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="id9YZ-09126-MT00-REZZA-SP2-d1e67110"><title>Database backup</title><taskbody><steps>
+<stepsection>Use this procedure to initiate a database backup at the healthy SM and/or MEs. Perform
+				this task in rapid succession because you need to keep the time between the backup
+				and the restore to a minimum.</stepsection>
+<step><cmd>As the root user, login to the active OAME node on the IG, ME and/or SM.</cmd><info/></step>
+<step><cmd>Create a new directory where the backup contents will be stored. Make this directory with other than root user access so that the contents can be copied easily. For example, you could create a directory "backup" using the tpaadmin user with the following command:</cmd><info><p>
+<userinput>mkdir backup</userinput>
+</p></info></step>
+<step><cmd>Run the command:</cmd><info><p>
+<userinput>/opt/tpa/bin/db-backup -d &lt;directory absolute path&gt; -n &lt;namespace[,namespace]*&gt; [-f] [-r &lt;local|both|all&gt;]</userinput>
+</p><note>
+<p>Do not run this command during the transition window from daylight saving time to standard time.</p>
+</note><table>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+<p>
+<b>Code</b>
+</p>
+</entry>
+<entry>
+<p>
+<b>Description</b>
+</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+<codeblock>No arguments</codeblock>
+</entry>
+<entry>
+Displays usage/help information
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-h or -?</codeblock>
+</entry>
+<entry>
+Displays usage/help information.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-d &lt;directory absolute path&gt;</codeblock>
+</entry>
+<entry>
+Output directory for the backup files. This directory should already exist.
+</entry>
+</row>
+<row>
+<entry>
+-f
+</entry>
+<entry>
+Force execution. If specified, the user will not be asked for confirmation.
+</entry>
+</row>
+<row>
+<entry>
+-n &lt;namespace&gt;
+</entry>
+<entry>
+Namespace list to backup. Allows you to specify the namespaces to backup. If you have more than one namespace, you can enter the namespaces as a comma-separated list.
+</entry>
+</row>
+<row>
+<entry>
+-r &lt;local|both|all&gt;   
+</entry>
+<entry>
+<p>Nodes running and storing the backups, where</p><ul>
+<li>
+<p>local: local OAME node</p>
+</li>
+<li>
+<p>both: both OAME nodes</p>
+</li>
+<li>
+<p> all: all database nodes</p>
+</li>
+</ul>
+<p>If local, both, or all are not specified, the default is local.</p>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table><p>For example:</p><p>
+<userinput>/opt/tpa/bin/db-backup -d backup -f -r local</userinput>
+</p><p>A summary output is provided to the user. Details of the backup operation can be found in the <b>backuplog</b> file, in the specified backup directory. Answer  “y” (yes)  when prompted to continue. The spspdX output is not applicable for SM.</p><fig>
+<codeblock>[root@sps-me-1-oame-1 ~]#  /opt/tpa/bin/db-backup -f -r local -d /BACKUP/me1.backup_20190327T1327
+13:27  db-backup issued at: Wed Mar 27 13:27:36 EDT 2019
+13:27
+13:27  Creating a database backup to [/BACKUP/me1.backup_20190327T1327]
+13:27  Starting backup on sps-me-1-oame-1 for sps-me-1-db-0-dsc
+13:27  Backup for sps-me-1-db-0-dsc completed
+13:27  Starting backup on sps-me-1-oame-1 for sps-me-1-db-1-dsc
+13:27  Backup for sps-me-1-db-1-dsc completed
+13:27  Starting backup on sps-me-1-oame-1 for sps-me-1-db-2-dsc
+13:27  Backup for sps-me-1-db-2-dsc completed
+13:27  Starting backup on sps-me-1-oame-1 for sps-me-1-db-3-dsc
+13:27  Backup for sps-me-1-db-3-dsc completed
+13:27  Starting backup on sps-me-1-oame-1 for sps-me-1-db-0-dsclocal
+13:27  Backup for sps-me-1-db-0-dsclocal completed
+13:27  Starting backup on sps-me-1-oame-1 for sps-me-1-db-1-dsclocal
+13:27  Backup for sps-me-1-db-1-dsclocal completed
+13:27  Starting backup on sps-me-1-oame-1 for sps-me-1-db-2-dsclocal
+13:27  Backup for sps-me-1-db-2-dsclocal completed
+13:27  Starting backup on sps-me-1-oame-1 for sps-me-1-db-3-dsclocal
+13:27  Backup for sps-me-1-db-3-dsclocal completed
+13:27  Starting backup on sps-me-1-oame-1 for sps-me-1-db-0-dscglobal
+13:27  Backup for sps-me-1-db-0-dscglobal completed
+13:27  Starting backup on sps-me-1-oame-1 for sps-me-1-db-1-dscglobal
+13:28  Backup for sps-me-1-db-1-dscglobal completed
+13:28  Starting backup on sps-me-1-oame-1 for sps-me-1-db-2-dscglobal
+13:28  Backup for sps-me-1-db-2-dscglobal completed
+13:28  Starting backup on sps-me-1-oame-1 for sps-me-1-db-3-dscglobal
+13:28  Backup for sps-me-1-db-3-dscglobal completed
+13:28  Starting backup on sps-me-1-oame-1 for sps-me-1-db-0-spspd1
+13:28  Backup for sps-me-1-db-0-spspd1 completed
+13:28  Starting backup on sps-me-1-oame-1 for sps-me-1-db-1-spspd1
+13:28  Backup for sps-me-1-db-1-spspd1 completed
+13:28  Starting backup on sps-me-1-oame-1 for sps-me-1-db-2-spspd1
+13:28  Backup for sps-me-1-db-2-spspd1 completed
+13:28  Starting backup on sps-me-1-oame-1 for sps-me-1-db-3-spspd1
+13:28  Backup for sps-me-1-db-3-spspd1 completed
+13:28
+13:28  sps-me-1-db-0
+13:28      dsc             Completed
+13:28      dsclocal        Completed
+13:28      dscglobal       Completed
+13:28      spspd1          Completed
+13:28  sps-me-1-db-1
+13:28      dsc             Completed
+13:28      dsclocal        Completed
+13:28      dscglobal       Completed
+13:28      spspd1          Completed
+13:28  sps-me-1-db-2
+13:28      dsc             Completed
+13:28      dsclocal        Completed
+13:28      dscglobal       Completed
+13:28      spspd1          Completed
+13:28  sps-me-1-db-3
+13:28      dsc             Completed
+13:28      dsclocal        Completed
+13:28      dscglobal       Completed
+13:28      spspd1          Completed
+13:28
+13:28  SPS DB backup completed into directory [/BACKUP/me1.backup_20190327T1327]
+13:28  on this OAME node.
+13:28
+13:28  See [/BACKUP/me1.backup_20190327T1327/DB_BACKUP_*/*.backuplog] for
+13:28  detailed output of backup command execution.
+13:28
+13:28  db-backup completed at: Wed Mar 27 13:28:12 EDT 2019
+
+</codeblock>
+</fig><note>The spspdX output is not applicable for SM. No backup is taken for the spspdX namespace on SM
+						because it does not exist.<p/></note></info></step>
+</steps>
+</taskbody></task>

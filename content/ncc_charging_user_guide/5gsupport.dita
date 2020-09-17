@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e27567"><title>5G support for OCS index server</title><conbody>
+<section><title>Overview</title>
+<p>Service providers may have an existing OCS with subscriber data. When they use SPS alongside the
+                existing OCS, the traffic may have to be routed accordingly. To handle such cases,
+                this feature supports the PGWs to route all the Fixed Wireless Access (FWA) traffic
+                through DRouter. It does not consider whether the subscriber is from NCC or other
+                OCS such as SurePay. To get the information about where the subscriber data is
+                present, LDAP interface between NCC and Index server is used.</p>
+<p>The following figure shows the flow of messages between NCC, SM, Index server, and DRouter. </p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_19.9/5G_OCS_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-5g_ocs_default.png"/>
+</fig>
+<p>When a subscriber is added to NCC, the ME updates its local database and triggers the LDAP
+                request to SurePay Index server to sync-up the device data. The subscriber ID (MDN)
+                and host ME details are stored in the DRouters. When the SurePay Index server
+                receives the self-learning/self-healing request from DRouters, it broadcasts the
+                request to all the OCS nodes including SMs. If the device information is present on
+                SM, then NCC sends a response to SurePay Index server including the ME (ME host
+                information) on which the device resides. </p>
+<p>In cases where the existing subscribers are removed from NCC, the ME notifies the DRouters to
+                remove the record for that subscriber from their database.</p>
+<p>If the assume positive feature is turned off and a subscriber is not found in a call, then the
+                result code 5030 is returned.</p>
+</section>
+<section><title>Assumptions</title>
+<p>Following are the assumptions considered for this feature.</p><ul>
+<li>
+<p>This feature focuses on the LDAP communication between SurePay and Index server. It has no impact on Diameter call logic. But, there is one exception, that is, for Gy call, it returns 5030 if the device is not found.</p>
+</li>
+<li>
+<p>When NCC receives self-learning or self-healing request, it compares the subscriber ID in the
+                        LDAP message with device ID in the NCC database with device type E164.</p>
+</li>
+<li>
+<p>END_USER_E164 type Subscription ID is always included in the Diameter message and E164 type
+                        configured in NCC has highest priority in the Diameter request.</p>
+</li>
+<li>
+<p>For self-learning or self-healing, only type S (MSISDN) is supported. N (IMSI) and G (Group) are not supported. That is, only device level is supported and group level is not supported.</p>
+</li>
+<li>
+<p>When NCC receives self-learning or self-healing request, it provides a response to the specific
+                        Index server that sent the request. NCC does not broadcast the subscriber's
+                        host name to other Index servers.</p>
+</li>
+<li>
+<p>Service sensitive routing is not supported.</p>
+</li>
+</ul>
+</section>
+<section><title>Configuration</title>
+<note type="attention">
+<p>Ensure that the following external SPR parameters for LDAP are configured.</p>
+</note><ul>
+<li>
+<p>
+<codeph>tpaproperties/sprexternal/enabled</codeph>
+</p>
+</li>
+<li>
+<p>
+<codeph>tpaproperties/sprexternal/concentratortimeout</codeph>
+</p>
+</li>
+<li>
+<p>
+<codeph>tpaproperties/sprexternal/concentratorconnections</codeph>
+</p>
+</li>
+</ul>
+<p>To configure the LDAP connection with SurePay DRouter Index server, perform the following steps:</p><ol>
+<li><p>Provision the LDAP External Server Configuration entity with type value as
+                            <varname>LDAP-INDEX-SERVER</varname>. To do this, navigate to
+                            <uicontrol>Policy &amp; Charging</uicontrol> and click the
+                            <uicontrol>Common</uicontrol> tab. Select <uicontrol>LDAP External
+                            Server Configuration</uicontrol> from the drop-down list. Click + to
+                        create a new record and select the LDAP-INDEX-SERVER as value type. The
+                        following entity must be configured for each SurePay Index server.</p>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.9/5G_LDAP_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-5g_ldap_default.png"
+                        scale="50"/>
+                </li>
+<li><p>In the SurePay DRouter Index server, ME host name (ME floating IP) must be added to
+                            <i>/etc/hosts</i>. Note that the ME host name configured in /etc/hosts
+                        on ME must be same with that configured in the
+                            <uicontrol>SmManagedElement</uicontrol> table on SM. </p>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.9/5G_ME_default.jpg-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-5g_me_default.jpg" scale="50"
+                    />
+                </li>
+<li>
+<p>In the SurePay DRouter Index server, configure the SM IO Node and SM host name in the <i>/etc/hosts</i> directory. Configure the SurePay platform table (rcv:menu) 9.1 ~ 9.5 to support the <uicontrol>SMHostName_request_data</uicontrol> dataview. In SurePay platform table 9.1, add ME hostname record and in 9.2, add host name, port, and LDAP. </p>
+</li>
+</ol>
+<p>Note the following important points related to LDAP configuration:</p><ul>
+<li>
+<p>Configure the LDAP port and password to be consistent with that configured in the SurePay Index
+                        server. That is, the port and password must be consistent between SM and
+                        SurePay Index server.</p>
+</li>
+<li>
+<p>Configure the Primary IP Address to be SurePay Index Server IO node ip address.</p>
+</li>
+<li>
+<p>Configure the User DN as <userinput>dview=IndexServerHostname_Hier_Req</userinput>. </p>
+</li>
+<li>
+<p>Configure the LDAP Version as 2 because SurePay index server only supports version 2.</p>
+</li>
+</ul>
+</section>
+<section><title>Examples</title>
+<sectiondiv>
+<p><b>Example 1: Device found for self-healing query from DRouter</b></p>
+<p>A Diameter Gy call is triggered to SurePay Drouter and subscriber is found in the GPRSSIM DB. </p>
+<p>Following is the flow of events:</p><ol>
+<li>
+<p>DRouter routes the call based on the host names (ME) configured in the GPRSSIM DB. </p>
+</li>
+<li>
+<p>ME receives the call and device ID is not found in ME, 5030 is returned to DRouter. </p>
+</li>
+<li>
+<p>Self-learning or self-healing feature is turned on for DRouter. DRouter sends the self-healing request to Index server.</p>
+</li>
+<li>
+<p>SurePay Index server broadcasts the self-healing query to all the configured OCS, including SM
+                            with LDAP dataview request_data.</p>
+</li>
+<li>
+<p>SM finds the subscriber configured in the NCC DB. Therefore, NCC returns the correct Device ID
+                            and host ME to Index server.</p>
+</li>
+</ol>
+<p>
+<uicontrol>LDAP server configuration</uicontrol>
+</p>
+<p>The LDAP server must be configured in the SM Application Preferences. To do this, go to navigate
+                    to <uicontrol>Global Configuration</uicontrol> and click the
+                        <uicontrol>Application Preferences</uicontrol> tab. Select
+                        <uicontrol>Service Manager</uicontrol> from the drop-down list. Configure
+                    the LDAP User Name and LDAP Password. Note that the LDAP Password must be same
+                    in NCC and Index server.</p>
+<p>
+<uicontrol>Device ID configuration</uicontrol>
+</p>
+<p>Consider that a device with Device ID 888000002 is configured in the AppNode as shown in the following figure. </p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_19.9/5G_OCS_ex1_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-5g_ocs_ex1_default.png"/>
+</fig>
+<p>The device with Device ID 888000002 is not available in the ME. When queried for Device ID
+                    888000002, the following message is displayed.</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.9/5G_OCS_ex2_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-5g_ocs_ex2_default.png"
+                        scale="50"/>
+                </fig>
+<p>
+<uicontrol>SurePay DRouter query</uicontrol>
+</p>
+<p>When checked in the SurePay DRouter, the device information is not correct for the Device ID 888000002.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_19.9/5G_OCS_ex3_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-5g_ocs_ex3_default.png"/>
+</fig>
+<p>
+<uicontrol>Self-learning or self-healing in DRouter</uicontrol>
+</p>
+<p>Since the self-learning/self-healing feature is turned on for DRouter, the DRouter sends the self-healing request to Index server. LDAP search request is sent to each OCS configured and the response is received from each OCS. The Gy message is routed to the correct host.</p>
+<p>
+<uicontrol>Device record updated in GPRSSIM</uicontrol>
+</p>
+<p>In SurePay DRouter, the device information is corrected for the Device ID 888000002. </p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_19.9/5G_OCS_ex4_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-5g_ocs_ex4_default.png"/>
+</fig>
+<p>Now, SM finds the subscriber configured in the NCC DB and returns the correct Device ID and host
+                    ME to Index server.</p>
+</sectiondiv>
+</section>
+</conbody></concept>

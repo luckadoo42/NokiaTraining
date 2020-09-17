@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="installing_btel">
+    <title>Installing BTEL</title>
+    <taskbody>
+        <context>
+            <p>This procedure provides instructions on how to install the BTEL component with the
+                BTEL Helm chart for any CNF in NCC.</p>
+            <p>The <filepath>configuration-examples</filepath> file contains configuration examples
+                for the BTEL Helm chart. The following configuration files are provided:</p>
+            <p>
+                <ul id="ul_ygx_hzd_xlb">
+                    <li><filepath>values_btel_sps_sm.yaml</filepath></li>
+                    <li><filepath>values_btel_sps_me.yaml</filepath></li>
+                    <li><filepath>values_btel_sps_ig.yaml</filepath></li>
+                </ul>
+            </p>
+        </context>
+        <steps>
+            <step>
+                <cmd>Ensure that you are working in the CNF's directory.</cmd>
+            </step>
+            <step>
+                <cmd>Copy the sample input file by running the if block as one command:</cmd>
+                <info>
+                    <codeblock>if [ "$PLATFORM" = "openshift" ]; then
+    FILE_MODIFIER='_openshift'
+else
+    FILE_MODIFIER=''
+fi</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Enter by running the if block as one command:</cmd>
+                <info>
+                    <codeblock>if [ "$SITE_TYPE" = 'rt' ]; then # Copy and rename ME file for RT.
+    cp ../configuration-examples/values_btel_sps_me${FILE_MODIFIER}.yaml values_btel_sps_rt${FILE_MODIFIER}.yaml
+else
+    cp ../configuration-examples/values_btel_sps_${SITE_TYPE}${FILE_MODIFIER}.yaml .
+fi
+ 
+ 
+if [[ -e ../configuration-examples/sizing/sizing_btel_lab.yaml ]]; then
+ cp ../configuration-examples/sizing/sizing_btel_lab.yaml .
+else
+ cp ../configuration-examples/sizing/lab/sizing_btel_lab.yaml .
+fi
+OVERRIDE_FILES="values_btel_sps_${SITE_TYPE}${FILE_MODIFIER}.yaml sizing_btel_lab.yaml"</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Perform replacements as follows:</cmd>
+                <info>
+                    <codeblock>if [ "${HTTP_INGRESS_PORT}" = "443" ]; then
+    sed -i "s/:\${HTTP_INGRESS_PORT}//g" values_btel_sps_${SITE_TYPE}${FILE_MODIFIER}.yaml
+ 
+    # These 2 lines can be deleted after everyone is deploying SPS_20_9_I72 or later:
+    sed -i "s/:\${CKEY INGRESS PORT}//g" values_btel_sps_${SITE_TYPE}${FILE_MODIFIER}.yaml
+    sed -i "s/:\${INGRESS PORT}//g" values_btel_sps_${SITE_TYPE}${FILE_MODIFIER}.yaml
+fi
+
+# All of these lines can be deleted after everyone is deploying SPS_20_9_I72 or later, but they are safe to run for any version:
+sed -E -i "s/sps-btel(-${SITE_TYPE})?/${NAMESPACE}/g" values_btel_sps_${SITE_TYPE}${FILE_MODIFIER}.yaml
+sed -i "s/\${CKEY INGRESS IP\/FQDN HOST}/$CKEY_FQDN/g" values_btel_sps_${SITE_TYPE}${FILE_MODIFIER}.yaml
+sed -i "s/\${INGRESS IP\/FQDN HOST}/$FQDN/g" values_btel_sps_${SITE_TYPE}${FILE_MODIFIER}.yaml
+sed -i "s/\${CKEY INGRESS PORT}/$HTTP_INGRESS_PORT/g" values_btel_sps_${SITE_TYPE}${FILE_MODIFIER}.yaml
+sed -i "s/\${INGRESS PORT}/$HTTP_INGRESS_PORT/g" values_btel_sps_${SITE_TYPE}${FILE_MODIFIER}.yaml
+sed -i "s/istioVersion: 1.5/istioVersion: ${ISTIO_VERSION}/g" values_btel_sps_${SITE_TYPE}${FILE_MODIFIER}.yaml
+ 
+# In SPS_20_9_I72 and later (but safe for any version), this line replaces all of the sed commands above except for the "if" block:
+echo "$(envsubst '${CKEY_FQDN},${CKEY_NAMESPACE},${FQDN},${HTTP_INGRESS_PORT},${ISTIO_VERSION},${NAMESPACE},${SITE_TYPE}' &lt; values_btel_sps_${SITE_TYPE}${FILE_MODIFIER}.yaml)" > values_btel_sps_${SITE_TYPE}${FILE_MODIFIER}.yaml
+</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Enable Backup and Restore with CBUR by entering:</cmd>
+                <info>
+                    <codeblock>cp ../configuration-examples/feature_btel_cbur_enable.yaml .
+OVERRIDE_FILES="$OVERRIDE_FILES feature_btel_cbur_enable.yaml"</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Merge all  the Override files into a single file by entering:</cmd>
+                <info>
+                    <codeblock>docker run --rm -v ${PWD}:/workdir:z registry1-docker-io.repo.lab.pl.alcatel-lucent.com/mikefarah/yq yq m -x $OVERRIDE_FILES > ${SITE_TYPE}${SITE_ID}_btel.yaml
+</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Install BTEL by as follows:</cmd>
+                <info>
+                    <ul id="ul_gpw_2mb_zmb">
+                        <li>Enter:<codeblock>WORKER_COUNT=`kubectl get nodes -l is_worker=true|grep -v STATUS|wc -l`</codeblock></li>
+                        <li>If you are using Istio 1.5 and later,
+                            enter:<codeblock>helm upgrade --install btel btel-chart-*.tgz -n ${NAMESPACE} --wait --timeout=1200s -f ${SITE_TYPE}${SITE_ID}_btel.yaml --set belk.belk-fluentd.fluentd.replicas=$WORKER_COUNT</codeblock></li>
+                        <li>If you are using Istio 1.4,
+                            enter:<codeblock>sed -i 's/istioVersion: 1.5/istioVersion: 1.4/g'  ${SITE_TYPE}${SITE_ID}_btel.yaml
+sed -i 's/version: 1.5/version: 1.4/g'  ${SITE_TYPE}${SITE_ID}_btel.yaml
+ 
+helm upgrade --install btel btel-chart-*.tgz -n ${NAMESPACE} --wait --timeout=1200s -f ${SITE_TYPE}${SITE_ID}_btel.yaml --set belk.belk-fluentd.fluentd.replicas=$WORKER_COUNT,belk.belk-elasticsearch.istio.permissive=true,crmq.istio.permissive=true,calm.istio.permissive=true</codeblock></li>
+                    </ul>
+                    <codeblock>helm install -n ${NAMESPACE} ${RELEASENAME} --wait --timeout=1200s -f $VALUES --set citm-ingress.controller.replicaCount=$EDGE_COUNT,belk.belk-fluentd.fluentd.replicas=$WORKER_COUNT btel-chart-20.6.*.tgz</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Test the installation by entering:</cmd>
+                <info>
+                    <codeblock>helm test -n ${NAMESPACE} btel</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Ensure that Prometheus, Kibana, and Grafana services are running.</cmd>
+                <info>
+                    <p>The following table describes the access to BTEL services for SM and ME.</p>
+                    <simpletable frame="all" id="table_pty_3sd_xlb" relcolwidth="1* 1* 1*">
+                        <sthead>
+                            <stentry>Service</stentry>
+                            <stentry>BTEL#1 for SM
+                                    <p>(namespace=sps-btel-sm/releasename=btel-sm)</p></stentry>
+                            <stentry>BTEL#1 for
+                                ME<p>(namespace=sps-btel-me/releasename=btel-me)</p></stentry>
+                        </sthead>
+                        <strow>
+                            <stentry>Kibana</stentry>
+                            <stentry>https://$FQDN/logviewer-sm</stentry>
+                            <stentry>https://$FQDN/logviewer-me</stentry>
+                        </strow>
+                        <strow>
+                            <stentry>Grafana</stentry>
+                            <stentry>https://$FQDN/grafana-sm</stentry>
+                            <stentry>https://$FQDN/grafana-me</stentry>
+                        </strow>
+                        <strow>
+                            <stentry>Prometheus</stentry>
+                            <stentry>https://$FQDN/prometheus-sm</stentry>
+                            <stentry>https://$FQDN/prometheus-me</stentry>
+                        </strow>
+                    </simpletable>
+                </info>
+            </step>
+            <step>
+                <cmd>If NCC and BTEL are installed in same namespace and if needed, set a Kibana
+                    filter in the Kibana GUI to filter out only NCC related pods by entering:</cmd>
+                <info>
+                    <codeblock>{
+  "query": {
+    "regexp": {
+      "host.keyword": {
+        "value": "(kf|zk){0,1}-?sps-.*"
+      }
+    }
+  }
+}</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>If you installed BTEL with CBUR enabled, do the procedure <xref
+                        href="installing_btel_backup_and_restore.dita"/>.</cmd>
+            </step>
+        </steps>
+    </taskbody>
+</task>

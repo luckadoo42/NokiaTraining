@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="db-restore">
+    <title>db-restore</title>
+    <conbody>
+        <section id="section_wql_jnp_nlb">
+            <title>Description</title>
+            <p>This tool restores the complete SPS database from a backup copy that was made
+                previously with the db-backup tool.</p>
+            <p>db-restore is run on the fixed IP address of the active AdminCLI pod in the SPS
+                system. It must be ensured that logging in takes place at the fixed IP address of
+                the active AdminCLI pod and not the floating IP address. If logging in to the
+                floating IP address of the active AdminCLI pod, a broken pipe error will occur.</p>
+            <p>Unless a disaster recovery is taking place, Nokia recommends that this procedure is
+                performed during off hours (non-peak-hours).</p>
+            <p>All namespaces and data sets will be restored, assuming there is a compressed (gzip)
+                file for each namespace in the specified backup directory.<ul id="ul_hv2_y2q_nlb">
+                    <li>This tool will stop the database and application server processes. Do not
+                        use this tool if there is live traffic running.</li>
+                    <li>This tool will first remove the database files on each database pod. Please
+                        use this tool only if certain that this restore action is required.</li>
+                    <li>Once restored, the database will be current as of the time of the last
+                        backup that is being restored. Data updates since that last backup will be
+                        lost, unless they are recovered from another source (for example, another
+                        SPS system in the network).</li>
+                </ul></p>
+        </section>
+        <section id="section_v4k_cfq_nlb">
+            <title>Syntax</title>
+            <p>
+                <codeblock>/opt/tpa/bin/db-restore -d &lt;directory> -n &lt;namespace[,namespace]*> [-f]
+[-r &lt;local|both|all>]
+</codeblock>
+            </p>
+            <p>
+                <table frame="all" rowsep="1" colsep="1" id="table_yzg_2fq_nlb">
+                    <tgroup cols="2">
+                        <colspec colname="c1" colnum="1" colwidth="1*"/>
+                        <colspec colname="c2" colnum="2" colwidth="1*"/>
+                        <thead>
+                            <row>
+                                <entry>Code</entry>
+                                <entry>Description</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry>'<codeph>No arguments</codeph></entry>
+                                <entry>Displays usage/help information.</entry>
+                            </row>
+                            <row>
+                                <entry><codeph>-h</codeph></entry>
+                                <entry>Displays usage/help information. </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>-d &lt;directory></codeph></entry>
+                                <entry>Directory where the compressed (zip) backup files exist as a
+                                    result of the backup procedure.</entry>
+                            </row>
+                            <row>
+                                <entry><codeph>-n &lt;namespace></codeph></entry>
+                                <entry>
+                                    <p>Namespace list to restore. Allows the namespaces to restore
+                                        to be specified.</p>
+                                    <note>If any of the specified namespaces are not part of the
+                                        backup, db-restore will print out an error similar to the
+                                        following and stop
+                                        immediately:<codeblock>db-restore issued at: Wed Apr 3 13:17:59 EDT
+2019 No distributed backup found on the
+running nodes: 192.168.3.102 192.168.3.103
+contain the specified namespace(s):
+foo,bar,dsclocal.</codeblock>If
+                                        there exist more than one namespace, enter the namespaces as
+                                        a comma-separated list.</note>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>-f</codeph></entry>
+                                <entry>Force execution. The user will not be asked for
+                                    confirmation.</entry>
+                            </row>
+                            <row>
+                                <entry><codeph>-r &lt;local|both|all></codeph></entry>
+                                <entry>Nodes the backup files are located, where:<ul
+                                        id="ul_myc_qfq_nlb">
+                                        <li>local: local AdminCLI pod</li>
+                                        <li>both: both AdminCLI pods</li>
+                                        <li>all: all database nodes</li>
+                                    </ul>If local, both, or all are not specified, the default is
+                                    local.</entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+            </p>
+        </section>
+        <section id="section_sb4_yhq_nlb">
+            <title>Examples<!--Dray: I'll certainly need examples someday; ask Arundhati or Neeraj once done.--></title>
+            <p><!--Dray: I'll certainly need examples.--></p>
+        </section>
+    </conbody>
+</concept>

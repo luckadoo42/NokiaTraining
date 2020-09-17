@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e31443"><title>Multi-value AVPs in PS-Information attributes</title><conbody>
+<section><title>Overview</title>
+            <p>The Diameter protocol specifies that multiple instances of an AVP may occur within a
+                single message. An AVP defined as multi-valued is a container for one or more AVPs.
+                Further, an AVP might be single-valued but due to a multi-valued parent ancestor,
+                may appear multiple times within the message. In general, the multiplicity of the
+                multi-value AVPs is often unbounded. As a result, multi-value Diameter messages may
+                be arbitrarily complex in terms of the number of and location of the occurrence of
+                particular AVPs. For example, consider the case of the Rx AAR message, which
+                contains a group-type AVP <i>Media-Component-Description</i>. This AVP contains,
+                among other AVPs, a multi-valued, grouped <i>Media-Sub-Component</i> AVP that in
+                turn contains a multi-valued <i>Flow-Description</i> AVP.</p><p>The following is an
+                example of a specific multi-value
+                    <uicontrol>Service-Information.PS-Information</uicontrol> attribute with the
+                potential to return a list or collection of values. The attributes have a “[ ]”
+                notation directly following them to indicate that they return a list or collection
+                of values; for example,
+                    <varname>Service-Information.PS-Information.SGSN-Address[]</varname>.</p><p>There
+                are two different NCC multi-value rule attribute examples shown in this section to
+                illustrate attributes with the [ ] notation and attributes with the
+                “Total-Number-Of-Values” notation. In this example, each multi-value example uses
+                the <userinput>Service-Information.PS-Information.SGSN-Address</userinput> attribute
+                contained in the Gy message as follows:</p>
+            <userinput>            Service-Information                    PS-Information
+                                                   SGSN-Address = 94.21.1.1
+                                                   SGSN-Address = 94.21.1.2
+                                                   SGSN-Address = 94.21.1.3</userinput>
+            <ul>
+                <li>
+                    <p>In the first example, the following rule condition evaluates to
+                            <varname>true</varname> and the associated action is applied:</p>
+                    <p>If
+                            <userinput>GyCCR.Service-Information.PS-Information.SGSN-Address[]</userinput>
+                        contains <userinput>94.21.1.2</userinput>, then
+                            <userinput>Example-action</userinput>.</p>
+                    <p>This is because SGSN-Address <userinput>94.21.1.2</userinput> exists within
+                        the set of the <i>Service-Information.PS-Information.SGSN-Address</i> AVP
+                        contained in the Gy message.</p>
+                </li>
+                <li>
+                    <p>In the second example, an attribute with the “Total-Number-Of-Values”
+                        notation is used; for example,
+                            <userinput>Service-Information.PS-Information.SGSN-Address.Total-Number-Of-Values</userinput>.
+                        The “Total-Number-Of-Values” notation evaluates to <varname>true</varname>
+                        if the total number of values that exist in the AVP match the rule.</p>
+                    <p>The following rule condition evaluates to <varname>true</varname> and the
+                        associated action is applied because there is a total of three
+                            <userinput>Service-Information.PS-Information.SGSN-Addresses</userinput>
+                        that exist in the request or message.</p>
+                    <p>If
+                            <userinput>GyCCR.Service-Information.PS-Information.SGSN-Address.Total-Number-Of-Values</userinput>
+                        equals <userinput>3</userinput>, then
+                        <userinput>Example-action</userinput>.</p>
+                    <p>If the rule condition value were set to another value (for example, 1 or 2),
+                        then the rule condition is evaluated to <varname>false</varname> and no
+                        action is applied.</p>
+                </li>
+            </ul>
+        </section>
+</conbody></concept>

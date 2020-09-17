@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-snraction"><title>SNR action and QoS handling when charging resources are exhausted or updated</title><conbody>
+<section><title>Overview</title>
+<p>The <systemoutput>Send-SNR</systemoutput> action on exhaustion of Aggregate Value (AV) can be achieved by configuring a threshold on AV exhaustion using an optional rule parameter that conveys the policy counter name within the <systemoutput>Send-SNR</systemoutput> action with the existing rule parameter of the policy counter status using the SM GUI or REST API.</p>
+<p>The AV can be either of the following types:</p><ul>
+<li>
+<p>Charging service</p>
+</li>
+<li>
+<p>Charging service and Cap</p>
+</li>
+<li>
+<p>Counter</p>
+</li>
+</ul>
+<note>
+<p/><ul>
+<li>
+<p>The <systemoutput>Send-SNR</systemoutput> action scenario is applicable to AV and buckets. If AV is not used, then apply the same threshold configuration on the buckets. For buckets with <i>ChargingStep</i>, the thresholds are configured only on zero value (as <varname>THRESHOLD_PROFILE.has-More-Steps</varname> is computed and set in the source context only when the unused value of the AV is zero).</p>
+</li>
+<li>
+<p>This feature can be configured for a policy counter when the <i>Resource Based Flag</i> is set to <varname>True</varname> in the counter definition. No threshold should be attached to the policy counter, which is attached to a group or device.</p>
+</li>
+<li>
+<p>The policy counter name defined within the <systemoutput>Send-SNR</systemoutput> action of the threshold action must be attached either to a device or group depending on whether the AV or bucket is attached to a device or group.</p>
+</li>
+<li>
+<p>The <i>Policy Threshold Flag</i> should be checked in a threshold attached to the AV.</p>
+</li>
+</ul>
+</note>
+<p>This feature allows AV or bucket to send an SNR during the provisioning or during a Diameter call when AV or bucket balance is updated as explained in the <!--xref URI: #SendingSNRprov--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-SNRaction/SendingSNRprov"/> section.</p>
+<p>If a CCR-U or CCR-T request is received, then at commit, a <systemoutput>Send-SNR</systemoutput> action is sent from the AV or bucket to throttle the speed to low when the committed value on the bucket or AV (accumulating charging services having single or multiple buckets or counters) is exhausted.</p>
+<p>For information on step-charge scenario while handling a <systemoutput>Send-SNR</systemoutput> action for an AV, see the <!--xref URI: #Stepchargescenario--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-scf/Stepchargescenario"/> section.</p>
+</section>
+<section id="SendingSNRprov"><title>Sending an SNR during provisioning or call</title>
+<p>To send an SNR when AV is exhausted or incremented during provisioning or during a call, configure a threshold on AV updates. The threshold is configured with a rule attribute <i>SY.SEND-SNR</i> with the following format:</p><ul>
+<li>
+<p>The policy counter name and its state is configured for the <systemoutput>Send-SNR</systemoutput> action as <varname>C1,Low</varname> where <varname>C1</varname> is the policy counter name and <varname>Low</varname> is the counter state.</p>
+</li>
+<li>
+<p>However, if you need to configure two counters, then it is configured as <systemoutput>Send-SNR</systemoutput> action as <varname>C1,Low;C2,High</varname> where <varname>C1,C2</varname> indicate the policy counter names with <varname>Low</varname> and <varname>High</varname> as the counter states.</p>
+</li>
+</ul></section>
+    <section id="Stepchargeexample"><title>Example 1: Sending an SNR during provisioning when AV balance is updated</title>
+<p>This example indicates that a QoS is set from low to high and vice-versa when an AV has a step-charge bucket and the last step is consumed in commit. It also indicates an SNR on provisioning when the AV is incremented or decremented using REST API.</p>
+<p>
+<b>Prerequisites:</b>
+</p><ol>
+<li>
+<p>Create two charging services:</p>
+<p/><ol>
+<li>
+<p>Create the first charging service <varname>CS1</varname> having a bucket with initial value 100 MB and a policy usage counter <varname>C4</varname>.</p>
+</li>
+<li>
+<p>Create the second charging service <varname>CS2</varname> with a step bucket having 2 steps of 50 MB each, and no charge in the next pass.</p>
+</li>
+</ol>
+</li>
+<li>
+<p>Create a bundle with the two charging services <varname>CS1</varname> and <varname>CS2</varname>.</p>
+</li>
+<li>
+<p>Create a volume type threshold profile group (TPG) with the <i>OCSPolicyThreshold</i> flag set as <varname>True</varname> and rule with <systemoutput>Send-SNR</systemoutput> action (<varname>C1,Low;C2,High;C3,Low;C5,High;C4,Low</varname>).</p>
+</li>
+<li>
+<p>The threshold value is set as <varname>0 MB</varname> -<i>Absolute from end</i> and is used during the call.</p>
+<p>Create two more thresholds <varname>ABS</varname> and <varname>ABE</varname> for provisioning the SNR with action condition <varname>isDiameterCall=false</varname> and result context with action <varname>triggerType=provisioning</varname>, which triggers the <systemoutput>Send-SNR</systemoutput> action to toggle all counters.</p>
+<p>The two thresholds <varname>ABS</varname> and <varname>ABE</varname> have threshold configured on value <varname>0</varname>.</p>
+</li>
+<li>
+<p>Create an AV of type <varname>Byte</varname> accumulating both the charging services created before and the TPGs.</p>
+</li>
+<li>
+<p>Create counters <varname>C1</varname>, <varname>C2</varname>, <varname>C3</varname>, <varname>C5</varname>, and <varname>C6</varname> of type <varname>MByte,usage/all/all</varname> with an <i>OCSPolicyCounter</i> and <i>resourceBased</i> flags set as <varname>True</varname>.</p>
+</li>
+<li>
+<p>Create a device and a group having that device. Associate the above created counters <varname>C1</varname>, <varname>C5</varname>, and <varname>C6</varname> to the group, <varname>C2</varname> to the device-group, and <varname>C3</varname> to the device. Add the previously created AV to this group and subscribe the bundle to this group.</p>
+</li>
+<li>
+<p>Set the default signalling state in the <i>SLA (initial)</i> flag as <varname>False</varname>.</p>
+</li>
+<li>
+<p>Create a slicing profile with <i>Slice Size</i> set as <varname>104857600 bytes</varname> or <varname>10 MB</varname>, <i>SAF</i> set as <varname>100%</varname> and <i>Minimum Slice Size</i> set as <varname>2097152 bytes</varname> or <varname>2 MB</varname>.</p>
+</li>
+</ol>
+<p>
+<b>Scenario:</b>
+</p><ol>
+<li>
+<p>Execute a centralized SCUR call such that:</p>
+<p>CCR-I: RSU = empty and GSU = 10 MB</p>
+<p>CCR-U1: USU = 100 MB, RSU = empty, and GSU = 10 MB</p>
+<p>CCR-U2: USU = 50 MB, RSU = empty and GSU = 10 MB</p>
+<p>CCR-T: USU= 100 MB</p>
+</li>
+<li>
+<p>Update bucket1 to 50 MB so that AV is incremented.</p>
+</li>
+<li>
+<p>Update bucket1 to 0 MB so that AV is decremented.</p>
+</li>
+</ol>
+<p>
+<b>Result:</b>
+</p><ol>
+<li>
+<p>Before receiving the CCR-U1 request, all counters state were set to default, which is <varname>-99</varname>. When the CCR-U2 request is received, threshold is triggered but given that we have a step bucket, SNR is not triggered. The SNR is triggered on receiving a CCR-T request when the AV gets exhausted and an SNR is sent with the values of <varname>C1</varname>, <varname>C3</varname>, and <varname>C4</varname> set as <varname>Low</varname>, and the values of <varname>C2</varname> and <varname>C5</varname> set as <varname>High</varname>.</p>
+</li>
+<li>
+<p>If a bucket is incremented after the call, then the <varname>ABS</varname> provisioning threshold is triggered and an SNR is sent with updated counter value as per the configuration.</p>
+</li>
+<li>
+<p>If a bucket is decremented after increment, then the <varname>ABE</varname> provisioning threshold is triggered and an SNR is sent with updated counter value as per the configuration.</p>
+</li>
+</ol>
+<note>
+<p>During provisioning, <varname>ABE</varname> threshold is considered for sending SNR in case of decrement in value and <varname>ABS</varname> threshold is considered for sending SNR in case of increment in value.</p>
+</note>
+</section>
+    <section><title>Example 2: Sending an SNR through Diameter call</title>
+<b>Prerequisites:</b>
+<ol>
+<li>
+<p>Create two charging services <varname>CS1</varname> and <varname>CS3</varname> having individual buckets with initial value of <varname>100 MB</varname> each.</p>
+</li>
+<li>
+<p>Create another charging service <varname>CS2</varname> with no charge.</p>
+</li>
+<li>
+<p>Create a bundle with the charging services <varname>CS1</varname>, <varname>CS2</varname>, and <varname>CS3</varname>.</p>
+</li>
+<li>
+<p>Create a volume type TPG with the <i>OCSPolicyThreshold</i> flag set as <varname>True</varname> and rule with <systemoutput>Send-SNR</systemoutput> action (<varname>C1,Low</varname>). The threshold value is set as <varname>0 MB</varname> -<i>Absolute from end</i>.</p>
+</li>
+<li>
+<p>Create an AV of type <varname>MByte</varname> accumulating all the charging services created before and the TPG.</p>
+</li>
+<li>
+<p>Create a counter of type <varname>MByte, usage/all/all</varname> having the <i>OCSPolicyCounter</i> and <i>resourceBased</i> flags set as <varname>True</varname>.</p>
+</li>
+<li>
+<p>Create a device and a group having that device. Associate the above created counter to group and add above created AV to this group and subscribe the bundle to this group.</p>
+</li>
+<li>
+<p>Create a slicing profile with <i>Slice Size</i> set as <varname>104857600 bytes</varname> or <varname>10 MB</varname>, <i>SAF</i> set as <varname>100%</varname> and <i>Minimum Slice Size</i> set as <varname>2097152 bytes</varname> or <varname>2 MB</varname>.</p>
+</li>
+</ol>
+<p>
+<b>Scenario:</b>
+</p>
+<p>Execute a centralized SCUR call such that:</p>
+<p>CCR-I: RSU = empty and GSU = 100 MB</p>
+<p>CCR-U1: USU = 100 MB, RSU = empty, and GSU = 100 MB</p>
+<p>CCR-U2: USU = 99 MB, RSU = empty, and GSU = 2 MB</p>
+<p>CCR-T: USU = 100 MB</p>
+<p>
+<b>Result:</b>
+</p><ol>
+<li>
+<p>In CCR(U1) and CCR(U2), the counter state is set as <varname>default( -99)</varname> given that in CCR(U1), complete reservation is done from AV and in CCR(U2), 1 MB is reserved from AV. In CCR(T), QoS is set to low and SNR is sent with counter value set as <varname>Low</varname> because AV becomes <varname>0</varname> in terminate.</p>
+</li>
+<li>
+<p>In CCR(U2) as after commit, remaining value in AV is 1 MB. Therefore, 1 MB is reserved from AV as slice reduction is done as per the configuration and remaining 1 from no charge as min slice is 2 MB.</p>
+</li>
+</ol>
+</section>
+</conbody></concept>

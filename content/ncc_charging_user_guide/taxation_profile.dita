@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e170418"><title>Taxation Profile </title><conbody>
+<section><title>Overview</title>
+<p>The <uicontrol>Taxation Profile</uicontrol> entity includes multiple percentage tax rates and applicability conditions. The tax is applicable only to a monetary type of bucket and rate is mandatory for the taxation applied to a monetary resource. If the taxation reference is not provided in the charging service tariff rule, then the taxation cannot be applied. The taxation information cannot be retrieved from a bundle or account.</p>
+<p>Nokia recommends not to change the tax or rate in between calls or for an ongoing session.</p>
+<p>The taxation can be attached to a bundle, account, or lifecycle to implement the tax. However, taxation is not applicable for refund cases. The CDR tags generated for taxation are applicable on committed and reserved values.</p>
+<p>The taxation can also be defined for the following lifecycle actions when the fee is used:</p><ul>
+<li>
+<p>
+<systemoutput>Charge Fee Action</systemoutput>: If the taxation reference is not given within the lifecycle, which means the taxation profile is not given within the <systemoutput>Charge Fee Action</systemoutput>, then no tax is applied.</p>
+</li>
+<li>
+<p>
+<systemoutput>Add Subscription Action</systemoutput>: If the taxation reference is not given within the lifecycle, which means the taxation profile is not given in the <systemoutput>Add Subscription Action</systemoutput>, then the tax related information is retrieved from bundle or account.</p>
+</li>
+<li>
+<p>
+<systemoutput>Renew Subscription Action</systemoutput>: If the taxation reference is not given within the lifecycle, which means the taxation profile is not given in the <systemoutput>Renew Subscription Action</systemoutput>, then the tax related information is retrieved from bundle or account.</p>
+</li>
+</ul>
+<note>
+<p>NCC charging uses the CEIL rounding method only for taxed amount.</p>
+</note>
+</section>
+<section><title>Configuration</title>
+<p>Log into the SM GUI, navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> &gt;
+     <uicontrol>COMMON</uicontrol> tab and select <uicontrol>Taxation Profile</uicontrol> from the
+    hamburger menu ( <!--MMO resource relative URI: ../../Global_Configurations/Graphics/hamburgermenu_default.png-->
+    <image href="../images/img9yz-09126-ug01-pczza-sp1-hamburgermenu_default.png" scale="40"/> ). To
+    add a new taxation profile, click <!--MMO resource relative URI: ../Graphics/Release_18.0/Add_button_default.png-->
+    <image href="../images/img9yz-09126-ug01-pczza-sp1-add_button_default.png" scale="45"/> to add
+    basic details as described in the given table:</p>
+<table pgwide="1" colsep="1" rowsep="1">
+    <title>Parameters for taxation</title>
+    <tgroup cols="4">
+     <colspec colname="col1"/>
+     <colspec colname="COLSPEC15"/>
+     <colspec colname="COLSPEC1"/>
+     <colspec colname="col2"/>
+     <thead>
+      <row>
+       <entry>
+        <p>Parameter</p>
+       </entry>
+       <entry>
+        <p>Description</p>
+       </entry>
+       <entry>
+        <p>Options</p>
+       </entry>
+       <entry>
+        <p>Mandatory/Optional</p>
+       </entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry> Taxation ID </entry>
+       <entry> This parameter indicates a unique key for taxation definition. </entry>
+       <entry> String </entry>
+       <entry> Mandatory </entry>
+      </row>
+      <row>
+       <entry> Application Type </entry>
+       <entry> The application type for taxation. </entry>
+       <entry> Select the required application type from the drop-down list. </entry>
+       <entry> Mandatory </entry>
+      </row>
+      <row>
+       <entry> Description </entry>
+       <entry> This parameter indicates the description of the taxation defined. </entry>
+       <entry> String </entry>
+       <entry> Optional </entry>
+      </row>
+      <row>
+       <entry nameend="col2" namest="col1">
+        <p>
+         <uicontrol>Tax Rates</uicontrol>
+        </p>
+        <p>One Tax ID and rate is mandatory. It is recommended to define a maximum of three tax rate
+         percentages. </p>
+       </entry>
+      </row>
+      <row>
+       <entry> ID </entry>
+       <entry> This parameter indicates the tax rate Id. </entry>
+       <entry> String </entry>
+       <entry>
+        <p>Mandatory</p>
+        <p>At least one tax rate must be defined</p>
+       </entry>
+      </row>
+      <row>
+       <entry> Rate (%) </entry>
+       <entry> This parameter indicates the tax percentage. The range is 0 - 100%. </entry>
+       <entry> Integer </entry>
+       <entry>
+        <p>Mandatory</p>
+        <p>At least one tax rate must be defined</p>
+       </entry>
+      </row>
+      <row>
+       <entry> Description </entry>
+       <entry> This parameter indicates the description of the tax rate. </entry>
+       <entry> String </entry>
+       <entry> Optional </entry>
+      </row>
+      <row>
+       <entry nameend="col2" namest="col1"> Click <uicontrol>NEW TAX RATE</uicontrol> to add more
+        tax rates. </entry>
+      </row>
+      <row>
+       <entry> Applicability Condition </entry>
+       <entry>
+        <p>This parameter indicates a rule condition expression evaluated to determine whether the
+         taxation is applicable. </p>
+        <p>The default applicability condition for taxation is true.</p>
+       </entry>
+       <entry> String </entry>
+       <entry> Optional </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+</section>
+<section><title>Configuring rule expressions</title>
+<p>The rule expressions can be configured using roaming, zoning, call type so on to the special
+    taxation Id to determine whether the taxation is applicable or not. If the criteria check of the
+    taxation matches, then while reserving the amount from account or monetary bucket for the call,
+    NCC uses the tax rate percentage (if exists). The <codeph>Taxation fee = committed fee * tax
+     rating percent</codeph>. If there are multiple tax rate percentages, then the summary of all
+    the tax rates are taken as taxation fee, that is, <codeph>Taxation fee = committed fee * per tax
+     rating percent</codeph>. The committed fee plus the total taxation fee is charged to the
+    account or monetary bucket.</p>
+<p>CEIL rounding method is used for taxed amount. CEIL takes the number and rounds it to the nearest integer value above its current value. For example, the ceiling of 2.31 is 3.</p>
+<p>
+<uicontrol>Example:</uicontrol>
+</p>
+<p>The following table provides details on the parameter values considered for the example.<table
+     pgwide="1" colsep="1" rowsep="1">
+     <tgroup cols="3">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <colspec colname="col3"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Taxation ID</p>
+        </entry>
+        <entry>
+         <p>Tax rate percentage</p>
+        </entry>
+        <entry>
+         <p>Applicability condition</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> Tax1 </entry>
+        <entry> 10% </entry>
+        <entry/>
+       </row>
+       <row>
+        <entry morerows="1"> Tax2 </entry>
+        <entry> 5% </entry>
+        <entry morerows="1"> Home and Zone is USA </entry>
+       </row>
+       <row>
+        <entry> 10% </entry>
+       </row>
+       <row>
+        <entry morerows="2"> Tax3 </entry>
+        <entry> 10% </entry>
+        <entry morerows="2"> Roam </entry>
+       </row>
+       <row>
+        <entry> 15% </entry>
+       </row>
+       <row>
+        <entry> 5% </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table></p>
+<p>The account balance is 200 USD attached to an iPhone device. Tax2 and Tax3 are provided in tariff.</p>
+<sectiondiv>
+<p><b>Case 1: Data call at home location</b></p>
+<p>iPhone makes a data call from USA. The committed charge is 50 USD. <i>Tax2</i> matches and is used for the committed usage. After closing the data call, the taxed amount charged is 57.5 USD = 50 * (1+5%+10%). The current account balance is 142.5 USD.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Case 2: Data call at roaming location</b></p>
+<p>iPhone makes a data call at roaming location. The committed charge is 80 USD. <i>Tax3</i> matches and is used for the committed usage. After closing the data call, the taxed amount charged is 104 USD = 80 * (1+10%+15%+5%). The current account balance is 38.5 USD.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Case 3: Lifecycle actions</b></p>
+<p>The account balance is 200 USD. In the lifecycle <systemoutput>Charge Fee Action</systemoutput>, the taxation Id <i>Tax1</i> is attached with fee 100 USD. After execution of this action, the account balance is 90 and 110 is deducted.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Case 4: Tax applied to main balance</b></p>
+<p>You can define the tariff in the charging service to apply tax to the main balance as follows. In this example, <i>Tax4</i> is the tax defined in the taxation profile and note that the <userinput>Main Balance</userinput> is hard-coded.</p>
+<codeblock>RATING.Rate ("Rate1", "Main Balance") and </codeblock>
+<codeblock>RATING.Tax-Selection = "Tax4"</codeblock>
+</sectiondiv>
+<sectiondiv>
+<p><b>Case 5: Sample tariff with taxation</b></p>
+<p>The following figure shows a sample tariff rule with tax to be applied to the SMS call defined in a charging service.</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_19.3/Taxation_Tariff_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-taxation_tariff_default.png"/>
+</fig>
+</sectiondiv>
+</section>
+<section><title>Actions associated with taxation</title>
+<table pgwide="1" colsep="1" rowsep="1">
+    <title>Actions associated with taxation</title>
+    <tgroup cols="2">
+     <colspec colname="col1" colwidth="1*"/>
+     <colspec colname="col2" colwidth="2.13*"/>
+     <thead>
+      <row>
+       <entry>
+        <p>Action</p>
+       </entry>
+       <entry>
+        <p>Description</p>
+       </entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry> Create </entry>
+       <entry> Used to create the taxation in database by providing the mandatory and optional
+        parameters. </entry>
+      </row>
+      <row>
+       <entry> Read </entry>
+       <entry> Used to display the taxation record per the data retrieved from database. </entry>
+      </row>
+      <row>
+       <entry> Update </entry>
+       <entry> Used to update a taxation record in database. </entry>
+      </row>
+      <row>
+       <entry> Delete </entry>
+       <entry> Used to delete a particular taxation record from database. </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+<note>
+<p>These actions are valid for internal purposes only and cannot be accessed using the SM GUI. </p>
+</note>
+</section>
+</conbody></concept>

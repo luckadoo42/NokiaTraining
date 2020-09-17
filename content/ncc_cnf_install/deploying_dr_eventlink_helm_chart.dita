@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="deploying_dr_eventlink_helm_chart">
+    <title>Deploying DR-eventlink Helm chart</title>
+    <taskbody>
+        <context>
+            <p>This procedure provides instructions on how to deploy the DR-eventlink Helm
+                chart.</p>
+        </context>
+        <steps>
+            <step>
+        <cmd>Create the Overrides yaml file for the DR-eventlink Helm chart by entering:</cmd>
+        <info>
+          <codeblock>cat > dr-eventlink-ckey-different-ns-overrides.yaml &lt;&lt;EOF
+global:
+  fqdnEdge: $INGRESS_IP
+  datarefinery:
+    imageTag: $DR_VERSION
+    imagePullPolicy: "IfNotPresent"
+  serviceAccountName: dr-sa-external
+#POD_NAME_PREFIX  fullnameOverride: "$POD_NAME_PREFIX"
+#POD_NAME_PREFIX  containerNamePrefix: "$CONTAINER_NAME_PREFIX"
+  istioVersion: "$ISTIO_VERSION"
+  istio:
+    enabled: true
+    gateway:
+      name: 'me-sps-gateway'
+      selector: {}   # indicates which IngressGateway the SFTP Gateway will attach to
+#NLT_IMAGE_NAME_OVERRIDES  kubectlImage: "kubectl" #was tools/kubectl
+ 
+datarefinery:
+  administrator_username: 'dr-admin'
+  # Default password below is: ChangeIt123!
+  # By default, Keycloak requires mixed case, numbers and special characters, as well as minimum length restriction
+  # to provide your own password, run: echo -n 'ChangeIt123!' | base64
+  administrator_password: 'Q2hhbmdlSXQxMjMh'
+sftp:
+  istio:
+    gateway:
+      tcpPort: 2222
+  image:
+    resources:
+      requests:
+        memory: 512Mi
+        cpu: 500m
+      limits:
+        memory: 512Mi
+        cpu: 500m
+keycloak:
+  fqdn: $CKEY_FQDN
+  https_port: $CKEY_PORT
+  administrator_username: "admin"
+  administrator_password: "$(echo -n 'admin' | base64)"
+  realm: 'me-dr-cdr' # For Router: use chf-dr-cdr
+  externalTlsCertificate:
+    enabled: true
+    secretName: $ISTIO_CERT_SECRET_NAME
+    certFieldName: $ISTIO_CERT_FIELD_NAME
+cmdb:
+  istio:
+    enabled: true
+  mariadb:
+#NLT_IMAGE_NAME_OVERRIDES    image: {name: "mariadb"} # was cmdb/mariadb
+    persistence:
+      size: 10Gi
+    resources:
+      requests:
+        memory: 768Mi
+        cpu: 1
+      limits:
+        memory: 768Mi
+        cpu: 1
+#CMDB_SIMPLEX    count: 1
+#CMDB_SIMPLEX  cluster_type: "simplex"
+#CMDB_SIMPLEX  maxscale:
+#CMDB_SIMPLEX    count: 0
+#NLT_IMAGE_NAME_OVERRIDES  admin: {image: {name: "admin"}} # was cmdb/admin
+EOF</codeblock>
+        </info>
+      </step>
+      <step>
+        <cmd>Based on the input, replace the values in the Overrides file by entering:</cmd>
+        <info>
+          <codeblock>if [[ "$NLT_IMAGE_NAME_OVERRIDES" == "true" ]]; then sed -i 's/#NLT_IMAGE_NAME_OVERRIDES//g' dr-eventlink-ckey-different-ns-overrides.yaml; fi
+if [[ "$CMDB_SIMPLEX" == "true" ]]; then sed -i 's/#CMDB_SIMPLEX//g' dr-eventlink-ckey-different-ns-overrides.yaml; fi
+if [ -n "$POD_NAME_PREFIX" ]; then sed -i 's/#POD_NAME_PREFIX//g' dr-eventlink-ckey-different-ns-overrides.yaml; fi</codeblock>
+        </info>
+      </step>
+            <step>
+                <cmd>Edit the Overrides yaml file as needed.</cmd>
+            </step>
+            <step>
+                <cmd>Install the DR-eventlink Helm chart by entering:</cmd>
+                <info>
+                    <codeblock>helm install -n $NAMESPACE dr-event-link dr-eventlink-chart*.tgz -f dr-eventlink-ckey-different-ns-overrides.yaml</codeblock>
+                </info>
+            </step>
+        </steps>
+    </taskbody>
+</task>

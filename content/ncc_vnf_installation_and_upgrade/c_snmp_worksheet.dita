@@ -1,0 +1,966 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+		<concept id="id9YZ-09018-IN00-RJZZA-SNMP_worksheet"><title>SNMP section</title><conbody id="SNMP_worksheet">
+
+<p>The SNMP section is used for configuring the SNMP parameters.</p>
+<note>
+
+<p>The following applies to the SNMP parameters:</p><ul>
+
+<li>
+<p>Do not remove the parameters.</p>
+</li>
+<li>
+<p>To update the SNMP parameters after VNF instantiation, contact Nokia Professional Services.</p>
+</li>
+<li>
+<p>The IP versions used for the SNMP parameters must align.</p>
+</li>
+<li>
+<p>The alarms component uses confd to monitor the SNMP parameters. If the SNMP parameters are manually changed after the deployment, then alarms automatically retrieve the new values from ETCD. The SNMP configuration files are updated automatically.</p>
+</li>
+<li>
+<p>The SNMP users can be either v2c or v3, but not both at the same time.</p>
+</li>
+</ul>
+</note>
+<note>
+
+<p>See the following:</p><ul>
+
+<li>
+<p>For information on how to configure passwords in SNMP v2c and SNMP v3 configurations with <codeph>fpm-password</codeph> tool, see <i>Operation, Administration and Maintenance Guide</i>.</p>
+</li>
+<li>
+<p>For information on ports, see section <i>Communication matrix</i> in <i>Overview Guide</i>.</p>
+</li>
+</ul>
+</note>
+<note>
+
+<p>New NetAct is compatible with FastPass and refers to NetAct19 SP1907 or later versions, and old NetAct refers to NetAct18A SP1810 or earlier versions.</p>
+</note>
+<note>
+
+<p>Configuration of the snmp/users/v3 parameter can only be done after an installation or software upgrade.</p>
+</note>
+<p>The following table describes the parameters of the SNMP section.</p>
+<table id="SNMP-parameters" pgwide="1" colsep="1" rowsep="1" scale="80">
+			<title>SNMP parameters descriptions</title>
+			<tgroup cols="3">
+				<colspec colname="col1" colwidth="1*"/>
+				<colspec colname="COLSPEC3" colwidth="3.54*"/>
+				<colspec colname="COLSPEC0" colwidth="1*"/>
+				<thead>
+					<row>
+						<entry>Parameter</entry>
+						<entry>Description</entry>
+						<entry>
+							Update notes
+						</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row>
+						<entry> alma/activeAlarmTableSize </entry>
+						<entry> This parameter defines the size of the active alarm table. The value
+							is integer and the value range is [1,1024]. The alarm table is
+							configured in "k", which means that if this parameter’s value is 1k,
+							then 1000 active alarms can be stored. If the value is 10k, then 10000
+							active alarms can be stored. </entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry> alma/alarmAdapterClasses </entry>
+						<entry>
+							<p>This parameter defines the alarm adapter settings. The value is a
+								list of adapters separated by semicolon.</p>
+							<p>Currently the following adapters are supported:</p>
+							<ul>
+								<li>
+									<p>"com.nokia.cam.alma.adapter.cvea.CveaAdapter"</p>
+								</li>
+								<li>
+									<p>"com.nokia.cam.alma.adapter.snmp4jagent.SNMPAgentAdapter"</p>
+								</li>
+							</ul>
+						</entry>
+						<entry> Do not modify. </entry>
+					</row>
+					<row>
+						<entry>alma/backendStorage </entry>
+						<entry> This parameter defines the backend storage type. The supported value
+							is <varname>etcd</varname>. </entry>
+						<entry> Do not modify. </entry>
+					</row>
+					<row>
+						<entry> alma/cveaAgentHosts </entry>
+						<entry> This parameter defines Cvea Agents hosts. The value is a list of
+							pairs of IP addresses and ports, which are separated by colon, of Cvea
+							Agents. The pairs in this list are separated by comma, for example,
+							“&lt;IP1&gt;:&lt;Port1&gt;,&lt;IP2&gt;:&lt;Port2&gt;,&lt;IP3&gt;:&lt;Port3&gt;". </entry>
+						<entry> Do not modify. </entry>
+					</row>
+					<row>
+						<entry>alma/kafkaTopic </entry>
+						<entry> This parameter defines Kafka topic name which the producer sends to.
+							This parameter must be set to “alma”. </entry>
+						<entry> Do not modify. </entry>
+					</row>
+					<row>
+						<entry>alma/kafka </entry>
+						<entry> This parameter defines Kafka configurations when
+							&lt;alma/messageSource&gt; is set to <varname>kafka</varname>. This
+							parameter is set to “{}”. </entry>
+						<entry> Do not modify. </entry>
+					</row>
+					<row>
+						<entry>alma/mariadb </entry>
+						<entry>
+							<p>This parameter defines MariaDB configurations in
+								&lt;alma/backendStorage&gt;.</p>
+							<p>If &lt;alma/backendStorage&gt; is set to <varname>mariadb</varname>,
+								this parameter must be defined as follows:</p>
+							<ul>
+								<li>
+									<p>For SM and IG sites, the value is
+											<varname>{"javax.persistence.jdbc.url":"jdbc:mariadb://&lt;IOHO
+											internal VIP&gt;:3309/&lt;database
+											name&gt;","javax.persistence.jdbc.user":"&lt;alarm user
+											in
+											DB&gt;","javax.persistence.jdbc.password":"&lt;Password
+											for alarm user in
+											DB&gt;","javax.persistence.jdbc.passphrase":"&lt;any
+											passphrase&gt;"}</varname>
+									</p>
+								</li>
+								<li>
+									<p>For ME sites, the value is
+											<varname>{"javax.persistence.jdbc.url":"jdbc:mariadb://&lt;IOHO
+											internal VIP&gt;:3306/&lt;database
+											name&gt;","javax.persistence.jdbc.user":"&lt;alarm user
+											in
+											DB&gt;","javax.persistence.jdbc.password":"&lt;Password
+											for alarm user in
+											DB&gt;","javax.persistence.jdbc.passphrase":"&lt;any
+											passphrase&gt;"}</varname>
+									</p>
+								</li>
+							</ul>
+							<p>where:</p>
+							<ul>
+								<li>
+									<p>&lt;alarm user in DB&gt; is the name of the database and must
+										correspond to &lt;User alma&gt;, which is the database user
+										for alarms defined in Bootstrap MariaDB section in &lt;Add
+										Users&gt;. For more information, see
+											<!--xref URI: #Bootstrap-MariaDB-table--><xref
+											keyref="id9YZ-09018-IN00-RJZZA-Bootstrap-MariaDB-section/Bootstrap-MariaDB-table"
+										/>.</p>
+								</li>
+								<li>
+									<p>&lt;database name&gt; is the name of the database created by
+										MariaDB. This parameter corresponds to &lt;key&gt; in
+										&lt;mariadb/databases&gt; parameter and must be set to the
+										same value: <varname>SPSMARIADB</varname>.</p>
+								</li>
+								<li>
+									<p>&lt;Password for alarm user in DB&gt; is the password for
+										database defined in &lt;alarm user in DB&gt;. This parameter
+										must be the same as &lt;Password&gt; defined in Bootstrap
+										MariaDB section in &lt;Add Users&gt;. This password must be
+										encrypted using fpm-password tool. For more information, see
+											<!--xref URI: #Bootstrap-MariaDB-table--><xref
+											keyref="id9YZ-09018-IN00-RJZZA-Bootstrap-MariaDB-section/Bootstrap-MariaDB-table"
+										/>. </p>
+								</li>
+							</ul>
+						</entry>
+						<entry> Do not modify. </entry>
+					</row>
+					<row>
+						<entry>alma/messageSource </entry>
+						<entry> This parameter defines the alarm message source. This parameter must
+							be set to <varname>rsyslog</varname>. </entry>
+						<entry> Do not modify. </entry>
+					</row>
+					<row>
+						<entry>snmp/enablePortForwarding </entry>
+						<entry>
+							<p>This parameter defines the port forwarding rule. The supported values
+								are <varname>Y</varname> and <varname>N</varname>
+							</p>
+							<p>where:</p>
+							<ul>
+								<li>
+									<p>
+										<varname>Y</varname> indicates that the port forwarding rule
+										is compatible with legacy alarm behavior, which allows the
+										alarm service to accept SNMP requests on UDP port 161.</p>
+								</li>
+								<li>
+									<p>
+										<varname>N</varname> indicates that the port forwarding rule
+										is not compatible with legacy alarm behavior.</p>
+								</li>
+							</ul>
+							<p>The old Netact used 161 port to send Alarm Upload requests. The new
+								Netact uses 1161 port to send Alarm Upload requests.</p>
+						</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry>snmp/heartbeatInterval </entry>
+						<entry>
+							<p>This parameter defines the settings for the heartbeat trap interval.
+								The value is a number.</p>
+							<p>If this parameter is set to zero, then the heartbeat trap is not sent
+								to configured SNMP v3 or v2c users. This parameter only takes effect
+								if &lt;snmp/usedMib&gt; is set to
+									<varname>NokiaEnhancedSnmpSolutionSuiteAlarmIrp</varname>.</p>
+						</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry>snmp/usedMib </entry>
+						<entry>
+							<p>This parameter defines the MIB object. The values are:</p>
+							<ul>
+								<li>
+									<p>
+										<varname>NokiaEmsMib</varname>
+									</p>
+								</li>
+								<li>
+									<p>
+										<varname>NokiaEnhancedSnmpSolutionSuiteAlarmIrp</varname>
+									</p>
+								</li>
+							</ul>
+							<p>Depending on what version of NetAct is used, the values are assigned
+								as follows:</p>
+							<ul>
+								<li>
+									<p>If new NetAct is used, then the value is
+											<varname>NokiaEnhancedSnmpSolutionSuiteAlarmIrp.</varname>
+									</p>
+								</li>
+								<li>
+									<p>If old NetAct is used, then the value is
+											<varname>NokiaEmsMib</varname>.</p>
+								</li>
+							</ul>
+							<p>For more information on MIB object, see section <i>Supported MIB</i>
+								in the Operation, Administration and Maintenance Guide.</p>
+						</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry>snmp/trapSrcIPs </entry>
+						<entry>
+							<p>This parameter defines the VIP list for the SNMP trap source IP. If
+								you do not need this parameter, this parameter must be set to its
+								default value. This parameter is used to set the SNMP trap source IP
+								to the OAME VM's VIPs. This parameter cannot be empty.</p>
+							<p>As described in section
+									<!--xref URI: t-install-intro-prerequisites.xml#Network-configuration--><xref
+									keyref="id9YZ-09018-IN00-RJZZA-d1e893/Network-configuration"/>,
+								an NCC site can be configured as follows:</p>
+							<ul>
+								<li>
+									<p>one single OAME IPv4 external network and VIP(s)</p>
+								</li>
+								<li>
+									<p>one single OAME IPv6 external network and VIP(s)</p>
+								</li>
+								<li>
+									<p>two or more OAME IPv4 external networks and VIP(s)</p>
+								</li>
+								<li>
+									<p>two or more OAME IPv6 external networks and VIP(s)</p>
+								</li>
+								<li>
+									<p>one single OAME IPv4 external network and one or multiple
+										VIPs and one single OAME IPv6 external network with one or
+										multiple VIPs</p>
+								</li>
+								<li>
+									<p>two or more OAME IPv4 external networks and VIP(s) and two or
+										more OAME IPv6 external networks and VIP(s)</p>
+								</li>
+							</ul>
+							<p>For SNMP on the Active OAME VM, the following conditions apply:</p>
+							<ul>
+								<li>
+									<p>The trap source IP configured must bind to one of the network
+										interfaces of the Active OAME VM.</p>
+								</li>
+								<li>
+									<p>If IPv4 and IPv6 are used, then SNMP can only support a
+										single IPv4 and a single IPv6 trap source IP at the same
+										time.</p>
+								</li>
+							</ul>
+							<p>Depending on the condition applied, the trap source IP address is
+								assigned to one of the following values:</p>
+							<ul>
+								<li>
+									<p>The default value does not configure any trap target IP. Just
+										set it to “0.0.0.0”.<varname>{"vip_ipv4":"0.0.0.0",
+											"vip_ipv6":""}</varname>
+									</p>
+								</li>
+								<li>
+									<p>If only IPv4 is used, <varname>{"vip_ipv4":"1.1.1.1",
+											"vip_ipv6":""}</varname>
+									</p>
+								</li>
+								<li>
+									<p>If only IPv6 is used, <varname>{"vip_ipv4":"",
+											"vip_ipv6":"1::1"}</varname>
+									</p>
+								</li>
+								<li>
+									<p>If both IPv4 and IPv6 are used,
+											<varname>{"vip_ipv4":"1.1.1.1","vip_ipv6":"1::1"}</varname>
+									</p>
+								</li>
+							</ul>
+							<p>For information on compatibility with NetAct, see
+									<!--xref URI: #SNMP_trap_source_IP_table--><xref
+									keyref="id9YZ-09018-IN00-RJZZA-SNMP_worksheet/SNMP_trap_source_IP_table"
+								/>.</p>
+						</entry>
+						<entry> Must modify the default value if this parameter is used. </entry>
+					</row>
+					<row>
+						<entry>snmp/users/v2c </entry>
+						<entry>
+							<p>This parameter is used to configure the SNMP v2c users on OAME VMs.
+								One or more multiple users can be configured at the same time.</p>
+							<p>For more information on the fields of SNMP users, see
+									<!--xref URI: #Table_SNMP_users--><xref
+									keyref="id9YZ-09018-IN00-RJZZA-SNMP_worksheet/Table_SNMP_users"
+								/>.</p>
+							<p>The following is an example of how to configure this parameter:</p>
+							<codeblock>"snmp/users/v2c": [
+	{
+		"snmp_sec_name":"public1",
+		"snmp_community":"public",
+		"snmp_manager_ip":"1.1.1.1",
+		"trap_dst_port":""
+	},
+	{
+		"snmp_sec_name":"public",
+		"snmp_community":"public",
+		"snmp_manager_ip":"2.2.2.2",
+		"trap_dst_port":"162"
+	}
+]</codeblock>
+							<p>In this example, the Active OAME VM sends SNMP traps to NetAct LBJBI
+								server, which has 2.2.2.2 IP address, and port 162. The Active OAME
+								VM receives SNMP requests from NetAct SBI_Common_Mediation server,
+								which has 1.1.1.1 IP address. Common mediation server's
+								configuration can be multiple. It depends on mediation server count
+								on NMS.</p>
+						</entry>
+						<entry>
+							<p>Must modify the default values if SNMP users are v2c.</p>
+							<p>If SNMP users are v3, this parameter must be set to its default
+								values. Do not remove or modify the default values.</p>
+						</entry>
+					</row>
+					<row>
+						<entry>snmp/users/v3 </entry>
+						<entry>
+							<p>This parameter is used to configure the SNMP v3 users on OAME VMs.
+								One or multiple users can be configured at the same time.</p>
+							<p>For more information on the fields of SNMP users, see
+									<!--xref URI: #Table_SNMP_users--><xref
+									keyref="id9YZ-09018-IN00-RJZZA-SNMP_worksheet/Table_SNMP_users"
+								/>.</p>
+							<p>The following is an example of how to configure this parameter:</p>
+							<codeblock>"snmp/users/v3": [
+	{
+		"snmp_username":"initial_snm",
+		"snmp_sec_level":"authPriv",
+		"snmp_auth_protocol":"MD5",
+		"snmp_auth_passwd":"U2FsdGVkX19Z4AkBC/oC1ncluA0+lSgjbnGiBJLQGAw=",
+		"snmp_priv_protocol":"DES",
+		"snmp_priv_passwd":"U2FsdGVkX19Z4AkBC/oC1ncluA0+lSgjbnGiBJLQGAw=",
+		"snmp_passphrase": "test",
+		"snmp_manager_ip":"1.2.3.4",
+		"trap_dst_port":"162"
+	},
+{
+		"snmp_username":"initial_snm1",
+		"snmp_sec_level":"authPriv",
+		"snmp_auth_protocol":"MD5",
+		"snmp_auth_passwd":"U2FsdGVkX19Z4AkBC/oC1ncluA0+lSgjbnGiBJLQGAw=",
+		"snmp_priv_protocol":"DES",
+		"snmp_priv_passwd":"U2FsdGVkX19Z4AkBC/oC1ncluA0+lSgjbnGiBJLQGAw=",
+		"snmp_passphrase": "test",
+		"snmp_manager_ip":"1.2.3.9",
+		"trap_dst_port":""
+	}
+]</codeblock>
+							<p>In this example, the Active OAME VM sends SNMP traps to NetAct LBJBI
+								server, which has 1.2.3.4 IP address, and port 162. The Active OAME
+								VM receives SNMP requests from NetAct SBI_Common_Mediation server,
+								which has 1.2.3.9 IP address.Common mediation server's configuration
+								can be multiple. It depends on mediation server count on NMS.</p>
+						</entry>
+						<entry>
+							<p>Must modify the default values if SNMP users are v3.</p>
+							<p>If SNMP users are v2c, this parameter must be set to its default
+								values. Do not remove or modify the default values.</p>
+							<p>After installation the values of &lt;snmp_auth_passwd&gt;,
+								&lt;snmp_priv_passwd&gt; and &lt;snmp_passphrase&gt; fields must be
+								updated with the new values, which are generated using encrypted
+								passwords and fpm-password tool. For information on fpm-password
+								tool, see <i>Operation, Administration and Maintenance
+								Guide</i>.</p>
+						</entry>
+					</row>
+					<row>
+						<entry> snmp/ianaNumber </entry>
+						<entry>
+							<p>This parameter is only applicable when “NokiaEmsMib” value is used
+								for &lt;snmp/usedMib&gt;.</p>
+							<p>The value of this parameter depends on the type of SNMP Manager and
+								SNMP Manager’s version. If SNMP Manager is NetAct and its version is
+								18A SP1810 or higher, then value of this parameter must be set as
+								28458. If an earlier version of NetAct is used, then value of this
+								parameter must be set as 1751.</p>
+						</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry> snmp/engineId </entry>
+						<entry>
+							<p>This parameter uniquely identifies any VNF on any network management
+								system (NMS).</p>
+							<p>The value can be any alphanumeric value in the range from 5 to 32
+								characters [5,32], but this value must be unique for each VNF. This
+								parameter allows NetAct to identify from which VNF an alarm is
+								coming.</p>
+						</entry>
+						<entry> If you are configuring an NMS such as NetAct, this value cannot be
+							blank. </entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</table>
+<note>
+
+<p/><ul>
+
+<li>
+<p>You must retain all the fields for v2c and v3 users. Unused fields must have their values set to the empty string "".</p>
+</li>
+<li>
+<p>The blank spaces in all the SNMP fields are eliminated when the parameters are configured.</p>
+</li>
+<li>
+<p>New NetAct is compatible with FastPass and refers to NetAct19 SP1907 or later versions, and old NetAct refers to NetAct18A SP1810 or earlier versions.</p>
+</li>
+<li>
+<p>Section <!--xref URI: #SNMP-users-example--><xref keyref="id9YZ-09018-IN00-RJZZA-SNMP_worksheet/SNMP-users-example"/> provides the example of how to configure the SNMP v2c and v3 users.</p>
+</li>
+</ul>
+</note>
+<p>The following table describes the SNMP v2c and v3 users that must be configured with customer values.</p>
+<table id="Table_SNMP_users" pgwide="1" rowsep="1" colsep="1"><title>SNMP v2c and v3 users</title>
+
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC3"/>
+<thead>
+<row>
+<entry>
+Field
+</entry>
+<entry>
+Description
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry nameend="COLSPEC3" namest="col1">
+
+<b>v2c and v3 users</b>
+
+</entry>
+</row>
+<row>
+<entry>
+snmp_manager_ip
+</entry>
+<entry>
+<p>Both IPv4 or IPv6 are supported for this parameter.</p>
+<p>The following is based on the example from <!--xref URI: #SNMP-parameters--><xref keyref="id9YZ-09018-IN00-RJZZA-SNMP_worksheet/SNMP-parameters"/>.</p>
+<p>The following values are supported.</p><ul>
+
+<li>
+<p>If &lt;snmp_username&gt; is "initial_snm", then &lt;"snmp_manager_ip":"1.2.3.4"&gt; and &lt;"trap_dst_port":"162"&gt; are NetAct's LBJBI server IP address and port 162.</p>
+</li>
+<li>
+<p>If &lt;snmp_username&gt; is "initial_snm1", then &lt;"snmp_manager_ip":"1.2.3.4"&gt; are NetAct's SBI_Common_Mediation server IP address.</p>
+</li>
+</ul>
+<p>The Active OAME VM sends SNMP traps to NetAct's LBJBI server IP address and port 162. </p>
+<p>The Active OAME VM receives SNMP requests from NetAct SBI_Common_Mediation server’s IP address.</p>
+</entry>
+</row>
+<row>
+<entry>
+trap_dst_port
+</entry>
+<entry> Configure this field if you want to set the trap destination port. If this field left blank,
+							then the NCC does not send SNMP alarm traps to the configured SNMP
+							Manager IP. </entry>
+</row>
+<row>
+<entry nameend="COLSPEC3" namest="col1">
+
+<b>v2c users</b>
+
+</entry>
+</row>
+<row>
+<entry>
+snmp_sec_name
+</entry>
+<entry>
+If v2c users are used, you must modify the default value.
+</entry>
+</row>
+<row>
+<entry>
+snmp_community
+</entry>
+<entry>
+If v2c users are used, you must modify the default value.
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC3" namest="col1">
+
+<b>v3 users</b>
+
+</entry>
+</row>
+<row>
+<entry>
+snmp_username
+</entry>
+<entry>
+If v3 users are used, you must modify the default value.
+</entry>
+</row>
+<row>
+<entry>
+snmp_sec_level
+</entry>
+<entry>
+<p>The following values are supported:</p><ul>
+
+<li>
+<p>"noAuthNoPriv"</p>
+</li>
+<li>
+<p>"authNoPriv"</p>
+</li>
+<li>
+<p> "authPriv"</p>
+</li>
+</ul>
+</entry>
+</row>
+<row>
+<entry>
+snmp_auth_protocol
+</entry>
+<entry>
+<p>The following values are supported:</p><ul>
+
+<li>
+<p>"MD5"</p>
+</li>
+<li>
+<p>"SHA"</p>
+</li>
+</ul>
+</entry>
+</row>
+<row>
+<entry>
+snmp_priv_protocol
+</entry>
+<entry>
+<p>The following values are supported:</p><ul>
+
+<li>
+<p>"DES"</p>
+</li>
+<li>
+<p>"AES" </p>
+</li>
+</ul>
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC3" namest="col1">
+<p>
+<b>SNMP password fields</b>
+</p>
+<p>SNMP passwords are encrypted with fpm-password tool. For information on fpm-password tool and how to use it, see <i>Operation, Administration and Maintenance Guide</i>.</p>
+</entry>
+</row>
+<row>
+<entry>
+snmp_priv_passwd
+</entry>
+<entry>
+This parameter defines part of the secure management of SNMPv3 and allows to configure the user-based privacy that is part of the protection level on a transaction-by-transaction basis. The priv password is provided by NetAct and must be at least eight characters.  Then the priv password is encrypted with fpm-password tool and the encrypted value is used as the value for this parameter.
+</entry>
+</row>
+<row>
+<entry>
+snmp_auth_passwd
+</entry>
+<entry>
+This parameter defines part of the secure management of SNMPv3 and allows to configure the user-based authentication that is part of the protection level on a transaction-by-transaction basis.  The value is provided by NetAct and must be at least eight characters.  Then the auth password is encrypted with fpm-password tool and the encrypted value is used as the value for this parameter.
+</entry>
+</row>
+<row>
+<entry>
+snmp_passphrase
+</entry>
+<entry>
+<p>This parameter defines a string that is used to encrypt or decrypt &lt;snmp_priv_passwd&gt; and &lt;snmp_auth_passwd&gt;.</p>
+<p>The value is an arbitrary string.</p>
+<p>To decrypt the password, the same &lt;snmp_passphrase&gt; must be used that was used to encrypt that password.</p>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>
+<codeph/>
+</p>
+<p>The following table describes the SNMP trap communication that occurs between the Active OAME VM and NetAct.</p>
+<table id="SNMP_trap_source_IP_table" pgwide="1" colsep="1" rowsep="1"><title>SNMP trap description</title>
+
+<tgroup cols="4">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<colspec colname="col3"/>
+<colspec colname="COLSPEC0"/>
+<thead>
+<row>
+<entry>
+SNMP trap destination/ NetAct IP address
+</entry>
+<entry>
+SNMP trap source IP address( OAME VIP)
+</entry>
+<entry>
+Description
+</entry>
+<entry>
+Troubleshooting actions
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+IPv4
+</entry>
+<entry>
+IPv4 
+</entry>
+<entry>
+The trap is sent to the IPv4 address of NetAct with the IPv4 VIP address of OAME as the source IP address.
+</entry>
+<entry/>
+</row>
+<row>
+<entry>
+IPv4
+</entry>
+<entry>
+Empty
+</entry>
+<entry>
+The fixed IPv4 address of the Active OAME VM is set as the source IP address of the trap.
+</entry>
+<entry>
+You must enter the source IP address of the trap in the configuration file.
+</entry>
+</row>
+<row>
+<entry>
+IPv4
+</entry>
+<entry>
+IPv6
+</entry>
+<entry>
+The fixed IPv4 address of the Active OAME VM is set as the source IP address of the trap. The IPv6 VIP is not used.
+</entry>
+<entry>
+You must align the source and destination IP address formats of the trap.
+</entry>
+</row>
+<row>
+<entry>
+IPv4
+</entry>
+<entry>
+IPv4, IPv6
+</entry>
+<entry>
+The trap is sent to the IPv4 address of NetAct with the IPv4 VIP address of OAME as the source IP address.
+</entry>
+<entry/>
+</row>
+<row>
+<entry>
+IPv6
+</entry>
+<entry>
+IPv4
+</entry>
+<entry>
+The fixed IPv6 address of the Active OAME VM is set as the source IP address of the trap. The IPv4 VIP is not used.
+</entry>
+<entry>
+You must align the source and destination IP address formats of the trap.
+</entry>
+</row>
+<row>
+<entry>
+IPv6
+</entry>
+<entry>
+IPv6 
+</entry>
+<entry>
+The trap is sent to the IPv6 address of NetAct with the IPv6 VIP address of OAME as the source IP address.
+</entry>
+<entry/>
+</row>
+<row>
+<entry>
+IPv6
+</entry>
+<entry>
+Empty
+</entry>
+<entry>
+The fixed IPv6 address of the Active OAME VM is set as the source IP address of the trap.
+</entry>
+<entry>
+You must enter the source IP address of the trap in the configuration file.
+</entry>
+</row>
+<row>
+<entry>
+IPv6
+</entry>
+<entry>
+IPv4, IPv6
+</entry>
+<entry>
+The trap is sent to the IPv6 address of NetAct with the IPv6 VIP address of OAME as the source IP address.
+</entry>
+<entry/>
+</row>
+<row>
+<entry>
+IPv4, IPv6
+</entry>
+<entry>
+IPv4
+</entry>
+<entry>
+Two traps are sent. One trap is sent to the IPv4 address of NetAct with the IPv4 VIP address of OAME as the source IP address. The other trap is sent to the IPv6 address of NetAct with the fixed IPv6 of the Active OAME VM as the source IP address.
+</entry>
+<entry/>
+</row>
+<row>
+<entry>
+IPv4, IPv6
+</entry>
+<entry>
+IPv6
+</entry>
+<entry>
+Two traps are sent. One trap is sent to the IPv4 address of NetAct with the fixed IPv4 of the Active OAME VM as the  source IP address. The other trap is sent to the IPv6 address of NetAct with the IPv6 VIP of OAME .as the source IP address.
+</entry>
+<entry/>
+</row>
+<row>
+<entry>
+IPv4, IPv6
+</entry>
+<entry>
+Empty
+</entry>
+<entry>
+Two traps are sent. One trap is sent to the IPv4 address of NetAct with the fixed IPv4 of the Active OAME VM. as the source IP address. The other trap is sent to the IPv6 address of NetAct with the fixed IPv6 of the Active OAME VM as the source IP address.
+</entry>
+<entry>
+You must enter the source IP address of the trap in the configuration file.
+</entry>
+</row>
+<row>
+<entry>
+IPv4, IPv6
+</entry>
+<entry>
+IPv4, IPv6
+</entry>
+<entry>
+Two traps are sent. One trap is sent to the IPv4 address of NetAct with the IPv4 VIP of OAME as the source IP address. The other trap is sent to the IPv6 address of NetAct with the IPv6 VIP of OAME as the source IP address.
+</entry>
+<entry/>
+</row>
+</tbody>
+</tgroup>
+</table>
+<section id="SNMP-users-example">
+<title>SNMP/users parameters and NetAct system redundancy</title>
+<p>NetAct system redundancy is a supported setup when interacting with the NCC. The following
+				example shows how to update the SNMP/users parameter with NetAct values when two
+				NetAct systems are used for redundancy.</p>
+<note>
+
+<p>The values in the following table are not real NetAct values; these values are used as an example.</p>
+</note>
+<table pgwide="1" colsep="1" rowsep="1"><title>SNMP/user parameters values</title>
+
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<colspec colname="COLSPEC0"/>
+<thead>
+<row>
+<entry>
+Field
+</entry>
+<entry>
+Value
+</entry>
+<entry>
+Notes
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+snmp_priv_passwd
+</entry>
+<entry>
+"U2FsdGVkX19Z4AkBC/oC1ncluA0+lSgjbnGiBJLQGAw="
+</entry>
+<entry>
+If v3 is used, this field must be encrypted with fpm-password tool.
+</entry>
+</row>
+<row>
+<entry>
+snmp_auth_passwd
+</entry>
+<entry>
+"U2FsdGVkX19Z4AkBC/oC1ncluA0+lSgjbnGiBJLQGAw="
+</entry>
+<entry>
+If v3 is used, this field must be encrypted fpm-password tool .
+</entry>
+</row>
+<row>
+<entry>
+snmp_manager_ip
+</entry>
+<entry>
+<p>The values are:</p><ul>
+
+<li>
+<p>IP addresses of the two SBI_COMMON_MEDIATION servers: 1.1.1.1 and 2.2.2.2</p>
+</li>
+<li>
+<p>IP addresses of the two LBJBI_server: 3.3.3.3 and 4.4.4.4</p>
+</li>
+</ul>
+</entry>
+<entry/>
+</row>
+<row>
+<entry>
+snmp_username 
+</entry>
+<entry>
+a, b,c,d
+</entry>
+<entry/>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>For provisioning pre-instantiate, preserve the default order of name/value pairs. In the following example, the v3 users are configured as SNMP users before instantiation.</p>
+<fig id="snmp-example">
+<title>SNMP users configured before instantiation</title>
+<codeblock>"snmp/users/v3":[
+	{
+		"snmp_username":"a",
+		"snmp_sec_level":"authPriv",
+		"snmp_auth_protocol":"MD5",
+		"snmp_auth_passwd":"U2FsdGVkX19Z4AkBC/oC1ncluA0+lSgjbnGiBJLQGAw=",
+		"snmp_priv_protocol":"DES",
+		"snmp_priv_passwd":"U2FsdGVkX19Z4AkBC/oC1ncluA0+lSgjbnGiBJLQGAw=",
+		"snmp_passphrase": "test",
+		"snmp_manager_ip":"3.3.3.3",
+		"trap_dst_port":"162"
+	},
+{
+		"snmp_username":"b",
+		"snmp_sec_level":"authPriv",
+		"snmp_auth_protocol":"MD5",
+		"snmp_auth_passwd":"U2FsdGVkX19Z4AkBC/oC1ncluA0+lSgjbnGiBJLQGAw=",
+		"snmp_priv_protocol":"DES",
+		"snmp_priv_passwd":"U2FsdGVkX19Z4AkBC/oC1ncluA0+lSgjbnGiBJLQGAw=",
+		"snmp_passphrase": "test",
+		"snmp_manager_ip":"1.1.1.1",
+		"trap_dst_port":""
+	},
+	{
+		"snmp_username":"c",
+		"snmp_sec_level":"authPriv",
+		"snmp_auth_protocol":"MD5",
+		"snmp_auth_passwd":"U2FsdGVkX19Z4AkBC/oC1ncluA0+lSgjbnGiBJLQGAw=",
+		"snmp_priv_protocol":"DES",
+		"snmp_priv_passwd":"U2FsdGVkX19Z4AkBC/oC1ncluA0+lSgjbnGiBJLQGAw=",
+		"snmp_passphrase": "test",
+		"snmp_manager_ip":"4.4.4.4",
+		"trap_dst_port":"162"
+	},
+{
+		"snmp_username":"d",
+		"snmp_sec_level":"authPriv",
+		"snmp_auth_protocol":"MD5",
+		"snmp_auth_passwd":"U2FsdGVkX19Z4AkBC/oC1ncluA0+lSgjbnGiBJLQGAw=",
+		"snmp_priv_protocol":"DES",
+		"snmp_priv_passwd":"U2FsdGVkX19Z4AkBC/oC1ncluA0+lSgjbnGiBJLQGAw=",
+		"snmp_passphrase": "test",
+		"snmp_manager_ip":"2.2.2.2",
+		"trap_dst_port":""
+	}
+],
+"snmp/users/v2c": []</codeblock>
+</fig>
+</section>
+</conbody></concept>

@@ -1,0 +1,905 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+		<task id="id9YZ-09018-IN00-RJZZA-d1e7128"><title>Upgrading NCC</title><taskbody id="d1e7818"><context><sectiondiv>
+				<p><b>Overview</b></p>
+				<p>This section describes the workflow of the NCC software upgrade (SU) from one NCC
+					version to a later NCC version using CBAM as a VNF manager. The NCC is upgraded
+					sequentially, one site (VNF) at a time. The SM sites are upgraded before the ME
+					sites. For each ME, SM and IG site, the upgrade is performed with a group of VMs
+					in parallel. Currently the SU supports the deployment that consists of either
+					two SM sites and multiple ME sites, or only one IG site.</p>
+				<p>NCC uses the BVNF supported Image SU (VM image replacement) mechanism for
+					software upgrades. The old software image on a VM is replaced with the new
+					software image, and the VM is returned to service with the rest of the VMs,
+					resulting in mixed software versions running together in the VNF.</p>
+				<p>All NCC persistent data is stored on Cinder volumes (Openstack) or Independent
+					Disks (VMware) and preserved across VM image replacement. BVNF supports a number
+					of hooks to implement a software upgrade, the most significant hooks are:</p>
+				<ul>
+					<li>
+						<p>“prepare” to stop services on a VM</p>
+					</li>
+					<li>
+						<p>“apply” to replace an image on a VM (forward or backward); which includes
+							a separate start_service in case services have been stopped or not yet
+							started on a VM and services need to be started</p>
+					</li>
+				</ul>
+				<p>The Mistral workflows for each hook are installed on CBAM and call a hierarchy of
+					Ansible playbooks for the VM roles. The CSAR package specific to a software
+					release includes the Mistral workflows and Ansible scripts for all lifecycle
+					events, including SU. Because the list of components in the FROM release and the
+					TO release may be different (to add or drop components), the prepare hook must
+					use the FROM CSAR (including the list of components in the FROM release), and
+					the apply hook must use the TO CSAR (including the list of components in the TO
+					release).</p>
+				<p>The NCC upgrade uses the concept of a blue/green deployment. Blue/Green
+					deployment refers to using load balancers in front of old and new versions of an
+					application to rapidly switch traffic from the old version to the new version
+					without impacting external systems. For example, this includes the maintenance
+					of services, keeping the same IP addresses, Diameter host name, access control
+					lists, etc. The two application versions share a data repository independent of
+					the application software versions. In some cases the load balancers and DBs can
+					be outside of the application VNF. However, in the case of NCC, the load
+					balancers and the DB are included in the NCC VNFs. Consequently, blue/green
+					deployment for NCC means using the internal load balancers to switch traffic
+					between blue and green halves of the same VNF, including halves of the internal
+					DBs. By keeping incompatible components separated in blue/green halves of the
+					VNF, NCC can avoid any problems with mixed software versions for those
+					incompatible components.</p>
+				<p>Active/Standby VMs are split with one in each of the Blue and Green groups. That
+					includes pairs of VMs running MariaDB, load balancers and OAM components, and a
+					few application components. Aerospike and Kafka support rack awareness, where
+					VMs are organized into racks, and the software ensures two copies of the same
+					data are not stored in the same rack. In both cases, NCC configures two racks
+					and a replication factor of two, with the VMs of one DB rack and one Kafka rack
+					placed in each of the Blue and Green groups. Other VM types are split with about
+					half in each of the Blue and Green groups. Each VM to be operated on by a hook
+					(prepare, apply, etc.) must be listed by name on the CBAM GUI or API for each
+					workflow to be executed.</p>
+				<p>Since the incompatibilities can be in the OAM software as well as the
+					application, all VM types are included in the blue/green deployment. The
+					exception is the Auxiliary VMs which do not support half at a time operation
+					(they require a majority of nodes, not half of nodes). Auxiliary VMs are
+					included in the SU VM groups, but they must be placed back into service after
+					being upgraded, before the next SU group can be stopped and upgraded. To keep
+					the VNF in service during an upgrade and do as much in parallel as possible to
+					minimize the total SU duration, the SU is executed for groups of VMs at a time.
+					The NCC must have at least three Auxiliary groups of VMs (one Auxiliary VM per
+					group), where two must be working at all times, the SU must use at least three
+					groups of Auxiliary VMs to keep the VNF in service during an upgrade and do as
+					much in parallel as possible to minimize the total SU duration. The SU is
+					executed for groups of VMs at a time. . </p>
+				<sectiondiv>
+					<p><b>Input to the software upgrade</b></p>
+					<p>The TaskList file is used as input to the software upgrade. It defines the
+						sequence of tasks to be executed in one run. The TaskList file triggers the
+						Python program “pAutoSU”, which executes the upgrade automatically. When
+						pAutoSU is triggered, it invokes the following custom CBAM Mistral
+						workflows:</p>
+					<ul>
+						<li>
+							<p>imagesu_apply_prepare</p>
+						</li>
+						<li>
+							<p>imagesu_apply</p>
+						</li>
+						<li>
+							<p>imagesu_backout_prepare</p>
+						</li>
+						<li>
+							<p>imagesu_backout</p>
+						</li>
+						<li>
+							<p>imagesu_commit</p>
+						</li>
+						<li>
+							<p>sps_start_service</p>
+						</li>
+						<li>
+							<p>modify</p>
+						</li>
+						<li>
+							<p>set_db_persisted_version</p>
+						</li>
+						<li>
+							<p>set_ha_node_state</p>
+						</li>
+						<li>
+							<p>change package version</p>
+						</li>
+					</ul>
+				</sectiondiv>
+				<sectiondiv>
+					<p><b>VM for software upgrade</b></p>
+					<p>The software upgrade uses a small VM that requires the following:</p>
+					<ul>
+						<li>
+							<p>Python 2.7 or later</p>
+						</li>
+						<li>
+							<p>minimum configuration of flavors:</p>
+							<ul>
+								<li>
+									<p>2 vCPU</p>
+								</li>
+								<li>
+									<p>4 GB of memory</p>
+								</li>
+								<li>
+									<p>200 GB of disk</p>
+								</li>
+							</ul>
+						</li>
+						<li>
+							<p>OpenStack command line client for OpenStack environment</p>
+						</li>
+						<li>
+							<p>the RedHat operating system version of software that is correct for
+								the release; see the <i>NCC Release Note</i> for the supported
+								RedHat release information</p>
+						</li>
+					</ul>
+				</sectiondiv>
+				<sectiondiv>
+					<p><b>Software upgrade workflow</b></p>
+					<p>The SU workflow proceeds as follows:</p>
+					<ol>
+						<li>
+							<p>The operator generates a TaskList that triggers the pAutoSU
+								script.</p>
+						</li>
+						<li>
+							<p>On the small VM, pAutoSU executes and the following occurs. Custom
+								workflows are invoked on CBAM using restAPI and information from
+								OpenStack is collected using OpenStack client.</p>
+							<p>When the custom workflows execute, the following occurs:</p>
+							<ul>
+								<li>
+									<p>OpenStack and VMware information is updated using the
+										restAPI, which is triggered by the CBAM API.</p>
+								</li>
+								<li>
+									<p>Ansible scripts run on the NCC (HA switchover, hook
+										functions).</p>
+								</li>
+							</ul>
+						</li>
+					</ol>
+					<p>The following figure shows the SU workflow.</p>
+					<fig>
+						<title>Software upgrade workflow</title>
+						<!--MMO resource relative URI: ../../SPS-InstallationGuide/Graphics/inst_guide_5_default.png-->
+						<image href="../images/installation_guide_5_default.png"/>
+					</fig>
+					<note>
+						<p>For OpenStack deployments only. The properties in the Heat Orchestration
+							Template (HOT) should not be modified during the SU. Heat is the main
+							project in the OpenStack Orchestration program that allows the
+							orchestration engine to launch multiple composite cloud applications
+							based on the Heat Orchestration Templates. The user data and a number of
+							predefined fields in HOT such as "immutable: true" or "update_allowed:
+							false" affect the SU. Do not change the user data or these fields
+							between the FROM load version (X) and the TO load version (Y). If you
+							change the user data or these fields between the FROM load version (X)
+							and the TO load version (Y), then the SU from X to Y will fail.</p>
+					</note>
+					<note>
+						<p>Usage of the fpm-password tool is only available on the OAME VMs
+							post-instantiate. Configuration of the snmp/users/v3 parameter can only
+							be done after a software upgrade.</p>
+					</note>
+					<p>The following figures show high level flowcharts that outline what you need
+						to do to complete the upgrade procedure on a VNF clusters. You will upgrade
+						the SM VNFs first and second you will upgrade the ME VNFs. A VNF cluster
+						consists of VNFs with mates. For the SM in a geo-redundant deployment, there
+						are two SM VNFs, which are mates to each other in a region. The MEs may be a
+						cluster of two that are in a regional cluster but might have more than two
+						VNFs for an N+1 setup. This procedure allows you to upgrade all VNFs in one
+						region at a time.</p>
+					<p>The flowcharts (<!--xref URI: #smvnfclupgrade--><xref
+							keyref="id9YZ-09018-IN00-RJZZA-d1e7128/smvnfclupgrade"/> and
+							<!--xref URI: #mevnfclupgrade--><xref
+							keyref="id9YZ-09018-IN00-RJZZA-d1e7128/mevnfclupgrade"/>) outline the
+						software upgrade and the procedure that follows provides the steps that you
+						need to do to upgrade on the SM and ME VNF clusters. </p>
+					<p>After you upgrade the software, you must also reschedule previously scheduled
+						LCM events such as backup, auto-healing and auto-scaling in CBAM for every
+						site in the deployment.</p>
+					<fig id="smvnfclupgrade">
+						<title>Flowchart for SM VNF cluster upgrade procedure</title>
+						<!--MMO resource relative URI: ../../SPS-InstallationGuide/Graphics/UpgradeflowchartSM111a_default.png-->
+						<image href="../images/upgradeflowchartsm111a_default.png" align="left"
+							placement="break" scale="60"/>
+					</fig>
+					<note>
+						<p>The Commit step for the SM VNF on the above flowchart does not need to be
+							performed before you move on to upgrade the ME VNFs. Nokia recommends
+							that you commit the SM VNFs after you have upgraded the ME VNFs such
+							that you first commit the SM VNFs and then commit the ME VNFs as the
+							final steps to the upgrade.</p>
+					</note>
+					<fig id="mevnfclupgrade">
+						<title>Flowchart for ME VNF cluster upgrade procedure</title>
+						<!--MMO resource relative URI: ../../SPS-InstallationGuide/Graphics/UpgradeFlowChartME112c_default.png-->
+						<image href="../images/upgrade_flowchartme112c_default.png" align="left"
+							placement="break" scale="60"/>
+					</fig>
+					<note>
+						<p>Do not create, modify, or remove users during an upgrade using the SM
+							GUI. If user modifications are performed during an upgrade, the changes
+							will not be reflected in the system after the upgrade.</p>
+					</note>
+				</sectiondiv>
+			</sectiondiv><sectiondiv>
+				<p><b>Prerequisites</b></p>
+				<note>
+					<p>Custom files in NCC can be preserved throughout the upgrade. The custom files
+						need to be known ahead of time and defined within the VNF_CONF Files. The
+						VNFEditor can be used to manage these files. </p>
+				</note>
+				<note>
+					<p>The path to the custom files must not contain symbolic links. An example of
+						this would be the tpa symbolic link. Nokia recommends that you relocate the
+						custom files out of this directory prior to completing the upgrade.</p>
+				</note>
+				<p>Before beginning this procedure,</p>
+				<ul>
+					<li>
+						<p>If you are tasked with creating the TO artifacts, CSAR, VNF Extension,
+							VNF, and scalable files for the software upgrade, perform the
+							following:</p>
+						<p>
+							<b>Artifact creation:</b>
+						</p>
+						<ol>
+							<li>Create your Base "TO" CSAR Package using the VNFEditor/VNFGenerator.
+								See the <i>NCC VNF Artifacts Generator Tool User Guide</i>. </li>
+							<li>In addition to the VNF Specific information, use the VNF EDITOR to
+								make the following changes in the "VNF INFO" tab:<table rowsep="1"
+									colsep="1">
+									<tgroup cols="2">
+										<colspec colname="col1"/>
+										<colspec colname="col2"/>
+										<thead>
+											<row>
+												<entry> VNF INFO tab label </entry>
+												<entry> Value </entry>
+											</row>
+										</thead>
+										<tbody>
+											<row>
+												<entry> CBAM API Version </entry>
+												<entry> 4.0 </entry>
+											</row>
+											<row>
+												<entry> VNFD Template Version </entry>
+												<entry> 3.4 </entry>
+											</row>
+											<row>
+												<entry> Image SU Group Policy </entry>
+												<entry> VM List </entry>
+											</row>
+											<row>
+												<entry> Selected LCM Event </entry>
+												<entry> image_su_with_separated_prepare </entry>
+											</row>
+										</tbody>
+									</tgroup>
+								</table></li>
+							<li>
+								<p>Rename the CSAR package to the naming convention described in the
+									VNF_CONF file composed from the following:</p>
+								<table rowsep="1" colsep="1">
+									<tgroup cols="2">
+										<colspec colname="col1"/>
+										<colspec colname="col2"/>
+										<thead>
+											<row>
+												<entry> Label </entry>
+												<entry> Value </entry>
+											</row>
+										</thead>
+										<tbody>
+											<row>
+												<entry> product_name: </entry>
+												<entry> SPS-IG </entry>
+											</row>
+											<row>
+												<entry> software_version: </entry>
+												<entry>
+												<p>R_R_r#_I&lt;buildnumber&gt;</p>
+												<p>where:</p>
+												<p>R_R is the release number</p>
+												<p>r# is the release version</p>
+												<p>&lt;buildnumber&gt; is the number that
+												identifies the build</p>
+												</entry>
+											</row>
+											<row>
+												<entry> vnfd_version: </entry>
+												<entry> 1.0.0 OpenStack </entry>
+											</row>
+											<row>
+												<entry colsep="0" nameend="col2" namest="col1">
+												<p>The end result should resemble the following
+												example:</p>
+												<p>
+												<i>Nokia~SPS-IG~19_9_R1_I93~1.0.0_OpenStack.zip</i>
+												</p>
+												</entry>
+											</row>
+										</tbody>
+									</tgroup>
+								</table>
+							</li>
+							<li>
+								<p>From the VNFGenerator VM navigate to the directory where the
+									VNFGenerator resides, and retrieve the spsSU-sps.tar.gz file.
+									This file is located in the directory:</p>
+								<p>
+									<i>/openstack/cbam_package/ansible/files/spsSU</i>
+								</p>
+								<p>The file is also in the CSAR package.</p>
+							</li>
+							<li>
+								<p>Using “scp” copy the spsSU-sps.tar.gz file to the SU_VM.</p>
+							</li>
+							<li>
+								<p>Untar/Unzip the spsSU-sps.tar.gz to a designated directory. For
+									example, you could use the /opt/sps/directory.</p>
+							</li>
+						</ol>
+					</li>
+					<li>
+						<p>To prevent data loss in case of SU failure, do the following:</p>
+						<ol>
+							<li>
+								<p>Obtain the required CBAM client information (VIP, client, and
+									secret) from Nokia Services and refer to the CBAM documentation
+									for more information.</p>
+							</li>
+							<li>
+								<p>For every site in your deployment, disable in CBAM scheduled LCM
+									events such as auto-scaling, auto-healing or backup. see the
+									CBAM documentation referenced in
+										<!--xref URI: ../../SPS-InstallationGuide/IP/SPS_Installation.xml#document_support--><xref
+										keyref="id9YZ-09018-IN00-RJZZA-document_support"/>.</p>
+							</li>
+							<li>
+								<p>Nokia strongly recommends that you back up the NCC sites before
+									the upgrade. For more information, see section <i>NCC backup and
+										restore</i> in <i>NCC VNF Operation, Administration, and
+										Maintenance Guide</i>.</p>
+							</li>
+							<li>
+								<p>Transfer CDRs and logs to external reliable storage. Since CDRs
+									and logs are not part of the backup files, if SU fails and you
+									have to instantiate again, CDRs and logs will be lost. See the
+										<i>NCC CDR Guide</i> for information about where the CDRs
+									are stored and manipulated.</p>
+							</li>
+						</ol>
+					</li>
+					<li>
+						<p>Ensure the latest patch file (most recently applied) exists in the
+							/appdata/sps/patches directory on the OAME for each VNF prior to
+							upgrading. </p>
+					</li>
+					<li>
+						<p>See the following for more information:</p>
+						<ul>
+							<li>
+								<p>For instructions on how to generate the CSAR packages, VNF Config
+									files, VNF Extension files and OVF files, see the <i>NCC VNF
+										Artifacts Generator Tool User Guide</i>.</p>
+							</li>
+							<li>
+								<p>For information on the VNF Extension files, see section
+										<!--xref URI: ../../SPS-InstallationGuide/Topics/t-install-VNF-Extension.xml#Modifying_Excel--><xref
+										keyref="id9YZ-09018-IN00-RJZZA-Modifying_Excel"/>.</p>
+							</li>
+							<li>
+								<p>For more information on standard lifecycle management and VNF
+									maintenance operations in CBAM such as uploading CSAR packages,
+									see CBAM documentation referenced in
+										<!--xref URI: ../../SPS-InstallationGuide/IP/SPS_Installation.xml#document_support--><xref
+										keyref="id9YZ-09018-IN00-RJZZA-document_support"/>.</p>
+							</li>
+							<li>
+								<p>For more information on the OpenStack command line client, see
+									OpenStack documentation.</p>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</sectiondiv><note>
+				<p>You can backout of the upgrade at anytime; however, since a backout might be
+					required under various scenarios, it is recommended that you contact Nokia
+					Professional Services to determine a backout strategy. See
+						<!--xref URI: #Upgrade-backup--><xref
+						keyref="id9YZ-09018-IN00-RJZZA-Upgrade-backup"/> for basic instruction about
+					backing out of an upgrade. </p>
+			</note><note>
+				<p>The NCC ISU will upgrade VMs within a VNF, one group at a time, for a total of
+					three groups using the pAutoSU script. When the script runs for each group,
+					there are multiple tasks that are completed by the script. The pAutoSU script
+					triggers the ISU using a command line that can be used with an option (-p or
+					--pause) that causes a pause after each task is complete within a single group.
+					That is, the script will pause and wait for the user’s input before continuing
+					to the next task. When the script pauses, you can answer “c” , for continue, at
+					the prompt. You can forego the pause and continue steps using the “r” option
+					after the pause at any task, which allows the ISU to continue to the last task
+					without anymore pauses. </p>
+			</note><note>
+				<p>This procedure (To upgrade the NCC) is to be considered the primary procedure.
+					The steps in this procedure often link to other procedures outside of this
+					procedure. After you complete the procedures presented by each step of this
+					procedure, ensure that you return to this procedure to complete the next step.
+						<i>TIP: If you have arrived in a section from a link within another section
+						of the guide, you can use the ALT-left arrow keystroke to go back to the
+						previous section.</i>
+				</p>
+			</note>To upgrade the NCC: </context><steps>
+			<step>
+				<cmd>If you are performing an ISU with a FROM load of 20.0 or older to a TO load of
+					20.3, or newer, you will require an RPM SU. See <xref
+						href="t_rollback_when_etcd.dita"/> for details.</cmd>
+			</step>
+
+<step id="Step1"><cmd>Contact Nokia Professional Services to determine your upgrade requirements and obtain the following artifacts of the TO load version:</cmd><info><ul>
+
+<li>
+<p>CSAR packages</p>
+</li>
+<li>
+<p>VNF Extension file</p>
+</li>
+<li>
+<p>VNF Config files</p>
+</li>
+<li>
+<p>MD5 files</p>
+</li>
+<li>
+<p>QCOW2 images for OpenStack deployment</p>
+</li>
+<li>
+<p>VMDK images and OVF files for VMware deployments</p>
+</li>
+</ul><note>
+
+<p>Custom files in NCC can be preserved throughout the upgrade. The custom files need to be known
+							ahead of time and defined within the VNF_CONF Files. The VNFEditor can
+							be used to manage these files. </p>
+</note><p>When  generating the VNF Config file using the VNF Artifacts Generator Tool, ensure the following is set after the tool is run:</p><ul>
+
+<li>
+<p>&lt;CBAM API Version&gt; is set to “4.0”.</p>
+</li>
+<li>
+<p>&lt;VNFD Template Version&gt; is set to “3.4”.</p>
+</li>
+<li>
+<p>&lt;Image SU Group Policy&gt; is set to “VM list”.</p>
+</li>
+<li>
+<p>&lt;Selected LCM Event&gt; contains “image_su_with_separated_prepare”.</p>
+</li>
+</ul><p>
+<!--xref URI: #Images11-->
+<xref keyref="id9YZ-09018-IN00-RJZZA-d1e7128/Images11"/> identify the images available:</p><table id="Images11" pgwide="1" colsep="1" rowsep="1"><title>Images</title>
+
+<tgroup cols="3">
+<colspec colname="col3"/>
+<colspec colname="col4"/>
+<colspec colname="col5"/>
+<thead>
+<row>
+<entry>
+VM name segment
+</entry>
+<entry>
+Image name 
+</entry>
+<entry>
+Applies to
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+oame
+</entry>
+<entry> &lt;NCC&gt;.OAME </entry>
+<entry>
+SM ME IG
+</entry>
+</row>
+<row>
+<entry>
+auxiliary
+</entry>
+<entry> &lt;NCC&gt;.AUXILIARY </entry>
+<entry>
+SM ME IG
+</entry>
+</row>
+<row>
+<entry>
+ioho
+</entry>
+<entry> &lt;NCC&gt;.LOADBALANCE </entry>
+<entry>
+SM ME IG
+</entry>
+</row>
+<row>
+<entry>
+iohd
+</entry>
+<entry> &lt;NCC&gt;.DIAMETER_IOH </entry>
+<entry>
+ME IG
+</entry>
+</row>
+<row>
+<entry>
+db
+</entry>
+<entry> &lt;NCC&gt;.DATABASE </entry>
+<entry>
+SM ME IG
+</entry>
+</row>
+<row>
+<entry>
+cdr
+</entry>
+<entry> &lt;NCC&gt;.CDR </entry>
+<entry>
+ME IG
+</entry>
+</row>
+<row>
+<entry>
+diameterapp
+</entry>
+<entry> &lt;NCC&gt;.POLICY_CHARGING_APP </entry>
+<entry>
+ME IG
+</entry>
+</row>
+<row>
+<entry>
+comsvc
+</entry>
+<entry> &lt;NCC&gt;.COMMON_SERVICES </entry>
+<entry>
+ME IG
+</entry>
+</row>
+<row>
+<entry rowsep="0">
+smapp
+</entry>
+<entry rowsep="0"> &lt;NCC&gt;.SM_APP </entry>
+<entry rowsep="0">
+SM IG
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table><note>
+
+<p>The upgrade artifacts are used in accordance with the following:</p><ul>
+
+<li>
+<p>CSAR packages, VNF Extension files, and images are aligned with each other and must be of the same version.</p>
+</li>
+<li>
+<p>CSAR packages and VNF Extension files differ by site type and are specific to ME, SM and IG sites.</p>
+</li>
+<li>
+<p>Each site requires its own VNF Extension file.</p>
+</li>
+<li>
+<p>If the same network topology and cloud resources are used for all the ME sites in your deployment, then you can use the same ME CSAR package for all the ME sites, the same SM CSAR package for all the SM sites and the same IG CSAR package for all the IG sites in your deployment.</p>
+</li>
+<li>
+<p>MD5 files are available to verify the images and the configuration files. Every image has a corresponding MD5 file and every configuration file has a corresponding MD5 file.</p>
+</li>
+</ul>
+</note><note>
+
+<p>If you must make changes that affect the VNF Extension file, you can add new parameters into the &lt;sdc_config_data&gt; parameter of the sdc.json file. You can also modify &lt;set_oos_drr&gt; parameter. </p>
+<p>For VMware deployments, you must modify the &lt;template_name&gt; parameter. The value must be the one that you are upgrading to.</p>
+</note></info></step>
+<step><cmd>Upload  the images as follows:</cmd><info><table rowsep="1" colsep="1">
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+If you are deploying in
+</entry>
+<entry>
+Then
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+
+<b>OpenStack</b>
+
+</entry>
+<entry>
+<p>Upload  the QCOW2 images to the OpenStack image service (Glance) and enable the virtio-net multi-queue as follows:</p><ol>
+
+<li>
+<p>Add the following to each image during the upload:</p>
+<p>
+<codeph>--property hw_vif_multiqueue_enabled=true</codeph>
+</p>
+<p>For example,</p>
+<p>
+<codeph>openstack image create --container-format bare --disk-format qcow2 --property hw_vif_multiqueue_enabled=true --file &lt;qcow2-file&gt; &lt;image-name&gt;</codeph>
+</p>
+<p>For example:</p>
+<p>
+<codeph>openstack image create --container-format bare --disk-format qcow2 --property hw_vif_multiqueue_enabled=true --file SPS_20_0_R1_SPS_20_0_I74.CDR.qcow2 SPS_20_0_R1_SPS_20_0_I74.CDR</codeph>
+</p>
+<p>For more information on &lt;multiqueue/config&gt; parameter, see <!--xref URI: ../../SPS-InstallationGuide/Topics/t-install-VNF-Extension.xml#System_leve_keys_table--><xref keyref="id9YZ-09018-IN00-RJZZA-SPS_worksheet/System_leve_keys_table"/>.</p>
+</li>
+<li>
+<p>For every NCC flavor modify the OpenStack flavor as follows:</p>
+<p>
+<codeph>openstack flavor set &lt;flavor-name&gt; --property hw:vif_multiqueue_enabled=true</codeph>
+</p>
+</li>
+<li>
+<p>Verify the OpenStack uploaded images checksum with content in MD5 file. Using the instructions in Nokia Support Portal, verify the downloaded QCOW2 images and files by generating MD5 hash values and comparing the generated values with the values provided in the Support Portal and in the MD5 files. The generated MD5 hash values, the MD5 hash values in Support Portal, and the values in MD5 files must match. If you find discrepancies, download the QCOW2 images and files again. </p>
+<p>
+												<!--xref URI: #Images11-->
+												<xref
+												keyref="id9YZ-09018-IN00-RJZZA-d1e7128/Images11"/>
+												lists the images for the NCC upgrade in OpenStack
+												and VMware.</p>
+<p>
+												<b>Note:</b> In addition to MD5 values, Nokia also
+												provides SHA-256 hash values but the NCC does not
+												use SHA-256 hash values for image
+												verification.</p>
+</li>
+</ol>
+</entry>
+</row>
+<row>
+<entry>
+
+<b>VMware</b>
+
+</entry>
+<entry>
+<p>Upload a Vapp template, which refers to the OVF files and VMDK images, to vCloud as follows:</p>
+<p>Log in to VMware vCloud Director and perform the following:</p><ol>
+
+<li>
+<p>Choose the System tab, then click Manage and Monitor, select Organizations, and double-click the Organizations name.</p>
+</li>
+<li>
+<p>If the catalog for the NCC exists, go to the next step. Otherwise, create the catalog for the NCC
+												as follows:</p><ol>
+
+<li>
+<p>Click the <b>System</b> tab, select the organization for the NCC, click the <b>Catalogs</b> tab.
+												The <b>My Organization’s Catalog</b> pane appears. </p>
+</li>
+<li>
+<p>In the <b>My Organization’s Catalog</b> pane, click the <b>Catalogs</b> tab and then click <b>+</b>. The <b>New Catalog</b> window appears.</p>
+</li>
+<li>
+<p>In the <b>New Catalog</b> window, enter the name for the catalog and click <b>Next</b>. The <b>Select Storage Type</b> window appears.</p>
+</li>
+<li>
+<p>In the <b>Select Storage Type</b> window, select the <b>Pre-provision on specific storage policy</b> button. The <b>Storage Policy</b> pane appears.</p>
+</li>
+<li>
+<p>In the <b>Storage Policy</b> pane, select the <b>vSAN Default Storage Policy</b> and associate it with the OVDC.</p>
+</li>
+</ol>
+</li>
+<li>
+<p>Upload the OVF file for the NCC OVDC:</p><ol>
+
+<li>
+<p>Choose the <b>System</b> tab, select the organization for the NCC, click the <b>Catalogs</b> tab.
+												The <b>My Organization’s Catalog</b> pane appears. </p>
+</li>
+<li>
+<p> In the <b>My Organization’s Catalog</b> pane, click <b>vApp Templates</b> and then click the upload button. The <b>Upload OVF package as a vApp Template</b> window appears.</p>
+</li>
+<li>
+<p> In the <b>Upload OVF package as a vApp Template</b> pane, select <b>Local file</b>, click <b>Browse</b> and select the OVF file to upload. Click the <b>Upload</b> button.</p>
+</li>
+<li>
+<p>Ensure that the OVF file is in the <b>vApp Templates</b> list.</p>
+</li>
+</ol>
+</li>
+</ol>
+<p>The VMDK images are also uploaded in this step by reference in the OVF file.</p>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table></info></step>
+<step><cmd>Upload all the CSAR packages of the TO load version to CBAM as follows:</cmd><info><p>Log in to the CBAM GUI and perform the following:</p><ol>
+
+<li>
+<p>In the CBAM GUI, click the options button with three horizontal lines and then select <b>Catalog</b>. The <b>Catalog</b> pane appears.</p>
+</li>
+<li>
+<p>In the <b>Catalog</b> pane, click the <b>Upload VNF Package</b> represented by the plus icon. The <b>Upload VNF Package</b> window appears.</p>
+</li>
+<li>
+<p>In the <b>Upload VNF Package</b> window, click <b>browse</b> and select the appropriate CSAR package, or use <b>Drag and drop</b> option to add the CSAR package to the CBAM catalog.</p>
+</li>
+<li>
+<p>The CSAR package is ready for upload when the following occurs in the <b>Upload VNF Package</b> window:</p><ul>
+
+<li>
+<p>The name of the CSAR package appears in the <b>File name</b> area.</p>
+</li>
+<li>
+<p>In the <b>Status</b> field, the message <systemoutput>Ready for upload</systemoutput> appears.</p>
+</li>
+</ul>
+<p>When the CSAR package is ready for upload, click <b>Upload</b>.</p>
+<p>
+<b>Expected outcome</b>
+</p>
+<p>If the operation succeeds, the CSAR package appears in the <b>Catalog</b> pane. If the operation fails, an error message appears in the GUI.</p>
+</li>
+<li>
+<p>If the operation succeeds, verify that the CSAR package is listed in the CBAM catalog.</p>
+</li>
+<li>
+<p>If the operation fails, depending on the cause of failure, you might need to delete the CSAR package using the procedure <!--xref URI: ../../SPS-InstallationGuide/Topics/t-install-deleting-CSAR.xml#Deleting-CSAR--><xref keyref="id9YZ-09018-IN00-RJZZA-Deleting-CSAR"/>. For more information on what to do if this operation fails, see CBAM documentation.</p>
+</li>
+</ol></info></step>
+<step><cmd>Upgrade the SM VNFs as described in <!--xref URI: ../../SPS-InstallationGuide/Topics/t-upgrade-site.xml#Upgrade-site--><xref keyref="id9YZ-09018-IN00-RJZZA-Upgrade-site"/> to upgrade the SM VNF first.</cmd><info><p>You must upgrade the SM VNF first and then upgrade the ME VNF second. This procedure includes a step later to upgrade the ME.</p><p>If you have an IG, run the same procedure for both the SM and ME once on the IG.</p></info></step>
+<step><cmd>If you are using DFSEC, you must enable it using <!--xref URI: #DFSECenab--><xref keyref="id9YZ-09018-IN00-RJZZA-DFSECenab"/>nks.</cmd><info><p>By Default DFSEC is disabled in this release. You must perform the manual steps to enable DFSEC during the upgrade after all three groups are upgraded.</p></info></step>
+<step><cmd>For the upgraded SM VNF, update the persisted version value using the procedure:<!--xref URI: ../../SPS-InstallationGuide/Topics/t-upgrade-inservice-updating-persisted-version.xml#Updating-persisted-version--><xref keyref="id9YZ-09018-IN00-RJZZA-Updating-persisted-version"/>.</cmd><info/></step>
+<step><cmd>Repeat steps 4, 5, and 6 if there is a mate SM in the network that needs to be upgraded.</cmd><info/></step>
+<step><cmd>Commit the Upgrade on the SMs as follows:</cmd><info><p>Before you commit, you can rollback the version and then even rollback the software but after the commit, you cannot. If all the sites are upgraded and tested successfully, you can commit by entering the following command:</p><ol>
+
+<li>
+<p>For all the sites, execute the commit TaskList using pAutoSU as follows:</p><ul>
+
+<li>
+<p>
+<b>For VMware, enter:</b>
+</p>
+<p>
+<codeph>cd $AUTO_HOME</codeph>
+</p>
+</li>
+<li>
+<p>
+<b>For OpenStack, enter:</b>
+</p>
+<p>
+<codeph>cd $AUTO_HOME</codeph>
+</p>
+<p>
+<codeph>source &lt;PROJECT&gt;-openrc.sh</codeph>
+</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Enter one of the following with optional parameters as necessary:</p><ul>
+
+<li>
+<p>
+<codeph>./autoSU.py -f &lt;task_list_file&gt; -commit.txt</codeph>
+</p>
+</li>
+<li>
+<p>
+<codeph>./autoSU.py -p -f &lt;task_list_file&gt; -i&lt;vnf_instance_id&gt; -commit.txt</codeph>
+</p>
+</li>
+</ul>
+<p>Where:</p>
+<p>“-p” or “--pause” is an optional parameter that allows a pause after executing each task successfully. You will need to enter “c” to continue to execute the next task, or press “r” to run through to the last task without a pause, or press “q” to quit.</p>
+<p>“-f &lt;task_list_file&gt;” is the file which defines the task list.</p>
+<p>“-i &lt;vnf_instance_id&gt;” is an optional parameter that allows you to execute the script on a specific VNF instance.</p>
+</li>
+</ol><note>
+
+<p>For information about TaskList, see <!--xref URI: ../../SPS-InstallationGuide/Topics/t-upgrade-task-list-file.xml#TaskList-specification--><xref keyref="id9YZ-09018-IN00-RJZZA-TaskList-specification"/>.</p>
+</note></info></step>
+<step><cmd>Repeat step 7 if there is a mate SM in the network that need to be upgraded.</cmd><info/></step>
+<step><cmd>Upgrade the ME VNFs one region at a time as described in <!--xref URI: ../../SPS-InstallationGuide/Topics/t-upgrade-site.xml#Upgrade-site--><xref keyref="id9YZ-09018-IN00-RJZZA-Upgrade-site"/>.</cmd><info><p>This step upgrades the ME VNF. </p><p>If you have an IG, run the same procedure for both the SM and ME once on the IG.</p></info></step>
+<step><cmd>Repeat step 9 to upgrade the remaining MEs.</cmd><info/></step>
+<step><cmd>For the upgraded ME VNFs, update the persisted version value using the procedure:<!--xref URI: ../../SPS-InstallationGuide/Topics/t-upgrade-inservice-updating-persisted-version.xml#Updating-persisted-version--><xref keyref="id9YZ-09018-IN00-RJZZA-Updating-persisted-version"/>.</cmd><info/></step>
+<step><cmd>Repeat step 11 on the remaining ME clusters in the region.</cmd><info/></step>
+<step><cmd>Set the ME version to the TO load version using the procedure:<!--xref URI: ../../SPS-InstallationGuide/Topics/t-upgrade-inservice-updating-ME-version-in-GUI.xml#setting-ME-version--><xref keyref="id9YZ-09018-IN00-RJZZA-setting-ME-version"/>. Notice that this procedure is performed on the SM GUI so the SM must have been upgraded first.</cmd><info/></step>
+<step><cmd>Repeat step 13 on the remaining MEs.</cmd><info/></step>
+<step><cmd>Commit the Upgrade on the MEs as follows:</cmd><info><p>Before you commit, you can rollback the version and then even rollback the software but after the commit, you cannot. If all the sites are upgraded and tested successfully, you can commit by entering the following command:</p><ol>
+
+<li>
+<p>For all the sites, execute the commit TaskList using pAutoSU as follows:</p><ul>
+
+<li>
+<p>
+<b>For VMware, enter:</b>
+</p>
+<p>
+<codeph>cd $AUTO_HOME</codeph>
+</p>
+</li>
+<li>
+<p>
+<b>For OpenStack, enter:</b>
+</p>
+<p>
+<codeph>cd $AUTO_HOME</codeph>
+</p>
+<p>
+<codeph>source &lt;PROJECT&gt;-openrc.sh</codeph>
+</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Enter one of the following with optional parameters as necessary:</p><ul>
+
+<li>
+<p>
+<codeph>./autoSU.py -f &lt;task_list_file&gt; -commit.txt</codeph>
+</p>
+</li>
+<li>
+<p>
+<codeph>./autoSU.py -p -f &lt;task_list_file&gt; -i&lt;vnf_instance_id&gt; -commit.txt</codeph>
+</p>
+</li>
+</ul>
+<p>Where:</p>
+<p>“-p” or “--pause” is an optional parameter that allows a pause after executing each task successfully. You will need to enter “c” to continue to execute the next task, or press “r” to run through to the last task without a pause, or press “q” to quit.</p>
+<p>“-f &lt;task_list_file&gt;” is the file which defines the task list.</p>
+<p>“-i &lt;vnf_instance_id&gt;” is an optional parameter that allows you to execute the script on a specific VNF instance.</p>
+</li>
+</ol><note>
+
+<p>For information about TaskList, see <!--xref URI: ../../SPS-InstallationGuide/Topics/t-upgrade-task-list-file.xml#TaskList-specification--><xref keyref="id9YZ-09018-IN00-RJZZA-TaskList-specification"/>.</p>
+</note></info></step>
+			<step>
+				<cmd>Edit the value for <b>enabledurabledelete</b> to <varname>false</varname>. See
+						<xref keyref="t_setting_enabledurabledelete_value"/>.</cmd>
+			</step>
+<step>
+				<cmd>Repeat step 16 and 17 on all mate MEs in the network that are upgraded.</cmd>
+			</step>
+			<step>
+				<cmd>After making the changes, you must stop/start the diameterapps, OAME, IOHD, and
+					comsvc VMs. </cmd>
+			</step>
+<step>
+				<cmd>For every site in the deployment, reschedule previously scheduled LCM events
+					such as backup, auto-healing and auto-scaling in CBAM. See the <i>NCC VNF
+						Operation, Administration, and Maintenance Guide</i> for information about
+					performing these tasks.</cmd>
+			</step>
+			<step>
+				<cmd>For every site deployment, cleanup the security patches data using the
+					procedure <xref href="t_cleanup_security_patch.dita"/>.</cmd>
+			</step>
+</steps>
+</taskbody></task>

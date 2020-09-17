@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="bundle_notification">
+    <title>Notification when bundle expires but buckets are available</title>
+    <conbody>
+        <p>Notifications can be sent when a subscription expires (end date or validation date
+            expires) and the buckets of that bundle subscription have not been completely consumed.
+            For example, consider that a subscription has 5 buckets, 4 are empty and 1 is non-empty.
+            When the subsription expires or renews, a notification can be sent to susbcriber to
+            indicate that the subscription is not empty. This functionality is supported for
+            Subscription lifecycle only. </p>
+        <p>If the following rules are configured on an Account lifecycle, then they are always
+            evaluated to <varname>False</varname>. </p>
+        <p>The following functions provides capability to get the current balance of the buckets
+            including and excluding the carry over balance for the subscription before and after
+            renewal. </p>
+        <p><b>Has-Previous-Non-Empty-Buckets</b>: This function is used in lifecycle rule and
+            returns true if the subscription contains at least one bucket of its charging services
+            that is not fully consumed before renewal or expiration.</p>
+        <p><b>Example:</b></p>
+        <p>
+            <image placement="break" href="../images/has_previous.png" id="image_tsm_4hd_tmb"/>
+        </p>
+        <p><b>Has-Non-Empty-Buckets</b>: This function is used in lifecycle rule and returns true if
+            the subscription contains at least one bucket of its charging services that is not fully
+            consumed after renewal or starting cycle.</p>
+        <p><b>Example:</b></p>
+        <p>
+            <image placement="break" href="../images/has_non_empty.png" id="image_ngq_x3d_tmb"/>
+        </p>
+        <p><b>Get-Previous-Bucket-Total-Value-By-Name</b>: This function returns the balance value
+            of the bucket based on its passed name. It returns the balance including the carry over
+            balance before the subscription is renewed or expired. </p>
+        <p><b>Example:</b></p>
+        <p>
+            <image placement="break" href="../images/get_previous_bucket.png" id="image_cj3_3jd_tmb" scale="50"
+            />
+        </p>
+        <p><b>Get-Bucket-Total-Value-By-Name</b>: This function returns the balance value of the
+            bucket based on its passed name. It returns the balance including the carry over
+            balance.</p>
+        <p><b>Example:</b></p>
+        <p>
+            <image placement="break" href="../images/get_total_value_by_name.png"
+                id="image_ovg_xqd_tmb"/>
+        </p>
+        <p><b>Get-Previous-Bucket-Value-By-Name</b>: This function returns the regular bucket
+            balance based on passed bucket name without carry over balance.</p>
+        <p><b>Example:</b></p>
+        <p>
+            <image placement="break" href="../images/get_previous_bucket_name_without_carryover.png"
+                id="image_jjs_3sd_tmb"/>
+        </p>
+        <p><b>Get-Bucket-Value-By-Name</b>: This function returns the regular bucket balance based
+            on passed bucket name without carry over balance.</p>
+        <p><b>Example:</b></p>
+        <p>
+            <image placement="break" href="../images/get_bucket_name_without_carryover.png"
+                id="image_yn5_gtd_tmb"/>
+        </p>
+        <p><b>Get-Previous-Bucket-Total-Value-By-Type</b>: This function returns the balance value
+            of the bucket based on its passed type (KindOfUnit). It returns the balance including
+            the carry over balance before renewal or expiration.</p>
+        <p>Following are the available bucket types (KindOfUnit):</p>
+        <ul id="ul_xq2_sjd_tmb">
+            <li>TIME</li>
+            <li>VOLUME</li>
+            <li>UNIT</li>
+            <li>MONEY</li>
+        </ul>
+        <p><b>Example:</b></p>
+        <image placement="break" href="../images/get_previous_bucket_by_type.png"
+            id="image_lf3_1kd_tmb"/>
+        <p><b>Get-Bucket-Total-Value-By-Type</b>: This function returns the balance value of the
+            bucket based on its passed type. It returns the balance including the carry over
+            balance.</p>
+        <p><b>Example:</b></p>
+        <p>
+            <image placement="break" href="../images/get_bucket_total_type.png"
+                id="image_lfp_3rd_tmb"/>
+        </p>
+        <p><b>Get-Previous-Bucket-Value-By-Type</b>: This function returns the regular bucket
+            balance based on passed KindOfUnit without carry over balance for previous
+            subscription.</p>
+        <p><b>Example:</b></p>
+        <p>
+            <image placement="break" href="../images/get_previous_bucket_type_without_carryover.png"
+                id="image_kxs_5rd_tmb"/>
+        </p>
+        <p><b>Get-Bucket-Value-By-Type</b>: This function returns the regular bucket balance based
+            on passed bucket type without carry over balance.</p>
+        <p><b>Example:</b></p>
+        <p>
+            <image placement="break" href="../images/get_bucket_value_by_type_without_carryover.png"
+                id="image_gk1_ssd_tmb"/>
+        </p>
+        <p>Following are some of the sample scenarios listed to understand when notifications can be
+            sent:</p>
+        <ul id="ul_obp_kmm_5mb">
+            <li>
+                <p>00:00 time and BOU bundle expires today but any of the bucket is not zero,
+                    notification is sent in this case.</p>
+            </li>
+            <li>
+                <p>00:00 time and BOU bundle expires today and all the buckets are consumed,
+                    notification is not sent in this case.</p>
+            </li>
+            <li>
+                <p>02:25 time and Bundle renews today and all the buckets are consumed, notification
+                    is not sent in this case.</p>
+            </li>
+            <li>
+                <p>00:00 time and Bundle renews today, and any of the bucket is not zero and is >=
+                    certain value, notification is sent in this case.</p>
+            </li>
+            <li>
+                <p>At time of Bundle renewal, bucket 1 of type money is empty and bucket 2 of type
+                    volume is non empty, the notification is sent.</p>
+            </li>
+        </ul>
+        <p><b>Support for reading data from Subcription, Device, and Group</b></p>
+        <p>NCC allows operators to get the required data per request and send them to notification
+            template.</p>
+        <p>Following are the values that can be read:</p>
+        <ul id="ul_sq4_std_tmb">
+            <li>MSISDN (E164)</li>
+            <li>IMSI</li>
+            <li>Group-Id</li>
+            <li>Device-Id</li>
+            <li>Bundle-Id</li>
+            <li>Custom data from Device and Group (for example, Mother Name)</li>
+        </ul>
+        <p><b>Example:</b></p>
+        <image placement="break" href="../images/reading_data.png" id="image_ubz_f5d_tmb"/>
+    </conbody>
+</concept>

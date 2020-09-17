@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e10934"><title>Support for N28 (5G Sy) interface</title><conbody>
+<section><title>Overview</title>
+<p>NCC supports charging for N28 interface with <uicontrol>AUTH-APPLICATION_ID</uicontrol> =
+                    <varname>167773025</varname>. NCC CHF supports N28 16.0.0 (September 2019)
+                specifications.</p>
+<note><ul>
+<li>
+<p>
+<i>Nchf_SpendingLimitControl_Notify</i> (terminate) is not supported.</p>
+</li>
+<li>
+<p>Internally, <i>Nchf_SpendingLimitControl_Subscribe</i> is mapped to SLR, <i>Nchf_SpendingLimitControl_Unsubscribe</i> is mapped to STR, and <i>Nchf_SpendingLimitControl_Notify</i> is mapped to SNR. N28 session is internally mapped as Sy session.</p>
+</li>
+<li>
+<p>5G specific parameter <uicontrol>Supported features</uicontrol> (optional) is sent in SLA/SNR as
+                            received in SLR. There is no functional support of this parameter in NCC
+                            and its value is sent back as received from SLR.</p>
+</li>
+<li>
+<p>Only basic HTTP result codes are supported as 200, 201, 204, and 400.</p>
+</li>
+<li>
+<p>The N28 interface is tested with HTTP/HTTPS. It has not been tested with HTTP2.</p>
+</li>
+</ul>
+</note>
+</section>
+<section id="multiSessHand"><title>Multiple session handling</title>
+<p>Both 4G and 5G sessions can co-exist for a single device. There can be multiple Sy/N28 sessions for one device, up to a limit, as defined in the application preference <varname>Max Sy Session Limit</varname>. If the configured <varname>Max Sy Session Limit</varname> is reached, new 4G Sy sessions are rejected with result code 4002, and 5G Sy sessions are rejected with result code 400.</p>
+</section>
+</conbody></concept>

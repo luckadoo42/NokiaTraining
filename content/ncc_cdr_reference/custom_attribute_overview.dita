@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id ="d1e385982"><title>Overview</title><conbody>
+<section>
+
+<p>To allow the attribute to appear in the GUI, so that you can configure it into a rule, add the attribute to the PCRF custom rule attribute dictionary under the CDR result context, along with its appropriate Triggers. This means that you must modify the <filepath>PCRFCustomRuleAttributeDictionary.xml</filepath> file, as required, for attribute name, value type, result context, and applicable triggers. </p>
+<p>The following is an example of the lines you would use to modify the <filepath>PCRFCustomRuleAttributeDictionary.xml</filepath> file to add the attribute name <systemoutput>CC-Request-Number</systemoutput>. </p>
+<fig>
+<codeblock>&lt;attributeDictionary xmlns="ruleAttributeDictionary"&gt;
+	&lt;attribute name="CC-Request-Number" valueType="IntegerValueType"&gt;
+		&lt;resultContext type="CDR" maxOccurs="1"&gt;
+			&lt;ruleSet&gt;IPCAN_SESSION_ESTABLISHMENT&lt;/ruleSet&gt;
+			&lt;ruleSet&gt;IPCAN_SESSION_MODIFICATION&lt;/ruleSet&gt;
+			&lt;ruleSet&gt;IPCAN_SESSION_TERMINATION&lt;/ruleSet&gt;
+		&lt;/resultContext&gt;
+		&lt;domain name="NETWORK"/&gt;
+	&lt;/attribute&gt;</codeblock>
+</fig>
+<p>To enable logging of the custom attribute, you can write a rule that has an action to add the value given in the rule for the custom attribute. For example:</p>
+<p>
+<userinput>CDR.CC-Request-Number = GX.CC-Request-Number</userinput>
+</p>
+<p>To complete the operation, you must restart the ASR server and reload the dictionary using the reload-dictionary command.</p>
+</section>
+</conbody></concept>

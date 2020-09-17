@@ -1,0 +1,2485 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="db-list_use_cases">
+    <title>db-list tool use cases</title>
+    
+    <conbody>
+        <section id="section_msd_jb5_4lb">
+            <title>Use case 1: Data hierarchy</title>
+            <p>Create the following database:<ol id="ol_tpj_lb5_4lb">
+                    <li>Create a device <codeph>Device1</codeph> and a group <codeph>Group1</codeph>
+                        with the following four subscriptions:<ul id="ul_kdw_mb5_4lb">
+                            <li>First subscription with monetary bucket having threshold and
+                                subscription counter with cap.</li>
+                            <li>Second subscription with volume bucket with <b>Unit Type</b> set as
+                                    <codeph>GB</codeph>, <b>Carry over flag</b> set as
+                                    <codeph>True</codeph>, and subscription counter with
+                                threshold.</li>
+                            <li>Third subscription with both monetary (step charge bucket) and
+                                non-monetary bucket.</li>
+                            <li>Fourth subscription with no bucket.</li>
+                        </ul></li>
+                    <li><codeph>Device1</codeph> has a device-counter (with threshold) and
+                            <codeph>Group1</codeph> has a group counter and devicegroup counter
+                        (with cap).</li>
+                    <li>Create an Aggregate View (AV) with <b>Aggregate Type</b> set as
+                            <codeph>Charging Service</codeph> and threshold attach to
+                            <codeph>Group1</codeph>.</li>
+                    <li>Create an AV with <b>Aggregate Type</b> set as <codeph>Charging Service and
+                            CAP</codeph> and attach it to the device.</li>
+                    <li>Create an AV <b>Aggregate Type</b> set as <codeph>Counter</codeph> and
+                        attach it to <codeph>Device1</codeph>.</li>
+                    <li>Create an account <codeph>Account 1</codeph> with negative balance and
+                        threshold, and overage enabled.</li>
+                    <li> Create an account <codeph>Account 2</codeph> with zero balance and overage
+                        disabled.</li>
+                    <li><codeph>Device1</codeph> is subscribed to all the subscriptions mentioned
+                        above with <codeph>Account 1</codeph> and to the one subscription with
+                            <codeph>Account 2</codeph>.</li>
+                    <li><codeph>Group1</codeph> is subscribed to all the subscriptions mentioned
+                        above with <codeph>Account 2</codeph>.</li>
+                    <li>Create two custom data of <codeph>Boolean</codeph> type and string of
+                        context <codeph>DEVICE</codeph> and attach all custom data to the
+                        device.</li>
+                    <li>Create three custom data of <codeph>Boolean</codeph> type, integer, and
+                        string of context <codeph>GROUP</codeph> and attach all custom data to the
+                        group.</li>
+                </ol></p>
+            <p>Execute the following command to generate the database
+                dump:<codeblock>./db-list -l devices</codeblock></p>
+            <p>The snippet for d1_demo device in JSON format is
+                as:<codeblock>"d1_demo":{
+"deviceType":0,
+Level 1 -> Device
+"subIndex":0,
+"firstCallDone":0,
+"subIds":[
+Level 2 -> Subscription Ids
+"2759ca26-d3cd-47f6-8df1-88b6129e9f97||2100000000a8401",
+"f80de2e3-67bc-41bc-9117-695d1d9f17de||2100000000a8401",
+"5d1306b5-f681-4064-8c63-56e8b62123c5||2100000000a8401",
+"4f2e8bff-6f62-46d4-8db1-8b6a9bbd303d||2100000000b0401"
+],
+"dCountId":[
+// Device Counter Id
+"dc1_demo"
+],
+"schemaVersion":0,
+"e164":[
+"1231231"
+],
+"creationTime":1562051948926,
+// Device creation time
+"allowOverage":1,
+"syOCSEnabled":0,
+"ownerId":"SPSAUTO_User||210000000008401",
+"AVInstId":{
+Level 2 -> Av Instance Ids
+"AV3_demo":"e27adbe3-d04f-4d79-8a98-0fb8f24abe73||210000000008401",
+"AV1_demo":"fedbcfc7-de08-4138-86ed-329a6f1e10ad||210000000008401"
+},
+"deviceName":"d1_demo",
+"states":{
+Level 2 -> Device LC present state
+"0":"DefaultDeviceLifeCycle_Active"
+},
+"notifProfile":"SPSAUTO_NotificationProfile",
+// Notification Profile
+"ldapsearch":0,
+"offLineTime":0,
+"groupIds":[
+// Ids of the Group in which the device is part of.
+"g1_demo||210000000008401"
+],
+"lifeCycleNames":{
+Level 2 -> Device LC Name
+"0":"DefaultDeviceLifeCycle"
+},
+"categoryList":[
+"DefaultCategory"
+],
+"id":"d1_demo||210000000008401",
+"pwdEncrypted":0,
+"lastUpdateTime":1562148992446,
+"primarySiteId":1,
+"partition":1,
+"customData":{
+Level 2 -> List of device custom data
+"cd_d3_demo":{
+"type":19,
+"value":"false"
+},
+"cd_d2_demo":{
+"type":0,
+"value":"test2"
+}
+},
+"subscriptions":{
+Level 2 -> Subscriptions
+"4f2e8bff-6f62-46d4-8db1-8b6a9bbd303d":{ },
+// First Subscription, details collapsed
+"5d1306b5-f681-4064-8c63-56e8b62123c5":{
+// Second Subscription, expanded to explain hierarchy.
+"deviceIds":[ ],
+"schemaVersion":0,
+"acctBalances":{
+Level 3 -> Account balance
+"countCCR":0,
+"schemaVersion":0,
+"balance":-4586634745500139500,
+"prevBalance":0,
+"prevAvlBalance":0,
+"id":"acc1_demo||2100000000a8401",
+"avlBalance":-4586634745500139500
+},
+"creationTime":1562148966223,
+// Subscription creation time
+"csiList":[
+Level 3 -> List of CS
+{
+"bktInfoList":[
+{
+"bktUnitType":{
+"schemaVersion":19090000003,
+"id":"Money",
+"creationTime":1561367931053,
+"version":1,
+"kindOfUnit":2
+// Money type bucket
+},
+"bktInstId":
+"94e6e6e8-4bde-4b55-9b84-85db5e36940b||2100000000a8401",
+"bktDefName":"b3m_demo"
+},
+{
+"bktUnitType":{ },
+"bktInstId":
+"65e2d987-0b37-40dd-acd5-ccfc89a48349||2100000000a8401",
+"bktDefName":"b4byte_demo"
+}
+],
+"csDefRef":"cs3_demo",
+"bcktInsts":[
+Level 4 -> Bucket instances
+{
+"creationTime":1562148966230,
+"currentChgStep":2,
+// Value shows current charging step for the bucket
+"maxNoOfLines":0,
+"unitType":{
+"schemaVersion":19090000003,
+"id":"Money",
+"creationTime":1561367931053,
+"version":1,
+"kindOfUnit":2
+},
+"bucketDefId":"b3m_demo",
+"smSqrActLnPrHr":0,
+"countCCR":0,
+"initValAdjMode":3,
+"id":
+"94e6e6e8-4bde-4b55-9b84-85db5e36940b||2100000000a8401",
+"initialValue":300000,
+// Initial value
+"unusedValue":300000,
+// Unused Value ( With reservation )
+"schemaVersion":0,
+"isCarryOver":0,
+"deltaValue":0,
+"dormantLines":0,
+"adjAmtInitVald":0,
+"smSqrtLinPrHr":0,
+"chrgStepUpTime":1562149088062,
+// Up or start time of current charging step
+"maxCryOvrOpt":1,
+"sumDorLinSliSz":0,
+"accountRef":"acc1_demo||2100000000a8401",
+"subscriptionId":
+"5d1306b5-f681-4064-8c63-56e8b62123c5",
+"currentValue":300000,
+"lastUpdateTime":1562149088062,
+"origInitialVal":100000
+},
+{ }
+]
+}
+],
+"bdlRef":"bun3_demo",
+"refBunCustom":0,
+"renewalMode":2,
+"states":{
+Level 3 -> Subscription Life Cycle present state
+"0":"DefaultSubscriptionLifeCycle_Active"
+},
+"accRef":"acc1_demo||2100000000a8401",
+// Account id from which subscription is taken
+"lifeCycleNames":{
+Level 3 -> Subscription lifecycle name
+"0":"DefaultSubscriptionLifeCycle"
+},
+"subType":0,
+"id":"5d1306b5-f681-4064-8c63-56e8b62123c5||2100000000a8401",
+"lifeCycleSNR":0
+},
+"2759ca26-d3cd-47f6-8df1-88b6129e9f97":{
+"deviceIds":[
+"d1_demo||210000000008401"
+],
+"schemaVersion":0,
+"acctBalances":{ },
+"creationTime":1562148966011,
+"csiList":[
+{
+"bktInfoList":[
+{
+"bktUnitType":{
+"schemaVersion":19090000003,
+"id":"Money",
+"creationTime":1561367931053,
+"version":1,
+"kindOfUnit":2
+},
+"bktInstId":
+"aa295124-6c17-4a5d-b33a-ac04b073b070||2100000000a8401",
+"bktDefName":"b1_demo"
+}
+],
+"ctrInfoList":[ ],
+"csDefRef":"cs1_demo",
+"bcktInsts":[
+{
+"creationTime":1562148966017,
+"maxNoOfLines":0,
+"unitType":{
+"schemaVersion":19090000003,
+"id":"Money",
+"creationTime":1561367931053,
+"version":1,
+"kindOfUnit":2
+},
+"bucketDefId":"b1_demo",
+"smSqrActLnPrHr":0,
+"countCCR":1,
+"initValAdjMode":3,
+"id":
+"aa295124-6c17-4a5d-b33a-ac04b073b070||2100000000a8401",
+"initialValue":10000,
+"unusedValue":0,
+"schemaVersion":0,
+"isCarryOver":0,
+"deltaValue":0,
+"dormantLines":0,
+"adjAmtInitVald":0,
+"smSqrtLinPrHr":0,
+"maxCryOvrOpt":1,
+"expirationTime":1564770600,
+"thrsPrfGrpInst":[
+Level 5 -> ThresholdProfileGroupInstance(present inside bucket instance)
+{
+"schemaVersion":0,
+"dynamicFlag":0,
+"ThresProfInst":[
+{
+"threshInstList":[
+{
+"rarSend":0,
+"threshDefName":"ThresholdPercent1",
+"level":4,
+"threshCrossed":1,
+"overageFlag":0,
+"sendNotif":0,
+"actionResult":0
+}
+],
+"interval":5,
+"thrPrfDefName":"ThreshProfilePercent",
+"provInterval":0
+}
+],
+"thPfGrpDefName":"tpg_mon.Threshold"
+}
+],
+"sumDorLinSliSz":0,
+"accountRef":"acc1_demo||2100000000a8401",
+"subscriptionId":
+"2759ca26-d3cd-47f6-8df1-88b6129e9f97",
+"currentValue":0,
+"lastUpdateTime":0,
+"origInitialVal":10000
+}
+]
+}
+],
+"bdlRef":"bun1_demo",
+"refBunCustom":0,
+"renewalMode":2,
+"states":{
+"0":"DefaultSubscriptionLifeCycle_Active"
+},
+"accRef":"acc1_demo||2100000000a8401",
+"lifeCycleNames":{
+"0":"DefaultSubscriptionLifeCycle"
+},
+"subType":0,
+"id":"2759ca26-d3cd-47f6-8df1-88b6129e9f97||2100000000a8401",
+"entityCtrlnsts":[ ],
+Level 3 -> Subscription counter instance
+"lifeCycleSNR":0
+},
+"f80de2e3-67bc-41bc-9117-695d1d9f17de":{ }
+// Fourth Subscription, details collapsed
+},
+"entityCtrlnsts":[ ],
+Level 2 -> Device counter instance
+Note: Group counter and Device-Group counter is present in case of dump
+taken for groups
+"avInsts":{ },
+Level 2 -> AV Instances attached to the device
+"dynamicpstusg":[ ]
+Level 2 -> DPU ( with attach mode device and device-group is present in
+dump for devices)
+}</codeblock></p>
+        </section>
+        <section id="section_mtg_gc5_4lb">
+            <title>Use case 2: Group subscriptions</title>
+            <p>Create the following database:<ul id="ul_ldq_hc5_4lb">
+                    <li>Create four bundles with following configuration:<ul id="ul_l4k_3c5_4lb">
+                            <li><codeph>Bun1</codeph> having bucket of 7 GB and milestone at 70% and
+                                100% having monthly renewal lifecycle.</li>
+                            <li><codeph>Bun2</codeph> having 1 GB bucket with no milestone.</li>
+                            <li><codeph>Bun3</codeph> with 2 GB bucket with 90% milestone.</li>
+                            <li><codeph>Bun4</codeph> with 5 GB bucket with 100% milestone.</li>
+                        </ul></li>
+                </ul></p>
+            <p>Create a group <codeph>G1</codeph> with 8 devices <codeph>D1</codeph> to
+                    <codeph>D8</codeph> having subscriptions of the above-mentioned bundles with
+                priority <codeph>Bun1</codeph> > <codeph>Bun2</codeph> > <codeph>Bun3</codeph> >
+                    <codeph>Bun4</codeph>.</p>
+            <p>Execute the following command to generate the database
+                dump:<codeblock>./db-list -l groups</codeblock></p>
+            <p>Following is the JSON formatted database
+                dump:<codeblock>{
+"G84454": {
+// Group data as present in ICD set.
+"groupName": "G84454",
+"traversalOrder": 0,
+// List of subscription id’s.
+"subIds": [
+"fb208192-08af-450f-8e9e-2ebd86876c49||410000000048401",
+"987c5b8a-c9bd-4da1-a257-5b7cfc512903||410000000050401",
+"924edaa8-3774-4e2e-9d59-ca58618782a3||410000000058401",
+"9533f017-37bf-48d3-ba92-91aceefa556b||410000000060401"],
+"schemaVersion": 0,
+"creationTime": 1562752122478,
+// Life Cycle name, which is applied on Group.
+"lifeCycleNames": {
+"0": "DefaultGroupLifeCycle"
+},
+"name": "G84454",
+"id": "G84454||210000000058401",
+// List of devices in a group.
+"childDeviceIds": ["D584454||410000000028401",
+"D884454||410000000040401", "D184454||210000000038401",
+"D384454||210000000048401", "D684454||410000000030401",
+"D484454||210000000050401", "D284454||210000000040401",
+"D784454||410000000038401"],
+"states": {
+"0": "DefaultGroupLifeCycle_Active"
+},
+"lastUpdateTime": 1562758779371,
+"primarySiteId": 1,
+"partition": 1,
+// Subscription objects as fetched from ICD set based upon list of
+subscription id’s.
+"subscriptions": {
+"987c5b8a-c9bd-4da1-a257-5b7cfc512903": {
+"schemaVersion": 0,
+// Account balance of the account attached to the subscription.
+"acctBalances": {
+"countCCR": 0,
+"schemaVersion": 0,
+"balance": 4652007308841189376,
+"prevBalance": 0,
+"prevAvlBalance": 0,
+"id": "Acc84454||210000000030401",
+"avlBalance": 4652007308841189376
+},
+"creationTime": 1562752124191,
+"csiList": [{
+"bktInfoList": [{
+"bktUnitType": {
+"schemaVersion":
+19090000022,
+"id": "Byte",
+"creationTime":
+1562733423615,
+"version": 1,
+"kindOfUnit": 1
+},
+"bktInstId":
+"0c37e569-4b75-44d4-9379-a003b6f8b999||210000000030401",
+"bktDefName": "Bkt284454"
+}],
+"csDefRef": "CS284454",
+// List of bucket instances present in the charging service.
+"bcktInsts": [{
+"schemaVersion": 0,
+"creationTime": 1562752124191,
+// isCarryOver = 0, this is regular bucket ("id":
+"0c37e569-4b75-44d4-9379-a003b6f8b999||210000000030401")
+"isCarryOver": 0,
+"deltaValue": 0,
+"dormantLines": 0,
+"maxNoOfLines": 0,
+"adjAmtInitVald": 0,
+"smSqrtLinPrHr": 0,
+"unitType": {
+"schemaVersion": 19090000022,
+"id": "Byte",
+"creationTime": 1562733423615,
+"version": 1,
+"kindOfUnit": 1
+},
+"bucketDefId": "Bkt284454",
+"smSqrActLnPrHr": 0,
+"countCCR": 0,
+"initValAdjMode": 3,
+"sumDorLinSliSz": 0,
+"id":
+"0c37e569-4b75-44d4-9379-a003b6f8b999||210000000030401",
+"accountRef":
+"Acc84454||210000000030401",
+"subscriptionId":
+"987c5b8a-c9bd-4da1-a257-5b7cfc512903",
+// Bucket dynamic values
+"initialValue": 1073741824,
+"unusedValue": 1073741824,
+"currentValue": 1073741824,
+"lastUpdateTime": 0,
+"origInitialVal": 1073741824
+}]
+}],
+"bdlRef": "Bun284454",
+"refBunCustom": 0,
+"renewalMode": 2,
+// Present life cycle state of the subscription
+"states": {
+"0": "DefaultSubscriptionLifeCycle_Active"
+},
+"accRef": "Acc84454||210000000030401",
+"groupIds": ["G84454||210000000058401"],
+// Life cycle name of the subscription
+"lifeCycleNames": {
+"0": "DefaultSubscriptionLifeCycle"
+},
+"subType": 1,
+"id":
+"987c5b8a-c9bd-4da1-a257-5b7cfc512903||410000000050401",
+"lifeCycleSNR": 0
+},
+// Another subscription
+"9533f017-37bf-48d3-ba92-91aceefa556b": {
+"schemaVersion": 0,
+"acctBalances": {
+"countCCR": 0,
+"schemaVersion": 0,
+"balance": 4652007308841189376,
+"prevBalance": 0,
+"prevAvlBalance": 0,
+"id": "Acc84454||210000000030401",
+"avlBalance": 4652007308841189376
+},
+"creationTime": 1562752124214,
+"csiList": [{
+"bktInfoList": [{
+"bktUnitType": {
+"schemaVersion":
+19090000022,
+"id": "Byte",
+"creationTime":
+1562733423615,
+"version": 1,
+"kindOfUnit": 1
+},
+"bktInstId":
+"25f576be-2530-4d31-a285-2811d1bf1bd3||210000000030401",
+"bktDefName": "Bkt484454"
+}],
+"csDefRef": "CS484454",
+"bcktInsts": [{
+"schemaVersion": 0,
+"creationTime": 1562752124215,
+"isCarryOver": 0,
+"deltaValue": 0,
+"dormantLines": 0,
+"maxNoOfLines": 0,
+"adjAmtInitVald": 0,
+"smSqrtLinPrHr": 0,
+"unitType": {
+"schemaVersion": 19090000022,
+"id": "Byte",
+"creationTime": 1562733423615,
+"version": 1,
+"kindOfUnit": 1
+},
+"bucketDefId": "Bkt484454",
+"smSqrActLnPrHr": 0,
+"countCCR": 0,
+"initValAdjMode": 3,
+// Threshold profile group instance present in bucket instance (threshold
+applied on bucket)
+"thrsPrfGrpInst": [{
+"schemaVersion": 0,
+// Following flag shows this is milestone threshold
+"dynamicFlag": 1,
+"ThresProfInst": [{
+"threshInstList": [{
+"rarSend": 0,
+"threshDefName":
+"Threshold3",
+"level": 0,
+"threshCrossed":
+0,
+"overageFlag":
+0,
+"sendNotif": 0,
+"actionResult":
+0
+}],
+"interval": 0,
+"thrPrfDefName":
+"ThresholdProfile0",
+"provInterval": 0
+}],
+"thPfGrpDefName":
+"TPG384454.Threshold"
+}],
+"sumDorLinSliSz": 0,
+"id":
+"25f576be-2530-4d31-a285-2811d1bf1bd3||210000000030401",
+"accountRef":
+"Acc84454||210000000030401",
+"subscriptionId":
+"9533f017-37bf-48d3-ba92-91aceefa556b",
+"initialValue": 5368709120,
+"unusedValue": 5368709120,
+"currentValue": 5368709120,
+"lastUpdateTime": 0,
+"origInitialVal": 5368709120
+}]
+}],
+"bdlRef": "Bun484454",
+"refBunCustom": 0,
+"renewalMode": 2,
+"states": {
+"0":
+"DefaultSubscriptionLifeCycle_Active"},
+"accRef": "Acc84454||210000000030401",
+"groupIds": ["G84454||210000000058401"],
+"lifeCycleNames": {
+"0": "DefaultSubscriptionLifeCycle"
+},
+"subType": 1,
+"id":
+"9533f017-37bf-48d3-ba92-91aceefa556b||410000000060401",
+"lifeCycleSNR": 0
+},
+"924edaa8-3774-4e2e-9d59-ca58618782a3": {
+"schemaVersion": 0,
+"acctBalances": {
+"countCCR": 0,
+"schemaVersion": 0,
+"balance": 4652007308841189376,
+"prevBalance": 0,
+"prevAvlBalance": 0,
+"id": "Acc84454||210000000030401",
+"avlBalance": 4652007308841189376
+},
+"creationTime": 1562752124201,
+"csiList": [{
+"bktInfoList": [{
+"bktUnitType": {
+"schemaVersion": 19090000022,
+"id": "Byte",
+"creationTime": 1562733423615,
+"version": 1,
+"kindOfUnit": 1
+},
+"bktInstId":
+"031ee9f7-d80f-445c-a0fe-acc25d90d788||210000000030401",
+"bktDefName": "Bkt384454"
+}],
+"csDefRef": "CS384454",
+"bcktInsts": [{
+"schemaVersion": 0,
+"creationTime": 1562752124201,
+"isCarryOver": 0,
+"deltaValue": 0,
+"dormantLines": 0,
+"maxNoOfLines": 0,
+"adjAmtInitVald": 0,
+"smSqrtLinPrHr": 0,
+"unitType": {
+"schemaVersion": 19090000022,"id": "Byte",
+"creationTime": 1562733423615,
+"version": 1,
+"kindOfUnit": 1
+},
+"bucketDefId": "Bkt384454",
+"smSqrActLnPrHr": 0,
+"countCCR": 0,
+"initValAdjMode": 3,
+"thrsPrfGrpInst": [{
+"schemaVersion": 0,
+"dynamicFlag": 1,
+"ThresProfInst": [{
+"threshInstList": [{
+"rarSend": 0,
+"threshDefName": "Threshold3",
+"level": 0,
+"threshCrossed": 0,
+"overageFlag": 0,
+"sendNotif": 0,
+"actionResult": 0
+}],
+"interval": 0,
+"thrPrfDefName": "ThresholdProfile0",
+"provInterval": 0
+}],
+"thPfGrpDefName": "TPG284454.Threshold"
+}],
+"sumDorLinSliSz": 0,
+"id":
+"031ee9f7-d80f-445c-a0fe-acc25d90d788||210000000030401",
+"accountRef": "Acc84454||210000000030401",
+"subscriptionId":
+"924edaa8-3774-4e2e-9d59-ca58618782a3",
+"initialValue": 2147483648,
+"unusedValue": 2147483648,
+"currentValue": 2147483648,
+"lastUpdateTime": 0,
+"origInitialVal": 2147483648
+}]
+}],
+"bdlRef": "Bun384454",
+"refBunCustom": 0,
+"renewalMode": 2,
+"states": {
+"0": "DefaultSubscriptionLifeCycle_Active"
+},
+"accRef": "Acc84454||210000000030401",
+"groupIds": ["G84454||210000000058401"],"lifeCycleNames": {
+"0": "DefaultSubscriptionLifeCycle"
+},
+"subType": 1,
+"id":
+"924edaa8-3774-4e2e-9d59-ca58618782a3||410000000058401",
+"lifeCycleSNR": 0
+},
+// Another subscription
+"fb208192-08af-450f-8e9e-2ebd86876c49": {
+"temPlcInfo": {
+"timer": 1563858000000,
+"temId": "2-1-LC_1-SUBSCRIPTION_TYPE:
+fb208192-08af-450f-8e9e-2ebd86876c49||410000000048401:
+SubscriptionBillingCycle84454_Active:RepeatCycleEvent:PERIOD"
+},
+"schemaVersion": 0,
+"acctBalances": {
+"countCCR": 0,
+"schemaVersion": 0,
+"balance": 4652007308841189376,
+"prevBalance": 0,
+"prevAvlBalance": 0,
+"id": "Acc84454||210000000030401",
+"avlBalance": 4652007308841189376
+},
+"creationTime": 1562752124133,
+"csiList": [{
+"bktInfoList": [{
+"bktUnitType": {
+"schemaVersion": 19090000022,
+"id": "Byte",
+"creationTime": 1562733423615,
+"version": 1,
+"kindOfUnit": 1
+},
+"bktInstId":
+"abdbb406-935a-40db-8433-b4e9ca4776ed||210000000030401",
+"bktDefName": "Bkt184454"
+}],
+"csDefRef": "CS184454",
+"bcktInsts": [{
+"schemaVersion": 0,
+"creationTime": 1562752124137,
+"isCarryOver": 0,
+"deltaValue": 0,
+"dormantLines": 0,
+"maxNoOfLines": 0,
+"adjAmtInitVald": 0,"smSqrtLinPrHr": 0,
+"unitType": {
+"schemaVersion": 19090000022,
+"id": "Byte",
+"creationTime": 1562733423615,
+"version": 1,
+"kindOfUnit": 1
+},
+"bucketDefId": "Bkt184454",
+"smSqrActLnPrHr": 0,
+"countCCR": 0,
+"initValAdjMode": 3,
+"thrsPrfGrpInst": [{
+"schemaVersion": 0,
+"dynamicFlag": 1,
+"ThresProfInst": [{
+"threshInstList": [{
+"rarSend": 0,
+"threshDefName":
+"Threshold2",
+"level": 0,
+"threshCrossed": 0,
+"overageFlag": 0,
+"sendNotif": 0,
+"actionResult": 0
+}, {
+"rarSend": 0,
+"threshDefName":
+"Threshold3",
+"level": 0,
+"threshCrossed": 0,
+"overageFlag": 0,
+"sendNotif": 0,
+"actionResult": 0
+}],
+"interval": 0,
+"thrPrfDefName":
+"ThresholdProfile0",
+"provInterval": 0
+}],
+"thPfGrpDefName": "TPG184454.
+Threshold"
+}],
+"sumDorLinSliSz": 0,
+"id":
+"abdbb406-935a-40db-8433-b4e9ca4776ed||210000000030401",
+"accountRef":
+"Acc84454||210000000030401",
+"subscriptionId":"fb208192-08af-450f-8e9e-2ebd86876c49",
+"initialValue": 7516192768,
+"unusedValue": 7516192768,
+"currentValue": 7516192768,
+"lastUpdateTime": 0,
+"origInitialVal": 7516192768
+}]
+}],
+"bdlRef": "Bun184454",
+"refBunCustom": 0,
+"renewalMode": 0,
+// As periodic life cycle is present in bundle, so subscription has
+present life cycle states for entity and periodic life cycle.
+"states": {
+"0": "DefaultSubscriptionLifeCycle_
+Active",
+"1": "SubscriptionBillingCycle84454_
+Active"
+},
+"accRef": "Acc84454||210000000030401",
+"groupIds": ["G84454||210000000058401"],
+// Entity and periodic subscription life cycle names
+"lifeCycleNames": {
+"0": "DefaultSubscriptionLifeCycle",
+"1": "SubscriptionBillingCycle84454"
+},
+"startTime": 1562752124172,
+"subType": 1,
+"id":
+"fb208192-08af-450f-8e9e-2ebd86876c49||410000000048401",
+"endTime": 1563858000000,
+"lifeCycleSNR": 0
+}
+}
+}
+}
+</codeblock></p>
+        </section>
+        <section id="section_ecv_sc5_4lb">
+            <title>Use case 3: Account with custom data and admin</title>
+            <p>Create an account with custom data and administrator. Execute the following command
+                to generate the database dump:<codeblock>./db-list -l accounts</codeblock></p>
+            <p>Following is the JSON formatted database
+                dump:<codeblock>"acc1_demo": {
+// Account data taken from ICD set
+"overageLimit": -4571364728013586432,
+"temPlcInfo": {
+"timer": 1564770600000,
+"temId": "1-1-LC_1-ACCOUNT_TYPE:acc1_demo||2100000000a8401:
+DefaultAccountBillingCycle_Start:RepeatCycle:PERIOD"
+},
+"schemaVersion": 0,
+"creationTime": 1561980731175,
+"accountName": "acc1_demo",
+"timeZoneId": "Asia/Kolkata",
+"accountType": 0,
+"tpgIdMap": { // Associated TPG ID
+"tpg_acc": "6dfabc5b-1c05-430f-a012-3871a1b0189d||2100000000a8401"
+},
+// Entity and periodic life cycle present states for account
+"states": {
+"0": "DefaultAccountLifeCycle_Active",
+"1": "DefaultAccountBillingCycle_Start"
+},
+"dayOfWeek": 0,
+"dayOfMonth": 3,
+"lifeCycleNames": { // Life cycle names for Account.
+"0": "DefaultAccountLifeCycle",
+"1": "DefaultAccountBillingCycle"
+},
+"hourOfDay": 0,
+"startTime": 1562092200000,
+"id": "acc1_demo||2100000000a8401",
+"endTime": 1564770600000,
+"lifeCycleSNR": 0,
+"lastUpdateTime": 1562152648184,
+"primarySiteId": 1,
+"partition": 1,
+// Custom data of account
+"customData": {
+"cd_acc": {
+"type": 0,
+"value": "acc_demo"
+}
+},
+// Account adminstrators
+"acctUsers": {
+"acc1_demo:SPSAUTO_User": {
+"accountId": "acc1_demo||2100000000a8401",
+"schemaVersion": 0,
+"id": "acc1_demo:SPSAUTO_User||2100000000a8401",
+"creationTime": 1562150948835,
+"userId": "SPSAUTO_User||210000000008401"
+}
+}
+}</codeblock></p>
+        </section>
+        <section id="section_bsl_vc5_4lb">
+            <title>Use case 4: Device with centralized calls</title>
+            <p>Create a device with centralized calls to monitor the usage (DPUs). Execute the
+                following command to generate the database
+                dump:<codeblock>./db-list -l devices
+</codeblock></p>
+            <p>Following is the JSON formatted database
+                dump:<codeblock>"d1_demo":{
+"deviceType":0,
+"subIndex":0,
+"firstCallDone":0,
+"subIds":[ ],
+"dCountId":[ ],
+"schemaVersion":0,
+"e164":[ ],
+"creationTime":1562051948926,
+"allowOverage":1,
+"syOCSEnabled":0,
+"ownerId":"SPSAUTO_User||210000000008401",
+"AVInstId":{ },
+"deviceName":"d1_demo",
+"states":{ },
+"notifProfile":"SPSAUTO_NotificationProfile",
+"ldapsearch":0,
+"offLineTime":0,
+"groupIds":[ ],
+"lifeCycleNames":{ },
+"categoryList":[ ],
+"id":"d1_demo||210000000008401",
+"pwdEncrypted":0,
+"lastUpdateTime":1562148992446,
+"primarySiteId":1,
+"partition":1,
+"customData":{ },
+"subscriptions":{ },
+"entityCtrlnsts":[ ],
+"avInsts":{ },
+// DPU attached to the device
+"dynamicpstusg":[
+{
+"value":{
+"lastSliceSize":13333400,
+"schemaVersion":0,
+"usagePerHr":833334,"terminDateTime":1562149906355,
+"dormantLine":1,
+"id":{
+"coordinates":148618787703260161,
+"msccIdentity":"RG_8",
+"keyValue":"d1_demo||210000000008401",
+"attachmode":0
+},
+"device":"d1_demo||210000000008401",
+"bcktInstRef":
+"2f3adef7-69c6-4d9e-a2c2-8c75d8f0b5f5||2100000000a8401"
+},
+"key":{
+"msccIdentity":"RG_8",
+"keyValue":"d1_demo||210000000008401",
+"attachmode":0
+}
+}
+]
+}</codeblock></p>
+        </section>
+        <section id="section_dcv_yc5_4lb">
+            <title>Use case 5: Device with reporting counters</title>
+            <p>Create a device with reporting counters. Execute the following command to generate
+                the database dump:<codeblock>./db-list -l devices</codeblock></p>
+            <p>Following is the JSON formatted database
+                dump:<codeblock>{
+"d31_demo":{
+"deviceType":0,
+"subIndex":0,
+"firstCallDone":0,
+"subIds":[ ],
+"dCountId":[ ],
+"schemaVersion":0,
+"e164":[ ],
+"creationTime":1562581830026,
+"allowOverage":1,
+"syOCSEnabled":0,
+"AVInstId":{ },
+"deviceName":"d31_demo",
+"states":{ },
+"notifProfile":"SPSAUTO_NotificationProfile",
+"ldapsearch":0,
+// List of reporting counter.
+"reportIds":[
+"Self_Bucket_Consumption_Report",
+"Self_CS_Consumption_Report",
+"Hierarchy_Consumption_Report"
+],
+"offLineTime":0,
+"groupIds":[ ],
+"lifeCycleNames":{ },
+"categoryList":[ ],
+"id":"d31_demo||210000000238401",
+"pwdEncrypted":0,
+"lastUpdateTime":1562642619355,
+"primarySiteId":1,
+"partition":1,
+"subscriptions":{ },
+"entityCtrlnsts":[ ],
+"avInsts":{ }
+}
+}</codeblock></p>
+        </section>
+        <section id="section_ysp_bd5_4lb">
+            <title>Use case 6: Change plan</title>
+            <p>The change plan was performed for four subscriptions with modes
+                    <codeph>IMMEDIATE</codeph>, <codeph>IMMEDIATE_ MINUS_USED</codeph>,
+                    <codeph>NEXT_BILL_CYCLE</codeph>, and <codeph>NULL</codeph>. The entity
+                lifecycle states of theses subscription is changed to either
+                    <codeph>Removed</codeph> or <codeph>Disconnected</codeph> and new subscriptions
+                were created in <codeph>Active</codeph> state. The dump before and after change plan
+                is as:</p>
+            <p><b>Before change
+                plan:</b><codeblock>{
+"Device73759":{
+"deviceType":0,
+"subIndex":0,
+"firstCallDone":0,
+"subIds":[
+"2d20f0e7-77e2-4dfd-99a6-5bc3e66f49f3||210000000278401",
+"518b613d-ad1c-452b-94ba-470f29449dd9||210000000278401",
+"0e50a223-b26f-4608-a6d8-80719f4bf07e||210000000278401",
+"caa53546-6685-42f5-bd74-4fdc4be6697a||210000000278401"
+],
+"schemaVersion":0,
+"e164":[ ],
+"creationTime":1562653806733,
+"allowOverage":0,
+"syOCSEnabled":0,
+"imsi":[ ],
+"ocsRealm":"",
+"AVInstId":{ },
+"deviceName":"Device73759",
+"states":{ },
+"notifProfile":"","password":"",
+"ldapsearch":0,
+"offLineTime":0,
+"lifeCycleNames":{
+"0":"DefaultDeviceLifeCycle"
+},
+"categoryList":[
+"DefaultCategory"
+],
+"id":"Device73759||210000000280401",
+"ocsHost":"",
+"pwdEncrypted":0,
+"lastUpdateTime":1562653808621,
+"primarySiteId":1,
+"partition":1,
+"subscriptions":{
+"518b613d-ad1c-452b-94ba-470f29449dd9":{
+"deviceIds":[ ],
+"schemaVersion":0,
+"acctBalances":{ },
+"creationTime":1562653808426,
+"csiList":[ ],
+"bdlRef":"46103_Bundle_Second",
+"refBunCustom":0,
+"renewalMode":2,
+"states":{
+// Active state
+"0":"DefaultSubscriptionLifeCycle_Active"
+},
+"remRenewals":10,
+"accRef":"Account73759||210000000278401",
+"lifeCycleNames":{ },
+"subType":0,
+"id":"518b613d-ad1c-452b-94ba-470f29449dd9||210000000278401",
+"lifeCycleSNR":0
+},
+"0e50a223-b26f-4608-a6d8-80719f4bf07e":{
+"deviceIds":[ ],
+"temPlcInfo":{ },
+"schemaVersion":0,
+"acctBalances":{ },
+"creationTime":1562653808475,
+"csiList":[ ],
+"bdlRef":"46103_BundleLC_Money",
+"refBunCustom":0,
+"renewalMode":0,
+"states":{
+// Active state"0":"SubscriptionEntityLifeCycle46103_Active",
+"1":"SubscriptionRenewCycle46103_Start"
+},
+"remRenewals":10,
+"accRef":"Account73759||210000000278401",
+"lifeCycleNames":{ },
+"startTime":1562653808511,
+"subType":0,
+"id":"0e50a223-b26f-4608-a6d8-80719f4bf07e||210000000278401",
+"endTime":1562653988000,
+"lifeCycleSNR":0
+},
+"2d20f0e7-77e2-4dfd-99a6-5bc3e66f49f3":{
+"deviceIds":[ ],
+"schemaVersion":0,
+"acctBalances":{ },
+"creationTime":1562653808367,
+"csiList":[ ],
+"bdlRef":"46103_Bundle_Byte",
+"refBunCustom":0,
+"renewalMode":2,
+"states":{
+// Active state
+"0":"DefaultSubscriptionLifeCycle_Active"
+},
+"remRenewals":10,
+"accRef":"Account73759||210000000278401",
+"lifeCycleNames":{ },
+"subType":0,
+"id":"2d20f0e7-77e2-4dfd-99a6-5bc3e66f49f3||210000000278401",
+"lifeCycleSNR":0
+},
+"caa53546-6685-42f5-bd74-4fdc4be6697a":{
+"deviceIds":[ ],
+"temPlcInfo":{ },
+"schemaVersion":0,
+"acctBalances":{ },
+"creationTime":1562653808561,
+"csiList":[ ],
+"bdlRef":"46103_BundleLC_Unit",
+"refBunCustom":0,
+"renewalMode":0,
+"states":{
+// Active state
+"0":"SubscriptionEntityLifeCycle46103_Active",
+"1":"SubscriptionRenewCycle46103_Start"
+},
+"remRenewals":10,
+"accRef":"Account73759||210000000278401",
+"lifeCycleNames":{ },
+"startTime":1562653808592,
+"subType":0,
+"id":"caa53546-6685-42f5-bd74-4fdc4be6697a||210000000278401",
+"endTime":1562653988000,
+"lifeCycleSNR":0
+}
+},
+"avInsts":{ }
+}
+}</codeblock></p>
+            <p><b>After change
+                plan:</b><codeblock>{
+"Device73759":{
+"deviceType":0,
+"subIndex":0,
+"firstCallDone":0,
+"subIds":[
+"2d20f0e7-77e2-4dfd-99a6-5bc3e66f49f3||210000000278401",
+"518b613d-ad1c-452b-94ba-470f29449dd9||210000000278401",
+"caa53546-6685-42f5-bd74-4fdc4be6697a||210000000278401",
+"0e50a223-b26f-4608-a6d8-80719f4bf07e||210000000278401",
+"2e904b35-0f97-4c28-9b35-0ca18fac0016||210000000278401",
+"038d3409-1cb5-421c-ae1c-3b53efddbcbc||210000000278401",
+"44e23003-cfdc-4a67-aa22-34220d95f487||210000000278401",
+"d59f5908-81a6-4b4b-9ce2-6b169c632a41||210000000278401"
+],
+"schemaVersion":0,
+"e164":[ ],
+"creationTime":1562653806733,
+"allowOverage":0,
+"syOCSEnabled":0,
+"imsi":[ ],
+"ocsRealm":"",
+"AVInstId":{ },
+"deviceName":"Device73759",
+"states":{ },
+"notifProfile":"",
+"password":"",
+"ldapsearch":0,
+"offLineTime":0,
+"lifeCycleNames":{ },
+"categoryList":[
+"DefaultCategory"
+],
+"id":"Device73759||210000000280401",
+"ocsHost":"",
+"pwdEncrypted":0,
+"lastUpdateTime":1562654466446,
+"primarySiteId":1,
+"partition":1,
+"subscriptions":{
+"2d20f0e7-77e2-4dfd-99a6-5bc3e66f49f3":{
+"validityTime":1562740713000,
+"deviceIds":[ ],
+"schemaVersion":0,
+"acctBalances":{ },
+"creationTime":1562654286120,
+"csiList":[ ],
+"bdlRef":"46103_Bundle_Byte",
+"refBunCustom":0,
+"renewalMode":2,
+"states":{
+// Removed -> Immediate/Immediate_Minus_Used
+"0":"DefaultSubscriptionLifeCycle_Removed"
+},
+"remRenewals":10,
+"accRef":"Account73759||210000000278401",
+"lifeCycleNames":{ },
+"temElcInfo":{ },
+"subType":0,
+"id":"2d20f0e7-77e2-4dfd-99a6-5bc3e66f49f3||210000000278401",
+"lifeCycleSNR":0
+},
+"518b613d-ad1c-452b-94ba-470f29449dd9":{
+"validityTime":1562740713000,
+"deviceIds":[ ],
+"schemaVersion":0,
+"acctBalances":{ },
+"creationTime":1562654286180,
+"csiList":[ ],
+"bdlRef":"46103_Bundle_Second",
+"refBunCustom":0,
+"renewalMode":2,
+"states":{ Removed -> Immediate/Immediate_Minus_Used
+"0":"DefaultSubscriptionLifeCycle_Removed"
+},
+"remRenewals":10,
+"accRef":"Account73759||210000000278401",
+"lifeCycleNames":{ },
+"temElcInfo":{ },
+"subType":0,"id":"518b613d-ad1c-452b-94ba-470f29449dd9||210000000278401",
+"lifeCycleSNR":0
+},
+"0e50a223-b26f-4608-a6d8-80719f4bf07e":{
+"validityTime":1562658066000,
+"deviceIds":[ ],
+"temPlcInfo":{ },
+"schemaVersion":0,
+"acctBalances":{ },
+"creationTime":1562654286328,
+"csiList":[ ],
+"bdlRef":"46103_BundleLC_Unit",
+"refBunCustom":0,
+"renewalMode":0,
+"states":{
+// Change plan -> NEXT_BILL_CYCLE / Null
+"0":"SubscriptionEntityLifeCycle46103_Disconnected",
+"1":"SubscriptionRenewCycle46103_Renew"
+},
+"remRenewals":10,
+"accRef":"Account73759||210000000278401",
+"lifeCycleNames":{ },
+"temElcInfo":{ },
+"startTime":1562654286359,
+"subType":0,
+"id":"0e50a223-b26f-4608-a6d8-80719f4bf07e||210000000278401",
+"endTime":1562654466000,
+"lifeCycleSNR":0
+},
+"44e23003-cfdc-4a67-aa22-34220d95f487":{
+"deviceIds":[ ],
+"temPlcInfo":{ },
+"schemaVersion":0,
+"acctBalances":{ },
+"creationTime":1562654466199,
+"csiList":[ ],
+"bdlRef":"46103_BundleLC_Unit",
+"refBunCustom":0,
+"renewalMode":0,
+"lastResetTime":1562655546262,
+"states":{ New Subscription
+"0":"SubscriptionEntityLifeCycle46103_Active",
+"1":"SubscriptionRenewCycle46103_Start"
+},
+"remRenewals":4,
+"accRef":"Account73759||210000000278401",
+"lifeCycleNames":{ },
+"startTime":1562655546000,
+"subType":0,
+"id":"44e23003-cfdc-4a67-aa22-34220d95f487||210000000278401",
+"endTime":1562655726000,
+"lifeCycleSNR":0
+},
+"caa53546-6685-42f5-bd74-4fdc4be6697a":{
+"validityTime":1562658066000,
+"deviceIds":[ ],
+"temPlcInfo":{ },
+"schemaVersion":0,
+"acctBalances":{ },
+"creationTime":1562654286236,
+"csiList":[ ],
+"bdlRef":"46103_BundleLC_Money",
+"refBunCustom":0,
+"renewalMode":0,
+"states":{
+// Change plan -> NEXT_BILL_CYCLE/Null
+"0":"SubscriptionEntityLifeCycle46103_Disconnected",
+"1":"SubscriptionRenewCycle46103_Renew"
+},
+"remRenewals":10,
+"accRef":"Account73759||210000000278401",
+"lifeCycleNames":{ },
+"temElcInfo":{ },
+"startTime":1562654286271,
+"subType":0,
+"id":"caa53546-6685-42f5-bd74-4fdc4be6697a||210000000278401",
+"endTime":1562654466000,
+"lifeCycleSNR":0
+},
+"038d3409-1cb5-421c-ae1c-3b53efddbcbc":{
+"deviceIds":[ ],
+"schemaVersion":0,
+"acctBalances":{ },
+"creationTime":1562654313994,
+"csiList":[ ],
+"bdlRef":"46103_Bundle_Minute",
+"refBunCustom":0,
+"renewalMode":2,
+"states":{
+// New subscription
+"0":"DefaultSubscriptionLifeCycle_Active"
+},
+"remRenewals":10,
+"accRef":"Account73759||210000000278401","lifeCycleNames":{ },
+"subType":0,
+"id":"038d3409-1cb5-421c-ae1c-3b53efddbcbc||210000000278401",
+"lifeCycleSNR":0
+},
+"d59f5908-81a6-4b4b-9ce2-6b169c632a41":{
+"deviceIds":[ ],
+"temPlcInfo":{ },
+"schemaVersion":0,
+"acctBalances":{ },
+"creationTime":1562654466385,
+"csiList":[ ],
+"bdlRef":"46103_BundleLC_MByte",
+"refBunCustom":0,
+"renewalMode":0,
+"lastResetTime":1562655546172,
+"states":{
+// New subscription
+"0":"SubscriptionEntityLifeCycle46103_Active",
+"1":"SubscriptionRenewCycle46103_Start"
+},
+"remRenewals":4,
+"accRef":"Account73759||210000000278401",
+"lifeCycleNames":{ },
+"startTime":1562655546000,
+"subType":0,
+"id":"d59f5908-81a6-4b4b-9ce2-6b169c632a41||210000000278401",
+"endTime":1562655726000,
+"lifeCycleSNR":0
+},
+"2e904b35-0f97-4c28-9b35-0ca18fac0016":{
+"deviceIds":[ ],
+"schemaVersion":0,
+"acctBalances":{ },
+"creationTime":1562654313696,
+"csiList":[ ],
+"bdlRef":"46103_Bundle_KByte",
+"refBunCustom":0,
+"renewalMode":2,
+"states":{
+// New subscription
+"0":"DefaultSubscriptionLifeCycle_Active"
+},
+"remRenewals":10,
+"accRef":"Account73759||210000000278401",
+"lifeCycleNames":{
+"0":"DefaultSubscriptionLifeCycle"
+},
+"subType":0,
+"id":"2e904b35-0f97-4c28-9b35-0ca18fac0016||210000000278401",
+"lifeCycleSNR":0
+}
+},
+"avInsts":{ }
+}
+}
+</codeblock></p>
+        </section>
+        <section id="section_lm2_kd5_4lb">
+            <title>Use case 7: Template API</title>
+            <p>Create the following database:<ul id="ul_xyf_ld5_4lb">
+                    <li>Create a bundle with an initial value of 200 bytes. The initial value is
+                        changed to 300 bytes (for another device) using the <i>Template</i>
+                        API.</li>
+                    <li>Create the following two subscriptions:<ul id="ul_l55_md5_4lb">
+                            <li>The first subscription <codeph>S1</codeph> is without
+                                    <i>Template</i> API.</li>
+                            <li>The second subscription <codeph>S2</codeph> is with <i>Template</i>
+                                API.</li>
+                        </ul></li>
+                </ul></p>
+            <p>Execute the following command to generate the database
+                dump:<codeblock>./db-list -l devices</codeblock></p>
+            <p>Following is the JSON formatted database dump for the subscription taken by a device
+                    <codeph>D2</codeph> without <i>Template</i>
+                API:<codeblock>{
+"D2":{
+"deviceType":0,
+"subIndex":0,
+"firstCallDone":0,
+"subIds":[ ],
+"schemaVersion":0,
+"e164":[ ],
+"creationTime":1562843005920,
+"allowOverage":1,
+"syOCSEnabled":0,
+"deviceName":"D2",
+"states":{ },
+"ldapsearch":0,
+"offLineTime":0,
+"lifeCycleNames":{ },
+"categoryList":[ ],
+"id":"D2||2100000002b8401",
+"pwdEncrypted":0,
+"lastUpdateTime":1562843006180,
+"primarySiteId":1,
+"partition":1,
+"subscriptions":{
+"58e4ebf6-1a5e-4ef9-b242-75825f4414c2":{
+"deviceIds":[ ],
+"temPlcInfo":{ },
+"schemaVersion":0,
+"acctBalances":{ },
+"creationTime":1562843006014,
+"csiList":[
+{
+"bktInfoList":[ ],
+"ctrInfoList":[ ],
+"csDefRef":"CS170099",
+"bcktInsts":[
+{
+"schemaVersion":0,
+"creationTime":1562843006020,
+"isCarryOver":0,
+"deltaValue":0,
+"dormantLines":0,
+"maxNoOfLines":0,
+"adjAmtInitVald":0,
+"smSqrtLinPrHr":0,
+"unitType":{
+"schemaVersion":19090000003,
+"id":"Byte",
+"creationTime":1561367838942,
+"version":1,
+"kindOfUnit":1
+},
+"bucketDefId":"Bucket170099",
+"smSqrActLnPrHr":0,
+"countCCR":0,
+"maxCryOvrOpt":1,
+"initValAdjMode":3,
+"thrsPrfGrpInst":[ ],
+"sumDorLinSliSz":0,
+"id":
+"15d78c21-b7d7-417c-81af-985cce5da03b||2100000002b0401",
+"accountRef":"Account70099||2100000002b0401",
+"subscriptionId":
+"58e4ebf6-1a5e-4ef9-b242-75825f4414c2",
+"initialValue":200,
+// Initial value as defined in Bucket170099
+"unusedValue":200,
+"currentValue":200,
+"lastUpdateTime":0,
+"origInitialVal":200
+},
+{ }
+]
+}
+],
+"bdlRef":"Bundle170099",
+"refBunCustom":0,
+"renewalMode":0,
+"states":{ },
+"accRef":"Account70099||2100000002b0401",
+"lifeCycleNames":{ },
+"startTime":1562843006145,
+"subType":0,
+"id":"58e4ebf6-1a5e-4ef9-b242-75825f4414c2||2100000002b0401",
+"endTime":1563166800000,
+"entityCtrlnsts":[ ],
+"lifeCycleSNR":0
+}
+}
+}
+}</codeblock></p>
+            <p>Following is the JSON formatted database dump generated for the subscription taken by
+                device <codeph>Device70099</codeph> with <i>Template</i> API and initial value
+                changed to
+                300:<codeblock>{
+"Device70099":{
+"deviceType":0,
+"subIndex":0,
+"firstCallDone":0,
+"subIds":[ ],
+"schemaVersion":0,
+"e164":[ ],
+"creationTime":1562843240438,
+"allowOverage":0,
+"syOCSEnabled":0,
+"imsi":[ ],
+"ocsRealm":"",
+"deviceName":"Device70099",
+"states":{ },
+"notifProfile":"TCPIPNotificationProfile",
+"password":"",
+"ldapsearch":0,
+"offLineTime":0,
+"lifeCycleNames":{ },
+"categoryList":[ ],
+"id":"Device70099||2100000002c0401",
+"ocsHost":"",
+"pwdEncrypted":1,
+"lastUpdateTime":1562843240567,"primarySiteId":1,
+"partition":1,
+"subscriptions":{
+"79d4dfef-9d12-4bdc-a51f-f9d362d39e30":{
+"deviceIds":[ ],
+"schemaVersion":0,
+"acctBalances":{ },
+"creationTime":1562843240519,
+"csiList":[
+{
+"bktInfoList":[
+{
+"bktUnitType":{ },
+"bktInstId":
+"9d72305d-1f79-40fd-81ec-ad12dd49a9a1||2100000002b0401",
+"bktDefName":"Bucket170099"
+},
+{
+"bktUnitType":{ },
+"bktInstId":
+"04a7e1ac-cc39-47be-a481-199cad1ef3f2||2100000002b0401",
+"bktDefName":"Bucket270099"
+}
+],
+"ctrInfoList":[ ],
+"csDefRef":"CS170099",
+"bcktInsts":[
+{
+"schemaVersion":0,
+"creationTime":1562843240524,
+"isCarryOver":0,
+"deltaValue":0,
+"dormantLines":0,
+"maxNoOfLines":0,
+"adjAmtInitVald":0,
+"smSqrtLinPrHr":0,
+"unitType":{ },
+"bucketDefId":"Bucket170099",
+"smSqrActLnPrHr":0,
+"countCCR":0,
+"maxCryOvrOpt":1,
+"initValAdjMode":3,
+"thrsPrfGrpInst":[ ],
+"sumDorLinSliSz":0,
+"id":
+"9d72305d-1f79-40fd-81ec-ad12dd49a9a1||2100000002b0401",
+"accountRef":"Account70099||2100000002b0401",
+"subscriptionId":
+"79d4dfef-9d12-4bdc-a51f-f9d362d39e30",
+"initialValue":300,
+// Customized values for Bucket170099
+"unusedValue":300,
+"currentValue":300,
+"lastUpdateTime":0,
+"origInitialVal":300
+},
+{ }
+]
+}
+],
+"bdlRef":"Bundle170099",
+"refBunCustom":0,
+"renewalMode":2,
+"states":{ },
+"accRef":"Account70099||2100000002b0401",
+"lifeCycleNames":{
+"0":"DefaultSubscriptionLifeCycle"
+},
+"subType":0,
+"id":"79d4dfef-9d12-4bdc-a51f-f9d362d39e30||2100000002b0401",
+"entityCtrlnsts":[ ],
+"lifeCycleSNR":0
+}
+}
+}
+}
+</codeblock></p>
+        </section>
+        <section id="section_i3r_5d5_4lb">
+            <title>Use case 8: User and account with Edigest</title>
+            <p>A primary key uniquely identifies a record in the Aerospike database within a given
+                namespace. A key is a unique identifier is used to address that record for all
+                operations. Therefore, key is used in application and digest is used for addressing
+                the record in the database. A primary key is also a data structure or class
+                consisting of the following fields:<ul id="ul_ohn_vd5_4lb">
+                    <li><b>Namespace</b>: Indicates the namespace to which a record belongs.</li>
+                    <li><b>Set name</b>: Indicates the set to which the record associated with this
+                        key is present.</li>
+                    <li><b>Digest</b>: Indicates the 160 bits (20 Bytes) digest field, which is
+                        generated by hashing the set name and the user key using the RipeMD-160
+                        hashing function. When Digest is in Base64format it is called EDigest.</li>
+                    <li><b>User key</b>: Indicates the value field of the key structure. </li>
+                </ul></p>
+            <p>Execute the following command to generate the database dump for the user
+                    <codeph>User1</codeph><codeblock>./db-list -l users</codeblock></p>
+            <p>Following is the JSON formatted database dump:<table frame="all" rowsep="1" colsep="1" id="table_lrj_125_4lb">
+                    <tgroup cols="2">
+                        <colspec colname="c1" colnum="1" colwidth="1*"/>
+                        <colspec colname="c2" colnum="2" colwidth="1*"/>
+                        <tbody>
+                            <row>
+                                <entry>
+                                    <codeblock>{
+"User1": {
+"emails": [
+"kanika.goel@nokia.com"
+],
+"schemaVersion": 0,
+"creationTime": 1563359285016,
+"givenName": "User1",
+"lifeCycleNames": {
+"0": "DefaultUserLifeCycle"
+},
+</codeblock>
+                                </entry>
+                                <entry>User</entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <codeblock>"edigest": "31FT7GNa8a5aIk7fvpa2BNF6Yfg=",{
+"id": "User1||240000000069001",
+"userName": "User1",
+"states": {
+"0": "DefaultUserLifeCycle_Active"
+},
+"primarySiteId": 4,
+"partition": 1,</codeblock>
+                                </entry>
+                                <entry><b>Edigest of User</b></entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <codeblock>"customData": { </codeblock>
+                                </entry>
+                                <entry><b>Custom data attached with user</b></entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <codeblock>"edigest": "J2GDX09jyB4rzlItEEA8aEkiXKs=",
+"UserCustomdata": {
+"type": 0,
+"value": "primary"
+}
+}
+}
+}</codeblock>
+                                </entry>
+                                <entry><b>Edigest of custom data attached with user</b></entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table></p>
+            <p>Execute the following command to generate the database dump for the account
+                    <codeph>Account2</codeph> with custom
+                    data:<codeblock>./db-list -l accounts</codeblock><table frame="all" rowsep="1"
+                    colsep="1" id="table_ly1_325_4lb">
+                    <tgroup cols="2">
+                        <colspec colname="c1" colnum="1" colwidth="1*"/>
+                        <colspec colname="c2" colnum="2" colwidth="1*"/>
+                        <tbody>
+                            <row>
+                                <entry>
+                                    <codeblock>{
+"Account2": {
+"overageLimit": -4466831549979427000,
+"temPlcInfo": {
+"timer": 1565980200000,
+"temId": "1-4-LC_1-ACCOUNT_TYPE:
+Account2||240000000071001:
+DefaultAccountBillingCycle_Start:RepeatCycle:
+PERIOD"
+},
+"schemaVersion": 0,
+"creationTime": 1563359968611,
+"accountName": "Account2",
+"timeZoneId": "Asia/Kolkata",
+"accountType": 0,
+"states": {
+"0": "DefaultAccountLifeCycle_Active",
+"1": "DefaultAccountBillingCycle_Start"
+},
+"dayOfWeek": 0,
+"dayOfMonth": 17,
+"lifeCycleNames": {
+"0": "DefaultAccountLifeCycle",
+"1": "DefaultAccountBillingCycle"
+},
+"hourOfDay": 0,
+</codeblock>
+                                </entry>
+                                <entry><b>Account</b></entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <codeblock>"edigest": "MLy25Sobmh5AirXjC7RwquKkC7M=",
+"startTime": 1563359968681,
+"id": "Account2||240000000071001",
+"endTime": 1565980200000,
+"lifeCycleSNR": 0,
+"lastUpdateTime": 1563359968898,
+"primarySiteId": 4,
+"partition": 1,
+"customData": {
+"AccountCustomdata": {
+"type": 0,
+"value": "abcd"
+},
+</codeblock>
+                                </entry>
+                                <entry><b>Edigest of account</b></entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <codeblock>"edigest": "taNHVXfHhYp8/oI0vVjFysxyu8Q="
+},
+"acctUsers": {
+"Account2:User1": {
+"accountId":
+"Account2||240000000071001",
+"schemaVersion": 0,
+"id":
+"Account2:User1||240000000071001",
+"creationTime": 1563360015735,
+"userId": "User1||240000000069001"
+},</codeblock>
+                                </entry>
+                                <entry><b>Edigest of custom data attached with account</b></entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <codeblock>"edigest": "MLy25Sobmh5AirXjC7RwquKkC7M="
+}
+}
+}</codeblock>
+                                </entry>
+                                <entry><b>Edigest of account administrator</b></entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table></p>
+        </section>
+        <section id="section_rcn_p25_4lb">
+            <title>Use case 9: Device with Edigest</title>
+            <p>Create a device with custom data. Execute the following command to generate the
+                database dump:<codeblock>./db-list -l devices</codeblock></p>
+            <p>Following is the JSON formatted database dump:<table frame="all" rowsep="1"
+                    colsep="1" id="table_unl_r25_4lb">
+                    <tgroup cols="2">
+                        <colspec colname="c1" colnum="1" colwidth="1*"/>
+                        <colspec colname="c2" colnum="2" colwidth="1*"/>
+                        <tbody>
+                            <row>
+                                <entry>
+                                    <codeblock>{
+"D1": {
+"deviceType": 0,
+"subIndex": 0,
+"firstCallDone": 0,
+"subIds": [
+"42d32b8e-982c-407a-bd01-c700c83c1c5a||240000000011001"
+],
+"dCountId": [
+"Device",
+"ucsCtr_UCSdummy"
+],
+"schemaVersion": 0,
+"e164": [
+"000001"
+],
+"creationTime": 1559649204934,
+"allowOverage": 1,
+"syOCSEnabled": 0,
+"ownerId": "User1||240000000059001",
+"AVInstId": {
+"AV":
+"492c0b9f-6b6c-4462-b7a6-46389ed93a22||240000000009001"
+},
+"deviceName": "D1",
+"states": {
+"0": "DefaultDeviceLifeCycle_Active"
+},
+"ldapsearch": 0,
+"offLineTime": 0,
+"groupIds": [
+"Group1||240000000069001"
+],
+"lifeCycleNames": {
+"0": "DefaultDeviceLifeCycle"
+},
+"categoryList": [
+"DefaultCategory"
+],
+</codeblock>
+                                </entry>
+                                <entry><b>Device</b></entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <codeblock>"edigest": "R/Nhbb2RzLfUAz66HA61THYT/FY=",
+"id": "D1||240000000009001",
+"pwdEncrypted": 0,
+"lastUpdateTime": 1562576898326,
+"primarySiteId": 4,
+"partition": 1,
+"customData": {</codeblock>
+                                </entry>
+                                <entry><b>Edigest of device</b></entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <codeblock>"edigest": "EGJIHeYsF0bWOKF2diShOFeAZoY=",
+"Device-Type": {
+"type": 0,
+"value": "Android"
+}
+},
+"subscriptions": {
+"42d32b8e-982c-407a-bd01-c700c83c1c5a": {
+"deviceIds": [
+"D1||240000000009001"
+],
+"schemaVersion": 0,
+"acctBalances": {
+"countCCR": 0,
+"schemaVersion": 0,
+"balance": 4651655465120301000,
+"prevBalance": 0,
+</codeblock>
+                                </entry>
+                                <entry><b>Edigest of custom data attached with device</b></entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <codeblock>"edigest": "xN1N/GmoB89G7jSv5ZmMnCk4+CU=",
+"prevAvlBalance": 0,
+"id": "Account1||240000000011001",
+"avlBalance": 4651655465120301000
+},
+"creationTime": 1562234273664,
+"csiList": [
+{
+</codeblock>
+                                </entry>
+                                <entry><b>Edigest of account balance</b></entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <codeblock>"edigest": "xN1N/GmoB89G7jSv5ZmMnCk4+CU=",
+"bktInfoList": [
+{
+"bktUnitType": {
+"schemaVersion": 19060000077,
+"id": "Byte",
+"creationTime": 1559642191788,
+"version": 1,
+"kindOfUnit": 1
+},
+"bktInstId":
+"0386ad18-f705-4685-8aa3-885dd9e09d31||240000000011001",
+"bktDefName": "Bkt1"
+},
+{
+"bktUnitType": {
+"schemaVersion": 19060000077,
+"id": "Second",
+"creationTime": 1559648756655,
+"version": 1,
+"kindOfUnit": 0
+},
+"bktInstId":
+"a7d66b18-2469-4af4-91f8-6f70cf871756||240000000011001",
+"bktDefName": "Bkt2"
+}
+],
+"ctrInfoList": [
+{
+"ctrInsId":
+"da1eeff5-c802-4c11-9409-8d4ee81851d0",
+"ctrDefId": "Ctr1"
+}
+],
+"csDefRef": "CS1",
+"bcktInsts": [
+{
+"creationTime": 1562234273674,
+"maxNoOfLines": 10,
+"unitType": {
+"schemaVersion": 19060000077,
+"id": "Byte",
+"creationTime": 1559642191788,
+"version": 1,
+"kindOfUnit": 1
+},
+"bucketDefId": "Bkt1",
+"smSqrActLnPrHr": 373,
+"countCCR": 0,
+"initValAdjMode": 3,
+"id":
+"0386ad18-f705-4685-8aa3-885dd9e09d31||240000000011001",
+"activationTime": 0,
+"initialValue": 1000,
+"unusedValue": 600,
+"schemaVersion": 0,
+"isCarryOver": 0,
+"deltaValue": 0,
+"dormantLines": 0,
+"reservationMap": {
+"1-4-Session3_RG8": {
+"reservedValue": 25,
+"ttl": 100000000001
+}
+},
+"adjAmtInitVald": 0,
+"smSqrtLinPrHr": 373,
+"maxCryOvrOpt": 1,
+"expirationTime": 0,
+"sumDorLinSliSz": 0,
+"accountRef":
+"Account1||240000000011001",
+"subscriptionId":
+"42d32b8e-982c-407a-bd01-c700c83c1c5a",
+"currentValue": 575,
+"lastUpdateTime": 0,
+"origInitialVal": 1000
+},
+{
+"schemaVersion": 0,
+"creationTime": 1562234273681,
+"isCarryOver": 0,
+"deltaValue": 0,
+"dormantLines": 0,
+"maxNoOfLines": 0,
+"adjAmtInitVald": 0,
+"smSqrtLinPrHr": 0,
+"unitType": {
+"schemaVersion": 19060000077,
+"id": "Second",
+"creationTime": 1559648756655,
+"version": 1,
+"kindOfUnit": 0
+},
+"bucketDefId": "Bkt2",
+"smSqrActLnPrHr": 0,
+"countCCR": 0,
+"maxCryOvrOpt": 1,
+"initValAdjMode": 3,
+"sumDorLinSliSz": 0,
+"id":
+"a7d66b18-2469-4af4-91f8-6f70cf871756||240000000011001",
+"accountRef":
+"Account1||240000000011001",
+"subscriptionId":
+"42d32b8e-982c-407a-bd01-c700c83c1c5a",
+"initialValue": 100000,
+"unusedValue": 100000,
+"currentValue": 100000,
+"lastUpdateTime": 0,
+"origInitialVal": 100000
+}
+]
+}
+],
+"bdlRef": "Bundle1",
+"refBunCustom": 0,
+"renewalMode": 2,
+"states": {
+"0": "DefaultSubscriptionLifeCycle_
+Active"
+},
+"accRef": "Account1||240000000011001",
+"lifeCycleNames": {
+"0": "DefaultSubscriptionLifeCycle"
+},
+</codeblock>
+                                </entry>
+                                <entry><b>Edigest corresponding to BucketInstances of device. Since
+                                        all bucket instances corresponding to subscription goes in
+                                        same club Hence put Edigest at CS level.</b></entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <codeblock>"edigest":
+"KX12BvZoFz6aixQh9565H11gL60=",
+"subType": 0,
+"id":
+"42d32b8e-982c-407a-bd01-c700c83c1c5a||240000000011001",
+"entityCtrlnsts": [
+{
+</codeblock>
+                                </entry>
+                                <entry><b>Edigest of subscription attached with device</b></entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <codeblock>"edigest": "xN1N/GmoB89G7jSv5ZmMnCk4+CU=
+",
+"value": {
+"schemaVersion": 0,
+"id": {
+"coordinates":
+162129586585407500,
+"attachValue":
+"42d32b8e-982c-407a-bd01-c700c83c1c5a",
+"entityType": 3
+},
+"accountRef":
+"Account1||240000000011001",
+"ctrInsMap": {
+"da1eeff5-c802-4c11-9409-8d4ee81851d0": {
+"countCCR": 0,
+"lastRprtState": "-99",
+"defaultState": "-99",
+"lastRprtTime": 1562323983606,
+"syPolicyFlag": 1,
+"lastResetTime": 0,
+"totalResrvdVal": 0,
+"counterDefId": "Ctr1",
+"counterInsId":
+"da1eeff5-c802-4c11-9409-8d4ee81851d0",
+"currentValue": 0,
+"lastUpdateTime": 0
+}
+},
+"prorateFactor": 100
+},
+"key": {
+"attachValue":
+"42d32b8e-982c-407a-bd01-c700c83c1c5a",
+"entityType": 3
+}
+}
+],
+"lifeCycleSNR": 0
+}
+},
+"entityCtrlnsts": [
+{
+</codeblock>
+                                </entry>
+                                <entry><b>Edigest of subscription counter attached with
+                                    device</b></entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <codeblock>"edigest":
+"EGJIHeYsF0bWOKF2diShOFeAZoY=",
+"value": {
+"schemaVersion": 0,
+"id": {
+"coordinates": 162129586585374720,
+"attachValue": "D1",
+"entityType": 0
+},
+"accountRef":
+"Account1||240000000011001",
+"ctrInsMap": {
+"9c2148f0-c811-4474-a4d6-ff4ea9d26a31": {
+"countCCR": 0,
+"reserveMap": {
+"1-4-Session3_RG8": {
+"reservedValue": 2500,
+"ttl": 100000000001
+}
+},
+"syPolicyFlag": 0,
+"lastResetTime": 0,
+"totalResrvdVal": 2500,
+"counterDefId": "Device",
+"counterInsId":
+"9c2148f0-c811-4474-a4d6-ff4ea9d26a31",
+"currentValue": 400,
+"lastUpdateTime": 0
+},
+"4ded44e8-7188-4f67-8065-198fddc44bad": {
+"countCCR": 0,
+"syPolicyFlag": 0,
+"lastResetTime": 0,
+"totalResrvdVal": 0,
+"counterDefId": "ucsCtr_
+UCSdummy",
+"counterInsId":
+"4ded44e8-7188-4f67-8065-198fddc44bad",
+"currentValue": 0,
+"lastUpdateTime": 0
+}
+},
+"deviceRef": "D1||240000000009001",
+"prorateFactor": 100
+},
+"key": {
+"attachValue": "D1",
+"entityType": 0
+}
+}
+],
+"avInsts": {</codeblock>
+                                </entry>
+                                <entry><b>Edigest of device counter attached with device . Edigest
+                                        is common for both device counters</b></entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <codeblock>"edigest": "EGJIHeYsF0bWOKF2diShOFeAZoY=",
+"492c0b9f-6b6c-4462-b7a6-46389ed93a22": {
+"aggTVaList": [
+"CS1"
+],
+"schemaVersion": 0,
+"aggType": 0,
+"lastUpdTime": 1562576898472,
+"unitType": {
+"schemaVersion": 19060000077,
+"id": "Byte",
+"creationTime": 1559642191788,
+"version": 1,
+"kindOfUnit": 1
+},
+"createTime": 1562576898472,
+"appType": 0,
+"initialVal": 2000,
+"unusedCOBVal": 0,
+"unusedVal": 1600,
+"name": "AV",
+"initCOBVal": 0,
+"id":
+"492c0b9f-6b6c-4462-b7a6-46389ed93a22||240000000009001",
+"deviceRef": "D1||240000000009001",
+"accSubsIdsList": [
+"42d32b8e-982c-407a-bd01-c700c83c1c5a||240000000011001",
+"ed2efc1f-7c20-470c-93cd-5547d7f7992f||2400000000b1001"
+],
+"currentVal": 1575,
+"curCOBVal": 0
+}
+},
+"dynamicpstusg": [
+{
+</codeblock>
+                                </entry>
+                                <entry><b>Edigest of AvInstance attached with device</b></entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <codeblock>"edigest":
+"EGJIHeYsF0bWOKF2diShOFeAZoY=",
+"value": {
+"lastSliceSize": 2500,
+"schemaVersion": 0,
+"usagePerHr": 14,
+"terminDateTime": 1562584926701,
+"dormantLine": 0,
+"id": {
+"coordinates": 162129586585374720,
+"msccIdentity": "RG_8",
+"keyValue": "D1||240000000009001",
+"attachmode": 0
+},
+"device": "D1||240000000009001",
+"bcktInstRef":
+"0386ad18-f705-4685-8aa3-885dd9e09d31||240000000011001"
+},
+"key": {
+"msccIdentity": "RG_8",
+"keyValue": "D1||240000000009001",
+"attachmode": 0
+}
+}
+]
+}
+}</codeblock>
+                                </entry>
+                                <entry><b>Edigest of dynamic past usage attached with device
+                                    </b></entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table></p>
+        </section>
+        <section id="section_s3c_hf5_4lb">
+            <title>Use case 10: Charging session (Gy) with Edigest </title>
+            <p>Create a charging (Gy) session. Execute the following command to generate the Gy
+                database dump:<codeblock>./db-list -l gysession</codeblock></p>
+            <p>Following is the JSON formatted database dump:<table frame="all" rowsep="1"
+                    colsep="1" id="table_jc4_rh5_4lb">
+                    <tgroup cols="2">
+                        <colspec colname="c1" colnum="1" colwidth="1*"/>
+                        <colspec colname="c2" colnum="2" colwidth="1*"/>
+                        <tbody>
+                            <row>
+                                <entry>
+                                    <codeblock>[
+{
+"edigest": "EGJIHeYsF0bWOKF2diShOFeAZoY=",
+"1-4-Session2": {
+"originHost": "Test1",
+"subIds": [
+{
+"data": "000001",
+"type": 1
+},
+{
+"data": "000001",
+"type": 0
+}
+],
+"sgsnMccMnc": "40410",
+"ccReqNum": 0,
+"servContexId": "32251@3gpp.org",
+"deviceId": "D1||240000000009001",
+"origUserLoc": {
+"geoLocType": 0,
+"usrLocIds": [
+{
+"data": "E5FyEhYk0g==",
+"identityType": 0
+}
+]
+},
+"closureTime": 1561614906203,
+"msTimeZone": "\u0001",
+"userEquipInfo": {
+"type": 0,
+"value": "\u0001\u0001\u0001\u0001"
+},
+"temEntityId":
+"1-4-AID4-pmadan-0621070131-3",
+"originRealm": "r_originRealm1.com",
+"msccs": [
+{
+"value": {
+"requestTime": 1561614906355,
+"localSeqNo": 1,
+"chargingMode": 1,
+"mscc": {
+"gsu": {
+"ccOutputOctets": 0,
+"ccTotalOctets": 10,
+"ccInputOctets": 0
+},
+"resultCode": 2001,
+"validityTime": 10000000000000000,
+"serviceId": [
+121
+],
+"rsu": {
+"ccOutputOctets": 5,
+"ccTotalOctets": 10,
+"ccInputOctets": 5
+},
+"ratingGroup": 8
+},
+"callSubType": "",
+"rcdClrTime": 1561614906203,
+"firstDtStr": 1561614906203
+},
+"key": {
+"serviceId": [
+121
+],
+"ratingGroup": 8,
+"servContexId": "32251@3gpp.org"
+}
+}
+],
+"sgsnAddress": [
+{
+"addressValue": "CgKe6g==",
+"addressFamily": 1
+}
+],
+"peerOSIIndex": "939406015:pmadan:4",
+"eventTimestamp": 1561614906203,
+"schemaVersion": 0,
+"sessionKey": "1-4-Session2||240000000009001",
+"sessionId": "Session2",
+"zones": [
+"ROW"
+],
+"userName": "123456789@preeti.com",
+"timeOfLastMsg": 1561614906356,
+"recordseqno": 1,
+"nwParams": {
+"calledType": "none",
+"routingNumber": "none",
+"CLDCountry": "none",
+"callingParty": "none",
+"callSubType": "",
+"callingType": "none",
+"calledParty": "none",
+"mediaType": "audio",
+"npri": "none",
+"isOnNet": 0
+},
+"sessionStrtTm": 1561614906357
+}
+}
+]</codeblock>
+                                </entry>
+                                <entry><b>Edigest of Gy session</b></entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table></p>
+        </section>
+        <section id="section_hr1_xh5_4lb">
+            <title>Use case 11: Policy session (IP CAN) with Edigest</title>
+            <p>Create a policy (IP CAN) session. Execute the following command to generate the IP
+                CAN session database dump:<codeblock>./db-list -l ipcansession</codeblock></p>
+            <p>Following is the JSON formatted database dump:<table frame="all" rowsep="1"
+                    colsep="1" id="table_a45_yh5_4lb">
+                    <tgroup cols="2">
+                        <colspec colname="c1" colnum="1" colwidth="1*"/>
+                        <colspec colname="c2" colnum="2" colwidth="1*"/>
+                        <tbody>
+                            <row>
+                                <entry>
+                                    <codeblock>[
+{
+"activeFeatures": [
+{
+"featureList": 1,
+"vendorId": 10415,
+"featureListId": 1
+}
+],
+"nxtPccRulePrec": 129,
+"defBearerQos": {
+"arp": {
+"priorityLevel": 1,
+"preEmptionVuln": 1,
+"preEmptionCap": 1
+},
+"defBearerQCI": 9
+},
+"siteName": "SPS-ME",
+"ruleSetForEDR": "AF_SESSION_ESTABLISHMENT",
+"deviceId": "unknown_mgupt008_20190712120422929_
+4||2100000000a8401",
+"bcm": 2,
+"ipv6ANGWAddr": "//4AAAAAAAAAAAMFEAKAEA==",
+"isTerminating": 0,
+"maxBwForAPN": {
+"downLinkBw": 1000,
+"upLinkBw": 1000,
+"kbps": 0
+},
+"ipCanType": 5,
+"offline": 1,
+"isEmergency": 0,
+"userEquipInfo": {
+"type": 0,
+"value": "353783001668239"
+},
+"nxtpktFilterId": 1,
+</codeblock>
+                                </entry>
+                                <entry><b/></entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <codeblock>"edigest": "clYWRuiTISDByCjIwrEk3CVsByc=",
+"eri": 0,
+"anChargingAddr": {
+"addressValue": "/f39/Q==",
+"addressFamily": 1
+},
+"diameterPeerId": -728155143,
+"userLocInfo": {
+"geoLocType": 3,
+"usrLocIds": [
+{
+"data": "ADEWEgAkAA==",
+"identityType": 3
+}
+]
+},
+"eventTriggers": 1668,
+"qosUpgrade": 0,
+"ratType": 5,
+"adjSessionData": {
+"maxBwForAPN": {
+"downLinkBw": 1000,
+"upLinkBw": 1000,
+"kbps": 0
+},
+"defEPSBearQos": {
+"arp": {
+"priorityLevel": 1,
+"preEmptionVuln": 1,
+"preEmptionCap": 1
+},
+"defBearerQCI": 9
+}
+},
+"sessionId": "sess1",
+"nrs": 1,
+"qosNegotiation": 1,
+"pccRules": [
+{
+"serviceFlows": [
+{
+"flowNumber": 1,
+"mediaCompNum": 1,
+"afSessionId": "af1"
+}
+],
+"waitForAfPeer": 0,
+"qosInfo": {
+"gbrDLSrc": 0,
+"gbrULSrc": 0,
+"gbrDL": 1000,
+"maxReqBwDL": 1000,
+"maxReqBwDLSrc": 0,
+"maxReqBwULSrc": 0,
+"apnKbps": 0,
+"qci": 2,
+"maxReqBwUL": 1000,
+"gbrUL": 1000,
+"gbrKbps": 0,
+"mbrKbps": 0,
+"arp": {
+"priorityLevel": 2,
+"preEmptionVuln": 0,
+"preEmptionCap": 1
+}
+},
+"flowInfos": [
+{
+"flowDirection": 3,
+"flowDesc": "permit in ip from
+10.10.10.1 to 8.8.8.11"
+},
+{
+"flowDirection": 3,
+"flowDesc": "permit out ip from 8.8.8.11
+to 10.10.10.1"
+}
+],
+"outOfCredState": 0,
+"ruleStatus": 0,
+"reportingLevel": 1,
+"precedence": 130,"ratingGroup": 5,
+"meteringMethod": 2,
+"ruleType": 0,
+"name": "MT:VIDEO MCN:1 FN:1 Rule#:1",
+"adjQosInfo": {
+"gbrDLSrc": 0,
+"gbrULSrc": 0,
+"gbrDL": 1000,
+"maxReqBwDL": 1000,
+"maxReqBwDLSrc": 0,
+"maxReqBwULSrc": 0,
+"apnKbps": 0,
+"qci": 2,
+"maxReqBwUL": 1000,
+"gbrUL": 1000,
+"gbrKbps": 0,
+"mbrKbps": 0,
+"arp": {
+"priorityLevel": 2,
+"preEmptionVuln": 0,
+"preEmptionCap": 1
+}
+},
+"afChargingId": "9507",
+"serviceId": 1,
+"flowStatus": 2,
+"bcmOperation": 1
+}
+],
+"timeOfLastMsg": 1562914662620,
+"failedMsgCount": 0,
+"poTriRegistr": 1668,
+"nextRuleId": 2,
+"lastReauthTime": 0,
+"online": 1,
+"sbi": {
+"ipAddress": "CgoKAQ==",
+"apnId": "auto_apn",
+"subscriId": [
+{
+"data": "02123456789",
+"type": 0
+},
+{
+"data": "310012123456789",
+"type": 1
+},
+{
+"data": "310012123456789@3gppnetwork.org",
+"type": 3
+}
+]
+},
+"ccReqNumber": 1
+}
+]
+</codeblock>
+                                </entry>
+                                <entry><b>Edigest of IP CAN session</b></entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table></p>
+        </section>
+        <section id="section_dzj_g35_4lb">
+            <title>Use case 12: Multiple rating groups or MSCCs </title>
+            <p>Create a Gy session with multiple rating groups or MSCCs having corresponding rating
+                sessions.</p>
+        </section>
+    </conbody>
+</concept>

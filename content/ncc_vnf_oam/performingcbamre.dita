@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="id9YZ-09126-MT00-REZZA-SP2-performingcbamRe"><title>Procedure: Performing a VNF or VDU-group restore with CBAM</title><taskbody id="d1e65865"><context>
+<sectiondiv><p>This procedure can be used to restore a single VNF at any time as it is triggered by
+                    the operator using the CBAM GUI. </p><p>This procedure can also be used to
+                    restore a backup of the data for vdu-groups; provided the data at the vdu-group
+                    has been backed up using the <!--xref URI: #performingcbamBu--><xref
+                        keyref="id9YZ-09126-MT00-REZZA-SP2-performingcbamBu"/> procedure.
+                    </p><p>Both backup modes: NONE and NetBackUp, support vdu-level restore. If the
+                    backup_mode used was “NONE”, each vdu-group’s backup data has been backed up to
+                    the “/BACKUP” directory on the active OAME node after a successful backup. The
+                    backup log for each node is available on the active OAME at
+                    “/var/log/BR/BR.log”. </p><p>If the backup mode is NetBackUp, each vdu-group’s
+                    backup data has been backed up to the NetBackUp server and can be seen from the
+                    Active Monitor.</p><note>For a successful Restore operation, IP addresses and
+                    hostnames must remain the same as those that were in use when the backup file
+                    was taken.<p/></note><p><b>Before you begin:</b></p>Ensure there is sufficient
+                disk space in the place where you intend to restore this data file.<p>Ensure that
+                    the MariaDB and Maxscale are UP and running using the “Checking mariaDB and
+                    MaxScale” procedure in this guide: </p></sectiondiv>
+</context>
+<steps>
+<step><cmd>Log in to the CBAM GUI. </cmd><info/></step>
+<step><cmd>Navigate to the CBAM catalogue and select the VNF from the list (the number value under the VNFs label). The VNF-specific window appears.</cmd><info/></step>
+<step><cmd>In the VNF-specific window, click the More button at the end of the line item and select Restore from the menu.</cmd><info/></step>
+<step><cmd><draft-comment>FIXME - put an instruction here</draft-comment></cmd><info><table>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+<p>If the</p>
+</entry>
+<entry>
+<p>Then</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+backup_mode was selected as “NONE” in the BR configuration file in SPS_*_VNF_EXTENSION.json and you are backing up the VNF
+</entry>
+<entry>
+<p>No parameters are needed for Restore. </p>
+<p>The latest backup files on the active OAME node are always restored.</p>
+</entry>
+</row>
+<row>
+<entry>
+backup_mode is selected as NETBKUP and you are backing up the VNF
+</entry>
+<entry>
+<p>Enter a value in the restore_version parameter field. The value for the restore_version must be in the format: ‘policy1:date1’, ‘policy2’:’date2’.</p>
+<p>For example:</p>
+<p>
+<userinput>'oame0_dynamic.policy':'Dec 09, 2016 02:43:28 PM CST', 'app0_dynamic.policy':'Dec 12, 2016 10:39:08 AM CST', 'app3_dynamic.policy':'Dec 09, 2016 02:46:17 PM CST</userinput>
+</p>
+<p>If you are using a NetBackup backup server, you can find the values on the NetBackup server GUI at: "Backup, Archive, and Restore” under the “Restore Files” tab after you click the second button on the right side or the “End data” &gt; ”keyword phrase”. </p>
+<p>You can also go to the /etc/BR/policy/backup.rec file on the currently active OAME node to view all of the backup records for any of the backups. </p>
+<p>The policy for backup is generated automatically when you execute a backup. The policy is dynamically added by the ansible scripts when the backup executes. Backup and restore policies use an exclude_list and an include_list to define files or directories that should be excluded or included in a backup. The different components add the data or configurations that need to be backed up into a configuration file, then the backup executes per the configuration file. The policy cannot be modified. For example, if there are a total of six policy files and you only want to specify a restore time for policy 1 and 2, then policy 1 and 2 will be restored with the version that is specified. For other policies, they will all be restored with the latest backup files if no policy and date are specified. That is, all the six policies will restore with the latest backup files.</p>
+</entry>
+</row>
+<row>
+<entry>
+backup mode of NONE is used and you are restoring a VDU-group
+</entry>
+<entry>
+<p>Enter the required value according to the following format in the “Restore_version” field:</p><ul>
+<li>
+<p>ALL or (“), the default value 'ALL' nodes</p>
+</li>
+<li>
+<p>vdu-&lt;node_group&gt;.group, for example: vdu-IOHO.group</p>
+</li>
+<li>
+<p>vdu-&lt;node_group&gt;, which is the short name of vdu-&lt;node_group&gt;.group, for example: vdu-IOHO</p>
+</li>
+<li>
+<p>vdu-node_group, for example: vdu-COMSVC, vdu-IOHO</p>
+</li>
+</ul>
+</entry>
+</row>
+<row>
+<entry>
+backup mode is the NetBackUp mode and you are restoring a VDU-group
+</entry>
+<entry>
+<p>Enter the required value according to the following format in the “Restore_version” field:</p><ul>
+<li>
+<p>the default value is empty which means restore all the node groups with backup files of the time=latest</p>
+</li>
+<li>
+<p>‘vdu-&lt;node_group&gt;.group’:&lt;’date_time’&gt;, for example: vdu-IOHO.group:'Aug 24, 2018 04:47:10 AM EDT'. This specifies the exact copy of backup files that you want used.</p>
+</li>
+<li>
+<p>‘vdu-&lt;node_group&gt;.group’:”, which means restore the vdu-&lt;node_group&gt;.group with backup files of the time=latest, for example: 'vdu-COMSVC.group': ''.</p>
+</li>
+</ul>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table></info></step>
+<step><cmd>Click the “Finish” button.</cmd><info/></step>
+<step id="step4"><cmd>Check the /var/log/cbam/workflows.log for details about any restore failures. After successfully restoring, you will see all the files are restored on the VMs with the specified version. If the backup_mode is NETBKUP, you can see that the restore is complete and successful from the “Active monitor” on the NETBKUP server GUI.</cmd><info/></step>
+</steps>
+</taskbody></task>

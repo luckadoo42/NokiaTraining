@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e155013"><title>Global Configuration</title><conbody>
+<section><title>Overview</title>
+<p>Whenever a voice, video, SMS, or MMS call is received, the <i>GY_PRE_PROCESSING</i> rule set is triggered. In this trigger, there is an option to apply the conditions on the called/calling party number, which is present in a globally allowed list or barred list.</p>
+<p>NCC checks whether the emergency is set on device. If emergency is set with a valid emergency
+                level, which includes the call type of the received call, then call is always
+                allowed even though global parameter rules or UC configuration states that call
+                should be blocked.</p>
+<p>Otherwise, depending on the sequence of rules configured where, it is checked whether the called party number is barred or not.</p>
+<p>If the number is barred and emergency is not yet set on the device, then, the call is rejected at this point for initial requests with GSU as zero. For update case, the call is rejected but after incrementing counter for any received USU and threshold is executed and a GSU with zero value is returned. But if this is an emergency call and even though the rule states that number is barred, then it has no meaning as emergency overrides and the call continues without any usage control checks. Usage checks will be skipped in all emergency scenarios.</p>
+<p>Similarly, if the number is not blocked then a check must be done to find whether the number is in allowed list or not. This is again governed by rule if configured. If the globally allowed list is empty, then it has no impact and the call continues further with applicable usage control checks. In case, the number is globally allowed, then it means all usage control checks must be skipped. Otherwise, if the number is not in the list, then it means it is not always allowed case and further usage control checks must be done for rating group or APN.</p>
+<p>Therefore, for any sequence/combination of rules if the action is <systemoutput>SESSION_PARAMETERS.UC-Applicable = BooleanEnum_FALSE</systemoutput>, then the UC checks are skipped. Otherwise, they are applied in non-emergency scenarios.</p>
+<p>The <uicontrol>Global Configuration</uicontrol> tab allows a user to define the weekday and weekend for a <i>Usage control time of day</i> feature. Following lists are available at global level for charging services:</p><ul>
+<li>
+<p>Allowed Numbers</p>
+</li>
+<li>
+<p>Barred Numbers</p>
+</li>
+<li>
+<p>Always Allowed APN</p>
+</li>
+<li>
+<p>Always Allowed RGs</p>
+</li>
+<li>
+<p>Weekday</p>
+</li>
+<li>
+<p>Weekend</p>
+</li>
+</ul>
+</section>
+<section><title>Configuration</title>
+<p>Log into the SM GUI, navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> &gt;
+                    <uicontrol>CHARGING</uicontrol> tab and select <uicontrol>Global
+                    Configuration</uicontrol> from the hamburger menu ( <!--MMO resource relative URI: ../../Global_Configurations/Graphics/hamburgermenu_default.png-->
+                <image href="../images/img9yz-09126-ug01-pczza-sp1-hamburgermenu_default.png"
+                    scale="40"/> ) and define the required parameters as described in the given
+                table:</p>
+<sectiondiv>
+<p><b>Basic Details</b></p>
+<table pgwide="1" colsep="1" rowsep="1">
+                    <title>Parameters for global configuration</title>
+                    <tgroup cols="4">
+                        <colspec colname="col1" colwidth="1.85*"/>
+                        <colspec colname="COLSPEC0" colwidth="2.42*"/>
+                        <colspec colname="COLSPEC1" colwidth="1*"/>
+                        <colspec colname="col2" colwidth="2.1*"/>
+                        <thead>
+                            <row>
+                                <entry>
+                                    <p>Parameter</p>
+                                </entry>
+                                <entry>
+                                    <p>Description</p>
+                                </entry>
+                                <entry>
+                                    <p>Options</p>
+                                </entry>
+                                <entry>
+                                    <p>Mandatory/Optional</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry> Allowed Numbers </entry>
+                                <entry> This parameter defines the list of globally allowed numbers. </entry>
+                                <entry> Integer </entry>
+                                <entry> Optional </entry>
+                            </row>
+                            <row>
+                                <entry> Always Allowed RGs </entry>
+                                <entry> This parameter defines the list of globally allowed RG
+                                    numbers. </entry>
+                                <entry> Long </entry>
+                                <entry> Optional </entry>
+                            </row>
+                            <row>
+                                <entry> Barred Numbers </entry>
+                                <entry> This parameter defines the list of global barred numbers. </entry>
+                                <entry> String </entry>
+                                <entry> Optional </entry>
+                            </row>
+                            <row>
+                                <entry> Always Allowed APNs </entry>
+                                <entry> This parameter defines the list of globally allowed APN
+                                    numbers. </entry>
+                                <entry> Long </entry>
+                                <entry> Optional </entry>
+                            </row>
+                            <row>
+                                <entry> Weekday </entry>
+                                <entry> This parameter defines the list of days of week. </entry>
+                                <entry> String </entry>
+                                <entry> Mandatory </entry>
+                            </row>
+                            <row>
+                                <entry> Weekend </entry>
+                                <entry> This parameter defines the days of week. </entry>
+                                <entry> String </entry>
+                                <entry> Mandatory </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+</sectiondiv>
+</section>
+</conbody></concept>

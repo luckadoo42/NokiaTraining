@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topicID4">
+        <title>Business logic stream</title>
+        <body>
+            <p>Business logic stream handles the decoding and mapping of records. The stream
+                consists of one standalone node, CG Mapper Node.</p>
+            <p>CG Mapper Node polls the database for batches of records ready to be processed. When
+            a batch is available, the node reads every record in the batch and maps the input record
+            into an output record, ready to be distributed to the target destination. By default, no
+            mapping of the CDR and EDR data is performed but the data coming in goes out in the same
+            format.</p>
+            <p>When a record is taken into processing, it is locked using version property
+                (optimistic locking) so that no other instance of CG Mapper Node can process the
+                same record at the same time. The version is checked when the record data is saved
+                back to the database. If CG Mapper Node goes down while processing a record, the
+                session timeout will trigger mapping again.</p>
+            <p>CG Mapper Node also decides when to trigger output records and when to filter them
+                out. Once an output record is triggered, CG Mapper Node writes the output record
+                into the database. It collects a batch of ready output records for the Output stream
+                to collect, encode and distribute correctly. For appropriate distribution, CG Mapper
+                Node evaluates the distribution rules and adds information from the triggered rule
+                into the metadata of the batch, which the Output stream then can use for
+                distribution purposes. It also sets a sequence number and a creation time for the
+                batch.</p>
+            <p>
+                <fig id ="business">
+                    <title>Example of Business logic stream</title>
+                <image href="../images/sps_cfg_mapper.png" placement="break" height="2in"/>
+                </fig>
+            </p>
+            
+            
+            
+            
+            
+        </body>
+    </topic>

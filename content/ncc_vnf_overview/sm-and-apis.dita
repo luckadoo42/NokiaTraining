@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9YZ-09018-UG00-PCZZA-d1e11367"><title>SM and APIs</title><conbody>
+<section><title>SM REST APIs overview</title>
+<p>NCC hosts application programming interfaces (APIs) on its Service Manager (SM) component.</p>
+<p>These APIs are typically REST-based and support a variety of users, including:</p><ul>
+<li>
+<p>SM GUI users – The SM GUI implementation invokes the REST APIs to take action on the data submitted via the GUI</p>
+</li>
+<li>
+<p>IT systems – Customers have a variety of IT systems for configuring, provisioning, and querying
+                        data in NCC. These IT systems are users of the NCC APIs provided by the NCC
+                        SM API Gateway.</p>
+</li>
+</ul>
+<p>In all of these use cases, the same REST API layer in SM is invoked. This layer provides the business logic to authorize the user, validate data change requests (including against other data already in the DB), index, mediate, and persist appropriate portions of the data in the SM database.  </p>
+<fig>
+<image href="../images/rest_api_layer_default.png"/>
+</fig>
+<p>When a GUI user requests that a set of data gets saved, it will be saved into the SM database.
+                Later, when the GUI user requests that data be distributed to a set of Managed
+                Elements (MEs), then the SM will forward that data to the requested NCC MEs in the
+                network.</p>
+<p>Some data will remain in the SM database even after distributing it to the MEs, such as service
+                definitions. However, other data, such as subscriber / device data, is not kept in
+                the SM database, but instead, SM keeps only a mapping table of which subscribers /
+                devices are homed on which NCC managed elements in the network.</p>
+<p>For each service data managed object, SM maintains the provisioned state for each applicable managed element, in its SM database.  This is used to track the association of each object with where the user intends it to be sent, and whether SM was successful in sending it there.  The GUI displays an indication for failed / partially distributed objects to alert the user that action needs to be taken to correct problems.</p>
+<p>There are two SM systems (one pair) in a given NCC network deployment. These two SMs run active /
+                active, meaning the API GW function can be accessed via either SM. The SM database
+                layer will replicate data across the pair of SMs to keep them in sync. </p>
+<p>Note:  For related provisioning transactions sent back-to-back (e.g. adding multiple new members into a group), it is assumed that the IT systems will send those transactions into the same SM, to avoid any race conditions between the two SMs related to data replication.  Since data replication happens quickly (typically within a few seconds), all other transactions that are not rapid back-to-back for related actions, can be sent to either SM.</p>
+<p>The APIs are accessible only via HTTPS. SM expects each REST API invocation to contain an
+                HTTP-Basic header containing username and password, which is separately
+                authenticated. Since HTTP-basic is inherently insecure, it needs to be transferred
+                via HTTPS. In addition to the REST APIs, NCC also supports SOAP APIs for UD
+                Notifications use cases.</p>
+<p>The flow of these APIs through the system is the same as described above for the REST APIs.</p>
+</section>
+<section><title>Supported APIs</title>
+<p>For detailed information about the SM REST API interfaces and classes, including examples and
+                parameter descriptions, see the NCC Documentation in the Service Manager GUI and
+                locate <b>SM API Reference</b>.</p>
+</section>
+</conbody></concept>

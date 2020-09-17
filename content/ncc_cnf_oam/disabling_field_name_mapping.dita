@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="disabling_field_name_mapping">
+    <title>Disabling field name mapping</title>
+    <conbody>
+        <p>To reduce record sizes in Redis database, field name mapping is enabled by default in NCC
+            CDR streams. It maps field names (such as Result-Code) to a shorter number
+            representation (for example, 23). These mappings are defined in a field name mapping
+            file, which can be read by each node that requires to use field name mapping. The field
+            name mapping file is bundled in the CFG package of CG Configuration Node.</p>
+        <p>When field name mapping is enabled, all the field names in the database are stored as
+            numbers (both input and output fields).</p>
+        <p>For debugging purposes, it is sometimes useful to see the full records stored into the
+            database in readable format. To disable field mapping, set environment variable
+                <codeph>CG_DisableFieldMapping</codeph> to value <codeph>true</codeph> as
+            follows:</p>
+        <ol id="ol_oh3_dsd_ymb">
+            <li>Modify Data Refinery node manager configuration files on the processing host where
+                you want to debug.<p>In the following files, add the
+                        <codeph>CG_DisableFieldMapping</codeph> variable and set it to
+                        true:</p><p><codeph>/etc/profile.d/el-node-manager.sh</codeph></p><p><codeph>/etc/sysconfig/el-node-manager</codeph></p><p>In
+                    the following file, add the variable name
+                        <codeph>CG_DisableFieldMapping</codeph> into the
+                        <codeph>defaultEnvironment</codeph> list
+                        property:</p><p><codeph>/opt/comptel/eventlink/etc/node-manager/eventlink-config.xml</codeph></p></li>
+            <li>Restart node manager:<p><codeph>sudo systemctl restart
+                el-node-manager</codeph></p></li>
+        </ol>
+    </conbody>
+</concept>

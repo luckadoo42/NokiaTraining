@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//NSN//DTD DITA Concept//EN" "nsnconcept.dtd">
+		<concept id="id9YZ-09018--PL00-FPZZA-d1e20776"><title>Case 16: Support for carry over buckets</title><conbody>
+
+<section><title>Overview</title>
+
+<p>The rollover bundles or carry over for bundles allow carrying over the unused value left over in a bucket at the end of the reset cycle of data subscription. </p>
+<p>Bob has an iPhone subscribed to a monthly bundle for a data bucket enabled with carry over feature. After the subscription renewal, the remaining unused units of the data bucket are moved to the carry over bucket. The current balance of the carry over bucket is not greater than the <emphasis>Carry Over Transfer Limit</emphasis> when the renewal period of the bundle is set as <varname>Unlimited</varname>.</p>
+<fig>
+<title>Carry over feature</title>
+<!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Carry_over_bundle_scenario_2_default.png-->
+<image href="../images/carry_over_bundle_scenario_2_default.png"/>
+</fig>
+</section>
+<section><title>Flow of events</title>
+
+<p>Bob has an iPhone subscribed to a monthly bundle for a data bucket enabled with carry over feature:</p><ul>
+
+<li>
+At the subscription creation, the value of shared monthly regular bucket is 1500 MB and the current balance of the carry over bucket is zero.
+</li>
+<li>
+When a data usage of 1000 MB is done, the data is consumed from the regular bucket. After the call execution, the current balance of the main bucket is 500 MB and current balance of the carry over bucket is zero.
+</li>
+<li>
+After the first subscription renewal, the current balance of the main bucket is 1500 MB and current balance of the carry over bucket is 500 MB.
+</li>
+<li>
+When a data usage of 100 MB is done, the data is consumed first from the regular bucket. After executing the data call, the current balance of the main bucket is 1400 MB and current balance of the carry over bucket is 500 MB.
+</li>
+<li>
+After the second subscription renewal, the current balance of the main bucket is 1500 MB and current balance of the carry over bucket is 1500 MB (maximum carry over balance).
+</li>
+</ul>
+</section>
+<section><title>Provisioning</title>
+
+<note type="attention">
+
+<p>Ensure that after creating a record, you distribute it to ME. Otherwise, the provisioning will not be successful.</p>
+</note>
+<p>Following entities are required for this use case.<table pgwide="1" colsep="1" rowsep="1">
+     <title>Entities for case 16</title>
+     <tgroup cols="2">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <thead>
+       <row>
+        <entry> Entity </entry>
+        <entry> Task </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> Charging Service </entry>
+        <entry>
+         <p>Create a charging service with the following details:</p>
+         <ol>
+          <li>
+           
+            <uicontrol>Bucket:</uicontrol> Create a carryover data bucket.
+          </li>
+          <li>
+           
+            <uicontrol>Tariff:</uicontrol> Create a tariff formula. 
+          </li>
+         </ol>
+        </entry>
+       </row>
+       <row>
+        <entry> Bundle </entry>
+        <entry> Create a bundle and associate it with a subscription lifecycle. </entry>
+       </row>
+       <row>
+        <entry> Lifecycles </entry>
+        <entry> Create a subscription, account, and device lifecycles. </entry>
+       </row>
+       <row>
+        <entry> Account </entry>
+        <entry> Create an account and associate with an account lifecycle. </entry>
+       </row>
+       <row>
+        <entry> Device </entry>
+        <entry> Create a device and associate with a bundle and device lifecycle. </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table></p>
+<p>Provision the following data:</p><ol>
+
+<li>
+Create a charging service with the following data. To do this, log into the SM GUI, navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select the <uicontrol>Charging</uicontrol> tab. Browse to select the <uicontrol>Charging Services</uicontrol> from the drop-down list. Click 
+<!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+<image href="../images/sdd_button_default.png"/>
+ to create a charging service.
+ <table pgwide="1" rowsep="1" colsep="1">
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+Parameter
+</entry>
+<entry>
+Value
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+Name
+</entry>
+<entry>
+CarryOverCS
+</entry>
+</row>
+<row>
+<entry>
+Priority
+</entry>
+<entry>
+20
+</entry>
+</row>
+<row>
+<entry>
+Bucket
+</entry>
+<entry>
+<p>Carryoverbucket</p>
+<p>(This is a shared monthly bucket)</p>
+</entry>
+</row>
+<row>
+<entry>
+Initial value
+</entry>
+<entry>
+1500 
+</entry>
+</row>
+<row>
+<entry>
+Unit Type Name
+</entry>
+<entry>
+MByte
+</entry>
+</row>
+<row>
+<entry>
+Carryover flag
+</entry>
+<entry>
+Check this flag
+</entry>
+</row>
+<row>
+<entry>
+Validity
+</entry>
+<entry>
+Unlimited
+</entry>
+</row>
+<row>
+<entry>
+Bucket Transfer Limit
+</entry>
+<entry>
+100
+</entry>
+</row>
+<row>
+<entry>
+Carry Over Transfer Limit
+</entry>
+<entry>
+1500
+</entry>
+</row>
+<row>
+<entry>
+Consumption Order
+</entry>
+<entry>
+<p>Regular </p>
+<p>(It indicates to use the data bucket first, followed by the carry over bucket or main balance) </p>
+</entry>
+</row>
+<row>
+<entry>
+Tariff formula:
+</entry>
+<entry/>
+</row>
+<row>
+<entry namest="col1" nameend="col2">
+<!--MMO resource relative URI: ../graphics/Carryoverbucket_default.png-->
+<image href="../images/carryoverbucket_default.png"/>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</li>
+<li>Create a shared monthly bundle with the subscription lifecycle (mentioned in the previous step)
+     and <varname>CarryOverCS</varname> charging service. </li>
+<li>A monthly subscription lifecycle exists for the shared monthly bundle. </li>
+<li>Create an account. To do this, log into the SM GUI and navigate to <uicontrol>Subscriber
+      Manager</uicontrol> and select the <uicontrol>Accounts</uicontrol> tab. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png"/> to create the account. The account must have
+     sufficient balance to complete the call. </li>
+<li>Create a device. To do this, log into the SM GUI and navigate to <uicontrol>Subscriber
+      Manager</uicontrol> and select the <uicontrol>Devices</uicontrol> tab. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png"/> to create the device. iPhone is subscribed to
+     the shared monthly bundle and the account is charged for the subscription fee. </li>
+</ol>
+</section>
+</conbody></concept>

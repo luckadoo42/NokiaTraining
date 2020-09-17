@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA General Task//EN" "generalTask.dtd">
+<task id="id9YZ-09126-MT00-REZZA-SP2-d1e69214"><title>Procedure: Scaling in a VNF manually</title><taskbody id="d1e69404">
+        <context>This procedure provides instructions on how to scale in a VNF that has been
+            deployed in VMware or in OpenStack environment using the CBAM GUI. The scale-in
+            operation decreases the number of VMs running in the NCC and as a result it decreases
+            the overall call-taking capacity of the system. Nokia recommends executing the scale-in
+            operation during lean traffic hours to minimize any traffic disruptions.<p>The scale-in
+                operation supports the following VM types:</p><ul id="ul_vvg_tst_wmb">
+                <li>
+                    <p>DiameterApp</p>
+                </li>
+                <li>
+                    <p>CDR</p>
+                </li>
+                <li>
+                    <p>ComSvc</p>
+                </li>
+                <li>
+                    <p>SM App</p>
+                </li>
+                <li>
+                    <p>DB</p>
+                </li>
+            </ul><note>Call loss might happen during the scale-in operation. However, this call loss
+                will be minimal and the NCC will remain healthy.<p/></note></context>
+        <section id="Scale_in-VMs-with-Kafka-broker">
+            <title>Scaling in ComSvc or SM App VMs</title>
+            <p>ComSvc and SM App VMs are the VMs where Kafka broker resides. On ME and IG sites,
+                Kafka broker resides on ComSvc VMs. On SM sites, Kafka broker resides on SM App VMs.
+                If you are scaling in ComSvc or SM App VMs, ensure the following:</p>
+            <ul>
+                <li>
+                    <p>You are not going below the replication factor defined by
+                        &lt;kafka_default_replication_factor&gt; parameter. For more information,
+                        see <!--xref URI: #Kafka-replication-factor--><xref
+                            keyref="id9YZ-09126-MT00-REZZA-SP2-d1e69214/Kafka-replication-factor"
+                        />.</p>
+                </li>
+                <li>
+                    <p>&lt;kafka/kafka_reassign_partitions_throttle_Bps&gt; is set to 50% of the
+                        total bandwidth between the two VMs hosting Kafka broker. For more
+                        information, see <!--xref URI: #Bandwidth-allocation--><xref
+                            keyref="id9YZ-09126-MT00-REZZA-SP2-d1e69214/Bandwidth-allocation"/>.</p>
+                </li>
+                <li>
+                    <p>&lt;kafka/kafka_enable_scale_reassign_partition&gt; is set to true.</p>
+                </li>
+            </ul>
+        </section>
+        <section id="Kafka-replication-factor">
+            <title>Kafka replication factor</title>
+            <p>If &lt;kafka_default_replication_factor&gt; parameter is <i>n</i> for any topic, then
+                the maximum number of VMs of the selected VM type or aspect, as it is called in
+                CBAM, that can be scaled-in is <i>n-1</i>. In addition, at any point of time the
+                minimum number of VMs in the system must be equal to or greater than <i>n</i>,
+                otherwise data will not be replicated as defined by
+                &lt;kafka_default_replication_factor&gt; parameter.</p>
+            <p>To verify the replication factor, use <codeph>--describe</codeph> option
+                    of <codeph>kafka-topics.sh</codeph>. The following figure shows how to verify
+                Kafka replication factor on ComSvc VMs. On SM App VMs, Kafka replication factor is
+                verified similarly.</p>
+            <fig>
+                <title>Verifying Kafka replication factor</title>
+                <codeblock>[root@sps-ig-comsvc-0 ~]# /usr/bin/kafka-topics -describe --zookeeper 192.168.3.20:2181,192.168.3.21:2181,192.168.3.22:2181 --topic cdr
+Topic:cdr   PartitionCount:12   ReplicationFactor:2   Configs:
+
+Topic: cdr Partition: 0 Leader: 1001 Replicas: 1001,1002 Isr: 1002,1001
+Topic: cdr Partition: 1 Leader: 1002 Replicas: 1002,1001 Isr: 1002,1001
+Topic: cdr Partition: 2 Leader: 1001 Replicas: 1001,1002 Isr: 1002,1001
+Topic: cdr Partition: 3 Leader: 1002 Replicas: 1002,1001 Isr: 1002,1001
+Topic: cdr Partition: 4 Leader: 1001 Replicas: 1001,1002 Isr: 1002,1001
+</codeblock>
+            </fig>
+        </section>
+        <section id="Bandwidth-allocation">
+            <title>Bandwidth allocation during partition reassignment operation</title>
+            <p>During scaling Kafka broker VMs reassign topic data to other VMs using network
+                bandwidth. The reassign partition parameters limit the use of network bandwidth. If
+                you need to modify &lt;kafka/kafka_reassign_partitions_throttle_Bps&gt;, use
+                    <codeph>configure-kafka-partition-keys</codeph> tool. The higher the bandwidth
+                allocation is, the faster the reassignment operation completes. However, Nokia
+                recommends to set this parameter to 50% of the total bandwidth. For information
+                about this tool, see section
+                    <!--xref URI: t-oam-tools-configure-Kafka-partition-keys.xml#configure-kafka-partition-keys-tool--><xref
+                    keyref="id9YZ-09126-MT00-REZZA-SP2-configure-kafka-partition-keys-tool"/> and
+                for information about Kafka parameters, see section <i>VNF Extenstion file</i> in
+                the Installation and Upgrade Guide.</p>
+        </section>
+        <section>
+            <note>For more information on CBAM, see CloudBand Application Manager (CBAM)
+                documentation in the Nokia Discovery Center by going to <xref format="html"
+                    href="https://doc.networks.nokia.com" scope="external"
+                    >https://doc.networks.nokia.com</xref><p> </p></note>
+            <note>If a substantial number of VMs are scaled in at one time and without taking care
+                of dimensioning needs, then there could be severe traffic disruptions.</note>
+            <p>Before beginning this procedure, ensure the following:</p>
+            <ul>
+                <li>
+                    <p>If you are scaling in ComSvc or SM App VMs, check Kafka parameters. For more
+                        information, see <!--xref URI: #Scale_in-VMs-with-Kafka-broker--><xref
+                            keyref="id9YZ-09126-MT00-REZZA-SP2-d1e69214/Scale_in-VMs-with-Kafka-broker"
+                        />.</p>
+                </li>
+                <li>
+                    <p>In the VNF targeted for scale-in, all the VMs are UP and running.</p>
+                </li>
+                <li>
+                    <p>You perform real-time backup of CDR VMs. If you do not backup CDR VMs, CDRs
+                        will be lost because during the scale-in operation external volumes attached
+                        to CDR VMs are also terminated.</p>
+                </li>
+                <li>
+                    <p>You consider the system’s dimensioning needs. For example, if you are scaling
+                        in DB VMs, you must ensure that the DB VMs that remain in the system are
+                        capable of distributing all the data among themselves by taking care of
+                        replication factor and handling all traffic.</p>
+                </li>
+            </ul>
+            <p>To manually scale in the VM:</p>
+        </section>
+        <steps id="steps_khz_nzt_wmb">
+            <step>
+                <cmd>Log in to the CBAM GUI.</cmd>
+                <info/>
+            </step>
+            <step>
+                <cmd>In the CBAM GUI, click the options button with three horizontal lines, and then
+                    select <b>Virtualized Network Functions</b>. The <b>Virtualized Network
+                        Functions</b> pane appears.</cmd>
+                <info/>
+            </step>
+            <step>
+                <cmd>In the Virtualized Network Functions pane, select the appropriate VNF and hover
+                    the mouse over the right of the selected line, and then click the <b>Scale</b>
+                    button represented by the double square. The <b>Aspect</b> pane appears.</cmd>
+                <info/>
+            </step>
+            <step>
+                <cmd>From the <b>Scaling Aspect</b> drop-down list, select the VM type to scale in.
+                    Currently the supported choices are:</cmd>
+                <info>
+                    <ul id="ul_lhz_nzt_wmb">
+                        <li>
+                            <p>DiameterAppAspect</p>
+                        </li>
+                        <li>
+                            <p>CDRAspect</p>
+                        </li>
+                        <li>
+                            <p>COMSVCAspect</p>
+                        </li>
+                        <li>
+                            <p>SMAppAspect</p>
+                        </li>
+                        <li>
+                            <p>DBAspect</p>
+                        </li>
+                    </ul>
+                    <note><b>Scaling in the VMs that are not supported must never be attempted even
+                            if the CBAM GUI allows for it. Any attempts to scale in non-supported
+                            VMs can severely damage the NCC and make it irrecoverable.</b><p
+                        > </p></note>
+                    <p>Click <b>Continue</b>. The <b>Target Level</b> pane appears. </p>
+                </info>
+            </step>
+            <step>
+                <cmd>In the <b>New target level</b> field, set the new target level to the number of
+                    units to which you are scaling-in the selected VM type.</cmd>
+                <info>
+                    <note><b>Do not choose the VM to scale in. The NCC automatically picks the VM to
+                            scale in. Choosing the VM manually might disbalance the distribution of
+                            VMs among the zones.</b><p> </p></note>
+                    <note><b>If you are scaling in DB VMs,</b><p> </p><ul id="ul_mhz_nzt_wmb">
+                            <li>
+                                <p>
+                                    <b>At least four DB VMs must remain in the system, otherwise the
+                                        system will go DOWN, but dimensioning has the higher
+                                        priority.</b>
+                                </p>
+                            </li>
+                            <li>
+                                <p>
+                                    <b>Do not scale in more than one DB VM at a time. If, even
+                                        mistakenly, you scale in more than one DB VM, there will be
+                                        severe disruptions to the NCC.</b>
+                                </p>
+                            </li>
+                            <li>
+                                <p>
+                                    <b>Since DB VMs are 2*(n+k), you must scale in DB VMs to the
+                                        number that is a multiple of two. This means that you must
+                                        run a scale-in operation as many times as many DB VMs you
+                                        are scaling in. If you scaling in four VMs, then you must
+                                        run a scale-in operation four times, reducing every time the
+                                        number of VMs by one.</b>
+                                </p>
+                            </li>
+                            <li>
+                                <p>
+                                    <b>If you are scaling in DB VMs on a geo-redundant site, then
+                                        you must also scale in the DB VMs on its corresponding
+                                        geo-site to the same number.</b>
+                                </p>
+                            </li>
+                        </ul></note>
+                    <p>For example, if the current target level is 10 and the new target level is 2,
+                        then 8 VMs will be scaled in.</p>
+                    <note>
+                        <p>The new target level must be smaller than the current target level but
+                            greater than zero.</p>
+                    </note>
+                    <p>Click <b>Continue</b>. The <b>Additional Parameters</b> pane appears. </p>
+                </info>
+            </step>
+            <step>
+                <cmd>In the <b>Additional Parameters</b> pane, ensure the following:</cmd>
+                <info>
+                    <ul id="ul_nhz_nzt_wmb">
+                        <li>
+                            <p>The <b>ForceScaleIn</b> field is set to no.</p>
+                        </li>
+                        <li>
+                            <p>The <b>VnfcNameToScaleIn</b> field stays blank.</p>
+                        </li>
+                    </ul>
+                    <p>Click <b>Finish</b>.</p>
+                    <p>
+                        <b>Expected outcome</b>
+                    </p>
+                    <p>The <b>Scale</b> operation succeeds or not.</p>
+                    <p>If the <b>Scale</b> operation succeeds, the alarm is generated stating that
+                        the VM is down.</p>
+                    <p>For example, the following alarm is generated when SPS-ME-1 VNF is scaled-in
+                        by one Diameter App VM:</p>
+                    <p>
+                        <systemoutput>ALARM INDEX | 2f3aec4e68a1a7e2c420d</systemoutput>
+                    </p>
+                    <p>
+                        <systemoutput>OBJECT NAME |
+                            SPS_ME_18_9_R1_I26+sps-me-1-diameterapp-3#POLICY</systemoutput>
+                    </p>
+                    <p>
+                        <systemoutput> | Instance Down</systemoutput>
+                    </p>
+                    <p>
+                        <systemoutput>SPECIFIC PROBLEM | POLICY Instance is Down</systemoutput>
+                    </p>
+                    <p>
+                        <systemoutput>PROBABLE CAUSE | outOfService</systemoutput>
+                    </p>
+                    <p>
+                        <systemoutput>SEVERITY | major</systemoutput>
+                    </p>
+                    <p>
+                        <systemoutput>TIME | 2018-09-04 07:55:00</systemoutput>
+                    </p>
+                    <p>
+                        <systemoutput>ALARM TYPE | processingErrorAlarm</systemoutput>
+                    </p>
+                    <p>
+                        <systemoutput>ADDITIONAL TEXT | SERVICENAME=POLICY</systemoutput>
+                    </p>
+                    <p>
+                        <systemoutput>ALARM VM UUID | N/A</systemoutput>
+                    </p>
+                    <p>
+                        <systemoutput>ALARM VM NAME | N/A</systemoutput>
+                    </p>
+                    <p>
+                        <systemoutput>ALARM ACK STATUS | False</systemoutput>
+                    </p>
+                    <p>
+                        <systemoutput>ALARM ACK TIME | 0</systemoutput>
+                    </p>
+                    <note>For information on alarms, see <i>Alarms</i> chapter.<p/></note>
+                </info>
+            </step>
+            <step>
+                <cmd>If the <b>Scale</b> operation does not succeed, contact Nokia Professional
+                    Services.</cmd>
+                <info/>
+            </step>
+        </steps>
+    </taskbody></task>

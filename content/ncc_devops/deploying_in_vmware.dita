@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<<<<<<< HEAD
+<!DOCTYPE task PUBLIC "-//NSN//DTD DITA Task//EN" "nsntask.dtd">
+<task id="id9YZ-09126-MT02-REZZA-d1e1400"><title>Deploying NCC in VMware vCloud</title><taskbody id="d1e1436"><context>
+            <p>This procedure describes the workflow of the NCC deployment in VMware vCloud using
+                DevOps environment and CBAM.</p>
+            <note>
+                <p>If the product name, software version and VNFD version remain unchanged in the
+                    VNF Config files, the automated instantiation script uses the existing catalog
+                    in CBAM. In this case, do not upload a new CSAR package to CBAM.</p>
+            </note>
+=======
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="id9YZ-09126-MT02-REZZA-d1e1400"><title>Deploying SPS in VMware vCloud</title><taskbody id="d1e1436"><context>
+<sectiondiv>
+<p><b>Overview</b></p>
+<p>This procedure describes the workflow of the SPS deployment in VMware vCloud using DevOps environment and CBAM.</p>
+>>>>>>> a136a20478cd190ea11fc8f4c356db2268cfb316
+<note>
+<p>In the DevOps environment, the NCC is deployed in its minimum configuration, which is one SM site
+                    (VNF) and one ME site (VNF), or one IG site (VNF).</p>
+</note></context><prereq>
+<p>Before beginning this procedure, ensure that CBAM is installed and available. For information on
+                CBAM, see CBAM documentation <xref href="c_document_support.dita"/>.</p>
+			<p>To deploy the NCC in VMware vCloud:</p>
+</prereq><steps>
+<step><cmd>Contact Nokia Professional services to obtain the following artifacts:</cmd><info><ul>
+<li>
+<p>CSAR package files</p>
+</li>
+<li>
+<p>SDC Config files</p>
+</li>
+<li>
+<p>VNF Config files</p>
+</li>
+<li>
+<p>VMDK images</p>
+</li>
+<li>
+<p>MD5 files</p>
+</li>
+<li>
+<p>OVF files</p>
+</li>
+</ul><note>
+<p>See the following:</p><ul>
+<li>
+<p>For instructions on how to generate the CSAR packages, VNF Config files and OVF files, see the
+                                    NCC VNF Artifacts Generator Tool Guide.</p>
+</li>
+<li>
+<p>For information on the SDC Config files, see the Installation and Upgrade Guide.</p>
+</li>
+</ul>
+</note><note>
+<p>Ensure that the VNF Config files and the SDC Config files are prepared as needed for the deployment of you system and localization of your sites.</p>
+</note></info></step>
+<step><cmd>Create &lt;SPS_version_dir&gt; directory.</cmd><info><note>
+<p>For consistency Nokia recommends to keep your VNF Config and SDC Config files in <filepath>/opt/sps/configs</filepath>.</p>
+</note></info></step>
+<step><cmd>Download to &lt;SPS_version_dir&gt; directory the following artifacts:</cmd><info><ul>
+<li>
+<p>CSAR package files</p>
+</li>
+<li>
+<p>SDC Config files</p>
+</li>
+<li>
+<p>VNF Config files</p>
+</li>
+<li>
+<p>VMDK images</p>
+</li>
+<li>
+<p>MD5 files</p>
+</li>
+<li>
+<p>OVF files</p>
+</li>
+</ul></info></step>
+<step><cmd>Using the instructions in Nokia Support Portal, verify the downloaded QCOW2 images and files by generating MD5 hash values and comparing the generated values with the values provided in Support Portal and in MD5 files. The generated MD5 hash values, the MD5 hash values in Support Portal and the values in MD5 files must match. If you find discrepancies, download the QCOW2 images and files again.</cmd><info><note>
+<p>In addition to MD5 values, Nokia provides SHA-256 hash values. The NCC does not use SHA-256 hash
+                            values for image verification.</p>
+</note></info></step>
+<step><cmd>Deploy the Maestro VM in VMware vCloud using the procedure <!--xref URI: t-devops-deployment-deploying-Maestro-in-VMware.xml#Deploying-orchestrator-VM-VMware--><xref keyref="id9YZ-09126-MT02-REZZA-Deploying-orchestrator-VM-VMware"/>.</cmd><info/></step>
+<step>
+                <cmd>Configure CBAM credentials on the Maestro VM. For information on CBAM, see CBAM
+                    documentation <!--xref URI: ../IP/SPS_Devops.xml#document_support--><xref
+                        href="c_document_support.dita"/>.</cmd>
+                <info/>
+            </step>
+<step><cmd>Install ovftool using the procedure <!--xref URI: t-devops-deployment-installing-ovftool.xml#Installing-ovftool--><xref keyref="id9YZ-09126-MT02-REZZA-Installing-ovftool"/>.</cmd><info/></step>
+<step>
+                <cmd>Create the NCC client on the CBAM VM using the procedure
+                        <!--xref URI: t-devops-deployment-creating-client-on-CBAM.xml#Creating-SPS-client-on-CBAM--><xref
+                        keyref="id9YZ-09126-MT02-REZZA-Creating-SPS-client-on-CBAM"/>.</cmd>
+                <info/>
+            </step>
+<step><cmd>Configure <filepath>clouds_config</filepath> file using the procedure <!--xref URI: t-devops-deployment-configuring-clouds-config-file.xml#Preparing-VMware-environment--><xref keyref="id9YZ-09126-MT02-REZZA-Preparing-VMware-environment"/>.</cmd><info/></step>
+<step><cmd>For each site in your deployment, do the following:</cmd><info><ul>
+<li>
+<p>If you are not using the Airflow GUI and instantiating using a specified directory path to the
+                                NCC artifacts, run the following script by entering:</p><ul>
+<li>
+<p>
+<codeph>maestro ace sps-instantiate -d &lt;SPS_version_dir&gt; -i /&lt;SPS_version_dir&gt;/&lt;SDC Config file&gt; -j /&lt;SPS_version_dir&gt;/&lt;VNF Config file&gt; -s [sm|me|ig] &lt;SPS_load_ID&gt;</codeph>
+</p>
+</li>
+<li>
+<p>If you are not using the Airflow GUI and instantiating by downloading the NCC artifacts from a
+                                        specified URL, run the following script by entering:</p>
+<p>
+<codeph>maestro ace sps-instantiate -d https://&lt;Images directory URL&gt; -i /&lt;SPS_version_dir&gt;/&lt;SDC Config file&gt; -j /&lt;SPS_version_dir&gt;/&lt;VNF Config file&gt; -s [sm|me|ig] &lt;SPS_load_ID&gt;</codeph>
+</p>
+</li>
+</ul>
+</li>
+<li>
+<p>If the instantiation fails, investigate the failure using the procedure <!--xref URI: t-devops-issue-instantiation-failure.xml#Investigating-instantiation-failure--><xref keyref="id9YZ-09126-MT02-REZZA-Investigating-instantiation-failure"/>.</p>
+</li>
+</ul></info></step>
+</steps>
+</taskbody></task>

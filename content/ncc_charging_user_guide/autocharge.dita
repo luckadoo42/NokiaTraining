@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-autocharge"><title>Auto-charge notification</title><conbody>
+<section><title>Overview</title>
+<p>This feature provides the functionality to automatically recharge or renew a device or group when <i>subscription is about to expire</i> or <i>subscription is about to empty</i>:</p><ul>
+<li>
+<p>In case of <i>subscription is about to expire</i> scenario, when the <i>Send Notification</i>
+                        action triggers in the lifecycle of a device or group, then NCC checks the
+                        special custom data in the device or group to decide which <i>Notification
+                            Template ID</i> is being sent. The notification template should include
+                            <i>DeviceId</i> or <i>GroupID</i>, <i>Notification Template ID</i>, and
+                            <i>Bundle ID</i>.</p>
+</li>
+<li>
+<p>Similarly, for the <i>subscription is about to empty</i> scenario, the threshold for a device or
+                        group is configured for a desired value and when the threshold triggers, NCC
+                        checks the special custom data in the device or group to decide which
+                            <i>Notification Template ID</i> is being sent. The notification template
+                        should include <i>DeviceId</i> or <i>GroupID</i>, <i>Notification Template
+                            ID</i>, and <i>Bundle ID</i>.</p>
+</li>
+</ul>
+<p>The auto-charge notification is sent by NCC to the third-party entity through notification of
+                http type, which is configured in the Notification Server for notification template
+                used for the auto-charge feature. On receiving the auto-charge notification for a
+                group, the third-party entity performs some set of steps to attach a new bundle to
+                the group using template feature.</p>
+<p>For example, <i>ACNotifSetting</i> is a custom data attribute of the group or the device. Its
+                value is enabled when the auto-charge feature is enabled. If the
+                    <i>ACNotifSetting</i> is enabled, then the NCC sends auto-charge notification
+                template. Otherwise, NCC sends expiry notification template.</p>
+<sectiondiv>
+<p><b>Notification variables for sending auto-charge notification</b></p>
+<table pgwide="1" colsep="1" rowsep="1">
+                    <title>Notification variables for sending auto-charge notification</title>
+                    <tgroup cols="5">
+                        <colspec colname="col1"/>
+                        <colspec colname="col2"/>
+                        <colspec colname="col3"/>
+                        <colspec colname="col4"/>
+                        <colspec colname="col5"/>
+                        <thead>
+                            <row>
+                                <entry>
+                                    <p>Variable name</p>
+                                </entry>
+                                <entry>
+                                    <p>Description</p>
+                                </entry>
+                                <entry>
+                                    <p>Format</p>
+                                </entry>
+                                <entry>
+                                    <p>Count</p>
+                                </entry>
+                                <entry>
+                                    <p>Mandatory/ Optional</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry> SubscriberCD </entry>
+                                <entry> This parameter is populated by the custom data associated
+                                    with a device or group, which is filled by the operator
+                                    provisioning system. </entry>
+                                <entry>
+                                    <p>Alphanumeric characters (a to z, A to Z, 0 to 9), hyphen,
+                                        underscore, @</p>
+                                    <p>This parameter supports a maximum of 20 characters.</p>
+                                </entry>
+                                <entry> 1 </entry>
+                                <entry> Mandatory </entry>
+                            </row>
+                            <row>
+                                <entry> ShareID </entry>
+                                <entry> This parameter indicates the <i>GroupID</i> linked to the
+                                    subscription. </entry>
+                                <entry>
+                                    <p>Alphanumeric characters (a to z, A to Z, 0 to 9), hyphen,
+                                        underscore</p>
+                                    <p>This parameter supports a maximum of 30 characters.</p>
+                                </entry>
+                                <entry> 1 </entry>
+                                <entry> Mandatory </entry>
+                            </row>
+                            <row>
+                                <entry> AutoChargePlanName </entry>
+                                <entry> This parameter indicates the string read from the group
+                                    custom data that is filled by the operator provisioning system. </entry>
+                                <entry> This parameter supports a maximum of 15 characters. </entry>
+                                <entry> 1 </entry>
+                                <entry> Mandatory </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+</sectiondiv>
+</section>
+<section><title>Sending auto-charge notification - Threshold</title>
+<p>To send the notification using threshold, the configuration is first defined at the <uicontrol>Aggregate View</uicontrol> under the <uicontrol>Policy &amp; Charging</uicontrol> &gt; <uicontrol>Common</uicontrol> tab. This <uicontrol>Aggregate View</uicontrol> configuration is further attached to a group or device.</p>
+<sectiondiv>
+<p><b>Example for sending auto-charge notification when device subscription is about to expire</b></p>
+<p>Consider a device that executes a threshold action (<i>SendNotification</i>) when the <i>Aggregate View</i> associated with the device and the auto-charge feature is enabled for the device.</p>
+<p>
+<b>Configuration:</b>
+</p><ol>
+<li>
+                        <p>Create three custom data as shown in the following figure:</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_19.3/Auto-charge_feature_custom_data_use_case1_default.png-->
+                        <image
+                            href="../images/img9yz-09126-ug01-pczza-sp1-auto-charge_feature_custom_data_use_case1_default.png"
+                            scale="65"/>
+                    </li>
+<li><p>Create a threshold profile group, which is set to <i>ABSOLUTE_FROM_END</i> with
+                                <i>SendNotification</i> action and three notification variables
+                                (<i>ShareID</i>, <i>SubcscriberCD</i>, and
+                            <i>AutoChargePlanName</i>) as shown in the following figure:</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_19.3/Auto-charge_feature_threshold_config_use_case1_default.png-->
+                        <image
+                            href="../images/img9yz-09126-ug01-pczza-sp1-auto-charge_feature_threshold_config_use_case1_default.png"
+                            scale="60"/>
+                    </li>
+<li><p>Attach this threshold profile group to the <i>Aggregate View</i> as shown in the following
+                            figure:</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_19.3/Auto-charge_feature_aggregate_view_use_case1_default.png-->
+                        <image
+                            href="../images/img9yz-09126-ug01-pczza-sp1-auto-charge_feature_aggregate_view_use_case1_default.png"
+                        />
+                    </li>
+<li><p>Attach this <i>Aggregate View</i> to the device with the following two subscriptions:</p><ol>
+                            <li>
+                                <p>
+                                    <varname>Subscription1</varname> for <varname>Bkt1=20
+                                        bytes</varname>
+                                </p>
+                            </li>
+                            <li>
+                                <p>
+                                    <varname>Subscription2</varname> for <varname>Bkt2=70
+                                        bytes</varname>
+                                </p>
+                            </li>
+                        </ol>
+                        <!--MMO resource relative URI: ../Graphics/Release_19.3/Auto-charge_feature_device_config_use_case1_default.png-->
+                        <image
+                            href="../images/img9yz-09126-ug01-pczza-sp1-auto-charge_feature_device_config_use_case1_default.png"
+                        />
+                    </li>
+</ol>
+</sectiondiv>
+</section>
+<section><title>Sending auto-charge notification - Lifecycle</title>
+<sectiondiv>
+<p><b>Example for sending auto-charge notification when subscription is about to expire</b></p>
+<p>This scenario is performed to verify the notification parameter on REST API when the <i>SendNotification</i> action is configured on a subscription periodic lifecycle with bundle about to expire and auto-charge functionality enabled on device configurable custom data.</p>
+<p>
+<b>Configuration:</b>
+</p><ol>
+<li>
+<p>Create three custom data, namely <i>ACNotifSetting</i>, <i>GroupID</i>, and <i>AutoChargePlan</i>.</p>
+</li>
+<li><p>Create a periodic lifecycle with about to expire and with <i>SendNotification</i> action and
+                            rule with custom data attribute to enable the auto-charge feature and
+                            notification variables as shown in the following figure:</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_19.3/Auto-charge_feature_lifecycle_config_use_case2_default.png-->
+                        <image
+                            href="../images/img9yz-09126-ug01-pczza-sp1-auto-charge_feature_lifecycle_config_use_case2_default.png"
+                            scale="70"/>
+                    </li>
+<li>
+<p>Create a bundle with periodic lifecycle.</p>
+</li>
+<li>
+<p>The auto-charge notification can be either sent to a device or a group or both performing either of the following steps:</p>
+<p/><ul>
+<li>
+                                <p>Create a device with the three custom data attributes that were
+                                    created in the first step.</p>
+                                <!--MMO resource relative URI: ../Graphics/Release_19.3/Auto-charge_feature_lifecycle_config2_default.png-->
+                                <image
+                                    href="../images/img9yz-09126-ug01-pczza-sp1-auto-charge_feature_lifecycle_config2_default.png"
+                                    scale="70"/>
+                            </li>
+<li>
+                                <p>Create a group with the three custom data attributes that were
+                                    created in the first step.</p>
+                                <!--MMO resource relative URI: ../Graphics/Release_19.3/Auto-charge_feature_lifecycle_group_config_default.png-->
+                                <image
+                                    href="../images/img9yz-09126-ug01-pczza-sp1-auto-charge_feature_lifecycle_group_config_default.png"
+                                    scale="70"/>
+                            </li>
+<li>
+                                <p>The following rule is used for sending the auto-charge
+                                    notification for device and group in the same rule, where
+                                        <i>ACNotifiSetting</i>, <i>DeviceID</i>, and
+                                        <i>AutoChargePlanName</i> are the custom data on a group.
+                                    The <i>SendNotification</i> action is used on the custom
+                                    parameters on as per the context type either device or
+                                    group:</p>
+                                <!--MMO resource relative URI: ../Graphics/Release_19.3/Auto-charge_feature_lifecycle_group_and_device_default.png-->
+                                <image
+                                    href="../images/img9yz-09126-ug01-pczza-sp1-auto-charge_feature_lifecycle_group_and_device_default.png"
+                                    scale="65"/>
+                                <p>The <i>Custom-Data-Add</i>, <i>Custom-Data-Add-Immediate</i>,
+                                        <i>Custom-Data-Update</i>, <i>Custom-Data-Remove</i>, and
+                                        <i>Custom-Data-Remove-Immediate</i> as shown in the
+                                    following figure are also supported as custom parameters for a
+                                    device or group:</p>
+                                <!--MMO resource relative URI: ../Graphics/Release_19.3/AUC_custom_data_default.png-->
+                                <image
+                                    href="../images/img9yz-09126-ug01-pczza-sp1-auc_custom_data_default.png"
+                                    scale="50"/>
+                            </li>
+</ul>
+</li>
+<li>
+<p>Attach a bundle to the device or group to create a subscription.</p>
+</li>
+</ol>
+<p>Perform the following steps:</p><ol>
+<li>
+<p>Verify whether auto-charge notification is sent with the notification variables when the
+                            subscription is about to expire. NCC should send the auto-charge
+                            notification to the operator provisioning system using notification of
+                            http type configured in the Notification Server for notification
+                            template used for auto-charge feature.</p>
+</li>
+<li>
+<p>Verify whether auto-charge notification is sent for REST notification.</p>
+</li>
+</ol>
+</sectiondiv>
+</section>
+</conbody></concept>

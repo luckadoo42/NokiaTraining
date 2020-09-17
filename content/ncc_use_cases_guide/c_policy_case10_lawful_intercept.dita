@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//NSN//DTD DITA Concept//EN" "nsnconcept.dtd">
+		<concept id="id9YZ-09018--PL00-FPZZA-d1e26769"><title>Case 10: Lawful intercept in VoWiFi</title><conbody>
+
+<section><title>Overview</title>
+
+<p>Lawful interception is obtaining communications network data in conformance to lawful authority for the purpose of analysis or evidence. Governments around the world need service providers to install a Legal Interception Gateway along with Legal Interception Nodes. These nodes allows them to intercept phone calls, SMS'es, emails and certain file transfers or instant messages in real time.</p>
+<p>The AF server requests the location information and the PCRF reports that location when it is received from the PCEF.</p>
+</section>
+<section><title>Flow of events</title>
+
+<p/><ul>
+
+<li>Verify that successful location update is sent to AF when NETLOC-Untrused-WLAN (bit 30) and
+					NetLoc (bit 10) on Gx and NETLOC-Untrusted-WLAN feature (feature bit 16) on Rx
+					is enabled in the diameter request. Also, Specific-Action:-
+					ACESS_NETWORK_INFO_REPORT is armed on RX. </li>
+<li>When Trigger 43 (UE_IP_ADDRESS_LOCAL_CHANGE) is received on Gx in CCRu. </li>
+<li>Verify that the four new AVP's (UE-Local-IP-Address, UDP-Source-Port, TCP-Source-Port,
+					AN-Trusted) for untrusted WLAN reported to AF in Rx RAR. </li>
+</ul>
+</section>
+<section><title>Provisioning</title>
+
+<note type="attention">
+
+<p> Ensure that after creating a record, you distribute it to ME. Otherwise, the provisioning will not be successful.</p>
+</note>
+<p>
+				<uicontrol>Pre-condition:</uicontrol> Verify that the basic provisioning for Gx and
+				Rx is done at NCC. Policy RSV is configured with
+					<uicontrol>AF_SESSION_ESTABLISHMENT</uicontrol> trigger as follows:</p>
+<fig>
+<!--MMO resource relative URI: ../graphics/Case10_AF_default.png-->
+<image href="../images/case10_af_default.png"/>
+</fig>
+<p>Provision the following data:</p><ol>
+
+<li>Create the PCC rule templates<draft-comment> using Gx policy RSV rule group</draft-comment>. To
+					do this, log in to the SM GUI and navigate to <uicontrol>Policy &amp; Charging
+						Configuration</uicontrol> and select <uicontrol>Policy</uicontrol> tab.
+					Select the <uicontrol>Network Rule Templates</uicontrol> from the drop-down
+					list. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+					<image href="../images/sdd_button_default.png"/> to create the rule templates as
+					shown in the following figure: <!--MMO resource relative URI: ../graphics/Case9_NWT1_default.jpg-->
+					<image href="../images/case9_nwt1_default.jpg"/>
+				</li>
+<li>Define the condition with <uicontrol>QOS_MANAGEMENT</uicontrol> trigger. <!--MMO resource relative URI: ../graphics/Case10_TDF_default.png-->
+					<image href="../images/case10_tdf_default.png"/>
+				</li>
+<li>Define the condition with <uicontrol>IPCAN_SESSION_MODIFICATION</uicontrol> trigger for removing
+					a PPC rule when USER_LOCATION_CHANGE event trigger is received. <!--MMO resource relative URI: ../graphics/Case10_Untrusted_default.png-->
+					<image href="../images/case10_untrusted_default.png"/>
+				</li>
+<li>Execute Gx CCRu/CCA with Event-Trigger 43 (UE_LOCAL_IP_ADDRESS_CHANGE). <!--MMO resource relative URI: ../graphics/case10_10_default.png-->
+					<image href="../images/case10_10_default.png" placement="break" scale="70"/>
+				</li>
+<li>Verify the following attributes in the network trace. <!--MMO resource relative URI: ../graphics/case10_11_default.png-->
+					<image href="../images/case10_11_default.png"/>
+				</li>
+</ol>
+</section>
+</conbody></concept>

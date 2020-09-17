@@ -1,0 +1,870 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-csvbig"><title>Measurements in CSV files (being deprecated)</title><conbody>
+<section><title>Overview</title>
+<p>The earliest NCC versions did not yet support Prometheus, and instead, gathered metrics into CSV
+                                files that were stored on the central OAME nodes in each NCC. CSV
+                                measurements are still supported by NCC for those customers who
+                                started on an early NCC version. However, support for CSV
+                                measurements will be deprecated and no longer supported at some
+                                future point. All new measurements added into NCC are being added
+                                into Prometheus only, with the CSV files supporting only those
+                                measurements as they existed in the earlier NCC releases.</p>
+<p>By default, NCC is configured in standard Prometheus mode.</p>
+<p>The configure-metrics-mode tool, described in the Tools chapter of this guide, can be used to
+                                configure this NCC system to collect in CSV files. This tool can
+                                also be used on older NCC systems when they evolve to start using
+                                the standard Prometheus measurements collection to configure as
+                                Prometheus mode.</p>
+<note>For any metrics that are not supported or implemented to generate CSV metrics and only
+                                Prometheus implementation is available, only Prometheus metrics will
+                                be generated. In this case, there will not be any csv even though
+                                the mode selected is CSV.<p> </p></note>
+<sectiondiv id="MDS">
+<p><b>Metrics storage in CSV format</b></p>
+<p>Metrics are collected every 15 minutes (by default) onto the Active OAME, as pushed by the application nodes via a cron job. The cron job can be modified to change the frequency of the push. When an OAME switch-over occurs, the application nodes will get the newly active OAME IP address and send the metrics files there. From that point until the next switchover, only the newly active OAME will have the new metrics files.</p>
+<p>The metrics.csv file can be found in the following location on the OAME: </p>
+<p>
+<filepath> /appdata/sps/meas</filepath>
+</p>
+<p>The naming convention of the metrics.csv file on the OAME is as follows:</p>
+<p>
+<systemoutput>&lt;hostname&gt;_&lt;sitename&gt;_metrics.csv.&lt;time_stamp&gt;</systemoutput>
+</p>
+<p>Every 24 hours, a cron job will delete the files older than 60 minutes on the Active and Standby OAME.</p>
+<p>On the application nodes, the metrics.csv files can be found in: <systemoutput>/opt/tpa/logs</systemoutput>
+</p>
+<p>The naming convention of the file for a given collection interval is: <systemoutput>metric.csv.&lt;time_stamp&gt;</systemoutput>
+</p>
+<p>The timestamp format is <systemoutput>yyyy.MM.dd-HH:mm      (year.month.day-hour:min)</systemoutput>
+</p>
+<p>The following shows the format of how a metric is written to the csv file:</p>
+<fig>
+<codeblock>Start Time In MS=&lt;interval start time in milliseconds since epoch&gt;,
+Start Time Local=&lt;interval start time in local time&gt;,
+End Time In MS=&lt;interval end time in milliseconds since epoch&gt;,
+End Time Local=&lt;interval end time in local time&gt;,
+Site=sitename&gt;,
+Group=&lt;Diameter|HTTP|LDAP|System|Overload&gt;,
+attribute name=&lt;value&gt;,
+ [attribute name=&lt;value&gt;,]
+ {Count=count&gt;|Average Latency=&lt;average&gt;|Average Utilization=&lt;average&gt;
+ |Rate=&lt;rate&gt;}</codeblock>
+</fig>
+<p>The ‘Start Time In MS’ and ‘Start Time Local’ fields indicate the time that the current collection interval started, respectively in epoch time (ms) and human readable format local time. The ‘End Time In MS’ and ‘End Time Local’ fields indicate the time at which the metric was recorded (end of the current collection interval). The site name is included and the group is set to one of Diameter, HTTP, LDAP, System, or Overload. Then the attribute name equals the name-value pair (filter value), and types of Count, Average Latency, Average Utilization, or Rate must appear.</p>
+<p>The maximum number and size of metrics.csv files can be configured in /opt/tpa/logs/log4j.xml.</p>
+<p>Some newer metrics are available ONLY in Prometheus, as the standard measurements platform for newer metrics. They may be retrieved from Prometheus and/or the 3GPPXML files, even if the metrics mode is set to CSV. These metrics include:</p><ul>
+<li>
+<p>5G HTTP/2</p>
+</li>
+<li>
+<p>Rating</p>
+</li>
+<li>
+<p>Java Virtual Machine (JVM)</p>
+</li>
+</ul>
+</sectiondiv>
+<sectiondiv>
+<p><b>NCC measurements in CSV mode</b></p>
+<p>When NCC is configured in CSV mode, the CSV files include measurements very similar to those
+                                        described in section <!--xref URI: #spsmeas--><xref
+                                                keyref="id9YZ-09126-MT00-REZZA-SP2-spsmeas"/>,
+                                        including:</p><ul>
+<li>
+<p>Diameter (Base)</p>
+</li>
+<li>
+<p>Extended Diameter </p>
+</li>
+<li>
+<p>HTTP</p>
+</li>
+<li>
+<p>LDAP</p>
+</li>
+<li>
+<p>Site routing</p>
+</li>
+<li>
+<p>Rules</p>
+</li>
+<li>
+<p>Overload</p>
+</li>
+<li>
+<p>System/OS </p>
+</li>
+<li>
+<p>Extended Diameter (See <!--xref URI: #Extendmetrics--><xref
+        href="#id9yz-09126-mt00-rezza-sp2-csvbig/Extendmetrics" format="dita"/> in this section for
+       more information.)</p>
+</li>
+<li>
+<p>PCRF and PCF (See <!--xref URI: #pcrfpcf--><xref
+        href="#id9yz-09126-mt00-rezza-sp2-csvbig/pcrfpcf" format="dita"/> in this section for more
+       information.)</p>
+</li>
+<li>
+<p>Entity Count metrics (See <!--xref URI: #entCount2--><xref
+        href="#id9yz-09126-mt00-rezza-sp2-csvbig/entCount2" format="dita"/> in this section for more
+       information.)</p>
+</li>
+</ul>
+<p>Please refer to section <!--xref URI: #spsmeas--><xref href="spsmeas.dita"/> for a description of
+     the above measurements.</p>
+</sectiondiv>
+</section>
+<section id="Extendmetrics"><title>Extended Diameter metrics </title>
+<p>In addition to the Diameter Base metrics mentioned above, the following Extended Diameter Metrics
+                                are supported. These measurements are not yet ported into
+                                Prometheus, but will be in a near upcoming NCC version.</p>
+<p>The SM GUI application preference “Enable Extended Metrics” can be used to enable the collection
+                                and the querying of performance metrics for the extended Diameter
+                                metrics in Policy. The metrics for Extended Diameter metrics
+                                attributes, along with the Filter attributes collected for the
+                                Extended Diameter metrics, are collected as described in
+                                        <!--xref URI: #diameter_in_access_tech--><xref
+                                        keyref="id9YZ-09126-MT00-REZZA-SP2-csvbig/diameter_in_access_tech"
+                                />.</p>
+<table id="diameter_in_access_tech"><title>Extended Diameter metrics in CSV files</title>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry nameend="col2" namest="col1">
+<p>Metric</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+diameter_in_access_tech
+</entry>
+<entry>
+Number of incoming Diameter messages received on a given RAT (radio access technology).
+</entry>
+</row>
+<row>
+<entry nameend="col2" namest="col1">
+<b>Filter</b>
+</entry>
+</row>
+<row>
+<entry>
+RadioAccess
+</entry>
+<entry>
+<p>The radio access technology serving the UE is taken from the RAT-Type AVP. The supported RAT-Types are:</p>
+<p>	WLAN</p>
+<p> 	VIRTUAL</p>
+<p> 	UTRAN</p>
+<p> 	GERAN</p>
+<p> 	GAN</p>
+<p> 	HSPA_EVOLUTION</p>
+<p> 	EUTRAN</p>
+<p> 	CDMA2000_1X</p>
+<p> 	HRPD</p>
+<p> 	UMB</p>
+<p> 	EHRPD</p>
+</entry>
+</row>
+<row>
+<entry nameend="col2" namest="col1">
+<p>
+<b>Example</b>
+</p>
+<codeblock>Start Time In MS=1526384370675,Start Time Local=Tue May 15 17:09:30 IST 2018,End Time In MS=1526384697523,End Time Local=Tue May 15 17:14:57 IST 2018,Site=tpapps.realm,Host= sps45,Group=diameter_in_access_tech,Application=Gx,Command=CCR,Destination Host=diameter.default.origin.value,Destination Realm=diameter.default.origin.value,Ingress PeerOrigin Host=sps45.18001.clientRealm.18001,Ingress Peer Origin Realm=clientRealm.18001, Origin Host=sps45.18001.clientRealm.18001,Origin Realm=clientRealm.18001,RadioAccess= EUTRAN,Request Type=INITIAL_REQUEST (1),Result=DIAMETER_SUCCESS,Role=Server, Count=1</codeblock>
+</entry>
+</row>
+<row>
+<entry nameend="col2" namest="col1">
+<b>Metric</b>
+</entry>
+</row>
+<row>
+<entry>
+diam_in_charging_info_cca
+</entry>
+<entry>
+Total number of Charging Info CCA received.
+</entry>
+</row>
+<row>
+<entry>
+diam_in_charging_info_rar
+</entry>
+<entry>
+Total number of Charging RAR sent.
+</entry>
+</row>
+<row>
+<entry nameend="col2" namest="col1">
+<b>Filter</b>
+</entry>
+</row>
+<row>
+<entry>
+OCSRealm
+</entry>
+<entry>
+The address of the primary online charging system taken from the Primary-Event-Charging-Function-Name AVP present in Grouped AVP Charging-Information.
+</entry>
+</row>
+<row>
+<entry nameend="col2" namest="col1">
+<p>
+<b>Examples</b>
+</p>
+<codeblock>Start Time In MS=1526384370675,Start Time Local=Tue May 15 17:09:30 IST 2018,End Time In MS=1526384697523,End Time Local=Tue May 15 17:14:57 IST 2018,Site=tpapps.realm,Host=sps45,Group=diam_in_charging_info_cca,Application=Gx,Command=CCR,DestinationHost=diameter.default.origin.value,Destination Realm=diameter.default.origin.value,Ingress Peer Origin Host=sps45.18001.clientRealm.18001,Ingress Peer Origin Realm=clientRealm.18001,OCSRealm=aaa://primaryOcs.uri,Origin Host=sps45.18001.clientRealm.18001,OriginRealm=clientRealm.18001,Request Type=INITIAL_REQUEST (1),Result=DIAMETER_SUCCESS,Role=Server,Count=1</codeblock>
+<codeblock>Start Time In MS=1526384370675,Start Time Local=Tue May 15 17:09:30 IST 2018,End Time InMS=1526384697523,End Time Local=Tue May 15 17:14:57 IST 2018,Site=tpapps.realm,Host=sps45, Group=diam_in_charging_info_cca,Application=Gx,Command=RAR,DestinationHost=sps45.18001.clientRealm.18001,Destination Realm=clientRealm.18001,Egress PeerOrigin Host=sps45.18001.clientRealm.18001,Egress Peer Origin Realm=clientRealm.18001,OCSRealm=aaa://primaryOcs.uri,Origin Host=tpapps.realm.realm,Origin Realm=realm,Result=DIAMETER_SUCCESS,Role=Client,Count=1</codeblock>
+</entry>
+</row>
+<row>
+<entry nameend="col2" namest="col1">
+<b>Metric</b>
+</entry>
+</row>
+<row>
+<entry>
+diameter_out_apn
+</entry>
+<entry>
+Total number of outgoing Diameter messages with the given APN.
+</entry>
+</row>
+<row>
+<entry nameend="col2" namest="col1">
+<b>Filter</b>
+</entry>
+</row>
+<row>
+<entry>
+APN
+</entry>
+<entry>
+<p>Taken from the Called-Station-Id AVP it is the layer 2 address to which a user is connected.</p>
+<p>The available values are all of the layer 2 addresses for which metrics have been collected to this point in time.</p>
+</entry>
+</row>
+<row>
+<entry nameend="col2" namest="col1">
+<p>
+<b>Examples</b>
+</p>
+<codeblock>Start Time In MS=1526384370675,Start Time Local=Tue May 15 17:09:30 IST 2018,End Time InMS=1526384697523,End Time Local=Tue May 15 17:14:57 IST 2018,Site=tpapps.realm,Host=sps45,Group=diameter_out_apn,APN=auto_apn,Application=Gx,Command=RAR,DestinationHost=sps45.18001.clientRealm.18001,Destination Realm=clientRealm.18001,Egress PeerOrigin Host=sps45.18001.clientRealm.18001,Egress Peer Origin Realm=clientRealm.18001,Origin Host=tpapps.realm.realm,Origin Realm=realm,Result=DIAMETER_SUCCESS,Role=Client,Count=1</codeblock>
+<codeblock>Start Time In MS=1526384370675,Start Time Local=Tue May 15 17:09:30 IST 2018,End Time InMS=1526384697523,End Time Local=Tue May 15 17:14:57 IST 2018,Site=tpapps.realm,Host=sps45,Group=diameter_out_apn,APN=auto_apn,Application=Gx,Command=CCR,DestinationHost=diameter.default.origin.value,Destination Realm=diameter.default.origin.value,Ingress PeerOrigin Host=sps45.18001.clientRealm.18001,Ingress Peer Origin Realm=clientRealm.18001,Origin Host=sps45.18001.clientRealm.18001,Origin Realm=clientRealm.18001,RequestType=INITIAL_REQUEST (1),Result=DIAMETER_SUCCESS,Role=Server,Count=1</codeblock>
+</entry>
+</row>
+<row>
+<entry nameend="col2" namest="col1">
+<b>Metric</b>
+</entry>
+</row>
+<row>
+<entry>
+diam_out_baserule_count
+</entry>
+<entry>
+Total number of Charging Rule Base Names identified in current traffic.
+</entry>
+</row>
+<row>
+<entry nameend="col2" namest="col1">
+<b>Filter</b>
+</entry>
+</row>
+<row>
+<entry>
+ChargingRuleBaseName
+</entry>
+<entry>
+<p>The name of a pre-defined group of PCC rules , taken from the Charging-Rule-Base-Name AVP. </p>
+<p>If this AVP appears multiple times in a given request, it will be recorded with '|' delimiter.</p>
+<p>The available values are all of the pre-defined PCC rules for which metrics have been collected to this point in time.</p>
+</entry>
+</row>
+<row>
+<entry nameend="col2" namest="col1">
+<p>
+<b>Example</b>
+</p>
+<codeblock>Start Time In MS=1526384370675,Start Time Local=Tue May 15 17:09:30 IST 2018,End Time InMS=1526384697523,End Time Local=Tue May 15 17:14:57 IST 2018,Site=tpapps.realm,Host=sps45,Group=diam_out_baserule_count,Application=Gx,ChargingRuleBaseName=test|testCRBN1,Command=CCR,Destination Host=diameter.default.origin.value,DestinationRealm=diameter.default.origin.value,Ingress Peer Origin Host=sps45.18001.clientRealm.18001,Ingress Peer Origin Realm=clientRealm.18001,Origin Host=sps45.18001.clientRealm.18001,Origin Realm=clientRealm.18001,Request Type=INITIAL_REQUEST (1),Result=DIAMETER_SUCCESS,Role=Server,Count=1</codeblock>
+</entry>
+</row>
+<row>
+<entry nameend="col2" namest="col1">
+<b>Metric</b>
+</entry>
+</row>
+<row>
+<entry>
+diam_out_rule_count
+</entry>
+<entry>
+Total number of Charging Rule Names identified in current traffic.
+</entry>
+</row>
+<row>
+<entry nameend="col2" namest="col1">
+<b>Filter</b>
+</entry>
+</row>
+<row>
+<entry>
+ChargingRuleName
+</entry>
+<entry>
+<p>The name of PCC rules taken from the Charging-Rule-Name AVP. </p>
+<p>If this AVP appears multiple times in a given request, it will be recorded with '|' delimiter.</p>
+<p>The available values are all of the PCC rules for which metrics have been collected to this point in time.</p>
+</entry>
+</row>
+<row>
+<entry nameend="col2" namest="col1">
+<p>
+<b>Examples</b>
+</p>
+<codeblock>Start Time In MS=1526384370675,Start Time Local=Tue May 15 17:09:30 IST 2018,End Time InMS=1526384697523,End Time Local=Tue May 15 17:14:57 IST 2018,Site=tpapps.realm,Host=sps45,Group=diam_out_rule_count,Application=Gx,ChargingRuleName=MT:VIDEO MCN:1FN:1 Rule#:1,Command=RAR,Destination Host=sps45.18001.clientRealm.18001,DestinationRealm=clientRealm.18001,Egress Peer Origin Host=sps45.18001.clientRealm.18001,EgressPeer Origin Realm=clientRealm.18001,Origin Host=tpapps.realm.realm,Origin Realm=realm,Result=DIAMETER_SUCCESS,Role=Client,Count=1</codeblock>
+<codeblock>Start Time In MS=1526384370675,Start Time Local=Tue May 15 17:09:30 IST 2018,End Time InMS=1526384697523,End Time Local=Tue May 15 17:14:57 IST 2018,Site=tpapps.realm,Host=sps45,Group=diam_out_rule_count,Application=Gx,ChargingRuleName=testCRN1|testCRN,Command=CCR,Destination Host=diameter.default.origin.value,Destination Realm=diameter.default.origin.value,Ingress Peer Origin Host=sps45.18001.clientRealm.18001,Ingress PeerOrigin Realm=clientRealm.18001,Origin Host=sps45.18001.clientRealm.18001,OriginRealm=clientRealm.18001,Request Type=INITIAL_REQUEST 1),Result=DIAMETER_SUCCESS,Role=Server,Count=1</codeblock>
+</entry>
+</row>
+<row>
+<entry nameend="col2" namest="col1">
+<b>Metric</b>
+</entry>
+</row>
+<row>
+<entry>
+diam_out_specific_reason_cause 
+</entry>
+<entry>
+Total number of outgoing Diameter messages with the given specific reason or abort cause.
+</entry>
+</row>
+<row>
+<entry nameend="col2" namest="col1">
+<b>Filter</b>
+</entry>
+</row>
+<row>
+<entry>
+Reason
+</entry>
+<entry>
+<p>The reasons for the generation of an Rx RAR command, taken from the Specific-Action AVP if one exists, or alternatively taken from the Abort-Cause AVP. </p>
+<p>If neither exists, a dash (-) will be used. </p>
+<p>If both exist they are combined using slash (/).</p>
+<p>The supported Specific Actions are:</p>
+<p>SERVICE_INFORMATION_REQUEST</p>
+<p>CHARGING_CORRELATION_EXCHANGE</p>
+<p>INDICATION_OF_LOSS_OF_BEARER</p>
+<p>INDICATION_OF_RECOVERY_OF_BEARER</p>
+<p>INDICATION_OF_RELEASE_OF_BEARER</p>
+<p>INDICATION_OF_ESTABLISHMENT_OF_BEARER</p>
+<p>IP_CAN_CHANGE</p>
+<p>INDICATION_OF_OUT_OF_CREDIT</p>
+<p>INDICATION_OF_SUCCESSFUL_RESOURCES_ALLOCATION </p>
+</entry>
+</row>
+<row>
+<entry>
+<p>Reason</p>
+<p>(continued)</p>
+</entry>
+<entry>
+<p>INDICATION_OF_FAILED_RESOURCES_ALLOCATION </p>
+<p>INDICATION_OF_LIMITED_PCC_DEPLOYMENT</p>
+<p>USAGE_REPORT</p>
+<p>ACCESS_NETWORK_INFO_REPORT</p>
+<p>INDICATION_OF_ACCESS_NETWORK_INFO_REPORTING_FAILURE</p>
+<p>The supported Abort Causes are:</p>
+<p>BEARER_RELEASED</p>
+<p>INSUFFICIENT_SERVER_RESOURCES</p>
+<p>INSUFFICIENT_BEARER_RESOURCES</p>
+<p>PS_TO_CS_HANDOVER</p>
+<p>SPONSORED_DATA_CONNECTIVITY_DISALLOWED</p>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section id="pcrfpcf"><title>PCRF and PCF metrics</title>
+<p>Policy is responsible for the provisioning of PCC rules to PCEF/SMF, which contain a set of
+                                information elements that enable the detection of a service data
+                                flow and provides parameters for policy control and/or charging
+                                control. The PCC_Rule measurement counts the number of PCC Rules
+                                provisioned by Policy. These metrics are recorded on the NCC ME
+                                application nodes. </p>
+<p>Policy provides metrics on the count of installs and removals for CRNs and CRBNs, as well as for
+                                5G PCC rules that are available in 4G or 5G environments. The
+                                metrics are provided as either CSV files or Prometheus metrics,
+                                which is optional. </p>
+<p>Implicit PCC rule removals owing to session terminations are not included in these metrics.</p>
+<p>
+<!--xref URI: #diametepccrule-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-csvbig/diametepccrule"/> describes the diameter_pcc_rule metric available in CSV format.</p>
+<p>
+<!--xref URI: #http3gpppcc-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-csvbig/http3gpppcc"/> describes the http_3gpp_pcc_rule metric available in CSV format.</p>
+<table id="diametepccrule"><title>diameter_pcc_rule</title>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry nameend="col2" namest="col1">
+<p>
+<b>Metric</b>
+</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+diameter_pcc_rule 
+</entry>
+<entry>
+Total number of outgoing Diameter messages with the given specific reason or abort cause.
+</entry>
+</row>
+<row>
+<entry nameend="col2" namest="col1">
+<b>Filter</b>
+</entry>
+</row>
+<row>
+<entry>
+Site
+</entry>
+<entry>
+The site name.
+</entry>
+</row>
+<row>
+<entry>
+Host
+</entry>
+<entry>
+The host name
+</entry>
+</row>
+<row>
+<entry>
+Group
+</entry>
+<entry>
+The metric group name. 
+</entry>
+</row>
+<row>
+<entry>
+Name
+</entry>
+<entry>
+The name of the PCC Rule.
+</entry>
+</row>
+<row>
+<entry>
+Type
+</entry>
+<entry>
+<p>Possible values are:</p><ul>
+<li>
+<p>CRN</p>
+</li>
+<li>
+<p>CRBN</p>
+</li>
+</ul>
+<p>Where, CRN indicates PCC rules dynamically provisioned by the PCRF to PCEF, and CRBN indicates pre-defined group of PCC rules (preconfigured in the PCEF).</p>
+</entry>
+</row>
+<row>
+<entry>
+Action
+</entry>
+<entry>
+<p>Possible values are:</p><ul>
+<li>
+<p>INSTALLED</p>
+</li>
+<li>
+<p>REMOVED</p>
+</li>
+</ul>
+</entry>
+</row>
+<row>
+<entry>
+APN
+</entry>
+<entry>
+The layer 2 address (Access Point Name) to which a user is connected in a 4G environment.
+</entry>
+</row>
+<row>
+<entry>
+RadioAccess
+</entry>
+<entry>
+<p>Possible values of the radio access technology, serving the UE in a 4G environment, are:</p><ul>
+<li>
+<p>WLAN</p>
+</li>
+<li>
+<p>VIRTUAL</p>
+</li>
+<li>
+<p>UTRAN</p>
+</li>
+<li>
+<p>GERAN</p>
+</li>
+<li>
+<p>GAN</p>
+</li>
+<li>
+<p>HSPA_EVOLUTION</p>
+</li>
+<li>
+<p>EUTRAN</p>
+</li>
+<li>
+<p>CDMA2000_1X</p>
+</li>
+<li>
+<p>HRPD</p>
+</li>
+<li>
+<p>UMB</p>
+</li>
+<li>
+<p>EHRPD</p>
+</li>
+</ul>
+</entry>
+</row>
+<row>
+<entry>
+CustomLabel
+</entry>
+<entry>
+Open label where you can provide values in form of "Key Value Pair" basically acting as custom data.
+</entry>
+</row>
+<row>
+<entry nameend="col2" namest="col1">
+<p>
+<b>Examples</b>
+</p>
+<codeblock>Start Time In MS=1556097630951,Start Time Local=Wed Apr 24 14:50:30 IST 2019,End Time In MS=1556097891328,End Time Local=Wed Apr 24 14:54:51 IST 2019,Site=hostME,Host=sps45,Group=diameter_pcc_rule,APN=TestAPN,Action=INSTALLED,Name=CRBN1,RadioAccess=EUTRAN,Type=CRBN,Count=1</codeblock>
+<codeblock>Start Time In MS=1556097630951,Start Time Local=Wed Apr 24 14:50:30 IST 2019,End Time In MS=1556097891328,End Time Local=Wed Apr 24 14:54:51 IST 2019,Site=hostME,Host=sps45,Group=diameter_pcc_rule,APN=TestAPN,Action=INSTALLED,Name=CRN1,RadioAccess=EUTRAN,Type=CRN,Count=1</codeblock>
+<codeblock>Start Time In MS=1556097630951,Start Time Local=Wed Apr 24 14:50:30 IST 2019,End Time In MS=1556097891328,End Time Local=Wed Apr 24 14:54:51 IST 2019,Site=hostME,Host=sps45,Group=diameter_pcc_rule,APN=TestAPN,Action=REMOVED,Name=CRN1,RadioAccess=EUTRAN,Type=CRN,Count=1</codeblock>
+<codeblock>Start Time In MS=1556097630951,Start Time Local=Wed Apr 24 14:50:30 IST 2019,End Time In MS=1556097891328,End Time Local=Wed Apr 24 14:54:51 IST 2019,Site=hostME,Host=sps45,Group=diameter_pcc_rule,APN=TestAPN,Action=REMOVED,Name=CRBN1,RadioAccess=EUTRAN,Type=CRBN,Count=1</codeblock>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>
+<!--xref URI: #http3gpppcc-->
+<xref keyref="id9YZ-09126-MT00-REZZA-SP2-csvbig/http3gpppcc"/> describes the http_3gpp_pcc_rule metric available in CSV format.</p>
+<table id="http3gpppcc"><title>http_3gpp_pcc_rule in CSV</title>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry nameend="col2" namest="col1">
+<p>
+<b>Metric</b>
+</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+http_3gpp_pcc_rule
+</entry>
+<entry>
+Count of the number of PCC Rules provisioned by PCF to SMF in a 5G environment.
+</entry>
+</row>
+<row>
+<entry nameend="col2" namest="col1">
+<b>Filter</b>
+</entry>
+</row>
+<row>
+<entry>
+Site
+</entry>
+<entry>
+The site name.
+</entry>
+</row>
+<row>
+<entry>
+Host
+</entry>
+<entry>
+The host name
+</entry>
+</row>
+<row>
+<entry>
+Group
+</entry>
+<entry>
+The metric group name. 
+</entry>
+</row>
+<row>
+<entry>
+Name
+</entry>
+<entry>
+The name of the PCC Rule.
+</entry>
+</row>
+<row>
+<entry>
+Name
+</entry>
+<entry>
+The name of the PCC Rule.
+</entry>
+</row>
+<row>
+<entry>
+Type
+</entry>
+<entry>
+<p>Possible values are:</p><ul>
+<li>
+<p>CRN</p>
+</li>
+<li>
+<p>CRBN</p>
+</li>
+</ul>
+<p>Where, CRN indicates PCC rules dynamically provisioned by the PCF to the SMF, and CRBN indicates pre-defined group of PCC rules (preconfigured in the SMF)</p>
+</entry>
+</row>
+<row>
+<entry>
+Action
+</entry>
+<entry>
+<p>Possible values are:</p><ul>
+<li>
+<p>INSTALLED</p>
+</li>
+<li>
+<p>REMOVED</p>
+</li>
+</ul>
+</entry>
+</row>
+<row>
+<entry>
+DNN
+</entry>
+<entry>
+The layer 2 address (Data Network Name) to which a user is connected in a 5G environment.
+</entry>
+</row>
+<row>
+<entry>
+RadioAccess
+</entry>
+<entry>
+<p>Possible values of the radio access technology, serving the UE in a 4G environment, are:</p><ul>
+<li>
+<p>WLAN</p>
+</li>
+<li>
+<p>VIRTUAL</p>
+</li>
+<li>
+<p>UTRAN</p>
+</li>
+<li>
+<p>GERAN</p>
+</li>
+<li>
+<p>GAN</p>
+</li>
+<li>
+<p>HSPA_EVOLUTION</p>
+</li>
+<li>
+<p>EUTRAN</p>
+</li>
+<li>
+<p>CDMA2000_1X</p>
+</li>
+<li>
+<p>HRPD</p>
+</li>
+<li>
+<p>UMB</p>
+</li>
+<li>
+<p>EHRPD</p>
+</li>
+</ul>
+</entry>
+</row>
+<row>
+<entry>
+CustomLabel
+</entry>
+<entry>
+Open label where you can provide values in form of "Key Value Pair" basically acting as custom data.
+</entry>
+</row>
+<row>
+<entry nameend="col2" namest="col1">
+<p>
+<b>Examples</b>
+</p>
+<codeblock>Start Time In MS=1556097630951,Start Time Local=Wed Apr 24 14:50:30 IST 2019,End Time In MS=1556097891328,End Time Local=Wed Apr 24 14:54:51 IST 2019,Site=hostME,Host=sps45,Group=http_3gpp_pcc_rule,Action=INSTALLED,DNN=network1,Name=CRBN2,RadioAccess=EUTRAN,Type=CRBN,Count=1</codeblock>
+<codeblock>Start Time In MS=1556097630951,Start Time Local=Wed Apr 24 14:50:30 IST 2019,End Time In MS=1556097891328,End Time Local=Wed Apr 24 14:54:51 IST 2019,Site=hostME,Host=sps45,Group=http_3gpp_pcc_rule,Action=INSTALLED,DNN=network1,Name=CRN2,RadioAccess=EUTRAN,Type=CRN,Count=1</codeblock>
+<codeblock>Start Time In MS=1556097630951,Start Time Local=Wed Apr 24 14:50:30 IST 2019,End Time In MS=1556097891328,End Time Local=Wed Apr 24 14:54:51 IST 2019,Site=hostME,Host=sps45,Group=http_3gpp_pcc_rule,Action=REMOVED,DNN=network1,Name=CRBN2,RadioAccess=EUTRAN,Type=CRBN,Count=1</codeblock>
+<codeblock>Start Time In MS=1556097630951,Start Time Local=Wed Apr 24 14:50:30 IST 2019,End Time In MS=1556097891328,End Time Local=Wed Apr 24 14:54:51 IST 2019,Site=hostME,Host=sps45,Group=http_3gpp_pcc_rule,Action=REMOVED,DNN=network1,Name=CRN2,RadioAccess=EUTRAN,Type=CRN,Count=1</codeblock>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section id="entCount2"><title>Entity count metrics</title>
+<p>This metric provides the current count of entities in NCC database. This metrics collects data by
+                                fetching the secondary index counts from database nodes at regular
+                                intervals. For example, when a device is created, the device count
+                                increments by 1, and will remain the same until some device is
+                                created or deleted. Once it is deleted, the device count is
+                                decremented by 1, and will remain the same until some device is
+                                created or deleted.</p>
+<note>The Entity count metrics found in this section contain the metrics and descriptions for
+                                metrics reported using CSV. <p/></note>
+<p>This metric always gives the current count of the entities in the database, not per interval. The regular interval for Entity count metrics is configurable using the following application preference:</p>
+<p>
+<varname>Entity Metrics Monitoring Interval (secs)</varname>
+</p>
+<p>See the <i>Global configuration Guide</i> for more information about configuring the “Entity Metrics Monitoring Interval (secs)” application preference.</p>
+<p> Currently, only counts for Devices and Policy Sessions are supported.</p>
+<p>After an upgrade, the initial metrics will not be accurate for a length of time because the secondary indexes will not have valid data. The secondary indexes are updated when the session is updated via some kind of event (SPR update, diameter etc.) that results in that index being adjusted.</p>
+<table><title>Entity_count metrics</title>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+<p>Metrics</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+entity_count
+</entry>
+<entry>
+Total count of entities in db.
+</entry>
+</row>
+<row>
+<entry nameend="col2" namest="col1">
+<b>Labels</b>
+</entry>
+</row>
+<row>
+<entry>
+Type
+</entry>
+<entry>
+<p>Possible values are:</p><ul>
+<li>
+<p>Session</p>
+</li>
+<li>
+<p>Subscriber</p>
+</li>
+</ul>
+</entry>
+</row>
+<row>
+<entry>
+SubType
+</entry>
+<entry>
+<p>Possible values are:</p><ul>
+<li>
+<p>Session</p><ul>
+<li>
+<p>IPCanSession</p>
+</li>
+<li>
+<p>PDUSession</p>
+</li>
+<li>
+<p>AfSession</p>
+</li>
+<li>
+<p>SySession</p>
+</li>
+<li>
+<p>NchfSession</p>
+</li>
+<li>
+<p>SdSession</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Subscriber</p><ul>
+<li>
+<p>Device</p>
+</li>
+</ul>
+</li>
+</ul>
+</entry>
+</row>
+<row>
+<entry nameend="col2" namest="col1">
+<p>
+<b>Examples</b>
+</p>
+<p>The following are examples in XML format:</p>
+<codeblock>Start Time In MS=1563355020000,Start Time Local=Wed Jul 17 14:47:00 IST 2019,End Time In MS=1563355080000,End Time Local=Wed Jul 17 14:48:00 IST 2019,Site=Gurgaon,Host=sps79,Group=Entity_Count,SubType=AfSession,Type=Session,TotalCount=2
+
+Start Time In MS=1563355020000,Start Time Local=Wed Jul 17 14:47:00 IST 2019,End Time In MS=1563355080000,End Time Local=Wed Jul 17 14:48:00 IST 2019,Site=Gurgaon,Host=sps79,Group=Entity_Count,SubType=Device,Type=Subscriber,TotalCount=7
+
+Start Time In MS=1563355020000,Start Time Local=Wed Jul 17 14:47:00 IST 2019,End Time In MS=1563355080000,End Time Local=Wed Jul 17 14:48:00 IST 2019,Site=Gurgaon,Host=sps79,Group=Entity_Count,SubType=SySession,Type=Session,TotalCount=0
+
+Start Time In MS=1563355020000,Start Time Local=Wed Jul 17 14:47:00 IST 2019,End Time In MS=1563355080000,End Time Local=Wed Jul 17 14:48:00 IST 2019,Site=Gurgaon,Host=sps79,Group=Entity_Count,SubType=PDUSession,Type=Session,TotalCount=2
+
+Start Time In MS=1563355020000,Start Time Local=Wed Jul 17 14:47:00 IST 2019,End Time In MS=1563355080000,End Time Local=Wed Jul 17 14:48:00 IST 2019,Site=Gurgaon,Host=sps79,Group=Entity_Count,SubType=SdSession,Type=Session,TotalCount=1
+
+Start Time In MS=1563355020000,Start Time Local=Wed Jul 17 14:47:00 IST 2019,End Time In MS=1563355080000,End Time Local=Wed Jul 17 14:48:00 IST 2019,Site=Gurgaon,Host=sps79,Group=Entity_Count,SubType=IPCanSession,Type=Session,TotalCount=3</codeblock>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+</conbody></concept>

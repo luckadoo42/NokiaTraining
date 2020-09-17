@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//NSN//DTD DITA Concept//EN" "nsnconcept.dtd">
+		<concept id="id9YZ-09018--PL00-FPZZA-d1e14792"><title>Case 8: Roaming day pass with rated consumption</title><conbody>
+
+<section><title>Overview</title>
+
+<p>Bob has an iPhone with Prepaid pass for roaming data consumption from main balance. The roaming pass is configured to expire within 24 hours from purchase. The rate for roaming data consumption differs as per the location.</p>
+</section>
+<section><title>Flow of events</title>
+
+<p/><ul>
+
+<li>A subscription lifecycle is created such that the roaming pass expires at the end of the day. </li>
+<li>The rates for roaming data consumption are defined as per the location of the call. </li>
+<li>Bob starts usage with:<ul>
+                        <li>
+                            <emphasis>MCCMNC</emphasis> = <varname>CANADA</varname>
+                        </li>
+                        <li>
+                            <emphasis>MCCMNC</emphasis> = <varname>EUROPE</varname>
+                        </li>
+                        <li>
+                            <emphasis>MCCMNC</emphasis> = <varname>ROW</varname>
+                        </li>
+                    </ul>
+                </li>
+<li>
+Verify that the data call is successful and charging is done correctly from the account balance as per the rate defined for the zone.
+</li>
+</ul>
+</section>
+<section><title>Provisioning</title>
+
+<note type="attention">
+
+<p>Ensure that after creating a record, you distribute it to ME. Otherwise, the provisioning will not be successful.</p>
+</note>
+<p>Following entities are required for this use case.<table pgwide="1" colsep="1" rowsep="1">
+                    <title>Entities for case 8</title>
+                    <tgroup cols="2">
+                        <colspec colname="col1"/>
+                        <colspec colname="col2"/>
+                        <thead>
+                            <row>
+                                <entry> Entity </entry>
+                                <entry> Task </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry> Rates </entry>
+                                <entry> Create different rates for zones. </entry>
+                            </row>
+                            <row>
+                                <entry> Charging Service </entry>
+                                <entry> Create a charging service and define tariff formula to apply
+                                    different rates based on the zone in which the call is
+                                    originated. </entry>
+                            </row>
+                            <row>
+                                <entry> Lifecycles </entry>
+                                <entry> Create a subscription, account, and device lifecycles.
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> Bundle </entry>
+                                <entry> Create a bundle and associate it with the subscription
+                                    lifecycle. </entry>
+                            </row>
+                            <row>
+                                <entry> Rules and Variables </entry>
+                                <entry> Create a roaming status rule variable to identify the
+                                    location using <varname>APPLICABILITY</varname> trigger and also
+                                    rule variable for <varname>TARIFF</varname>. </entry>
+                            </row>
+                            <row>
+                                <entry> Mapping tables </entry>
+                                <entry> Create a complex map. </entry>
+                            </row>
+                            <row>
+                                <entry> Account </entry>
+                                <entry> Create an account and associate with an account lifecycle.
+                                </entry>
+                            </row>
+                            <row>
+                                <entry> Device </entry>
+                                <entry> Create a device and associate with a bundle and device
+                                    lifecycle. </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table></p>
+<p>Provision the following data:</p><ol>
+
+<li>Provision the three rates: <p>Rate1:</p>
+                    <!--MMO resource relative URI: ../graphics/Case8_rate1_default.png-->
+                    <image href="../images/case8_rate1_default.png"/>
+                    <p>
+                        <emphasis>RoamingPass_Rate2</emphasis> = <varname>4 United States
+                            dollars</varname> for 200 MB with granularity = 10 MB</p>
+                    <!--MMO resource relative URI: ../graphics/Case8_rate2_default.png-->
+                    <image href="../images/case8_rate2_default.png"/>
+                    <p>
+                        <emphasis>RoamingPass_Rate3</emphasis> = <varname>5 United States
+                            dollars</varname> for 100 MB with granularity = 20 MB</p>
+                    <!--MMO resource relative URI: ../graphics/Case8_rate3_default.png-->
+                    <image href="../images/case8_rate3_default.png"/>
+                </li>
+<li>Create a <varname>ZoningandRoamingMapping</varname> complex map to define the mapping between
+                    MCCMNC and zone. <!--MMO resource relative URI: ../graphics/Case8_mappingtable_default.png-->
+                    <image href="../images/case8_mappingtable_default.png"/>
+                </li>
+<li>Configure the rule variable in Rule System Version (RSV), such as create a
+                        <emphasis>RoamingStatus</emphasis> rule variable to identify the location
+                    for <emphasis>Trigger</emphasis> is equal to <varname>TARIFF</varname>. <!--MMO resource relative URI: ../graphics/Case8_RSV_default.png-->
+                    <image href="../images/case8_rsv_default.png" placement="break" align="left" scale="60"/>
+                </li>
+<li>Create a <emphasis>Zone</emphasis> rule variable to use the
+                        <varname>ZoningandRoamingMapping</varname> complex map for
+                        <emphasis>Trigger</emphasis> equal to <varname>TARIFF</varname>. <!--MMO resource relative URI: ../graphics/Case8_RSV2_default.png-->
+                    <image href="../images/case8_rsv2_default.png"/>
+                </li>
+<li>Create a charging service with the following configuration: <table pgwide="1" rowsep="1"
+                        colsep="1">
+                        <tgroup cols="2">
+                            <colspec colname="col1"/>
+                            <colspec colname="col2"/>
+                            <thead>
+                                <row>
+                                    <entry> Parameter </entry>
+                                    <entry> Value </entry>
+                                </row>
+                            </thead>
+                            <tbody>
+                                <row>
+                                    <entry> Name </entry>
+                                    <entry> RoamingPassV1_CS </entry>
+                                </row>
+                                <row>
+                                    <entry> Priority </entry>
+                                    <entry> 357 </entry>
+                                </row>
+                                <row>
+                                    <entry> Category </entry>
+                                    <entry> DefaultCategory </entry>
+                                </row>
+                                <row>
+                                    <entry> Applicability condition </entry>
+                                    <entry/>
+                                </row>
+                                <row>
+                                    <entry namest="col1" nameend="col2">
+                                        <!--MMO resource relative URI: ../graphics/Case6_CS1_default.png-->
+                                        <image href="../images/case6_cs1_default.png"/>
+                                    </entry>
+                                </row>
+                            </tbody>
+                        </tgroup>
+                    </table>
+                    <p>Tariff formula:</p>
+                    <!--MMO resource relative URI: ../graphics/Case8_CS_default.png-->
+                    <image href="../images/case8_cs_default.png"/>
+                </li>
+<li>Create a data bundle with the subscription lifecycle fee of 5 United States dollars and
+                    associate it with the charging service. <!--MMO resource relative URI: ../graphics/Case8_bundle_default.png-->
+                    <image href="../images/case8_bundle_default.png"/>
+                </li>
+<li>
+<p>Create the following subscription lifecycles: <draft-comment>, such that the roaming pass expires within 24 hours from purchase.</draft-comment>
+</p>
+<p>Day pass subscription lifecycle:</p>
+<!--MMO resource relative URI: ../graphics/Case6_LC1_default.png-->
+<image href="../images/case6_lc1_default.png"/>
+<p>Day pass subscription renewal lifecycle such that the roaming pass expires within 24 hours from purchase:</p>
+<!--MMO resource relative URI: ../graphics/Case6_LC2_default.png-->
+<image href="../images/case6_lc2_default.png"/>
+</li>
+<li>Create a subscription for the data bundle and iPhone must have access to this subscription. </li>
+<li>The account balance must be sufficient to complete the call. </li>
+</ol>
+</section>
+</conbody></concept>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="SPS_CDR_Streams_Stream_Overview_pausing_all_kafka_collection">
+<title>Pausing all input collection</title>
+<body>
+                
+    <p>NCC CDR streams accept incoming messages from two channels: Kafka input stream accepts them
+            from Apache Kafka Broker, and in the Reprocessor stream, CG Rejection Collector Node
+            fetches rejected records from the remote server. To protect the system from becoming
+            overloaded, the following three system properties can be monitored by setting thresholds
+            for them:</p>
+        <ul id="ul_psk_3j5_cmb">
+            <li><b>Database usage:</b> This is the size of the used database storage as percentage
+                of the maximum database size limit. The thresholds for database usage are defined in
+                the node parameters of CG Kafka Node and CG Rejection Collector Node.</li>
+            <li><b>Business logic stream queue size:</b> This is the size of the processing batch
+                queue between Kafka input stream and Business logic stream. The thresholds for
+                Business logic stream queue size are defined in the node parameters of CG Kafka Node
+                and CG Rejection Collector Node.</li>
+            <li><b>Output stream queue size:</b> This is the size of the processing batch queue
+                between Business logic stream and Output stream. The thresholds for Output stream
+                queue size are defined in the node parameters of CG Mapper Node.</li>
+        </ul>
+                <p>There are three threshold levels that can be defined for each system property –
+                    high, low and clear. If a system property exceeds its low threshold value, an
+                    alert is sent to indicate that the given property is overloaded. After that, if
+                    the value falls below the clear threshold, an information message is sent out to
+                    indicate that the given property value is back to normal again.</p>
+                <p>If any of the three properties exceeds its high threshold, CG Kafka node pauses
+            the polling for new messages from the Kafka egress topic and the Reprocessor stream
+            stops collecting files from the remote server. An alert is sent to indicate that full
+            rejection is in effect. After that, if all three properties fall below their low
+            thresholds, full rejection is stopped, CG Kafka node resumes polling for new messages,
+            Reprocessor stream resumes file collection, and an information message is sent out.</p>
+                <p>The following table describes the threshold levels that can be set to monitor
+            database usage, Business logic stream queue size and Output stream queue size.</p>
+        <table frame="all" rowsep="1" colsep="1" id="table_xdm_nj5_cmb">
+            <title>Overload protection threshold levels</title>
+            <tgroup cols="3">
+                <colspec colname="c1" colnum="1" colwidth="1*"/>
+                <colspec colname="c2" colnum="2" colwidth="2.71*"/>
+                <colspec colname="c3" colnum="3" colwidth="3.17*"/>
+                <thead>
+                    <row>
+                        <entry>Threshold level</entry>
+                        <entry>Action when defined properties reach threshold</entry>
+                        <entry>Action when defined properties are back to below threshold</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>Clear</entry>
+                        <entry>-</entry>
+                        <entry>Clears the alert for an individual property if sent.</entry>
+                    </row>
+                    <row>
+                        <entry>Low</entry>
+                        <entry>Raises the alert for an individual property.</entry>
+                        <entry>
+                            <p>Kafka inoput streams resume polling messages from the Apache Kafka
+                                topic, Reprocessor stream resumes file collection.</p>
+                            <p>Clears the alert for full rejection when all monitored properties are
+                                under their low thresholds.</p>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>High</entry>
+                        <entry>
+                            <p>Pauses from polling messages from the Apache Kafka topic.</p>
+                            <p>Raises an alert (full rejection) if at least one property to monitor
+                                is above its high threshold.</p>
+                        </entry>
+                        <entry>-</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+            </body>
+</topic>

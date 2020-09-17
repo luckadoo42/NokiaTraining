@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//NSN//DTD DITA Concept//EN" "nsnconcept.dtd">
+		<concept id="id9YZ-09018--PL00-FPZZA-d1e19573"><title>Case 15: Categorization of IoT devices depending on the data usage</title><conbody>
+
+<section><title>Overview</title>
+
+<p>Bob has multiple Internet of Things (IoT) devices, such as car tracker, security system, and health monitor. Each IoT device is subscribed to a data bundle but none of the devices is sharing the data plan. The IoT devices that connect once in a day has low data usage, for example 10 MB per month. Whereas, devices that connect frequently has high data usage, for example 200 MB per month.</p>
+<p>Each IoT device has a defined maximum data usage per month. If the data consumption of a device exceeds the maximum data usage, then the device continues to access data but the data access is throttled to a lower speed. Bob receives a notification that the data consumption of his device has exceeded the maximum data usage, hence the data access is throttled to a lower speed.</p>
+</section>
+<section><title>Flow of events</title>
+
+<p/><ul>
+
+<li>
+Bob, Rudy, and Alice have multiple Internet of Things (IoT) devices, such as car tracker, security system, and health monitor.
+</li>
+<li>
+Each IoT device is subscribed to a data bundle but none of the devices is sharing the data plan. The IoT devices are categorized depending on the data usage and has a defined maximum data usage per month. 
+</li>
+<li>
+The usage has been allocated to the devices based on the type of device.
+</li>
+<li>
+Make a session call from the car tracker device such that after the data consumption exceeds 500 MB (maximum data usage), a notification is sent to Bob and the quality of service is throttled. The remaining charging is done from the main balance of <varname>Bobcar_Account</varname>.
+</li>
+<li>
+Make a session call from the security system device such that after the data consumption exceeds 500 MB (maximum data usage), a notification is sent to Rudy and the quality of service is throttled. The remaining charging is done from the main balance of <varname>Rudysecurity_Account</varname>.
+</li>
+<li>
+Make a session call from the health monitor device such that after the data consumption exceeds 500 MB (maximum data usage), a notification is sent to Alice and the quality of service is throttled. The remaining charging is done from the main balance of <varname>Alicehealth_Account</varname>.
+</li>
+</ul>
+</section>
+<section><title>Provisioning</title>
+
+<note type="attention">
+
+<p>Ensure that after creating a record, you distribute it to ME. Otherwise, the provisioning will not be successful.</p>
+</note>
+<p>Following entities are required for this use case.<table pgwide="1" colsep="1" rowsep="1">
+     <title>Entities for case 15</title>
+     <tgroup cols="2">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <thead>
+       <row>
+        <entry> Entity </entry>
+        <entry> Task </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> Notification template </entry>
+        <entry> Create a notification template with the notification text to be sent to Bob on
+         exceeding the defined data consumption. </entry>
+       </row>
+       <row>
+        <entry> Notification server </entry>
+        <entry> Configure a notification server to send an email notification. </entry>
+       </row>
+       <row>
+        <entry> Notification preferences </entry>
+        <entry> Select the notification channel as email. </entry>
+       </row>
+       <row>
+        <entry> Thresholds </entry>
+        <entry> Create a threshold profile group and configure the action to send notification when
+         the consumption exceeds 500 MB. </entry>
+       </row>
+       <row>
+        <entry> Charging service </entry>
+        <entry> Create a charging service with a data bucket, counter, and tariff. </entry>
+       </row>
+       <row>
+        <entry> Bundle </entry>
+        <entry> Create a data bundle and associate the charging service and IOT lifecycles. </entry>
+       </row>
+       <row>
+        <entry> Rate </entry>
+        <entry> Create a rate to be used in charging service. </entry>
+       </row>
+       <row>
+        <entry> Slicing profile </entry>
+        <entry> Update the default_profile and define the rules. </entry>
+       </row>
+       <row>
+        <entry> Lifecycles </entry>
+        <entry> Create a device, account, and IOT lifecycles. </entry>
+       </row>
+       <row>
+        <entry> Custom data </entry>
+        <entry> Create a custom data for devices. </entry>
+       </row>
+       <row>
+        <entry> Mapping tables </entry>
+        <entry> Create a complex map for the devices. </entry>
+       </row>
+       <row>
+        <entry> Rules and Variables </entry>
+        <entry> Create rule system version for charging and policy rules. </entry>
+       </row>
+       <row>
+        <entry> Device </entry>
+        <entry> Create multiple devices for- cartracker, healthmonitor, securitysystem and link them
+         to DeviceLifeCycle. </entry>
+       </row>
+       <row>
+        <entry> Account </entry>
+        <entry> Create the multiple accounts - Bob_Account, Rudy_Account, Alice_Account and link
+         them to IOTAccountCycle. </entry>
+       </row>
+       <row>
+        <entry> User </entry>
+        <entry> Create the users - Bob, Rudy, Alice. </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table></p>
+<p>Provision the following data:</p><ol>
+
+<li>
+<p>Configure a notification template, notification profile, and the email server on the Notification Server.</p>
+<!--MMO resource relative URI: ../graphics/Case15_NT_default.png-->
+<image href="../images/case15_nt_default.png"/>
+<p>Create the email server as shown in the following figure:</p>
+<!--MMO resource relative URI: ../graphics/EMail_server_default.png-->
+<image href="../images/email_server_default.png"/>
+<p>Create the notification preference as shown in the following figure:</p>
+<!--MMO resource relative URI: ../graphics/Notification_preference_default.png-->
+<image href="../images/notification_preference_default.png"/>
+<p>Set the notification type and frequency as follows:</p>
+<!--MMO resource relative URI: ../graphics/Notification_preference2_default.png-->
+<image href="../images/notification_preference2_default.png"/>
+</li>
+<li>
+Create the account lifecycle with <uicontrol>Active</uicontrol>, <uicontrol>Disconnected</uicontrol>, <uicontrol>Dormant</uicontrol>, <uicontrol>ActiveWarned</uicontrol>, and <uicontrol>Expired</uicontrol> states.
+</li>
+<li>
+<p>Create the subscription lifecycles - IOTSubscriptionRenewCycle, IOTSubscriptionStatusLifeCycle.</p>
+<p>Following are the steps to create IOTSubscriptionRenewCycle.</p>
+<!--MMO resource relative URI: ../graphics/Case15_LC1_default.png-->
+<image href="../images/case15_lc1_default.png"/>
+<p>Following are the steps to create IOTSubscriptionStatusLifeCycle.</p>
+<!--MMO resource relative URI: ../graphics/Case15_LC6_default.png-->
+<image href="../images/case15_lc6_default.png"/>
+</li>
+<li>
+Create a threshold profile group following the given steps:<ol>
+
+<li>
+Log into the SM GUI, navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select <uicontrol>Common</uicontrol> tab. Browse to <uicontrol>Thresholds</uicontrol> from the drop-down list.
+</li>
+<li>
+<p>Click 
+<!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+<image href="../images/sdd_button_default.png"/>
+ to create a threshold profile group as shown in the following figure:</p>
+<!--MMO resource relative URI: ../graphics/Case15_Threshold1_default.png-->
+<image href="../images/case15_threshold1_default.png"/>
+<p>Click <uicontrol>CONTINUE</uicontrol>.</p>
+</li>
+<li>
+Associate an absolute start threshold as shown in the following figure:
+<!--MMO resource relative URI: ../graphics/Case15_threshold_default.png-->
+<image href="../images/case15_threshold_default.png"/>
+</li>
+</ol>
+</li>
+<li>
+Create a rate. To do this, navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select <uicontrol>Charging</uicontrol> tab. Browse to <uicontrol>Rates</uicontrol> from the drop-down list. Click 
+<!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+<image href="../images/sdd_button_default.png"/>
+ to create a rate.
+<!--MMO resource relative URI: ../graphics/Case15_rate_default.png-->
+<image href="../images/case15_rate_default.png"/>
+</li>
+<li>
+<p>Create a charging service. To do this, navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select <uicontrol>Charging</uicontrol> tab. Browse to <uicontrol>Charging Services</uicontrol> from the drop-down list. Click 
+<!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+<image href="../images/sdd_button_default.png"/>
+ to create a charging service.</p>
+<!--MMO resource relative URI: ../graphics/Case15_CS_default.png-->
+<image href="../images/case15_cs_default.png"/>
+<p>Define the tariff formula as shown in the following figure:</p>
+<!--MMO resource relative URI: ../graphics/Case15_tariff_default.png-->
+<image href="../images/case15_tariff_default.png"/>
+</li>
+<li>
+Create <varname>M2M_Package</varname> data bundle for the charging service. To do this, navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select <uicontrol>Charging</uicontrol> tab. Browse to <uicontrol>Bundles</uicontrol> from the drop-down list. Click 
+<!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+<image href="../images/sdd_button_default.png"/>
+ to create a bundle.
+<!--MMO resource relative URI: ../graphics/Case15_bundle_default.png-->
+<image href="../images/case15_bundle_default.png"/>
+</li>
+<li>
+Create a custom data following the given steps:<ol>
+
+<li>
+Navigate to <uicontrol>Subscriber Manager</uicontrol> and select <uicontrol>Custom Data</uicontrol> tab.
+</li>
+<li>
+Click 
+<!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+<image href="../images/sdd_button_default.png"/>
+ to create the <varname>DeviceType</varname> custom data as shown in the following figure:
+<!--MMO resource relative URI: ../graphics/Custom_data_in_IoT_use_case_default.png-->
+<image href="../images/custom_data_in_IoT_use_case_default.png"/>
+</li>
+</ol>
+</li>
+<li>
+<p>Create the complex map for the devices. To do this, navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select the <uicontrol>Common</uicontrol> tab. Browse and select the <uicontrol>Mapping Tables</uicontrol> from the drop-down list. Click 
+<!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+<image href="../images/sdd_button_default.png"/>
+ to create the complex map as shown in the following figure:</p>
+<!--MMO resource relative URI: ../graphics/Case15_Complexmap_default.png-->
+<image href="../images/case15_complexmap_default.png" placement="break" scale="70"/>
+<p>These values are used in the policy RSV.</p>
+</li>
+<li>Create a Rule System Version (RSV) for charging with <emphasis>Rule Variable</emphasis> set as
+      <varname>Device_Terminal_Type</varname>. In this rule variable, different rules are mentioned
+     to allocate the slicing based on the Device MAC address. To do this, navigate to
+      <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select the
+      <uicontrol>Charging</uicontrol> tab. Browse and select the <uicontrol>Rules and
+      Variables</uicontrol> from the drop-down list. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png"/> to create the rule variable. <!--MMO resource relative URI: ../graphics/Case15_ChargingRSV_default.png-->
+     <image href="../images/case15_chargingrsv_default.png"/>
+     <!--MMO resource relative URI: ../graphics/Case15_RSVchargingnew_default.png-->
+     <image href="../images/case15_rsvchargingnew_default.png"/>
+    </li>
+<li>Configure the <varname>default_profile</varname> slicing profile. To do this, navigate to
+      <uicontrol>Policy &amp; Charging Configuration</uicontrol> and select the
+      <uicontrol>Charging</uicontrol> tab. <!--MMO resource relative URI: ../graphics/Case15_SP_default.png-->
+     <image href="../images/case15_sp_default.png"/>
+     <!--MMO resource relative URI: ../graphics/Case15_SP1_default.png-->
+     <image href="../images/case15_sp1_default.png"/>
+    </li>
+<li>Define the following policy rules. To do this, navigate to <uicontrol>Policy &amp; Charging
+      Configuration</uicontrol> and select the <uicontrol>Policy</uicontrol> tab. Browse to select
+      <uicontrol>Rules and Variables</uicontrol>. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png" id="image_vnt_w15_3lb"/> to create the rule with
+     Trigger <varname>QOS_MANAGEMENT</varname>. <!--MMO resource relative URI: ../graphics/Case15_PolicyRSV_default.png-->
+     <image href="../images/case15_policyrsv_default.png"/>
+     <p/><ul>
+      <li> If <emphasis>DeviceType</emphasis> is equal to <varname>BASIC</varname> and
+        <emphasis>Signalling State</emphasis> is equal to <varname>High</varname>, then
+        <emphasis>UL</emphasis> is set as <varname>512</varname> and <emphasis>DL</emphasis> is set
+       as <varname>512</varname>. </li>
+      <li> If <emphasis>DeviceType</emphasis> is equal to <varname>STANDARD</varname> and
+        <emphasis>Signalling State</emphasis> is equal to <varname>High</varname>, then
+        <emphasis>UL</emphasis> is set as <varname>1024</varname> and <emphasis>DL</emphasis> is set
+       as <varname>1024</varname>. </li>
+      <li> If <i>DeviceType</i> is equal to <varname>PREMIUM</varname> and <i>Signalling State</i>
+       is equal to <varname>High</varname>, then <i>UL</i> is set as <varname>2048</varname> and
+        <i>DL</i> is set as <varname>2048</varname>. </li>
+      <li> If <i>DeviceType</i> is equal to <varname>BASIC</varname> and <i>Signalling State</i> is
+       equal to <varname>Low</varname>, then <i>UL</i> is set as <varname>256</varname> and
+        <i>DL</i> is set as <varname>256</varname>. </li>
+      <li> If <i>DeviceType</i> is equal to <varname>STANDARD</varname> and <i>Signalling State</i>
+       is equal to <varname>Low</varname>, then <emphasis>UL</emphasis> is set as
+        <varname>512</varname> and <i>DL</i> is set as <varname>512</varname>. </li>
+      <li> If <i>DeviceType</i> is equal to <varname>PREMIUM</varname> and <i>Signalling State</i>
+       is equal to <varname>Low</varname>, then <emphasis>UL</emphasis> is set as
+        <varname>1024</varname> and <emphasis>DL</emphasis> is set as <varname>1024</varname>. </li>
+     </ul>
+     <!--MMO resource relative URI: ../graphics/Case15_Policy1_default.png-->
+     <image href="../images/case15_policy1_default.png"/>
+     <!--MMO resource relative URI: ../graphics/Case15_Policy2_default.png-->
+     <image href="../images/case15_policy2_default.png"/>
+     <!--MMO resource relative URI: ../graphics/Case15_Policy3_default.png-->
+     <image href="../images/case15_policy3_default.png"/>
+     <p>Note that the value of @Device_Type_Terminal is taken from the complex map.</p>
+    </li>
+<li>Create the accounts. To do this, navigate to <uicontrol>Subscriber Manager</uicontrol> and
+     select <uicontrol>Accounts</uicontrol> tab. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png" id="image_fmf_x15_3lb"/> to create an account. <p>
+      <uicontrol>Bob_Account:</uicontrol>
+     </p>
+     <!--MMO resource relative URI: ../graphics/Case15_Account1_default.png-->
+     <image href="../images/case15_account1_default.png"/>
+     <!--MMO resource relative URI: ../graphics/Case15_AccountBob_default.png-->
+     <image href="../images/case15_accountbob_default.png"/>
+     <p>
+      <uicontrol>Rudy_Account:</uicontrol>
+     </p>
+     <!--MMO resource relative URI: ../graphics/Case15_Account2_default.png-->
+     <image href="../images/case15_account2_default.png"/>
+     <!--MMO resource relative URI: ../graphics/Case15_Account2_2_default.png-->
+     <image href="../images/case15_account2_2_default.png"/>
+     <p>
+      <uicontrol>Alice_Account:</uicontrol>
+     </p>
+     <!--MMO resource relative URI: ../graphics/Case15_Account3_default.png-->
+     <image href="../images/case15_account3_default.png"/>
+     <!--MMO resource relative URI: ../graphics/Case15_Account3_2_default.png-->
+     <image href="../images/case15_account3_2_default.png"/>
+    </li>
+<li>Create the users. To do this, navigate to <uicontrol>Subscriber Manager</uicontrol> and select
+      <uicontrol>Users</uicontrol> tab. Click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png" id="image_czn_y15_3lb"/> to create a user. <p>
+      <uicontrol>Bob:</uicontrol>
+     </p>
+     <!--MMO resource relative URI: ../graphics/Case15_User1_default.png-->
+     <image href="../images/case15_user1_default.png"/>
+     <!--MMO resource relative URI: ../graphics/Case15_User1_2_default.png-->
+     <image href="../images/case15_user1_2_default.png"/>
+     <p>
+      <uicontrol>Alice:</uicontrol>
+     </p>
+     <!--MMO resource relative URI: ../graphics/Case15_User2_default.png-->
+     <image href="../images/case15_user2_default.png"/>
+     <!--MMO resource relative URI: ../graphics/Case15_User2_2_default.png-->
+     <image href="../images/case15_user2_2_default.png"/>
+     <p>
+      <uicontrol>Rudy:</uicontrol>
+     </p>
+     <!--MMO resource relative URI: ../graphics/Case15_User3_default.png-->
+     <image href="../images/case15_user3_default.png"/>
+     <!--MMO resource relative URI: ../graphics/Case15_User3_2_default.png-->
+     <image href="../images/case15_user3_2_default.png"/>
+    </li>
+<li>Create the car tracker, health monitor, and security system devices with the
+      <varname>DeviceType</varname> custom data:<ol>
+      <li>Navigate to <uicontrol>Subscriber Manager</uicontrol> and select
+        <uicontrol>Devices</uicontrol>. </li>
+      <li>To create a device, click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+       <image href="../images/sdd_button_default.png" id="image_qp2_z15_3lb"/> with the following
+       values: <!--MMO resource relative URI: ../graphics/Case15_Devicesecurity1_default.png-->
+       <image href="../images/case15_devicesecurity1_default.png"/>
+       <!--MMO resource relative URI: ../graphics/Case15_Devicesecurity2_default.png-->
+       <image href="../images/case15_devicesecurity2_default.png"/>
+       <!--MMO resource relative URI: ../graphics/Case15_Devicesecurity3_default.png-->
+       <image href="../images/case15_devicesecurity3_default.png"/>
+       <p>Similarly, </p>
+       <p>- Create the car device and subscribe the car tracker device with
+         <emphasis>Value</emphasis> set as <varname>PREMIUM</varname> to the
+         <varname>M2M_Package</varname> data bundle through <varname>Bob_Account</varname> Associate
+        the <varname>DeviceType</varname> custom data with the device.</p>
+       <p>- Create the health monitor device and subscribe the health monitor device with
+         <emphasis>Value</emphasis> set as <varname>STANDARD</varname> to the
+         <varname>M2M_Package</varname> data bundle through <varname>Alice_Account</varname>.
+        Associate the <varname>DeviceType</varname> custom data with the device</p>
+      </li>
+     </ol>
+    </li>
+</ol>
+</section>
+</conbody></concept>

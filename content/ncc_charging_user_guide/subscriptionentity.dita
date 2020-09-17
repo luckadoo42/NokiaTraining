@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e157533"><title>Subscription entity </title><conbody>
+<section><title>Overview</title>
+<p>The subscription entity is an instance of bundle owned and paid for by the account.</p>
+</section>
+<section><title>Subscription entity configuration</title>
+<note>The parameters for subscription entity cannot be configured using the SM GUI.</note>
+<table pgwide="1" colsep="1" rowsep="1" scale="80">
+                <title>Parameters for subscription entity</title>
+                <tgroup cols="4">
+                    <colspec colname="col1"/>
+                    <colspec colname="COLSPEC0"/>
+                    <colspec colname="COLSPEC14"/>
+                    <colspec colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Parameter</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                            <entry>
+                                <p>Options</p>
+                            </entry>
+                            <entry>
+                                <p>Mandatory/Optional</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> modifiedBy </entry>
+                            <entry> Provides the subscription parameters in the subscriber model. It
+                                is a read-only parameter. </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> modifiedDate </entry>
+                            <entry> Indicates the user who last updated this item (ignore if not at
+                                top level). It is a read-only parameter. </entry>
+                            <entry> Integer </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> securityDomain </entry>
+                            <entry> This parameter indicates the security domain associated with
+                                subscription. </entry>
+                            <entry>
+                                <p>String </p>
+                                <p>Select the required security domain from the predefined security
+                                    domains in the drop-down list.</p>
+                            </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> validityTime </entry>
+                            <entry> Denotes the time used for entity lifecycle of a subscription and
+                                refers to the validity time of a given state of that lifecycle. It
+                                is set when timer is configured in a lifecycle state transition. It
+                                is a read only parameter and is not set/updated in the Create/Update
+                                requests of lifecycle entities. It is only set internally by the
+                                lifecycle state transitions. </entry>
+                            <entry> Set when timer is configured in lifecycle state transition </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> EndTime </entry>
+                            <entry> Read-only attribute of periodic entities (account and
+                                subscription) which is set or reset by the ResetPeriod action in a
+                                period lifecycle for account or subscription. It defines the end
+                                date or time of the current billing cycle (account) or subscription
+                                renewal cycle (subscription). It is used as a base date in
+                                transition timer definition within a period lifecycle to define
+                                timer relative to end time of the current period lifecycle. </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> StartTime </entry>
+                            <entry> Read-only attribute of periodic entities (account and
+                                subscription) which is set or reset by the ResetPeriod action in a
+                                period lifecycle for account or subscription. It defines the start
+                                date or time of the current billing cycle (account) or subscription
+                                renewal cycle (subscription). It is used as a base date in
+                                transition timer definition within a period lifecycle to define
+                                timer relative to start time of the current period lifecycle. </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> subscEndTime </entry>
+                            <entry> Contains the end time of a subscription. </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> alignedSubIdsList </entry>
+                            <entry>
+                                <p>This is a read-only, non-modifiable field by any provisioning
+                                    command.</p>
+                                <p>When a new bundle is subscribed having reference bundle, then
+                                    this field is added with reference bundle. Both the
+                                    subscriptions (reference bundle, new bundle) are updated with
+                                    each other references.</p>
+                                <p>Supported values are null, list of subscriptions.</p>
+                            </entry>
+                            <entry> List&lt;String&gt; </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> id </entry>
+                            <entry> Provides a unique id. </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> referBundleName </entry>
+                            <entry> New bundle to be used. </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> typeOfBundleChange </entry>
+                            <entry>
+                                <p>Defines the changing bundle mode, default value is next bill
+                                    cycle.</p>
+                                <p>Supported values are as follows:</p>
+                                <p/>
+                                <ul>
+                                    <li>
+                                        <p>
+                                            <uicontrol>Immediately</uicontrol>: New bundle takes
+                                            effect in next bill cycle.</p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <uicontrol>Immediately with prorating</uicontrol>: New
+                                            bundle takes effect immediately.</p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <uicontrol>On next cycle</uicontrol>: New bundle takes
+                                            effect in next bill cycle.</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry> Enum </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> bundleChangeCarryOver </entry>
+                            <entry> Indicates whether to carry over the remaining bucket value to
+                                new bundle. </entry>
+                            <entry> Boolean </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> subscriptionCustomise </entry>
+                            <entry> This field is indicates if the request received for subscription
+                                creation is customized or not. If this flag is set to true, then
+                                bundle, Charging service, bucket and counter are not read from DB
+                                while creating a subscription. They are supposed to come completely
+                                in the soap request. </entry>
+                            <entry> Boolean </entry>
+                            <entry> Mandatory </entry>
+                        </row>
+                        <row>
+                            <entry> account </entry>
+                            <entry> The account linked to the subscription. </entry>
+                            <entry> - </entry>
+                            <entry> Mandatory </entry>
+                        </row>
+                        <row>
+                            <entry> description </entry>
+                            <entry>
+                                <p>This field indicates the description of the subscription and
+                                    stores any customer-specific information, which is provided
+                                    during the subscription creation in create, update, or
+                                    deltaUpdate operation for a device or group, or while creating
+                                    or adding a profile, or using <i>Change Plan</i> and
+                                        <i>createSubscription</i> APIs.</p>
+                                <p>The <i>description</i> field is updated using the
+                                        <i>updateSubscription</i> API wherein if the value of
+                                        <i>description</i> field is provided as an empty string,
+                                    then it is updated as null. However, if the value is not
+                                    provided or provided as null in the request, then the existing
+                                    value of the <i>description</i> field is not changed.</p>
+                            </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> chargingServiceInstanceList </entry>
+                            <entry> The charging services; It can have zero or more charging
+                                services. </entry>
+                            <entry> List&lt;String&gt; </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> usageControlServiceInstanceList </entry>
+                            <entry> The usage control service instance in the subscriber model. </entry>
+                            <entry> List&lt;String&gt; </entry>
+                            <entry> Mandatory </entry>
+                        </row>
+                        <row>
+                            <entry> creationTime </entry>
+                            <entry> The time stamp of when this subscription was created. The value
+                                is automatically generated. </entry>
+                            <entry> Integer </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> activationTime </entry>
+                            <entry> The future time at which the subscription gets activated. It is
+                                an optional parameter in the subscription request object. If it is
+                                set, then the subscription is not activated immediately rather it
+                                gets activated at a future time (provided the relevant lifecycle is
+                                configured for this). One cannot set a time of past in this field.
+                                In addition, once set, this field cannot be updated. </entry>
+                            <entry> Long </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> feeOverride </entry>
+                            <entry> The feeOverride contains subscription fee which overrides bundle
+                                fee. </entry>
+                            <entry> Decimal </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> devices </entry>
+                            <entry> The device associated with this subscription. </entry>
+                            <entry> - </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> groups </entry>
+                            <entry> The group associated with this subscription. </entry>
+                            <entry> - </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> ignoreBarredAccount </entry>
+                            <entry> Defines whether to ignore the barred account. </entry>
+                            <entry> Boolean </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> ignoreBarredDeviceOrGroup </entry>
+                            <entry> Defines the ignored barred device or group. </entry>
+                            <entry> Boolean </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> InvokedBy </entry>
+                            <entry> Indicates invocation method of the action. Examples of
+                                invocation methods are API or a triggered action. </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> RemainingRenewals </entry>
+                            <entry> The number of times at which this subscription can be renewed.
+                                At creation time, the value is set to the value configured in the
+                                bundle in maxRenewals. The value is decremented on each renewal. The
+                                value can also be 'null', which symbolizes unlimited renewals. </entry>
+                            <entry> Integer </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> RenewalMode </entry>
+                            <entry> Indicates the renewal behavior of this subscription. </entry>
+                            <entry> subscriptionRenewalMode </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> SubscriptionType </entry>
+                            <entry> It represents type of subscription. Allowed values are DEVICE
+                                and GROUP </entry>
+                            <entry> typeOfSubscription </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> TransitionName </entry>
+                            <entry> Indicates transition name used for creating new subscription.
+                                Transitions are used when a lifecycle action is triggered. If the
+                                subscription is made by API, there is no transition. </entry>
+                            <entry> String </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> bouActivationCount </entry>
+                            <entry> Contains the count of BOU bundle activated. </entry>
+                            <entry> Integer </entry>
+                            <entry> Optional </entry>
+                        </row>
+                        <row>
+                            <entry> inputDate</entry>
+                            <entry><p>Stores the input date provided at the time of subscription
+                                    creation.</p> Supported value is Unix Timestamp and default
+                                value is Null. <p>The subscription's inputDate can be checked from
+                                    Device or Group overview.</p></entry>
+                            <entry> Long</entry>
+                            <entry> Optional</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+</section>
+<section><title>Actions associated with a subscription</title>
+<table pgwide="1" colsep="1" rowsep="1">
+                <tgroup cols="2">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Action</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> Create </entry>
+                            <entry> Used to create the subscription entity in database by providing
+                                Reference to Bundle, ID of Subscription Instance, and Account ID
+                                parameters. </entry>
+                        </row>
+                        <row>
+                            <entry> Read </entry>
+                            <entry> Used to display a subscription entity as per data fetched from
+                                database. </entry>
+                        </row>
+                        <row>
+                            <entry> Delete </entry>
+                            <entry> Used to delete a particular subscription entity from database.
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> FindSubscriptionsbyAccountId </entry>
+                            <entry> Used to find the subscriptions from database for the given
+                                Account Id. </entry>
+                        </row>
+                        <row>
+                            <entry> FindSubscriptionsbyDeviceId </entry>
+                            <entry> Used to find the subscriptions from database for the given
+                                Device Id. </entry>
+                        </row>
+                        <row>
+                            <entry> FindSubscriptionsbyGroupId </entry>
+                            <entry> Used to find the subscriptions from database for the given Group
+                                Id. </entry>
+                        </row>
+                        <row>
+                            <entry> GoToFinalState </entry>
+                            <entry> Used to change the state of lifecycle to final state. </entry>
+                        </row>
+                        <row>
+                            <entry> ReadSubscription </entry>
+                            <entry> Used to display the existing subscription in database for the
+                                given Id. </entry>
+                        </row>
+                        <row>
+                            <entry> Reset </entry>
+                            <entry>
+                                <p>Used to reset the operation of the subscription. This involves
+                                    fetching the charging services associated with the subscription.
+                                    Iterate through every charging service, reset bucket, counter
+                                    and it's associated thresholds. </p>
+                                <p>
+                                    <uicontrol>Note:</uicontrol> Zero threshold is not executed as
+                                    part of reset.</p>
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<note>
+<p>These actions are valid for internal purposes only and cannot be accessed using the SM GUI. </p>
+</note>
+</section>
+</conbody></concept>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="create_a_service_entry">
+    <title>Creating a service entry</title>
+    <taskbody>
+        <context>
+            <p>This procedure provides instructions on how to create a service entry for a service
+                in a namespace.</p>
+            <p>In the CSF-configuration-examples_xxx.tgz tar file (see above) you will find a file
+                named 'sps_service_entry.yaml' that you can use.</p>
+        </context>
+        <steps>
+            <step>
+                <cmd>Create a DNS record for the IP as follows:</cmd>
+                <info>
+                    <ol id="ol_o13_35w_wlb">
+                        <li>Set the Hostname/IP mapping by
+                            entering:<codeblock>HOSTNAME=sps-edge ; IP=10.11.154.90</codeblock></li>
+                        <li>Create the DNS mapping by
+                            entering:<codeblock>curl --insecure -X POST "https://dyndns-api.nesc.nokia.net/dyndns/add" -H "accept: application/json" -H "Content-Type: application/json" -d "{ \"record\": \"${HOSTNAME}\", \"type\": \"A\", \"data\": \"${IP}\"}"
+</codeblock></li>
+                    </ol>
+                    <p><b>Expected output</b></p>
+                    <codeblock>DNS FQDN = ${HOSTNAME}.dyn.nesc.nokia.net (= sps-edge.dyn.nesc.nokia.net in this example)</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Open the <filepath>sps_service_entry.yaml</filepath> file. The following
+                    template appears.</cmd>
+                <info>
+                    <codeblock>cat &lt;&lt; EOF | kubectl apply -f -
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: external-ig-svc-se
+  namespace: sps-btel
+spec:
+  hosts:
+  - "sps-edge.dyn.nesc.nokia.net"
+  ports:
+  - number: 31380
+    name: ig-ext
+    protocol: http
+  location: MESH_EXTERNAL
+  resolution: DNS
+EOF</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Log in to the Kubernetes control node as root and using the
+                        <filepath>sps_service_entry.yaml</filepath> template </cmd>
+            </step>
+        </steps>
+    </taskbody>
+</task>

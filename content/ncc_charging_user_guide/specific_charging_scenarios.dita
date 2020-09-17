@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e240302"><title>Specific charging scenarios</title><conbody>
+<section id="cbsc"><title>Charging behavior across the subscription billing cycle</title>
+<p>The NCC application behaves in the following manner when a reservation and its corresponding
+                commit happens across a subscription billing cycle reset or renewal time:</p><ul>
+<li>
+<p>The current values of buckets and counter for each user subscription are memorized during the reset or renewal time, which means the current values of buckets and counters are the values of buckets and counters before the reset or renewal time. Therefore, after reset or renewal of the user subscription, there are two types of values for buckets or counters:</p><ol>
+<li>
+<p>Memorized values of buckets and counters, also referred to as the <i>Previous Billing Cycle (PreBC)</i> values, and</p>
+</li>
+<li>
+<p>Actual values of buckets and counters after the reset or renewal of subscription, also referred to as the <i>Post Billing Cycle (PostBC)</i> values.</p>
+</li>
+</ol>
+</li>
+<li>
+<p>The timestamp when the buckets or counters for a user subscription got reset or renewed is memorized.</p>
+</li>
+<li>
+<p>If an update request is received from the service provider network to report the used quantities, then a check is performed to see whether the subscription reset or renewal time is between the previous request and the current request.</p>
+<p>If the check confirms that the subscription reset or renewal time is between the previous request and current request, then quantities of used resources are committed as per the following logic:</p><ul>
+<li>
+<p>In case of over-commit scenarios, <i>PreBC</i> buckets or counters are updated with the last reserved quantities and <i>PostBC</i> buckets or counters are updated with over-commit quantities.</p>
+</li>
+<li>
+<p>In case of under-commit scenarios, <i>PreBC</i> buckets or counters are updated with the reported
+                                quantities. If a bucket is preconfigured for carry-over feature,
+                                then unused quantities are evaluated with reference to carry-over
+                                feature and the carry over is updated accordingly.</p>
+</li>
+</ul>
+</li>
+</ul>
+<note>
+<p>The behavior of the NCC application as explained in this section is applicable only when a single
+                    reset or renewal of a user subscription takes place between a previous request
+                    and current request.</p>
+</note>
+<p>The <i>BucketCommittedUnitsBR</i>, <i>CounterUpdatedValueBR</i>, and <i>CarryOverTRValue</i> CDR tags are generated during an update to <i>PreBC</i> buckets or counters.</p>
+<p>For information on <i>BucketCommittedUnitsBR</i>, <i>CounterUpdatedValueBR</i>,
+                    <i>CarryOverTRValue</i> CDR tags, see the <i>NOKIA Converged Charging CDR/EDR
+                    Reference</i> guide.</p>
+</section>
+<section><title>Charging behavior on execution of the Reset Account action</title>
+<p>The NCC application behaves in the following manner (similar to <!--xref URI: #cbsc--><xref
+                    keyref="id9YZ-09126-UG01-PCZZA-SP1-d1e240302/cbsc"/>) when a reservation and its
+                corresponding commit happens across the account reset time:</p><ul>
+<li>
+<p>The values of balance and available balance attributes of the account balance before reset are memorized during reset time. Therefore, after reset there are following two types of values of the account balance:</p><ol>
+<li>
+<p>Memorized values, that is, also referred as PreBC values.</p>
+</li>
+<li>
+<p>Actual values of an account after the reset, that is, also referred to as Post Billing Cycle (PostBC) values.</p>
+</li>
+</ol>
+</li>
+<li>
+<p>The timestamp when the account got reset is memorized.</p>
+</li>
+<li>
+<p>If an update request is received from the service provider network to report the used quantities, then a check is performed to see whether the account reset time is between the previous and the current request. </p>
+<p>If the check confirms that the account reset time is between the previous and current request, then quantities of used resources are committed as per the following logic:</p><ul>
+<li>
+<p>In case of over-commit scenarios, <i>PreBC</i> balance units are updated with the last reserved quantities and <i>PostBC</i> balance units are updated with over-commit quantities.</p>
+</li>
+<li>
+<p>In case of under-commit scenarios, <i>PreBC</i> balance units are updated with the reported quantities.</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>The <i>accountCommittedUnitsBR</i> CDR tags are generated during an update to <i>PreBC</i>
+                balance values. For information on <i>accountCommittedUnitsBR</i> CDR tags, see the
+                    <i>NOKIA Converged Charging CDR/EDR Reference</i> guide.</p>
+<p>Also, during cancel reservation or audit request, if reset has occurred between previous and current request, then reservation is canceled from the <i>PreBC</i> balance values.</p>
+</section>
+<section><title>Example: Reset the main balance at the end of a billing cycle</title>
+<p>
+<b>Provisioning:</b>
+</p><ol>
+<li>
+<p>Create an account with customized periodic lifecycle.</p>
+</li>
+<li>
+<p>Configure the <systemoutput>Reset Account</systemoutput> action in the periodic lifecycle with an end time.</p>
+</li>
+<li>
+<p>Set the main account balance to <varname>12</varname> using the <i>Adjust Account</i> REST API.</p>
+</li>
+</ol>
+<p>
+<b>Result:</b>
+</p>
+<p>The <systemoutput>Reset Account</systemoutput>  action is triggered without the reset value using the <i>Trigger</i> API. The current value of the account is reset to <varname>0</varname> considering the reset value is not specified in the <systemoutput>Reset Account</systemoutput> action.</p>
+<p>Following is a sample CDR (Note that all parameters are not shown in this sample):<table
+                    frame="all" pgwide="1" colsep="1" rowsep="1">
+                    <tgroup cols="3">
+                        <colspec colname="col1"/>
+                        <colspec colname="col2"/>
+                        <colspec colname="col3"/>
+                        <thead>
+                            <row>
+                                <entry colsep="1" rowsep="1">
+                                    <p>Name</p>
+                                </entry>
+                                <entry colsep="1" rowsep="1">
+                                    <p>Tag</p>
+                                </entry>
+                                <entry colsep="1" rowsep="1">
+                                    <p>Data</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry colsep="1" rowsep="1"> RecordType </entry>
+                                <entry colsep="1" rowsep="1"> 0 </entry>
+                                <entry colsep="1" rowsep="1"> LIFECYCLE_RECORD </entry>
+                            </row>
+                            <row>
+                                <entry colsep="1" rowsep="1"> invokedBy </entry>
+                                <entry colsep="1" rowsep="1"> 1 </entry>
+                                <entry colsep="1" rowsep="1"> ResetAccountAction </entry>
+                            </row>
+                            <row>
+                                <entry colsep="1" rowsep="1"> triggeredEntityType </entry>
+                                <entry colsep="1" rowsep="1"> 1 </entry>
+                                <entry colsep="1" rowsep="1"> Account </entry>
+                            </row>
+                            <row>
+                                <entry colsep="1" rowsep="1"> resetValue </entry>
+                                <entry colsep="1" rowsep="1"> 1 </entry>
+                                <entry colsep="1" rowsep="1"> 0 </entry>
+                            </row>
+                            <row>
+                                <entry colsep="1" rowsep="1"> accountBalanceBeforeReset </entry>
+                                <entry colsep="1" rowsep="1"> 1 </entry>
+                                <entry colsep="1" rowsep="1"> 12.0 </entry>
+                            </row>
+                            <row>
+                                <entry colsep="1" rowsep="1"> accountBalanceAfterReset </entry>
+                                <entry colsep="1" rowsep="1"> 1 </entry>
+                                <entry colsep="1" rowsep="1"> 0 </entry>
+                            </row>
+                            <row>
+                                <entry colsep="1" rowsep="1"> result </entry>
+                                <entry colsep="1" rowsep="1"> 1 </entry>
+                                <entry colsep="1" rowsep="1"> Success </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table></p>
+</section>
+</conbody></concept>

@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+		<task id="id9YZ-09018-IN00-RJZZA-Verifying-installation"><title>Verifying status of a VNF and services </title><taskbody id="d1e6877"><context><sectiondiv>
+        <p><b>Overview</b></p>
+        <p>This procedure provides instructions on how to verify a VNF’s status, ensure that some
+          critical services in this VNF are active and all vital services are present with the
+          status of UP before Diameter traffic starts in the system. This procedure can be used at
+          the end of instantiation, upgrade, and at any other moment when status verification is
+          required.</p>
+        <note>
+          <p>Do not direct traffic to any NCC site until all sites are installed regardless of
+            whether a site is geo-redundant or not.</p>
+        </note>
+        <p>The <i>Operation, Administration, and Maintenance Guide</i> provides information on some
+          of the tools used in this procedure.</p>
+      </sectiondiv>To verify the status of the VNF and services:</context><steps>
+
+<step><cmd>On the Active OAME VM, validate the VNF and the status of all vital services by executing:</cmd><info><p>
+<codeph>/opt/tpa/bin/sps-status</codeph>
+</p></info></step>
+<step><cmd>To ensure that NTP servers are enabled, synchronized, and have acceptable delay and jitter, on every VM verify the time zone and NTP servers configuration by entering:</cmd><info><p>
+<codeph>ntpstat</codeph>
+</p><p>
+<codeph>ntpq -p</codeph>
+</p><p>
+<codeph>timedatectl status</codeph>
+</p><p>The following figures show output examples.</p><fig>
+<title>OAME VMs</title>
+<codeblock># ntpstat
+synchronised to NTP server (1.2.3.4) at stratum 3
+   time correct to within 122 ms
+   polling server every 1024 s
+
+# ntpq -p
+remote    refid    st  t  when  poll  reach  delay    offset  jitter
+====================================================================
+*1.2.3.4  5.6.7.8  2   u  707   1024  377    131.899  0.357   0.274
+
+# timedatectl status
+      Local time: &lt;weekday year-month-day&gt; 16:35:00 EST
+  Universal time: &lt;weekday year-month-day&gt; 21:35:00 UTC
+        RTC time: &lt;weekday year-month-day&gt; 21:35:00
+       Time zone: America/Toronto (EST, -0500)
+     NTP enabled: yes
+NTP synchronized: yes
+ RTC in local TZ: no
+      DST active: no
+ Last DST change: DST ended at
+                  &lt;weekday year-month-day&gt; 01:59:59 EDT
+                  &lt;weekday year-month-day&gt; 01:00:00 EST
+ Next DST change: DST begins (the clock jumps one hour forward) at
+                  &lt;weekday year-month-day&gt; 01:59:59 EST
+                  &lt;weekday year-month-day&gt; 03:00:00 EDT
+</codeblock>
+</fig><fig>
+<title>Application (non-OAME) VMs</title>
+<codeblock># ntpstat
+synchronised to NTP server (192.168.3.1) at stratum 4
+   time correct to within 148 ms
+   polling server every 1024 s
+
+# ntpq -p
+remote        refid    st  t  when  poll  reach  delay    offset  jitter
+========================================================================
+*192.168.3.1  1.2.3.43 3   u  807   1024  377    0.514    0.484   0.996
+
+# timedatectl status
+      Local time: &lt;weekday year-month-day&gt; 16:33:54 EST
+  Universal time: &lt;weekday year-month-day&gt; 21:33:54 UTC
+        RTC time: &lt;weekday year-month-day&gt; 21:33:54
+       Time zone: America/Toronto (EST, -0500)
+     NTP enabled: yes
+NTP synchronized: yes
+ RTC in local TZ: no
+      DST active: no
+ Last DST change: DST ended at
+                  &lt;weekday year-month-day&gt; 01:59:59 EDT
+                  &lt;weekday year-month-day&gt; 01:00:00 EST
+ Next DST change: DST begins (the clock jumps one hour forward) at
+                  &lt;weekday year-month-day&gt; 01:59:59 EST
+                  &lt;weekday year-month-day&gt; 03:00:00 EDT
+
+ </codeblock>
+</fig></info></step>
+<step><cmd>On the Active OAME VM, do the following:</cmd><info><ul>
+
+<li>
+<p>Verify that the database cluster is working as expected by executing:</p>
+<p>
+<codeph>/opt/tpa/bin/db-stats -v all</codeph>
+</p>
+</li>
+<li>
+<p>Verify that Heartbeat is working as expected by executing:</p>
+<p>
+<codeph>/opt/tpa/bin/TPA_heartbeatStatus</codeph>
+</p>
+</li>
+</ul></info></step>
+<step><cmd>On the Auxiliary VMs, verify that Kafka-ZooKeeper service is in good health, ensure that its status is active and the java process is running by executing: </cmd><info><p>
+<codeph>systemctl status kafka-zookeeper </codeph>
+</p><p>
+<codeph>systemctl is-active kafka-zookeeper </codeph>
+</p><p>
+<codeph>ps -aef | grep zookeeper</codeph>
+</p></info></step>
+<step><cmd>On the Auxiliary VMs, do the following:</cmd><info><ul>
+
+<li>
+<p>Verify that the ETCD cluster is healthy by executing:</p>
+<p>
+<codeph>ETCDCTL_API=3 etcdctl --endpoints http://192.168.3.20:2379,http://192.168.3.21:2379,http://192.168.3.22:2379,http://192.168.3.23:2379,http://192.168.3.24:2379 member list -w table</codeph>
+</p>
+<p>
+<codeph>ETCDCTL_API=3 etcdctl --endpoints http://192.168.3.20:2379,http://192.168.3.21:2379,http://192.168.3.22:2379,http://192.168.3.23:2379,http://192.168.3.24:2379 endpoint health -w table</codeph>
+</p>
+<p>
+<codeph>ETCDCTL_API=3 etcdctl --endpoints http://192.168.3.20:2379,http://192.168.3.21:2379,http://192.168.3.22:2379,http://192.168.3.23:2379,http://192.168.3.24:2379 endpoint status -w table</codeph>
+</p>
+</li>
+<li>
+<p>Verify the status of the ETCD service by executing:</p>
+<p>
+<codeph>systemctl status etcd</codeph>
+</p>
+</li>
+</ul></info></step>
+<step><cmd>Verify that the IO throughput/latency performance is satisfactory for the ETCD cluster by running the following command on the OAME VM:</cmd><info><p>
+<codeph>ETCDCTL_API=3 etcdctl --endpoints http://192.168.3.20:2379,http://192.168.3.21:2379,http://192.168.3.22:2379,http://192.168.3.23:2379,http://192.168.3.24:2379 check perf</codeph>
+</p><p>
+<b>Expected outcome</b>
+</p><fig>
+<title>ETCD Performance PASS</title>
+<codeblock># ETCDCTL_API=3 etcdctl --endpoints
+http://192.168.3.20:2379,http://192.168.3.21:2379,http://192.168.3.22:2379,http://192.168.3.23:2379,http://192.168.3.24:2379 check perf
+60 / 60 
+Booooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo! 100.00%1m0s
+PASS: Throughput is 149 writes/s
+PASS: Slowest request took 0.208002s
+PASS: Stddev is 0.007505s
+PASS</codeblock>
+</fig><fig>
+<title>ETCD Performance FAIL</title>
+<codeblock># ETCDCTL_API=3 etcdctl --endpoints 
+http://192.168.3.20:2379,http://192.168.3.21:2379,http://192.168.3.22:2379,http://192.168.3.23:2379,http://192.168.3.24:2379 check perf
+60 / 60 
+Boooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+oooooooooooooooooooooooooooooooooooooooo! 100.00%1m0s
+PASS: Throughput is 147 writes/s
+Slowest request took too long: 1.179148s
+Stddev too high: 0.116448s
+FAIL</codeblock>
+</fig></info></step>
+</steps>
+</taskbody></task>

@@ -1,0 +1,567 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e190258"><title>Aggregate View functionality</title><conbody>
+<section><title>Overview</title>
+<p>The Aggregate View (AV) functionality provides a consolidated view of the following charging entities:</p><ul>
+<li>
+<p>All available buckets of the same kind included or excluded from the charging service list and the device-group counter with cap for a shared bucket defined in a group.</p>
+</li>
+<li>
+<p>All available counter of the same kind included or excluded from the charging service list when the defined threshold for AV is reached.</p>
+</li>
+</ul>
+<p>The AV functionality is applicable to the following charging entities:</p><ul>
+<li>
+<p>Buckets and/or counters of the same kind</p>
+</li>
+<li>
+<p>Group counters</p>
+</li>
+<li>
+<p>Device counters</p>
+</li>
+<li>
+<p>Device-group counters</p>
+</li>
+</ul>
+<note>
+<p>Thresholds can be defined on the aggregate value of bucket and/or counters based on which the actions are performed. Note that a consolidated view is provided even when no threshold is attached to an aggregate value.</p>
+</note>
+</section>
+<section><title>Configuring AV functionality</title>
+<p>This functionality is configured based on the <uicontrol>Aggregate Type</uicontrol> field value in the SM GUI as shown in the following figure:</p>
+<fig>
+                <title>Aggregate Type</title>
+                <!--MMO resource relative URI: ../Graphics/Release_19.0/AV_default.png-->
+                <image href="../images/img9yz-09126-ug01-pczza-sp1-av_default.png" scale="65"/>
+            </fig>
+<p>For information to define a new AV, see the <i>Aggregate View</i> section in the <i>Common
+                    configurations for charging and policy</i> chapter in this guide.</p>
+<p>The following tables provides information on the different values selected for the Aggregate Type
+                field while configuring the AV functionality:</p>
+            <table pgwide="1" colsep="1" rowsep="1" id="table_ogq_24d_ymb">
+                <tgroup cols="2">
+                    <colspec colname="col1" colwidth="1*"/>
+                    <colspec colname="col2" colwidth="1.6*"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Aggregate Type</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> Charging Service </entry>
+                            <entry> This option aggregates the buckets defined in an AV. </entry>
+                        </row>
+                        <row>
+                            <entry> Charging Service and CAP </entry>
+                            <entry>
+                                <p>If an AV is attached to a device, then this option aggregates the
+                                    buckets within the charging service based on charging service
+                                    list or all charging services and the cap of device-group
+                                    counter defined for shared group bucket defined in AV with same
+                                    unit type. In this case, device-group counter is mandatory else
+                                    group resources are not counted in AV.</p>
+                                <p>This AV type is not applicable for group and cannot be attached
+                                    to group.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Counter </entry>
+                            <entry>
+                                <p>If an AV is attached to a device, then this option aggregates the
+                                    subscription, device, device-group counter, or all counters
+                                    defined in AV.</p>
+                                <p>For group, the device-group counters or counters within charging
+                                    service based on list are supported.</p>
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <sectiondiv>
+                <p><b>Modification of AV configuration</b></p>
+                <p>The AV configuration can be modified under the following scenarios:</p>
+                <ul id="ul_j45_g4d_ymb">
+                    <li>
+                        <p>For <i>Aggregate Type</i> set as <varname>Charging Service</varname>:
+                            When a charging service is added or removed from AV defintion.</p>
+                    </li>
+                    <li>
+                        <p>For <i>Aggregate Type</i> set as <varname>Charging Service and
+                                CAP</varname>:  when a charging service is added or removed, or the
+                            counter is updated in the AV definition, or both scenarios take
+                            place.</p>
+                    </li>
+                    <li>
+                        <p>For <i>Aggregate Type</i> set as <varname>Counter</varname>: The counter
+                            type is added or removed.</p>
+                    </li>
+                    <li>
+                        <p>When a threshold profile group is added or removed from an AV
+                            definition.</p>
+                        <p>
+                            <note> When modifications are done for charging service or any other
+                                parameter in AV definition, the threshold profile group values
+                                attached with the AV definition needs to be modified accordingly (if
+                                needed).</note>
+                        </p>
+                    </li>
+                </ul>
+                <p>For better understanding on modification of AV configuration, refer to <xref
+                        href="#id9yz-09126-ug01-pczza-sp1-d1e190258/Example" format="dita"/>.</p>
+            </sectiondiv>
+</section>
+<section><title>Additional information</title>
+<p>Following are some important points to note for the AV functionality:</p><ul>
+<li>
+<p>Only the charging application type and not the policy application type is currently supported.</p>
+</li>
+<li>
+<p>The usage control service is currently not supported.</p>
+</li>
+<li>
+<p>If the <uicontrol>Aggregate Type</uicontrol> is set as <varname>Charging Service and CAP</varname> and no device-group is selected, then all the device-group counters are considered.</p>
+</li>
+<li>
+<p>If the <uicontrol>Aggregate Type</uicontrol> is set as <varname>Counter</varname> and AV accumulates multiple counters that count the same consumption, then AV shows multiple consumption when usage is updated.</p>
+</li>
+<li>
+<p>The counter current value update over REST is currently not supported.</p>
+</li>
+<li>
+<p>For a counter type AV in device or group or account, only the current value (with reservation) is displayed.</p>
+</li>
+<li>
+<p>For a device counter type AV, only the subscription counter, device counter, and device group counter can be aggregated.</p>
+</li>
+<li>
+<p>For a group counter type AV, only the subscription counter and group counter can be aggregated.</p>
+</li>
+<li>
+<p>A cap associated to a device-group counter with <systemoutput>Notification-Reject</systemoutput>, <systemoutput>Notification-Stop</systemoutput>, or <systemoutput>Reject</systemoutput> action is used while calculating the <varname>Charging Service and CAP</varname> value of the <uicontrol>Aggregate Type</uicontrol>.</p>
+</li>
+<li>
+<p>If more than one threshold is exceeded in a transaction, then only the actions defined in the latest threshold is considered.</p>
+</li>
+                <li>
+                    <p>When AV is attached to a device or group, thresholds attached to it are
+                        evaluated as per the provisioning flow.</p>
+                </li>
+<li>
+<p>The AV does not suppress the individual action, such as notification and runs independently.</p>
+</li>
+<li>
+<p>The <systemoutput>Empty Subscription</systemoutput> action also refreshes the current balance of AV.</p>
+</li>
+</ul>
+</section>
+<section><title>AV behavior</title>
+<p>The AV can be attached to a device or group. For example, if an AV is attached to a device, then the AV instance gets attached to the device and this instance accumulates the value of an applicable bucket in the device subscription or subscription, device, device-group counters:</p><ul>
+<li>
+<p>If a subscription is added to a device or group, then the AV instance accumulates values considering the new subscription with carry over buckets (if exists) for that subscription.</p>
+</li>
+<li>
+<p>If a subscription is deleted from a device or group, then the AV instance of that subscription gets updated including the carry over bucket instance (if exists) and counters for that subscription.</p>
+</li>
+<li>
+<p>If a subscription is barred, then the buckets and counters linked to that subscription are not considered for aggregation by AV.</p>
+</li>
+<li>
+<p>If a subscription is reset, then the CS bucket instances also get reset and if an account is in a new cycle, then the associated device, group, or device-group counters are reset. The charging and rating engine performs the following tasks to update the AVs accumulating the subscription:</p><ul>
+<li>
+<p>Retrieves the AVs attached to a device or group to which the subscription belongs to.</p>
+</li>
+<li>
+<p>Retrieves the AV instance which accumulates the charging service before resetting each bucket instance of that charging service. Also, fetches all the AV instances that accumulates the counters before resetting the counter instance of that subscription.</p>
+</li>
+<li>
+<p>Updates the AVs initial, current, unused values before resetting each bucket and counter instance.</p>
+</li>
+<li>
+<p>Resets the bucket instance and its carry over bucket instance and counters and same applicable AV instances of that charging service are updated with new values.</p>
+</li>
+</ul>
+</li>
+</ul>
+<note type="important">
+<p>Note that the same aggregate view cannot be attached twice to a device or group. But, more than one AV can be attached to a device or a group.</p>
+</note>
+</section>
+<section><title>Examples</title>
+<p>Consider the following examples for a better understanding of AV functionality:</p>
+<sectiondiv>
+                <p/>
+<p><b>Example 1: When an AV is created</b></p>
+<p>
+<b>Provisioning:</b>
+</p><ol>
+<li>
+<p>Configure an SMS server and define the notification text to be sent to the user.</p>
+</li>
+<li>
+<p>Create a notification profile.</p>
+</li>
+<li>
+<p>Create the lifecycles for device, account, bundle.</p>
+</li>
+<li>
+<p>Create two charging services <varname>CS1</varname> and <varname>CS2</varname> with 300 and 500 MB data buckets respectively.</p>
+</li>
+<li>
+<p>Create an absolute threshold for 400 MB data usage.</p>
+</li>
+<li>
+<p>Create a bundle and associate it with the charging service.</p>
+</li>
+<li>
+<p>Create an AV and attach it to the charging service and the above threshold indicating the current value of the bucket.</p>
+</li>
+<li>
+<p>Link an iPhone device with the AV.</p>
+</li>
+</ol>
+<p>The following figure shows the Aggregate View in the SM GUI:</p>
+<fig>
+                    <!--MMO resource relative URI: ../Graphics/Release_18.7/AVSMExample_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-avsmexample_default.png"
+                        scale="65"/>
+                </fig>
+<p>
+<b>Result:</b>
+</p>
+<p>When the threshold is reached, a notification is sent to the user informing about the subscription usage.</p>
+</sectiondiv>
+<sectiondiv>
+                <p/>
+<p><b>Example 2: When a device subscription associated with an AV is reset or renewed</b></p>
+<p>
+<b>Provisioning:</b>
+</p><ol>
+<li>
+<p>Attach the device subscription of an iPhone with two charging service instances <varname>CS1</varname> and <varname>CS2</varname> wherein;</p>
+<p>CS1 has the following bucket instances:</p><ul>
+<li>
+<p>B1 of unit type volume with initial value = 100 MB, current value = 50 MB, and unused value = 50 MB.</p>
+</li>
+<li>
+<p>Carry-over bucket <varname>B1CO</varname> of unit type volume with initial value = 20 MB, current value = 10 MB, and unused value = 10 MB.</p>
+</li>
+</ul>
+<p>CS2 has the following bucket instances:</p><ul>
+<li>
+<p>B2 of unit type volume with initial value = 100 MB, current value = 60 MB, and unused value = 60 MB.</p>
+</li>
+<li>
+<p>Carry-over bucket <varname>B2CO</varname> of unit type volume with initial value = 40 MB, current value = 20 MB, and unused value = 20 MB.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Create an AV instance <varname>AV1</varname> and attach it to the iPhone.</p>
+</li>
+</ol>
+<p>
+<b>Result:</b>
+</p><ul>
+<li><p>Before resetting the <varname>B1</varname> and <varname>B1CO</varname> bucket instances,
+                            their values are deducted from AV.</p>
+                        <p>The following figure shows the AV values for <varname>B1</varname> and
+                                <varname>B1CO</varname> buckets before and after subscription
+                            reset:</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_18.7/AV1_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-av1_default.png"/>
+                    </li>
+<li><p>Before resetting the <varname>B2</varname> and <varname>B2CO</varname> bucket instances,
+                            their values are deducted from AV.</p><p>The following figure shows the
+                            AV values for <varname>B2</varname> and <varname>B2CO</varname> buckets
+                            before and after subscription reset:</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_18.7/AV2_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-av2_default.png"/>
+                    </li>
+</ul>
+</sectiondiv>
+<sectiondiv>
+                <p/>
+<p><b>Example 3: When AV is created for a counter associated with a group</b></p>
+<p>
+<b>Provisioning:</b>
+</p>
+<p>Configure a group, counter, and cap data as per the following table:<table pgwide="1" colsep="1"
+                        rowsep="1">
+                        <tgroup cols="5">
+                            <colspec colname="col1"/>
+                            <colspec colname="col2"/>
+                            <colspec colname="col3"/>
+                            <colspec colname="col4"/>
+                            <colspec colname="col5"/>
+                            <thead>
+                                <row>
+                                    <entry>
+                                        <p>Group and associations</p>
+                                    </entry>
+                                    <entry>
+                                        <p>Counter</p>
+                                    </entry>
+                                    <entry>
+                                        <p>Cap</p>
+                                    </entry>
+                                    <entry>
+                                        <p>Current value </p>
+                                    </entry>
+                                    <entry>
+                                        <p>Left</p>
+                                    </entry>
+                                </row>
+                            </thead>
+                            <tbody>
+                                <row>
+                                    <entry> NokiaGroup </entry>
+                                    <entry> Counter Share </entry>
+                                    <entry> 20 GB </entry>
+                                    <entry> 8 GB </entry>
+                                    <entry> 12 GB </entry>
+                                </row>
+                                <row>
+                                    <entry morerows="2">
+                                        <p>Father</p>
+                                        <p>(belongs to NokiaGroup)</p>
+                                    </entry>
+                                    <entry> Share Counter (S1) </entry>
+                                    <entry> 5 GB </entry>
+                                    <entry> 3 GB </entry>
+                                    <entry> 2 GB </entry>
+                                </row>
+                                <row>
+                                    <entry> Counter for Home (H1) </entry>
+                                    <entry> 10 GB </entry>
+                                    <entry> 2 GB </entry>
+                                    <entry> 8 GB </entry>
+                                </row>
+                                <row>
+                                    <entry> Counter for Roaming (R1) </entry>
+                                    <entry> 2 GB </entry>
+                                    <entry> 1 GB </entry>
+                                    <entry> 1 GB </entry>
+                                </row>
+                            </tbody>
+                        </tgroup>
+                    </table></p>
+<p>The AV for father includes <varname>S1</varname>, <varname>H1</varname>, and <varname>R1</varname> with thresholds defined at 10 GB, 12 GB, 15 GB with <systemoutput>Send-notification</systemoutput> action.</p>
+<p>
+<b>Result:</b>
+</p>
+<p>When the total current value (cost value) reaches 10 GB, 12 GB, or 15 GB, a notification is sent to the user.</p>
+</sectiondiv>
+<sectiondiv>
+                <p/>
+<p><b>Example 4: When an AV is created for a bucket and cap</b></p>
+<p>
+<b>Provisioning:</b>
+</p>
+<p>Configure the following data:<table pgwide="1" colsep="1" rowsep="1">
+                        <tgroup cols="5">
+                            <colspec colname="col1"/>
+                            <colspec colname="col2"/>
+                            <colspec colname="col3"/>
+                            <colspec colname="col4"/>
+                            <colspec colname="col5"/>
+                            <thead>
+                                <row>
+                                    <entry>
+                                        <p>Family group</p>
+                                    </entry>
+                                    <entry>
+                                        <p>Group bucket main (GB)</p>
+                                    </entry>
+                                    <entry>
+                                        <p>25 GB</p>
+                                    </entry>
+                                    <entry>
+                                        <p>Group Bucket CO (GB)</p>
+                                    </entry>
+                                    <entry>
+                                        <p>10 GB</p>
+                                    </entry>
+                                </row>
+                            </thead>
+                            <tbody>
+                                <row>
+                                    <entry morerows="2"> Father </entry>
+                                    <entry> Cap (C1) </entry>
+                                    <entry> 10 GB </entry>
+                                    <entry> Remaining eligibility to use from Group </entry>
+                                    <entry> 5 GB </entry>
+                                </row>
+                                <row>
+                                    <entry> Individual bucket main (B1) </entry>
+                                    <entry> 7 GB </entry>
+                                    <entry> Current value (Initial - used - reserve) </entry>
+                                    <entry> 3 GB </entry>
+                                </row>
+                                <row>
+                                    <entry> Individual bucket CO (B1) </entry>
+                                    <entry> 3 GB </entry>
+                                    <entry> Current value (Initial - used - reserve) </entry>
+                                    <entry> 2 GB </entry>
+                                </row>
+                                <row>
+                                    <entry morerows="2"> Mother </entry>
+                                    <entry> Cap (C2) </entry>
+                                    <entry> 10 GB </entry>
+                                    <entry> Remaining eligibility to use from Group </entry>
+                                    <entry> 6 GB </entry>
+                                </row>
+                                <row>
+                                    <entry> Individual bucket main (B2) </entry>
+                                    <entry> 4 GB </entry>
+                                    <entry> Current value (Initial - used - reserve) </entry>
+                                    <entry> 3 GB </entry>
+                                </row>
+                                <row>
+                                    <entry> Individual bucket CO (B2) </entry>
+                                    <entry> 3 GB </entry>
+                                    <entry> Current value (Initial - used - reserve) </entry>
+                                    <entry> 2 GB </entry>
+                                </row>
+                                <row>
+                                    <entry morerows="2"> Son </entry>
+                                    <entry> Cap (C3) </entry>
+                                    <entry> 5 GB </entry>
+                                    <entry> Remaining eligibility to use from Group </entry>
+                                    <entry> 2 GB </entry>
+                                </row>
+                                <row>
+                                    <entry> Individual bucket main (B3) </entry>
+                                    <entry> 3 GB </entry>
+                                    <entry> Current value (Initial - used - reserve) </entry>
+                                    <entry> 1 GB </entry>
+                                </row>
+                                <row>
+                                    <entry> Individual bucket CO (B3) </entry>
+                                    <entry> 2 GB </entry>
+                                    <entry> Current value (Initial - used - reserve) </entry>
+                                    <entry> 0 GB </entry>
+                                </row>
+                            </tbody>
+                        </tgroup>
+                    </table></p>
+<note>
+<p>In the above scenario, if usage limit is defined for a counter, then while calculating the AV, the minimum value (cap or usage limit) is considered.</p>
+</note>
+<p>
+<b>Result:</b>
+</p><ul>
+<li>
+<p>Given that the AV for father includes <varname>B1</varname> and <varname>C1</varname>, if threshold is defined at 80%, 50%, and 30%, then a notification is sent when the total current value reaches 16 GB, 10 GB, and 6 GB.</p>
+</li>
+<li>
+<p>Given that the AV for mother includes <varname>B2</varname> and <varname>C2</varname>, if threshold is defined at 5 GB, 2 GB, and 1 GB, then a notification is sent when the total current value reaches 5 GB, 2 GB, and 1 GB.</p>
+</li>
+<li>
+<p>Given that the AV for son includes <varname>B3</varname> and <varname>C3</varname>, if threshold is defined at 80%, 50%, and 30%, then a notification is sent when the total current value reaches 8 GB, 5 GB, and 3 GB.</p>
+</li>
+</ul>
+</sectiondiv>
+            <sectiondiv id="Example">
+                <p/>
+                <p><b>Example 5: Modification of AV configuration</b></p>
+                <p>This example shows that AV configuration (adding or removing CS) can be done and
+                    the changes are reflected without having to re-attach the AV to the
+                    subscriber.</p>
+                <note>
+                    <p>If the <i>Refresh instance on definition modification</i> flag is set to
+                            <varname>AV</varname> under the <b>Global Configurations</b> –>
+                            <b>Application Preferences</b> and selecting the <b>ME Application
+                            Preferences</b> from the drop-down menu, then the functionality works
+                        without re-attaching the AV to the subscriber.</p>
+                </note>
+                <p>AV adjusts the value when AV is of <varname>Charging Service</varname> type and
+                    two CS and two TPG attached to it. After the initial request, if one CS and one
+                    TPG is removed from AV definition, then AvInstance refreshes on next commit or
+                    provisioning request and threshold are crossed accordingly.</p>
+                <p><b>Provisioning:</b></p>
+                <ol id="ol_pjh_y1g_5mb">
+                    <li>
+                        <p>Create an AV definition with two CS (<varname>CS1</varname> and
+                                <varname>CS2</varname>) and two TPG (<varname>TPG1</varname> and
+                                <varname>TPG2</varname>).</p>
+                        <p><varname>TPG1</varname> has a value of 100 bytes and
+                                <varname>TPG2</varname> has 200 bytes. Both TPGs are of
+                                <varname>Absolute from End</varname> type.</p>
+                    </li>
+                    <li>
+                        <p>The <varname>CS1</varname> has a bucket of 300 bytes with
+                                <varname>TPG1</varname>; whereas, <varname>CS2</varname> has a
+                            bucket of 1000 bytes with <varname>TPG1</varname>.</p>
+                        <image placement="break" href="../images/cs1config.png"
+                            id="image_avt_g2m_5mb" scale="55"/>
+                        <p/>
+                        <image placement="break" href="../images/cs2config.png"
+                            id="image_uyq_m2m_5mb" scale="55"/>
+                        <p>The <varname>TPG1</varname> has a value of 100 bytes and is of
+                                <varname>Absolute from End</varname> type.</p>
+                    </li>
+                    <li>
+                        <p>Create a device object with AV and subscription. Initially, AV value is
+                            1300.</p>
+                        <image placement="break" href="../images/threshold1.png"
+                            id="image_gfh_bcg_5mb" scale="55"/>
+                        <p/>
+                        <image placement="break" href="../images/threshold2.png"
+                            id="image_mrx_ccg_5mb" scale="55"/>
+                        <p/>
+                    </li>
+                    <li>
+                        <p>Create the following AV:</p>
+                        <image placement="break" href="../images/avconfiguration1.png"
+                            id="image_rtz_4fm_5mb" scale="55"/>
+                    </li>
+                    <li>
+                        <p>Create the following bundle:</p>
+                        <image placement="break" href="../images/bundleconfigforav.png"
+                            id="image_ptj_qfm_5mb" scale="55"/>
+                    </li>
+                    <li>
+                        <p>Currently, the device overview looks like:</p>
+                        <image placement="break" href="../images/deviceoverviewinitial.png"
+                            id="image_x2d_vfm_5mb" scale="55"/>
+                    </li>
+                </ol>
+                <p/>
+                <p><b>Result:</b></p>
+                <ol id="ol_qld_1gm_5mb">
+                    <li>
+                        <p>After executing the initial request, total reservation of 100 bytes is
+                            performed and the device overview looks like:</p>
+                        <image placement="break"
+                            href="../images/deviceoverviewafterfirstrequest.png"
+                            id="image_ewb_rgm_5mb" scale="55"/>
+                    </li>
+                    <li>
+                        <p>After updating the AV definition by removing <varname>CS1</varname> and
+                                <varname>TPG2</varname> from it:</p>
+                        <image placement="break" href="../images/avdefinition.png"
+                            id="image_ksj_sgm_5mb" scale="55"/>
+                    </li>
+                    <li>
+                        <p>After removal of <varname>CS2</varname> and <varname>TPG2</varname> from
+                            AV definition, 200 bytes from the AV (of 300 bytes) are consumed when
+                            the following update and terminate requests are executed:</p>
+                        <p>For CCR-U with USU = 100 and RSU = 100</p>
+                        <p>For CCR-T with USU = 100</p>
+                        <p>Therefore, following is the device overview showing that AV is left with
+                            only 100 bytes:</p>
+                        <image placement="break"
+                            href="../images/deviceoverviewaftersecondrequest.png"
+                            id="image_ocr_tgm_5mb" scale="55"/>
+                    </li>
+                </ol>
+            </sectiondiv>
+</section>
+</conbody></concept>

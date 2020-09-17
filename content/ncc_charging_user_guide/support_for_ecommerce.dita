@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e197602"><title>Support for eCommerce charging APIs</title><conbody>
+<section><title>Overview</title>
+<p>This feature enables NCC to handle eCommerce rating and charging transactions through HTTP or
+                HTTP2 APIs as shown in the following figure:</p>
+<fig>
+<image href="../images/img9yz-09126-ug01-pczza-sp1-ecommerce_api_framework_default.png"/>
+</fig>
+<p>The HTTP or HTTP2 requests allow conditional charging to be applied based on different parameters, such as <i>Merchant ID</i> or <i>Call Type</i>. An EDR is generated for an eCommerce API request.</p>
+<p>Following parameters are used as conditions in tariff rules or in applicability conditions of counters or charging services to perform conditional charging:</p><ul>
+<li>
+<p>
+<i>Merchant ID</i>: This indicates the identifier for a merchant or service provider.</p>
+</li>
+<li>
+<p>
+<i>Trafic Type</i>: This indicates the type of traffic used for identifying and allowing throttling scenarios.</p>
+</li>
+<li>
+<p>
+<i>Call Type</i>: This indicates the <varname>E-Commerce</varname> call type for eCommerce APIs. The same value is used in applicability conditions or tariff formula as required to differentiate eCommerce calls from other Diameter calls.</p>
+</li>
+</ul>
+<note><ol>
+<li>
+<p>If eCommerce bundles are subscribed, then they may have a cost, which is debited from the account main balance.</p>
+</li>
+<li>
+<p>While running the <i>Direct Debit</i> API, the amount is deleted either from the account main balance or from a money bucket depending on the tariff formula configuration. The selection of money bucket or counter depends on the applicability condition, which is configured using the <i>Merchant ID</i>, <i>Trafic Type</i>, or <i>Call Type</i>.</p>
+</li>
+</ol>
+</note>
+<p>This feature uses the HTTP and HTTP2 REST APIs to perform chargeable balance debit and balance query operations:</p>
+<sectiondiv>
+<p><b>UCRemainingBalance API</b></p>
+<p>This API returns account balance and <i>distanceToUsage</i> values for a given device identified by supplied GPSI. The <i>distanceToUsage</i> value is computed as the difference between the Usage limit (ULI) and the current counter value for the selected cost counter or UC Limit (as applicable).</p>
+<note>
+<p>The UC limit (if self-counter) always takes precedence over any other cost counter for <i>distanceToUsageLimit</i> calculation.</p>
+</note>
+<userinput>https://&lt;IP&gt;:&lt;PORT&gt;/services/ServiceManager/e-commerce/UCRemainingBalance</userinput>
+<p>For more information, refer to the API documentation.</p>
+<p>If this API fails to identify the usage control limit or an applicable cost counter in charging service, then it returns only the balance amount without any <i>distanceToUsageLimit</i>.</p>
+<p>If multiple counters are applicable, then it returns the account balance along with the response code, such as <systemoutput>Multiple Counters Applicable</systemoutput>. If no counters are applicable, then it returns only the balance amount and no <i>distanceToUsageAmount</i>.</p>
+<note>
+<p>This API always returns other input parameters as result for all <systemoutput>OK</systemoutput> scenarios.</p>
+</note>
+</sectiondiv>
+<sectiondiv>
+<p><b>Debit Amount API</b></p>
+<p>This API debits the requested amount from the main balance or monetary bucket depending on the tariff formula defined in the charging service. It also returns the remaining amount of account main balance or monetary bucket after deducting the requested amount.</p>
+<p>Following is the URI:</p>
+<userinput>https://&lt;IP&gt;:&lt;PORT&gt;/services/ServiceManager/e-commerce/DebitAmount</userinput>
+<p>For more information, refer to the API documentation.</p>
+<p>If there is a <i>No Charge</i> tariff formula set in a charging service, then it returns the account main balance in response. If device has multiple subscription from multiple account, then this API debits the amount in the following order:</p>
+<p>First, from the first account, followed by the second account, and then the third account or further. It returns the remaining balance of last account used for debit.</p>
+</sectiondiv>
+</section>
+<section><title>Additional information</title>
+<p>Following are some important points to note for the eCommerce APIs:</p><ul>
+<li>
+<p>These APIs are for direct debit, and not related to ECUR or SCUR calls.</p>
+</li>
+<li>
+<p>These APIs require a different set of attributes to be supported in rules or applicability conditions.</p>
+</li>
+<li>
+<p>These APIs are limited only to debit operations.</p>
+</li>
+<li>
+<p>The functionality for <i>distanceToAmount</i> in <i>UCQueryBalanceAPI</i> is applicable only to subscription counters. The <i>distanceToAmount</i> is applicable to the usage limit defined on a counter.</p>
+<p>
+<b>Note:</b> This is not applicable to any Near-ULI or OLI cases.</p>
+</li>
+<li>
+<p>Fee related deduction from monetary balance are not accumulated in cost counter.</p>
+</li>
+<li>
+<p>The usage limit within the usage control is configured with a <i>Time Of Day</i> setting. If any eCommerce API request arrives during the configured <i>Time Of Day</i> barred setting, then they are rejected with an appropriate error code in response.</p>
+</li>
+<li>
+<p>In eCommerce APIs, the <systemoutput>NOTIFICATION-STOP</systemoutput> or <systemoutput>STOP</systemoutput> action is not recommended for UC limit thresholds. However, if these actions are configured for eCommerce APIs, then they behave in generic manner.</p>
+</li>
+<li>
+<p>The eCommerce API support is limited to as data models and adoptions defined for UC.</p>
+</li>
+</ul>
+<p>This feature considers the following assumptions:</p><ul>
+<li>
+<p>For eCommerce debit amount calls and limits:</p>
+<p>When the threshold applied on UC limit is configured for hard-stop actions, such as <systemoutput>REJECT</systemoutput> or <systemoutput>NOTIFICATION-REJECT</systemoutput>, the following actions are taken depending on the given conditions:</p><ul>
+<li>
+<p>If the debit amount in request is more than the difference between the threshold limit and the current value of resource, then the request is rejected with an error code as <systemoutput>NOT_ENOUGH_CREDIT</systemoutput>.</p>
+</li>
+<li>
+<p>If the debit amount in request is less than the difference between the threshold limit and the current value of resource, then the call is successful.</p>
+</li>
+</ul>
+<p>When the threshold applied on UC limit is configured for soft-stop actions, such as <systemoutput>CONTINUE</systemoutput> or <systemoutput>NOTIFICATION-STOP</systemoutput>, the following action is taken depending on the given condition:</p><ul>
+<li>
+<p>If the debit amount in request is more than the difference between the threshold limit and the current value of resource, then the call is successful and spend notification is sent.</p>
+</li>
+</ul>
+<p>
+<b>Note:</b> This condition is applicable only to <i>DebitAmount</i> API and not applicable to <i>UCRemainingBalance</i> query.</p>
+</li>
+<li>
+<p>A bundle with usage control and no charging service returns the response of <i>UCRemainingBalance</i> from main account balance and <i>distanceToUsageAmount</i> from the ULI in a usage control counter. However, the <i>DebitAmount</i> API is not executed successfully (<systemoutput>CHARGING_SERVICE_LIST_EMPTY</systemoutput>) as there is no charging service and rating fails to determine from where to charge the amount. This means that the charging service is not mandatory for <i>UCRemainingBalance</i> but is mandatory for <i>DebitAmount</i> API.</p>
+</li>
+<li>
+<p>The applicability condition on reference counter is only respected for TOD. The <i>distanceToUsageAmount</i> is always shown with reference to the ULI of the reference counter in UC during a subscription creation and irrespective of whether during the actual eCommerce call, the UC meets the applicability criteria or not.</p>
+<p>If it is found that there are multiple applicable subscriptions associated with the requesting <i>BundleID</i> in an eCommerce call, then the subscription selected is according to the current rating logic. Both <i>UCRemainingBalance</i> and <i>DebitAmount</i> APIs work according to that subscription.</p>
+</li>
+</ul>
+</section>
+<section><title>Examples</title>
+<p>Consider the following examples for a better understanding of the eCommerce API functionality:</p>
+<sectiondiv>
+<p><b>Example 1: Usage limit override for reference counter attached in UC</b></p>
+<p>
+<b>Prerequisites:</b>
+</p><ol>
+<li>
+<p>Create a subscription-type counter <varname>PTY00515</varname> with <i>Usage Limit</i> set as <varname>720</varname> and <i>Overage Limit</i> set as <varname>10</varname> money with cost-type counter.</p>
+</li>
+<li>
+<p>Create a charging service <varname>E-ComCS00515</varname> with selecting the above created counter and having tariff configured in such a way that charging is done from account main balance when <i>Merchant ID</i> condition matches and counter is incremented based on the deduction.</p>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/Tariff_formula_1_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-tariff_formula_1_default.png"/>
+</li>
+<li>
+<p>Create the Usage Control (UC) with reference counter as the counter created in <uicontrol>step 1</uicontrol> with <i>Usage Limit</i> set as <varname>720</varname>.</p>
+</li>
+<li>
+<p>Create a bundle <varname>PlayUnlimited00515</varname> having the above charging service and usage control.</p>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/Bundle1_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-bundle1_default.png"/>
+</li>
+<li>
+<p>Create an account and device through <i>Account Profile</i> API.</p>
+</li>
+<li>
+<p>Set the account balance as <varname>1000</varname>.</p>
+</li>
+</ol>
+<fig>
+                                                  <title>Account overview before running Direct
+                                                  Debit API</title>
+                                                  <!--MMO resource relative URI: ../Graphics/Release_20.6/Before_account_overview1_default.png-->
+                                                  <image
+                                                  href="../images/img9yz-09126-ug01-pczza-sp1-before_account_overview1_default.png"
+                                                  scale="60"/>
+                                                  </fig>
+<fig>
+                                                  <title>Device overview before running Direct Debit
+                                                  API</title>
+                                                  <!--MMO resource relative URI: ../Graphics/Release_20.6/Before_device_overview1_default.png-->
+                                                  <image
+                                                  href="../images/img9yz-09126-ug01-pczza-sp1-before_device_overview1_default.png"
+                                                  scale="65"/>
+                                                  </fig>
+<p>
+<b>Execution:</b>
+</p><ol>
+<li>
+<p>Run the <i>getUCRemaining balance</i> API with <i>GPSI</i> as <varname>device e164</varname> and <i>bundle_id</i> as above created bundle in <uicontrol>step 4</uicontrol>.</p>
+</li>
+<li>
+<p>Run the direct debit for the GPSI for amount <varname>70</varname>.</p>
+</li>
+</ol>
+<p>This example verifies:</p><ul>
+<li>
+<p>The <i>getUCRemaining</i> API returns the value of <i>distancetoUsageAmount</i> as <varname>750</varname> because usage limit is being overridden from counter usage limit given in charging service.</p>
+</li>
+<li>
+<p>Counter is incremented by <varname>70</varname> given in direct debit request and account balance is deducted with the same amount (<varname>70</varname>) as given in input request.</p>
+</li>
+</ul>
+<fig>
+                                                  <title>Account overview after running Direct Debit
+                                                  API</title>
+                                                  <!--MMO resource relative URI: ../Graphics/Release_20.6/After_account_overview1_default.png-->
+                                                  <image
+                                                  href="../images/img9yz-09126-ug01-pczza-sp1-after_account_overview1_default.png"
+                                                  scale="60"/>
+                                                  </fig>
+<fig>
+                                                  <title>UC overview after running Direct Debit
+                                                  API</title>
+                                                  <!--MMO resource relative URI: ../Graphics/Release_20.6/After_UC_overview1_default.png-->
+                                                  <image
+                                                  href="../images/img9yz-09126-ug01-pczza-sp1-after_uc_overview1_default.png"
+                                                  scale="60"/>
+                                                  </fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 2: Usage limit override for self-counter attached in UC</b></p>
+<p>
+<b>Prerequisites:</b>
+</p><ol>
+<li>
+<p>Create a subscription-type counter <varname>PTY00516</varname> with <i>Usage Limit</i> set as <varname>720</varname> and <i>Overage Limit</i> set as 10 money with cost-type counter.</p>
+</li>
+<li>
+<p>Create a charging service with selecting the above created counter and having tariff configured in such a way that charging is done from account main balance when <i>Merchant ID</i> condition matches and counter is incremented based on the deduction.</p>
+</li>
+<li>
+<p>Create the UC with self-counter and <i>Usage Limit</i> set as <varname>720</varname> having applicability condition is set as:</p>
+<p>
+<userinput>ECOMMERCE.Merchant-Id = "merchantid1"</userinput>
+</p>
+</li>
+<li>
+<p>Create a bundle <varname>PLAYUNLIMITED00516</varname> having the above charging service and UC.</p>
+</li>
+<li>
+<p>Create an account and device through <i>Account Profile</i> API.</p>
+</li>
+<li>
+<p>Set the account balance as <varname>1000</varname>.</p>
+</li>
+</ol>
+<fig>
+                                                  <title>Account overview before running Direct
+                                                  Debit API</title>
+                                                  <!--MMO resource relative URI: ../Graphics/Release_20.6/Before_account_overview2_default.png-->
+                                                  <image
+                                                  href="../images/img9yz-09126-ug01-pczza-sp1-before_account_overview2_default.png"
+                                                  scale="60"/>
+                                                  </fig>
+<fig>
+                                                  <title>Device overview before running Direct Debit
+                                                  API</title>
+                                                  <!--MMO resource relative URI: ../Graphics/Release_20.6/Before_device_overview2_default.png-->
+                                                  <image
+                                                  href="../images/img9yz-09126-ug01-pczza-sp1-before_device_overview2_default.png"
+                                                  scale="60"/>
+                                                  </fig>
+<p>
+<b>Execution:</b>
+</p><ol>
+<li>
+<p>Run the <i>getUCRemaining balance</i> API with <i>GPSI</i> as <varname>device e164</varname> and <i>bundle_id</i> as above created bundle in <uicontrol>step 4</uicontrol>.</p>
+</li>
+<li>
+<p>Run the direct debit for the GPSI for amount <varname>76</varname>.</p>
+</li>
+</ol>
+<p>This example verifies:</p><ul>
+<li>
+<p>The <i>getUCRemaining</i> API returns the value of <i>distancetoUsageAmount</i> as <varname>750</varname> because usage limit is being overridden from counter usage limit given in charging service.</p>
+</li>
+<li>
+<p>Counter is incremented by <varname>76</varname> given in direct debit request and account balance is deducted with the same amount (<varname>76</varname>) as given in input request.</p>
+</li>
+</ul>
+<fig>
+                                                  <title>Account overview after running Direct Debit
+                                                  API</title>
+                                                  <!--MMO resource relative URI: ../Graphics/Release_20.6/After_account_overview2_default.png-->
+                                                  <image
+                                                  href="../images/img9yz-09126-ug01-pczza-sp1-after_account_overview2_default.png"
+                                                  scale="60"/>
+                                                  </fig>
+<fig>
+                                                  <title>UC overview after running Direct Debit
+                                                  API</title>
+                                                  <!--MMO resource relative URI: ../Graphics/Release_20.6/After_UC_overview2_default.png-->
+                                                  <image
+                                                  href="../images/img9yz-09126-ug01-pczza-sp1-after_uc_overview2_default.png"
+                                                  scale="60"/>
+                                                  </fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 3: eCommerce API behavior based on TOD defined in UC</b></p>
+<p>The <uicontrol>Usage Limit</uicontrol> object in a UC is configured with the Time of Day (TOD). Any eCommerce API request that is received during the configured TOD, are rejected with an appropriate error code in response.</p>
+<note>
+<p>The Time of Server (ME) is considered while determining whether TOD is to be barred or not.</p>
+</note>
+<p>
+<b>Prerequisites:</b>
+</p><ol>
+<li>
+<p>Create a subscription-type counter having <i>Usage Limit</i> set as <varname>720</varname> and <i>Overage Limit</i> set as <varname>10</varname> Money with cost-type counter.</p>
+</li>
+<li>
+<p>Create a charging service with applicability condition as:</p>
+<p>
+<userinput>ECOMMERCE.Merchant-Id = "merchantid1"</userinput>
+</p>
+</li>
+<li>
+<p>Select the above created counter in this and tariff is configured in such a way that balance is deducted from the account main balance and counter is incremented based on the deduction.</p>
+</li>
+<li>
+<p>Create the UC with self-counter with <i>Usage Limit</i> set as <varname>750</varname> and TOD given as day as <varname>TUESDAY</varname> and provide some start time and end time.</p>
+</li>
+<li>
+<p>Create a bundle having the above charging service and UC.</p>
+</li>
+<li>
+<p>Create an account and device through <i>Account Profile</i> API.</p>
+</li>
+<li>
+<p>Set the account balance as <varname>1000</varname>.</p>
+</li>
+</ol>
+<p>
+<b>Execution:</b>
+</p><ol>
+<li>
+<p>Run the <i>getUCRemaining balance</i> API with <i>GPSI</i> as <varname>device e164</varname> and <i>bundle_id</i> as above created bundle in <uicontrol>step 4</uicontrol> at the time between start time and end time being configured in TOD under UC.</p>
+</li>
+<li>
+<p>Run the direct debit for the GPSI at the time between start time and end time being configured in TOD under UC.</p>
+</li>
+</ol>
+<p>This example verifies:</p><ul>
+<li>
+<p>The <i>getUCRemaining</i> API returns an error code as <systemoutput>CALL_REJECTED_DUE_TO_TOD_BARRED</systemoutput> in response.</p>
+</li>
+<li>
+<p>The <i>Direct Debit</i> API returns an error code as <systemoutput>CALL_REJECTED_DUE_TO_TOD_BARRED</systemoutput> in response.</p>
+</li>
+</ul>
+</sectiondiv>
+</section>
+</conbody></concept>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+		<concept id="id9YZ-09018-UG00-PCZZA-d1e10615">
+    <title>In-service software updates</title>
+    <conbody>
+        <p>NCC CNF supports an automated software update mechanism that can be performed while live
+            traffic continues on the system. This capability leverages the standard Kubernetes and
+            Helm capabilities for executing rolling updates of one pod instance at a time, for a
+            particular microservice. </p>
+        <note>The initial NCC CNF version does not yet certify the in-service nature of the updates
+            without traffic interruption. Therefore, it is recommended to switch traffic to the
+            other ME in the pair prior to starting the upgrade. The in-service certification feature
+            is coming soon.</note>
+        <p>Since the update is performed one pod at a time for a particular microservice, the system
+            retains its full engineered capacity during the software update process. This provides
+            operators the freedom to perform the update at any time of day, based on various factors
+            that might influence this decision.</p>
+        <p>NCC supports a rollback procedure to return to the previous version, if any issues are
+            experienced during deployment of the update. A rollback might be initiated at any point
+            of the update process.</p>
+        <p>Special capabilities are incorporated for updating the database services, to ensure the
+            steady stream of pods being taken down and updated does not cause unnecessary churn and
+            data migration between DB pod instances.</p>
+        <p>For rolling updates to be possible, new software versions and data must be backwards
+            compatible with the prior versions and data. While NCC CNF ensures this in its own
+            software design, there might be seldom exceptions where an in-service rolling update is
+            not possible due to third-party vendor software components whose new software version
+            and data is not backwards compatible with their previous version and data. This
+            incompatibility would not allow the standard rolling updates to be performed with live
+            traffic running, since the new software cannot be running on some pod instances while
+            the prior software version is still running on other pod instances. Experience has shown
+            that these incompatibilities are not common and Nokia will attempt to work with the
+            third parties to avoid these incompatibilities, but there might be seldom cases beyond
+            the control of Nokia.</p>
+        <p>NCC maintains a persisted data version that is separate from the software version itself.
+            Typically, the software update is applied to a subset of SMs and MEs, ensuring that the
+            new software runs flawlessly with the prior set of features and data. At some point, the
+            persisted data version can then be updated to the new version, allowing the new software
+            to take advantage of new features that might create new types of data in the
+            database.</p>
+        <p>For more information, see <i>CNF Installation and Update Guide</i> in the NCC
+            documentation set.</p>
+    </conbody>
+</concept>

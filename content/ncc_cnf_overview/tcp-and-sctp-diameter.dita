@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+		<concept id="id9YZ-09018-UG00-PCZZA-d1e7034">
+    <title>TCP and SCTP for Diameter</title>
+    <conbody>
+        <section>
+            <title>Overview</title>
+            <p>This section describes two Diameter nodes sharing a direct TCP transport connection,
+                which are commonly called Diameter peers. The SPS and Diameter support both TCP and
+                SCTP as a transport layer protocol for Diameter peers. The base Diameter protocol is
+                run on port 3868 for both TCP and SCTP. See RFC 6733 (Diameter) and RFC 4960 (SCTP)
+                for more information.</p>
+        </section>
+        <section>
+            <title>TCP</title>
+            <p>Transmission Control Protocol (TCP) provides a communication service at an
+                intermediate level between the SPS and the Internet Protocol (IP). Data transmission
+                in TCP is byte-stream oriented such that the data is transported as a consecutive
+                stream of bytes between two endpoints.</p>
+            <p>The following figure shows a typical TCP message exchange where synchronization and
+                acknowledgment messages are exchanged between communicating hosts. The TCP
+                handshaking mechanism is designed so that two computers attempting to communicate
+                can negotiate the parameters of the network TCP socket connection before
+                transmitting data. TCP knows whether the network TCP socket connection is opening,
+                synchronizing, or established using the SYN and ACK messages when establishing a
+                network TCP socket connection.</p>
+            <fig>
+                <title>TCP flow</title>
+                <!--MMO resource relative URI: ../Graphics/tcpflow_default.gif-->
+                <image href="../images/tcpflow_default.gif"/>
+            </fig>
+            <p>A single TCP connection is identified by a combination of IP addresses and virtual
+                port numbers used by both ends. IP handles the actual delivery of the data, but TCP
+                keeps track of the individual units of data segments that a message is divided into
+                for efficient routing through the network. During communication, additional numbers
+                are used to keep track of the order or sequence in which the data segments are
+                transmitted. The sequence number indicates what order the segments of data should be
+                reassembled. Finally, a maximum transmission size is constantly being negotiated via
+                a fall-back mechanism called windowing. The combination of port numbers, sequence
+                numbers and window sizes constitutes a connection.</p>
+            <p>TCP guarantees that all bytes received will be identical with bytes sent and in the
+                correct order. Positive acknowledgment with retransmission is used to guarantee
+                reliability of packet transfers requiring the receiver to respond with an
+                acknowledgment message as it receives the data. The sender keeps a record of each
+                packet it sends. The sender also maintains a timer from when the packet was sent,
+                and retransmits a packet if the timer expires before the message has been
+                acknowledged. The timer is needed in case a packet gets lost or corrupted.</p>
+            <p>See the Installation Guide and Diameter Configuration Guide for more information.</p>
+        </section>
+    </conbody>
+</concept>

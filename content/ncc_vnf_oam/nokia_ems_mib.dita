@@ -1,0 +1,1246 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-d1e104092"><title>NOKIA-EMS-MIB</title><conbody>
+<section><title>Overview</title>
+<p>This section contains NOKIA-EMS-MIB file.</p>
+<fig>
+<codeblock>NOKIA-EMS-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    Integer32,
+    IpAddress,
+    enterprises,
+    NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    DisplayString,
+    RowStatus,
+    DateAndTime,
+    TruthValue,
+    TEXTUAL-CONVENTION
+        FROM SNMPv2-TC
+    OBJECT-GROUP,
+    NOTIFICATION-GROUP
+        FROM SNMPv2-CONF;
+
+aheEmsMibs MODULE-IDENTITY
+    LAST-UPDATED    "1812300000Z"
+    ORGANIZATION    "Nokia Technologies"
+    CONTACT-INFO    "Customer Technical Support"
+    DESCRIPTION
+        "MIB specification for CSF general information."
+    REVISION        "1812300000Z"
+    DESCRIPTION
+        "Change type of alAlarmIndex, alNotificationIdentifier
+         from DisplayString to Integer32."
+    REVISION        "1305310000Z"
+    DESCRIPTION
+        "MIB for CSF"
+    ::= { inuMibs 5 }
+
+UnixTime ::= TEXTUAL-CONVENTION
+    STATUS        current
+    DESCRIPTION
+            "Time in UNIX format, e.g., represented as number of
+        seconds since January 1, 1970, GMT."
+    SYNTAX    Integer32 ( 0 .. 2147483647 )
+
+nokia               OBJECT IDENTIFIER ::= { enterprises 28458 }
+mibs                OBJECT IDENTIFIER ::= { nokia 2 }
+inuMibs             OBJECT IDENTIFIER ::= { mibs 78 }
+systemInformation   OBJECT IDENTIFIER ::= { aheEmsMibs 1 }
+servicePackage      OBJECT IDENTIFIER ::= { aheEmsMibs 5 }
+alarm               OBJECT IDENTIFIER ::= { aheEmsMibs 6 }
+extendedErrors      OBJECT IDENTIFIER ::= { aheEmsMibs 7 }
+logFile             OBJECT IDENTIFIER ::= { aheEmsMibs 9 }
+heartbeat           OBJECT IDENTIFIER ::= { aheEmsMibs 15 }
+alarmTraps          OBJECT IDENTIFIER ::= { aheEmsMibs 16 }
+meas                OBJECT IDENTIFIER ::= { aheEmsMibs 20 }
+
+-- deprecated MIBs
+dataGrid                OBJECT IDENTIFIER ::= { aheEmsMibs 11 }
+servicePackageUpdate    OBJECT IDENTIFIER ::= { aheEmsMibs 12 }
+spuCEPTrigger           OBJECT IDENTIFIER ::= { servicePackageUpdate 1 }
+spuStatusQuery          OBJECT IDENTIFIER ::= { servicePackageUpdate 2 }
+spuStatusQueryFilter    OBJECT IDENTIFIER ::= { servicePackageUpdate 3 }
+routingKey              OBJECT IDENTIFIER ::= { aheEmsMibs 13 }
+rkCEPTrigger            OBJECT IDENTIFIER ::= { routingKey 1 }
+rkTblStatusQuery        OBJECT IDENTIFIER ::= { routingKey 2 }
+cepTriggerResult        OBJECT IDENTIFIER ::= { aheEmsMibs 14 }
+-- 
+
+siSystemName    OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The name of the system"
+    ::= {systemInformation 1 }
+
+siSoftwareRelease    OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "CSF platform version"
+    ::= {systemInformation 3 }
+
+siSystemTime    OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The system date and time"
+    ::= {systemInformation 4 }
+
+siTimeZone      OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The timezone on the NE, e.g. GMT+0800 "
+    ::= {systemInformation 6 }
+
+siTimeFormat    OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The timeformat on the NE. It's configured. 
+        One e.g. yyyy mm dd hh::mm::ss"
+    ::= {systemInformation 7 }
+
+alStatusTime    OBJECT-TYPE
+    SYNTAX  UnixTime
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "UNIX time when table was last modified"
+    ::= { alarm 1 }
+
+alDeleteTime    OBJECT-TYPE
+    SYNTAX  UnixTime
+    MAX-ACCESS      read-only
+    STATUS  current
+    DESCRIPTION
+        "UNIX time when an alarm or alarm clear was last 
+        deleted from the table because the table was full."
+    ::= { alarm 2 }
+
+alInitializationTime    OBJECT-TYPE
+    SYNTAX  UnixTime
+    MAX-ACCESS      read-only
+    STATUS  current
+    DESCRIPTION
+        "UNIX time when the alarm table was last initialized."
+    ::= { alarm 10 }
+
+alTableSize     OBJECT-TYPE
+    SYNTAX  Integer32 (64 .. 40960)
+    MAX-ACCESS      read-only
+    STATUS  current
+    DESCRIPTION
+        "Minimum number of alarms and alarm clears that can be 
+        stored in the alarm table.  if an attempt is made to 
+        store an alarm when the table is full then the oldest 
+        alarm(s) in the table will be removed.
+        Note that these alarm entries are not necessary consecutive
+        entries.  Alarms are removed as they are cleared so there 
+        may be holes in the indexing of this table."
+    ::= { alarm 3 }
+
+alNotificationLevel     OBJECT-TYPE
+    SYNTAX  INTEGER {
+        critical(1),    -- send only critical alarms
+        major(2),       -- send only critical and major alarms
+        minor(3),       -- send only critical, major, and minor alarms
+        none(4),        -- don't send any alarms
+        warning(5)      -- send critical, major, minor, warning alarms
+        }
+    MAX-ACCESS      read-only
+    STATUS  current
+    DESCRIPTION
+        "The minimum severity of an alarm or alarm clear to 
+        be a candidate for sending to the management station.  
+        For alarm clears, the severity of the original alarm 
+        is used to make the determination.
+
+        Note that no provision is made to send notifications 
+        for alarms with a severity of indeterminate (which we 
+        don't currently support).  If a manager is interested 
+        in these types of alarms then it will have to 
+        periodically poll to retrieve them."
+    ::= { alarm 4 }
+
+alNotificationInterval  OBJECT-TYPE
+    SYNTAX  Integer32 (0 .. 120)
+    MAX-ACCESS      read-only
+    STATUS  current
+    DESCRIPTION
+        "The length of the notification cycle in seconds.  
+        This works in conjunction with the NotificationCount 
+        defined below."
+    ::= { alarm 5 }
+
+alNotificationCount     OBJECT-TYPE
+    SYNTAX  Integer32 (1 .. 2147483647)
+    MAX-ACCESS      read-only
+    STATUS  current
+    DESCRIPTION
+        "The maximum number of notifications that will be sent 
+        during a notification interval.  These two work together 
+        in the following manner.  During each notification interval 
+        only the first notification count notifications will be sent.  
+        At the end of a notification interval, if any alarms exist 
+        that have not yet been sent then a notification for the most 
+        recent alarm will be sent that counts as the first 
+        notification of a new notification interval.  If no alarms 
+        are pending at the end of a notification interval then
+        the next notification interval begins when the next alarm 
+        is received."
+    ::= { alarm 6 }
+
+alCurrentIndex  OBJECT-TYPE
+    SYNTAX  Integer32 (0 .. 40960)
+    MAX-ACCESS      read-only
+    STATUS  current
+    DESCRIPTION
+        "The index assigned to the alarm most recently added 
+        to the table."
+    ::= { alarm 8 }
+
+-- An entry will be made in this table whenever an alarm
+-- is reported. The alarm table only keeps alarms with
+-- severity minor/major/critical. Cleared alarms will not
+-- be maintained. Additionally, a manger can clear an alarm
+-- by writing its perceived severity field to cleared. In this
+-- case, the alarm will be handled as if a clear were reported
+-- using the normal alarm reporting mechanisms. This will 
+-- include sending of notifications. 
+
+alAlarmTable	OBJECT-TYPE
+	SYNTAX	SEQUENCE OF AlAlarmEntry
+	MAX-ACCESS	not-accessible
+	STATUS	current
+	DESCRIPTION
+		"A table containing 'alarm' specific information."
+	::= { alarm 9 }
+
+alAlarmEntry	OBJECT-TYPE
+	SYNTAX	AlAlarmEntry
+	MAX-ACCESS	not-accessible
+	STATUS	current
+	DESCRIPTION
+		"An entry containing 'alarm' specific information."
+	INDEX	{
+		alAlarmIndex
+		}
+	::= { alAlarmTable 1 }
+
+AlAlarmEntry	::= SEQUENCE {
+		alAlarmIndex	Integer32,
+		alObjectName	DisplayString,
+		alAlarmType	INTEGER,
+		alAlarmTime	UnixTime,
+		alProbableCause	INTEGER,
+		alSpecificProblems	DisplayString,
+		alPerceivedSeverity	INTEGER,
+		alNotificationIdentifier	Integer32,
+		alAdditionalText	DisplayString,
+		alRepeatCount	Integer32,
+		alAutoClearAlarm	TruthValue,
+		alOmdbKey	DisplayString,
+		alOmText		DisplayString,
+		alAlarmCode		DisplayString,
+		alAlarmSource		DisplayString,
+		alAlarmUUID		DisplayString,
+		alVMFullName		DisplayString,
+		alVNFCFullName		DisplayString,
+		alSystemName		DisplayString,
+		alAcknowledgement	TruthValue,
+		alAcknowledgementTime	UnixTime,
+		alAlarmStatus	INTEGER
+	}
+
+alAlarmIndex	OBJECT-TYPE
+	SYNTAX	Integer32 ( 0 .. 2147483647 )
+	MAX-ACCESS	not-accessible
+	STATUS	current
+	DESCRIPTION
+		"The index assigned to this alarm (used as the notification identifier)"
+	::= { alAlarmEntry 1 }
+
+alObjectName	OBJECT-TYPE
+	SYNTAX	DisplayString(SIZE(0 .. 128))
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"The name of the object causing the alarm"
+	::= { alAlarmEntry 2 }
+
+alAlarmType	OBJECT-TYPE
+	SYNTAX	INTEGER {
+				communicationAlarm(1),
+				qualityOfServiceAlarm(2),
+				processingErrorAlarm(3),
+				equipmentAlarm(4),
+				environmentalAlarm(5)
+			}
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"The type of this alarm." 
+	::= { alAlarmEntry 3 }
+
+alAlarmTime	OBJECT-TYPE
+	SYNTAX	UnixTime
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"the value of time in seconds since 00:00:00 UTC, January 1, 1970"
+	::= { alAlarmEntry 4 }
+
+alProbableCause	OBJECT-TYPE
+	SYNTAX	INTEGER {
+				adapterError(1),
+				applicationSubsystemFailure(2),
+				bandwidthReduced(3),
+				callEstablishmentError(4),
+				communicationsProtocolError(5),
+				communicationsSubsystemFailure(6),
+				configurationOrCustomizationError(7),
+				congestion(8),
+				corruptData(9),
+				cpuCyclesLimitExceeded(10),
+				dataSetOrModemError(11),
+				degradedSignal(12),
+				dTEdCEInterfaceError(13),
+				enclosureDoorOpen(14),
+				equipmentMalfunction(15),
+				excessiveVibration(16),
+				fileError(17),
+				fireDetected(18),
+				floodDetected(19),
+				framingError(20),
+				heatingOrVentilationOrCoolingSystemProblem(21),
+				humidityUnacceptable(22),
+				inputOutputDeviceError(23),
+				inputDeviceError(24),
+				lANError(25),
+				leakDetected(26),
+				localNodeTransmissionError(27),
+				lossOfFrame(28),
+				lossOfSignal(29),
+				materialSupplyExhausted(30),
+				multiplexerProblem(31),
+				outOfMemory(32),
+				ouputDeviceError(33),
+				performanceDegraded(34),
+				powerProblem(35),
+				pressureUnacceptable(36),
+				processorProblem(37),
+				pumpFailure(38),
+				queueSizeExceeded(39),
+				receiveFailure(40),
+				receiverFailure(41),
+				remoteNodeTransmissionError(42),
+				resourceAtOrNearingCapacity(43),
+				responseTimeExcessive(44),
+				retransmissionRateExcessive(45),
+				softwareError(46),
+				softwareProgramAbnormallyTerminated(47),
+				softwareProgramError(48),
+				storageCapacityProblem(49),
+				temperatureUnacceptable(50),
+				thresholdCrossed(51),
+				timingProblem(52),
+				toxicLeakDetected(53),
+				transmitFailure(54),
+				transmitterFailure(55),
+				underlyingResourceUnavailable(56),
+				versionMismatch(57),
+				authenticationFailure(58),
+				breachOfConfidentiality(59),
+				cableTamper(60),
+				delayedInformation(61),
+				denialOfService(62),
+				duplicateInformation(63),
+				informationMissing(64),
+				informationModificationDetected(65),
+				informationOutOfSequence(66),
+				intrusionDetection(67),
+				keyExpired(68),
+				nonRepudiationFailure(69),
+				outOfHoursActivity(70),
+				outOfService(71),
+				proceduralError(72),
+				unauthorizedAccessAttempt(73),
+				unexpectedInformation(74),
+				unspecifiedReason(75)
+			}
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"See the table below for a partial list of probable causes.  SeeX.721 and X.733 for further details"
+	::= { alAlarmEntry 5 }
+
+alSpecificProblems	OBJECT-TYPE
+	SYNTAX	DisplayString(SIZE(0 .. 128))
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"Additional information related to the probable cause, if available"
+	::= { alAlarmEntry 6 }
+
+alPerceivedSeverity	OBJECT-TYPE
+	SYNTAX	INTEGER {
+				cleared(1),
+				indeterminate(2),		-- not supported in our implementation
+				critical(3),
+				major(4),
+				minor(5),
+				warning(6)
+			}
+	MAX-ACCESS	read-write
+	STATUS	current
+	DESCRIPTION
+		""
+	::= { alAlarmEntry 7 }
+
+alNotificationIdentifier	OBJECT-TYPE
+	SYNTAX	Integer32 ( 0 .. 2147483647 )
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"For an alarm, this would be equal to the alarm table index
+		 assigned to the entry.
+
+		 For an alarm clear, this would be the alarm table index of
+		 the associated alarm.  In those cases where the notification
+		 identifier of the associated alarm is not know, a value of
+		 0 (zero) shall be used for the notification identifier.  This
+		 is the only case where 0 is a legal value for this variable."
+	::= { alAlarmEntry 8 }
+
+alAdditionalText	OBJECT-TYPE
+	SYNTAX	DisplayString(SIZE(0 .. 255))
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"any additional text provided by the application"
+	::= { alAlarmEntry 9 }
+
+alRepeatCount	OBJECT-TYPE
+	SYNTAX	Integer32 ( 0 .. 2147483647 )
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"A count of how many times this particular alarm has been
+		 seen.  It will only be reported the first time, even if it
+		 is seen multiple times, but the table entry will be
+		 updated with the count that can be read.  This field is not
+		 included in the alarm notification as it is a non-standard
+		 field."
+	::= { alAlarmEntry 10 }
+
+alAutoClearAlarm	OBJECT-TYPE
+	SYNTAX	TruthValue
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"This indicator, true or false, is set to indicate whether or
+		 not the alarm will be automatically cleared by the platform.
+		 If specific information is not available, it can be assumed
+		 that any alarm specifying any of the X.733 fields will be
+		 able to clear automatically.  Alarms with this field set will
+		 not be subject to alarm aging.  This field is not included in the
+		 alarm notification as it is a non-standard field."
+	::= { alAlarmEntry 11 }
+
+alOmdbKey	OBJECT-TYPE
+	SYNTAX	DisplayString(SIZE(0 .. 20))
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"The Output Message Database Key for this message, null if none.
+		 This field is not included in the alarm notification as it
+		 is a non-standard field."
+	::= { alAlarmEntry 12 }
+
+
+alOmText	OBJECT-TYPE
+	SYNTAX	DisplayString(SIZE(0 .. 255))
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"The Output Message Text for this message, null if none."
+	::= { alAlarmEntry 14 }
+
+alAlarmCode	OBJECT-TYPE
+	SYNTAX	DisplayString(SIZE(0 .. 6))
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"The unique alarm code of the alarm, whose length should be 6."
+	::= { alAlarmEntry 15 }
+
+alAlarmSource	OBJECT-TYPE
+	SYNTAX	DisplayString(SIZE(0 .. 32))
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"The alarm source of the alarm, platform name or application name."
+	::= { alAlarmEntry 16 }
+
+alAlarmUUID	OBJECT-TYPE
+	SYNTAX	DisplayString(SIZE(0 .. 36))
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"The UUID information of the alarm. Only apply to cloud environment."
+	::= { alAlarmEntry 17 }
+
+alVMFullName	OBJECT-TYPE
+	SYNTAX	DisplayString(SIZE(0 .. 63))
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"VM full name of the node that trigger the alarm. Only apply to cloud environment."
+	::= { alAlarmEntry 18 }
+
+alVNFCFullName	OBJECT-TYPE
+	SYNTAX	DisplayString(SIZE(0 .. 63))
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"VNFC full name of the node that trigger the alarm. Only apply to cloud environment."
+	::= { alAlarmEntry 19 }
+
+alSystemName	OBJECT-TYPE
+	SYNTAX	DisplayString(SIZE(0 .. 42))
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"System name (i.e. VNF name)."
+	::= { alAlarmEntry 20 }
+
+alAcknowledgement OBJECT-TYPE
+	SYNTAX	TruthValue
+	MAX-ACCESS	read-write
+	STATUS	current
+	DESCRIPTION
+		"This indicator, true or false, is set to indicate whether or
+		 not the alarm has been acknowledged by NMS."
+	::= { alAlarmEntry 21 }
+
+alAcknowledgementTime	OBJECT-TYPE
+	SYNTAX	UnixTime
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"the value of ack time in seconds since 00:00:00 UTC, January 1, 1970"
+	::= { alAlarmEntry 22 }
+
+alAlarmStatus	OBJECT-TYPE
+	SYNTAX	INTEGER {
+				alarmNew(1),
+				alarmAckStateChanged(2),
+				alarmCleared(3)
+			}
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"The alarm status is used when:
+    		- a fault situation occurs (alarmNew)
+    		- an alarm is cleared (alarmCleared)
+    		- the acknowledgement state of an alarm has changed (alarmAckStateChanged)" 
+	::= { alAlarmEntry 23 }
+
+alarmEvent NOTIFICATION-TYPE
+    OBJECTS {
+        alObjectName,
+        alAlarmType,
+        alAlarmTime,
+        alProbableCause,
+        alSpecificProblems,
+        alPerceivedSeverity,
+        alNotificationIdentifier,
+        alAdditionalText,
+        alOmText,
+        alAlarmCode,
+        alAlarmSource,
+        alAlarmUUID,
+        alVMFullName,
+        alVNFCFullName,
+        alSystemName,
+        alAcknowledgement,
+        alAcknowledgementTime,
+        alAlarmStatus
+        }
+    STATUS  current
+    DESCRIPTION
+        "Sent to the EMS when the conditions dictate that a 
+        real alarm be sent.  There are normal alarm messages 
+        reporting the objects' problem, also the other 2 types 
+        of alarm messages.
+        1. Alarm messages notifying there is brevity control on 
+        the same alarm events. Alarm will be notified for brevity 
+        control on the specific alarmed event and Alarm Clear will 
+        for brevity control off;
+        2. Self-clear alarm message i.e. transient alarm message.
+        5 seconds later, it will be cleared automatically without 
+        requiring OM. It's MAS self-defined alarm severity not X.733 
+        standard alarm message.
+        "
+        ::= { alarm 11 }
+
+spCount OBJECT-TYPE
+    SYNTAX  Integer32 ( 0 .. 64 )
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "Count of service packages contained in the table"
+    ::= { servicePackage 1 }
+
+spServicePackageTable   OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SpServicePackageEntry
+    MAX-ACCESS      not-accessible
+    STATUS  current
+    DESCRIPTION
+        "A table containing 'servicePackage' specific information."
+    ::= { servicePackage 2 }
+
+spServicePackageEntry   OBJECT-TYPE
+    SYNTAX  SpServicePackageEntry
+    MAX-ACCESS      not-accessible
+    STATUS  current
+    DESCRIPTION
+        "An entry containing 'servicePackage' specific information."
+    INDEX   {
+                spNumber
+            }
+    ::= { spServicePackageTable 1 }
+
+SpServicePackageEntry   ::= SEQUENCE {
+        spNumber        Integer32,
+        spName  DisplayString,
+        spMate  INTEGER,
+        spTargetState   INTEGER,
+        spMajorState    INTEGER,
+        spVersion       DisplayString,
+        spActions       INTEGER
+    }
+
+spNumber        OBJECT-TYPE
+    SYNTAX  Integer32 ( 0 .. 64 )
+    MAX-ACCESS      not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Index of this service package in the service package table"
+    ::= { spServicePackageEntry 1 }
+
+spName  OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS      read-only
+    STATUS  current
+    DESCRIPTION
+        "Name of this service package"
+    ::= { spServicePackageEntry 2 }
+
+spMate  OBJECT-TYPE
+    SYNTAX  INTEGER {
+                mateExists(0),
+                mateDoesNotExist(1)
+            }
+    MAX-ACCESS      read-only
+    STATUS  current
+    DESCRIPTION
+        "this MIB is deprecated on CSF."
+    ::= { spServicePackageEntry 3 }
+
+spTargetState   OBJECT-TYPE
+    SYNTAX  INTEGER {
+                disabledEquipped(0),
+                inService(1),
+                outOfService(2),
+                manuallyOutOfService(3)
+            }
+    MAX-ACCESS      read-only
+    STATUS  current
+    DESCRIPTION
+        "Target major state for this service package"
+    ::= { spServicePackageEntry 4 }
+
+spMajorState    OBJECT-TYPE
+    SYNTAX  INTEGER {
+                disabledEquipped(0),
+                inService(1),
+                outOfService(2),
+                manuallyOutOfService(3)
+            }
+    MAX-ACCESS      read-only
+    STATUS  current
+    DESCRIPTION
+        "SPA major state"
+    ::= { spServicePackageEntry 5 }
+
+spVersion       OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS      read-only
+    STATUS  current
+    DESCRIPTION
+        "Current version of the SPA"
+    ::= { spServicePackageEntry 8 }
+
+-- The normal protocol to use an "action" variable is as follows:
+-- 1)  Write the variable to the desired action.  This write will only
+--     succeed if the variable is currently "idle".
+-- 2)  The requested action will be started.  If the action cannot be
+--     started the write will fail.
+-- 3)  Once the action has been started, the variable will be written
+--     to "idle".
+
+spActions       OBJECT-TYPE
+    SYNTAX  INTEGER {
+                idle(0),
+                remove(1),
+                delete(2),
+                create(3),
+                restore(4)
+            }
+    MAX-ACCESS     read-write 
+    STATUS  current
+    DESCRIPTION
+        "1) remove maps into 'RMV:SPA';  this will take a SPA in the
+            inService state to the manuallyOutOfService state
+            outOfService state to the manuallyOutOfService state
+         2) delete maps into 'DELETE:PROC';  this will take a SPA in the
+            manuallyOutOfService state to the disabledEquipped state
+         3) create maps into 'INSTALL:PROC';  this will take a SPA in the
+            disabledEquipped state to the manuallyOutOfService state
+         4) restore maps into 'RST:SPA'  this will take a SPA in the
+            manuallyOutOfService state to the inService state
+            manuallyOutOfService state to the outOfService state
+
+         Note that there are two different patterns of behavior here,
+         depending on the particular SPA.  This pattern determines whether
+         or not the outOfService state is used.
+
+         For most SPAs, the outOfService state will not be used.  The
+         SPA life cycle would be:
+             disabledEquipped
+             (create or INSTALL:PROC)
+             manuallyOutOfService
+             (restore or RST:SPA)
+             inService
+             (remove or RMV:SPA)
+             manuallyOutOfService
+             (delete or DELETE:PROC)
+
+         For a SPA that uses the new state model, the SPA life cycle would
+         be:
+             disabledEquipped
+             (create or INSTALL:PROC)
+             manuallyOutOfService
+             (restore or RST:SPA)
+             outOfService
+             (internal SPA transition)
+             inService
+             (remove or RMV:SPA)
+             manuallyOutOfService
+             (delete or DELETE:PROC)"
+    ::= { spServicePackageEntry 10 }
+
+spEventName OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS      accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+        "The name of the SPA that has state change."
+    ::= { servicePackage 5 }
+
+spEventOldMajorState OBJECT-TYPE
+    SYNTAX INTEGER {
+        disabledEquipped(0),
+        inService(1),
+        outOfService(2),
+        manuallyOutOfService(3)
+        }
+    MAX-ACCESS      accessible-for-notify 
+    STATUS  current
+    DESCRIPTION
+        "SPA old major state"
+    ::= { servicePackage 6 }
+
+spEventMajorState OBJECT-TYPE
+    SYNTAX  INTEGER {
+        disabledEquipped(0),
+        inService(1),
+        outOfService(2),
+        manuallyOutOfService(3)
+        }
+    MAX-ACCESS      accessible-for-notify 
+    STATUS  current
+    DESCRIPTION
+        "SPA current major state"
+    ::= { servicePackage 7 }
+
+spEvent NOTIFICATION-TYPE
+    OBJECTS {
+        spEventName,
+        spEventOldMajorState,
+        spEventMajorState
+        }
+    STATUS  current
+    DESCRIPTION
+        "Sent to the EMS when the state of a service package changes."
+    ::= { servicePackage 4 }
+
+--  The following table contains extended error information that
+--  can be used to assist in determining the detailed cause of
+--  an error when changing a MIB variable.
+
+--  Please note that extended error information will
+--  not always be available.  If it is not, then an entry may be
+--  made in the table indicating this (the extended error information
+--  will be noted as "No extended error information available.")
+--  It is also possible that no entry will be made.
+
+--  The normal protocol that should be used to get extended error
+--  information would be as follows:
+--  1)  read extendedErrorIndex to determine the current table index
+--  2)  attempt the set
+--  3)  if the set request fails, then use the index read above as a
+--      starting point to search the table for extended error information.
+
+extendedErrorIndex  OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "The highest index found in the error table.  Making new
+        entries into the table, which is only done by the agent,
+        causes this to increment.  When this reaches its maximum
+        it will wrap back to its minimum.  As new entries are made
+        to this table the oldest entries may be dropped.  Although
+        no specific range has been established for this table it is
+        a reasonable assumption that at least 50 entries would be
+        available."
+    ::= { extendedErrors 1 }
+
+extendedErrorTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF ExtendedErrorEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "A table containing extended error information related to
+        set request errors."
+    ::= { extendedErrors 2 }
+
+extendedErrorEntry  OBJECT-TYPE
+    SYNTAX  ExtendedErrorEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "An entry in the previous table."
+    INDEX   {
+        extendedErrorTableIndex
+        }
+    ::= { extendedErrorTable 1 }
+
+ExtendedErrorEntry  ::= SEQUENCE {
+    extendedErrorTableIndex Integer32,
+    extendedErrorTableOID   OBJECT IDENTIFIER,
+    extendedErrorTableValue DisplayString,
+    extendedErrorTableMessage   DisplayString,
+    extendedErrorTableManager   DisplayString
+    }
+
+extendedErrorTableIndex OBJECT-TYPE
+    SYNTAX  Integer32 ( 1 .. 1024 )
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "The index of this entry in the table"
+    ::= { extendedErrorEntry 1 }
+
+extendedErrorTableOID   OBJECT-TYPE
+    SYNTAX  OBJECT IDENTIFIER
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "This is the OID of the variable that was being set.
+        This can be used to find the correct error message if
+        more than one are present."
+    ::= { extendedErrorEntry 2 }
+
+extendedErrorTableValue OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "This is a 'human readible' rendition of the value that
+        the MIB variable was to be set to.  This is used in this
+        format so that the various possible types, e.g., INTEGER vs.
+        DisplayString, can be reported in a single variable."
+    ::= { extendedErrorEntry 3 }
+
+extendedErrorTableMessage   OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "This is the extended error information."
+    ::= { extendedErrorEntry 4 }
+
+extendedErrorTableManager   OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "This MIB is deprecated. It always return empty string.
+
+        This identifies the manager that made the request.  This
+        is to allow requests from multiple managers to be identified.
+
+        The specific content and format of this field is in ASCII 
+        character of Manager's heximal IP address, e.g. IPv4 
+        address 135.255.1.0(87.ff.01.00) will be 3837666630313030."
+    ::= { extendedErrorEntry 5 }
+
+logFileName     OBJECT-TYPE
+    SYNTAX  INTEGER {
+        auditlog(1),
+        craftlog(2),
+        debuglog(3),
+        mtclog(4),
+        omlog(5),
+        prmlog(6)
+    }
+    MAX-ACCESS      accessible-for-notify
+    STATUS  deprecated
+    DESCRIPTION
+        "This identifies the log file that has switched.
+        This is deprecated."
+    ::= { logFile 1 }
+
+logFileOldName  OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS      accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+        "This identifies the 'OLD' log file.  This would be the file
+        name that was previously being written."
+    ::= { logFile 2 }
+
+logFileNewName  OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS      accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+        "This identifies the 'NEW' log file.  This would be the file
+        name that is currently being written."
+    ::= { logFile 3 }
+
+logFileNameInString     OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS      accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+        " This identifies the log file that has switched."
+    ::= { logFile 4 }
+
+logFileEvent    NOTIFICATION-TYPE
+    OBJECTS {
+        logFileOldName,
+        logFileNewName,
+        logFileNameInString
+        }
+    STATUS  current
+    DESCRIPTION
+        "Sent to the EMS when a log file switches."
+    ::= { logFile 5 }
+
+heartbeatTime  OBJECT-TYPE
+    SYNTAX  Integer32 ( 0 .. 2147483647)
+    MAX-ACCESS      accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+        "This attribute indicates the current system time in seconds 
+        since 00:00:00 UTC, January 1, 1970."
+    ::= { heartbeat 1 }
+
+heartbeatEvent NOTIFICATION-TYPE
+    OBJECTS {
+        heartbeatTime
+        }
+    STATUS  current
+    DESCRIPTION
+        "Sent to the EMS at a specified interval, such that EMS can 
+        determine if CSF is available."
+    ::= { heartbeat 2 }
+
+alarmTrapObjectName OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+    "The name of the object causing the alarm."
+    ::= { alarmTraps 1 }
+
+alarmTrapAlarmType OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+    communicationAlarm(1),
+    qualityOfServiceAlarm(2),
+    processingErrorAlarm(3),
+    equipmentAlarm(4),
+    environmentalAlarm(5)
+    }
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+    "The type of this alarm."
+    ::= { alarmTraps 2 }
+
+alarmTrapTime OBJECT-TYPE
+    SYNTAX DateAndTime
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+    "The date and time when alarm or clear happens."
+    ::= { alarmTraps 3 }
+
+alarmTrapProbableCause OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+    adapterError(1),
+    applicationSubsystemFailure(2),
+    bandwidthReduced(3),
+    callEstablishmentError(4),
+    communicationsProtocolError(5),
+    communicationsSubsystemFailure(6),
+    configurationOrCustomizationError(7),
+    congestion(8),
+    corruptData(9),
+    cpuCyclesLimitExceeded(10),
+    dataSetOrModemError(11),
+    degradedSignal(12),
+    dTEdCEInterfaceError(13),
+    enclosureDoorOpen(14),
+    equipmentMalfunction(15),
+    excessiveVibration(16),
+    fileError(17),
+    fireDetected(18),
+    floodDetected(19),
+    framingError(20),
+    heatingOrVentilationOrCoolingSystemProblem(21),
+    humidityUnacceptable(22),
+    inputOutputDeviceError(23),
+    inputDeviceError(24),
+    lANError(25),
+    leakDetected(26),
+    localNodeTransmissionError(27),
+    lossOfFrame(28),
+    lossOfSignal(29),
+    materialSupplyExhausted(30),
+    multiplexerProblem(31),
+    outOfMemory(32),
+    ouputDeviceError(33),
+    performanceDegraded(34),
+    powerProblem(35),
+    pressureUnacceptable(36),
+    processorProblem(37),
+    pumpFailure(38),
+    queueSizeExceeded(39),
+    receiveFailure(40),
+    receiverFailure(41),
+    remoteNodeTransmissionError(42),
+    resourceAtOrNearingCapacity(43),
+    responseTimeExcessive(44),
+    retransmissionRateExcessive(45),
+    softwareError(46),
+    softwareProgramAbnormallyTerminated(47),
+    softwareProgramError(48),
+    storageCapacityProblem(49),
+    temperatureUnacceptable(50),
+    thresholdCrossed(51),
+    timingProblem(52),
+    toxicLeakDetected(53),
+    transmitFailure(54),
+    transmitterFailure(55),
+    underlyingResourceUnavailable(56),
+    versionMismatch(57),
+    authenticationFailure(58),
+    breachOfConfidentiality(59),
+    cableTamper(60),
+    delayedInformation(61),
+    denialOfService(62),
+    duplicateInformation(63),
+    informationMissing(64),
+    informationModificationDetected(65),
+    informationOutOfSequence(66),
+    intrusionDetection(67),
+    keyExpired(68),
+    nonRepudiationFailure(69),
+    outOfHoursActivity(70),
+    outOfService(71),
+    proceduralError(72),
+    unauthorizedAccessAttempt(73),
+    unexpectedInformation(74),
+    unspecifiedReason(75)
+    }
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+    "See the table below for a partial list of probable causes.  SeeX.721 and X.733 for further details."
+    ::= { alarmTraps 4 }
+
+alarmTrapSpecificProblems OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+    "Additional information related to the probable cause, if available"
+    ::= { alarmTraps 5 }
+
+alarmTrapPerceivedSeverity OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+    cleared(1),
+    indeterminate(2),
+    critical(3),
+    major(4),
+    minor(5),
+    warning(6)
+    }
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION                 " "
+    ::= { alarmTraps 6 }
+
+alarmTrapNotificationIdentifier OBJECT-TYPE
+    SYNTAX Integer32 (1..2147483647)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+    "For an alarm, this would be equal to the alarm table index
+    assigned to the entry.
+    For an alarm clear, this would be the alarm table index of
+    the associated alarm.  In those cases where the notification
+    identifier of the associated alarm is not know, a value of
+    0 (zero) shall be used for the notification identifier.  This
+    is the only case where 0 is a legal value for this variable."
+    ::= { alarmTraps 7 }
+
+alarmTrapAdditionalText OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+    "Any additional text provided by the application."
+    ::= { alarmTraps 8 }
+
+alarmTrapOmText OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+            "The Output Message Text for this message, null if none."
+    ::= { alarmTraps 9 }
+
+alarmTrapAlarmCode OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+            "The unique alarm code of the alarm, whose length should be 6."
+    ::= { alarmTraps 10 }
+
+alarmTrapAlarmSource OBJECT-TYPE
+    SYNTAX  DisplayString(SIZE(1 .. 32))
+    MAX-ACCESS accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+            "The alarm source of the alarm, platform name or application name."
+    ::= { alarmTraps 11 }
+
+alarmTrapAlarmUUID OBJECT-TYPE
+    SYNTAX  DisplayString(SIZE(1 .. 36))
+    MAX-ACCESS accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+            "The UUID information of the alarm. Only apply to cloud environment."
+    ::= { alarmTraps 13 }
+
+generalAlarmEvent NOTIFICATION-TYPE
+    OBJECTS { alarmTrapObjectName, 
+        alarmTrapAlarmType, 
+        alarmTrapProbableCause, 
+        alarmTrapSpecificProblems, 
+        alarmTrapPerceivedSeverity,
+        alarmTrapNotificationIdentifier, 
+        alarmTrapAdditionalText, 
+        alarmTrapTime, 
+        alarmTrapOmText, 
+        alarmTrapAlarmCode, 
+        alarmTrapAlarmSource,
+        alarmTrapAlarmUUID,
+        alarmTrapVMFullName,
+        alarmTrapVNFCFullName,
+        alarmTrapSystemName
+        }
+    STATUS current
+    DESCRIPTION
+    "This trap is for an alarm which
+    is not defined in alarm dictionary file when unique alarm trap
+    ID functionality is turned on."
+    ::= { alarmTraps 12 }
+
+alarmTrapVMFullName OBJECT-TYPE
+    SYNTAX  DisplayString(SIZE(1 .. 63))
+    MAX-ACCESS accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+            "VM full name of the node that trigger the alarm. Only apply to cloud environment."
+    ::= { alarmTraps 14 }
+
+alarmTrapVNFCFullName OBJECT-TYPE
+    SYNTAX  DisplayString(SIZE(1 .. 63))
+    MAX-ACCESS accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+            "VNFC full name of the node that trigger the alarm. Only apply to cloud environment."
+    ::= { alarmTraps 15 }
+
+alarmTrapSystemName OBJECT-TYPE
+    SYNTAX  DisplayString(SIZE(1 .. 42))
+    MAX-ACCESS accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+            "System name (i.e. VNF name)."
+    ::= { alarmTraps 16 }
+
+measFile OBJECT-TYPE
+    SYNTAX  DisplayString(SIZE(0..4096))
+    MAX-ACCESS accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+        "The meas file"
+    ::= { meas 1 }
+
+measEvent NOTIFICATION-TYPE
+    OBJECTS {
+        measFile
+        }
+    STATUS current
+    DESCRIPTION
+        "This trap is for meas event."	
+    ::= { meas 3 }
+
+END
+
+</codeblock>
+</fig>
+</section>
+</conbody></concept>

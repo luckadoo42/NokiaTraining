@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="TPA_heartbeatStatus">
+    <title>network-status</title>
+    <conbody>
+        <section id="section_myf_zks_nlb">
+            <title>Description</title>
+            <p>This tool allows you to get the heartbeat status on demand for remote members and
+                their components.</p>
+        </section>
+        <section id="section_pnk_1ls_nlb">
+            <title>Syntax</title>
+            <p>
+                <codeblock>network-status [-h]</codeblock>
+                <table frame="all" rowsep="1" colsep="1" id="table_h5s_bls_nlb">
+                    <tgroup cols="2">
+                        <colspec colname="c1" colnum="1" colwidth="1*"/>
+                        <colspec colname="c2" colnum="2" colwidth="1*"/>
+                        <thead>
+                            <row>
+                                <entry>Option</entry>
+                                <entry>Description</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry><codeph>No arguments</codeph></entry>
+                                <entry>Displays the status of the local site and the status of the
+                                    remote sites declared in the network topology. </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>-h or -?</codeph></entry>
+                                <entry>Displays usage/help information.</entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+            </p>
+        </section>
+        <section>
+            <p>The tools output shows what each site in NCC knows via the configured topology.</p>
+        </section>
+        <section id="section_bpm_2ls_nlb">
+            <title>Example output</title>
+            <p>The following is the tool's output </p>
+            <p>where:<ul id="ul_l15_2v4_wmb">
+                    <li>Local component is ME.</li>
+                    <li><codeph>ncc-me-2</codeph> is IG.</li>
+                </ul></p>
+            <codeblock>> network-status
+Software Version: SPS_20_6_R1 (SPS_20_6_I1104)
+Date: Wed Sep  2 09:01:01 EDT 2020
+Local Status:
+Component [ME] Service Status [IN_SERVICE]
+
+Status for Site 'ncc-me-3' ID [3] Component [SM] Service status [OUT_OF_SERVICE] Missed OAM beats [0] Missed traffic beats [N/A] Last contact [1s ago] Last attempt [1s ago]
+Status for Site 'ncc-me-2' ID [2] Component [ME] Service status [OUT_OF_SERVICE] Missed OAM beats [0] Missed traffic beats [176] Last contact [1s ago] Last attempt [0s ago]
+Status for Site 'ncc-me-2' ID [2] Component [SM] Service status [OUT_OF_SERVICE] Missed OAM beats [0] Missed traffic beats [176] Last contact [1s ago] Last attempt [0s ago]
+
+</codeblock>
+            <p>The following is the tool's output where the local component is IG.</p>
+            <codeblock>> network-status
+Software Version: SPS_20_6_R1 (SPS_20_6_I1104)
+Date: Wed Sep  2 09:01:01 EDT 2020
+
+Local Status:
+Component [ME] Service Status [IN_SERVICE]
+Component [SM] Service Status [IN_SERVICE]
+
+Status for Site 'ncc-me-4' ID [4] Component [SM] Service status [OUT_OF_SERVICE] Missed OAM beats [0] Missed traffic beats [N/A] Last contact [1s ago] Last attempt [1s ago]
+Status for Site 'ncc-me-3' ID [3] Component [SM] Service status [OUT_OF_SERVICE] Missed OAM beats [0] Missed traffic beats [N/A] Last contact [1s ago] Last attempt [1s ago]
+Status for Site 'ncc-me-2' ID [2] Component [ME] Service status [OUT_OF_SERVICE] Missed OAM beats [0] Missed traffic beats [176] Last contact [1s ago] Last attempt [0s ago]
+</codeblock>
+            <p>The following table describes the tool's output.</p>
+            <table frame="all" rowsep="1" colsep="1" id="table_xq5_ryn_wmb">
+                <title>network_status tool's output description</title>
+                <tgroup cols="3">
+                    <colspec colname="c1" colnum="1" colwidth="1*"/>
+                    <colspec colname="c2" colnum="2" colwidth="1*"/>
+                    <colspec colname="c3" colnum="3" colwidth="1*"/>
+                    <thead>
+                        <row>
+                            <entry>Parameter</entry>
+                            <entry>Description</entry>
+                            <entry>Value</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>
+                                <p>Service status</p>
+                            </entry>
+                            <entry>
+                                <p>Whether the site is in or out of service as per the heartbeat
+                                    algorithm.</p>
+                            </entry>
+                            <entry>
+                                <p>
+                                    <ul id="ul_jpd_r14_wmb">
+                                        <li>IS_SERVICE </li>
+                                        <li>OUT_OF_SERVICE</li>
+                                    </ul>
+                                </p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p>Missed OAM beats</p>
+                            </entry>
+                            <entry>
+                                <p>The number of missed heartbeats since the last successful
+                                    heartbeat over the OAM network.</p>
+                            </entry>
+                            <entry>
+                                <p>An integer value, 0 or greater.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p>Missed traffic beats</p>
+                            </entry>
+                            <entry>
+                                <p>The number of missed heartbeats since the last successful
+                                    heartbeat over the Diameter network.</p>
+                            </entry>
+                            <entry>
+                                <p>An integer value, 0 or greater, unless the local site or the site
+                                    polled do not have a Diameter heartbeat, in which case the value
+                                    is  N/A. For instance, a stand-alone SM would not have a
+                                    Diameter heartbeat.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p>Last contact</p>
+                            </entry>
+                            <entry>
+                                <p>The number of seconds since the last successful heartbeat with
+                                    the named site. At least one of OAM or Diameter heartbeat.</p>
+                            </entry>
+                            <entry>
+                                <p>An integer value, 0 or greater, in seconds, in the format of
+                                        <i>nn s</i> ago.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p>Last attempt</p>
+                            </entry>
+                            <entry>
+                                <p>The number of seconds since the last attempt to poll the site for
+                                    its status.</p>
+                            </entry>
+                            <entry>
+                                <p>An integer value, 0 or greater, in seconds, in the format of
+                                        <i>nn s</i> ago.</p>
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+    </conbody>
+</concept>

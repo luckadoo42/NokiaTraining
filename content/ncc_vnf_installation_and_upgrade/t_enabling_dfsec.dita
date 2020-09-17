@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+		<task id="id9YZ-09018-IN00-RJZZA-Enabling-DFSec"><title>Enabling DFSec on IOHO VMs</title><taskbody id="d1e13085"><context>
+<sectiondiv>
+<p><b>Overview</b></p>
+<p>This procedure provides instructions on how to enable DFSec features on the IOHO VMs. Contact
+					Nokia for the credentials.</p>
+</sectiondiv>
+			<p>To enable DFSec on IOHO VMs:</p>
+</context><steps>
+
+<step><cmd>Log in to any Active IOHO VM as root user.</cmd><info/></step>
+<step><cmd>On each IOHO VM restart Web SSO (Keycloak) service by entering:</cmd><info><p>
+<codeph>systemctl restart keycloak</codeph>
+</p></info></step>
+<step><cmd>Ensure that Web SSO, MaxScale and MariaDB are running on all the IOHO VMs by entering:</cmd><info><p>
+<codeph>systemctl status app-mariadb</codeph>
+</p><p>
+<codeph>systemctl status app-maxscale</codeph>
+</p><p>
+<codeph>systemctl status keycloak</codeph>
+</p><p>
+<b>Expected outcome</b>
+</p><p>All the services must be active and running.</p></info></step>
+<step><cmd>On the Active IOHO VM do the following:</cmd><info><ul>
+
+<li>
+<p>Go to <filepath>/opt/tpa/sbin</filepath>
+</p>
+</li>
+<li>
+<p>Run the script by entering:</p>
+<p>
+<codeph>/opt/tpa/sbin/importKeycloakSettings</codeph>
+</p>
+</li>
+</ul><p>
+<b>Expected outcome</b>
+</p><p>If the script run succeeds, the sps-auth realm and the smadmin user are created.</p><note>
+
+<p>If this step is performed on the second site of a GEO pair, the expected output is as follows: </p>
+<p>
+<systemoutput>CKEY settings are already imported, skipping this script</systemoutput>
+</p>
+</note></info></step>
+<step><cmd>Ensure that the sps-auth realm and the smadmin user are created as follows:</cmd><info><ul>
+
+<li>
+<p>Log in to the Web SSO GUI using Web SSO credentials and by going to <i>https://&lt;IOHO VIP&gt;:8666/auth/admin</i>
+</p>
+<p>where IOHO VIP is SM GUI IP.</p>
+</li>
+<li>
+<p>In the Web SSO GUI, hover over the <b>realm</b> drop-down menu and ensure that <i>Master</i> and <i>sps-auth</i> realms are listed.</p>
+</li>
+<li>
+<p>Select <b>sps-auth</b>, and then go the <b>Users</b> tab and click <b>View All Users</b>.</p>
+</li>
+</ul><p>
+<b>Expected outcome</b>
+</p><p>In the list of users, <i>smadmin</i> must be present.</p></info></step>
+<step><cmd>On each IOHO VM run the script by entering:</cmd><info><p>
+<codeph>/opt/tpa/sbin/importSPSKeystore </codeph>
+</p></info></step>
+<step><cmd>On the Standby IOHO VM do the following:</cmd><info><ul>
+
+<li>
+<p>Go to <filepath>/opt/tpa/sbin</filepath>
+</p>
+</li>
+<li>
+<p>Enter:</p>
+<p>
+<codeph>ha add ckey-ha-plugin /opt/tpa/sbin/ckey-ha-plugin</codeph>
+</p>
+</li>
+</ul></info></step>
+</steps>
+</taskbody></task>

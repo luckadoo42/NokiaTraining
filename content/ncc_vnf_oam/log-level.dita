@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-log-level"><title>log-level tool</title><conbody>
+<section><title>Description</title>
+<p>The log-level command provides you with get/set/reset log levels from the OAME node to all application servers in the cluster. This tool helps you get/set/reset log levels without any modification in log4j.xml.</p>
+<p> You can easily switch back and forth from the following:</p><ul>
+<li>
+<p>TRACE</p>
+</li>
+<li>
+<p>DEBUG</p>
+</li>
+<li>
+<p>INFO</p>
+</li>
+<li>
+<p>WARN</p>
+</li>
+<li>
+<p>ERROR</p>
+</li>
+<li>
+<p>FATAL</p>
+</li>
+</ul>
+</section>
+<section><title>Syntax</title>
+<p>To get the level of a logger:</p>
+<codeblock> log-level [-n &lt;hostname&gt;] [-p &lt;port&gt;] &lt;logger name&gt;</codeblock>
+<p>To set the level of a logger:</p>
+<codeblock> log-level [-n &lt;hostname&gt;] [-p &lt;port&gt;] &lt;logger name&gt; &lt;level&gt;</codeblock>
+<p>To reset the levels of all loggers or a specific logger back to default:</p>
+<codeblock> log-level [-n &lt;hostname&gt;] [-p &lt;port&gt;] -r [&lt;logger name&gt;]</codeblock>
+<p>If the hostname is not specified, the command will be run against all application servers. Changing the logger level using this utility does not persist after an application server restart. For a persistent change, add a "logger" entry in log4j.xml.</p>
+<table>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+<p>
+<b>Code</b>
+</p>
+</entry>
+<entry>
+<p>
+<b>Description</b>
+</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+<codeblock>No arguments</codeblock>
+</entry>
+<entry>
+Displays usage/help information.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-h</codeblock>
+</entry>
+<entry>
+Displays usage/help information.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-n &lt;hostname&gt;</codeblock>
+</entry>
+<entry>
+Indicates the server host name. The -n option allows you to indicate the specific application server you want to run the logging against.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-p &lt;port&gt;  </codeblock>
+</entry>
+<entry>
+Indicates the server port number. The default port number is 3334. 
+</entry>
+</row>
+<row>
+<entry>
+&lt;logger name&gt; 
+</entry>
+<entry>
+Provides the logger name.
+</entry>
+</row>
+<row>
+<entry>
+&lt;level&gt;
+</entry>
+<entry>
+<p>Indicates the logging level. INFO, TRACE, DEBUG and WARN.</p>
+<p>Valid values for the logging levels are: </p><ul>
+<li>
+<p>TRACE</p>
+</li>
+<li>
+<p>DEBUG</p>
+</li>
+<li>
+<p>INFO</p>
+</li>
+<li>
+<p>WARN</p>
+</li>
+<li>
+<p>ERROR</p>
+</li>
+<li>
+<p>FATAL</p>
+</li>
+</ul>
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-r &lt;logger name&gt;</codeblock>
+</entry>
+<entry>
+Resets the levels of all loggers or sets a specific logger back to the default.
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section><title>Usage</title>
+<p>To get the level of a logger:</p>
+<sectiondiv>
+<p><b>get operation</b></p>
+<p>For the "get" operation:</p>
+<p>A value of 'null' means that a level has not been explicitly set for the given logger. When a level of 'null' is obtained, a recursive attempt is made on the parent logger in order to determine the inherited log level.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>set operation</b></p>
+<p>For the "set" operation:</p>
+<p>A previous level of "INFO" is assumed if a level has not been explicitly set for the given logger.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>reset all operation</b></p>
+<p>For the "reset all" operation:</p>
+<p>If no loggers need to be reset, the log4j.xml configuration file will be read and any changes from the file will be applied.</p>
+</sectiondiv>
+</section>
+<section><title>Examples</title>
+<p>The following shows some examples of where the set and get operations are used.</p>
+<sectiondiv>
+<p><b>Set log level "com.alcatel.tpapps"  to DEBUG</b></p>
+<codeblock>-sh-4.2$ ./log-level "com.alcatel.tpapps" DEBUG
+sps-me-diameter-0:
+
+Logger 'com.alcatel.tpapps' set to 'DEBUG'.
+
+sps-me-diameter-1:
+Logger 'com.alcatel.tpapps' set to 'DEBUG'.
+</codeblock>
+</sectiondiv>
+<sectiondiv>
+<p><b>Get log level "com.alcatel.tpapps”</b></p>
+<codeblock>-sh-4.2$ ./log-level "com.alcatel.tpapps" 
+
+sps-me-diameter-0:
+com.alcatel.tpapps DEBUG
+DEBUG
+
+sps-me-diameter-1:
+com.alcatel.tpapps DEBUG
+DEBUG
+
+</codeblock>
+</sectiondiv>
+<sectiondiv>
+<p><b> Set log level "com.alcatel.tpapps"  to TRACE</b></p>
+<codeblock>-sh-4.2$ ./log-level "com.alcatel.tpapps" TRACE
+
+sps-me-diameter-0:
+Logger 'com.alcatel.tpapps' set to 'TRACE'.
+
+sps-me-diameter-1:
+Logger 'com.alcatel.tpapps' set to 'TRACE'.
+</codeblock>
+</sectiondiv>
+<sectiondiv>
+<p><b>Get log level "com.alcatel.tpapps"</b></p>
+<codeblock>
+-sh-4.2$ ./log-level "com.alcatel.tpapps" 
+
+sps-me-diameter-0:
+com.alcatel.tpapps TRACE
+TRACE
+
+sps-me-diameter-1:
+com.alcatel.tpapps TRACE
+TRACE
+</codeblock>
+</sectiondiv>
+<sectiondiv>
+<p><b>Set log level "com.alcatel.tpapps"  to INFO</b></p>
+<codeblock>sh-4.2$ ./log-level "com.alcatel.tpapps" INFO
+
+sps-me-diameter-0:
+Logger 'com.alcatel.tpapps' set to 'INFO'.
+
+sps-me-diameter-1:
+Logger 'com.alcatel.tpapps' set to 'INFO'.
+</codeblock>
+</sectiondiv>
+<sectiondiv>
+<p><b>Get log level "com.alcatel.tpapps"</b></p>
+<codeblock>-sh-4.2$ ./log-level "com.alcatel.tpapps"
+
+sps-me-diameter-0:
+com.alcatel.tpapps INFO
+INFO
+
+sps-me-diameter-1:
+com.alcatel.tpapps INFO
+INFO
+</codeblock>
+</sectiondiv>
+<sectiondiv>
+<p><b>Set log level "com.alcatel.tpapps"  to WARN</b></p>
+<codeblock>-sh-4.2$ ./log-level "com.alcatel.tpapps" WARN
+
+sps-me-diameter-0:
+Logger 'com.alcatel.tpapps' set to 'WARN'.
+
+sps-me-diameter-1:
+Logger 'com.alcatel.tpapps' set to 'WARN'.
+
+</codeblock>
+</sectiondiv>
+<sectiondiv>
+<p><b>Get log level "com.alcatel.tpapps"</b></p>
+<codeblock>-sh-4.2$ ./log-level "com.alcatel.tpapps" 
+
+sps-me-diameter-0:
+com.alcatel.tpapps WARN
+WARN
+
+sps-me-diameter-1:
+com.alcatel.tpapps WARN
+WARN
+</codeblock>
+</sectiondiv>
+<sectiondiv>
+<p><b>Reset log level "com.alcatel.tpapps" </b></p>
+<codeblock>-sh-4.2$ ./log-level -r "com.alcatel.tpapps"
+
+sps-me-diameter-0:
+Logger 'com.alcatel.tpapps' reset to 'INFO'
+
+sps-me-diameter-1:
+Logger 'com.alcatel.tpapps' reset to 'INFO'
+</codeblock>
+</sectiondiv>
+<sectiondiv>
+<p><b>Get log level "com.alcatel.tpapps"</b></p>
+<codeblock>-sh-4.2$ ./log-level "com.alcatel.tpapps"
+
+sps-me-diameter-0:
+com.alcatel.tpapps INFO
+INFO
+
+sps-me-diameter-1:
+com.alcatel.tpapps INFO
+INFO
+</codeblock>
+</sectiondiv>
+</section>
+</conbody></concept>

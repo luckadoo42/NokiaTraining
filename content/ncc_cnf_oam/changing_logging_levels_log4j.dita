@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="checking_logging_levels">
+    <title>Changing the logging levels of NCC functions</title>
+    <conbody>
+        <section id="section_un3_l5x_nlb">
+            <title>Overview</title>
+            <p>This procedure is for changing the logging levels for the Java application and is not
+                applicable to the database, CDR, or any /var/log/. Perform this procedure to modify
+                the logging level of one or more NCC functions for troubleshooting purposes. See
+                “Changing NCC logging levels”for information about the logging levels.<note>
+                    <p>Lowering a logging level creates additional log entries and requires more
+                        system resources, which can affect system performance. Ensure that you lower
+                        the logging level for only the required functions and for only the time
+                        required to collect the troubleshooting information.</p>
+                    <p>For day-to-day operations, be sure to review the aggregated logs in the
+                        AdminCLI /var/log/ directory rather than the logs on each node in the
+                        /opt/tpa/log/ directory.</p>
+                    <p>Modifications to the /opt/tpa/logs/log4j.xml file are not automatically
+                        carried over during an upgrade. If you modify the log4j.xml file, after an
+                        upgrade you must manually merge your changes from the previous
+                        /opt//logs/log4j.xml file to the new /opt/ /logs/log4j.xml file.</p>
+                    <p>Application logs INFO level and lower are sent to the OAM from the
+                        application nodes.</p>
+                </note></p>
+        </section>
+        <section id="section_efv_r5x_nlb">
+            <title>Steps</title>
+            <p>
+                <ol id="ol_adl_s5x_nlb">
+                    <li>Open a console window and log in as tpaadmin to the specific node where you
+                        want to modify the log level.</li>
+                    <li>Open the log4j.xml file in /opt/tpa/logs/ directory using a text
+                        editor.</li>
+                    <li>Perform any of the following:<ul id="ul_ubx_55x_nlb">
+                            <li>To change the logging level for general NCC functions, replace
+                                    <i>logging_level</i> in the following with the logging level
+                                that you need, for example,
+                                DEBUG.<codeblock>&lt;logger name="com.nokia.tpapps.">
+&lt;level value="logging_level"/>
+&lt;/logger></codeblock></li>
+                            <li>To change the logging level for the Diameter protocol, replace
+                                    <i>logging_level</i> in the following with the logging level
+                                that you need, for example,
+                                DEBUG.<codeblock>&lt;logger name="com.nokia.tpapps.diameter">
+&lt;level value="logging_level"/>
+&lt;/logger></codeblock></li>
+                            <li>Restart the application server after modifying log4j.xml.</li>
+                            <li>Save and close the log4j.xml file.</li>
+                        </ul></li>
+                </ol>
+            </p>
+        </section>
+    </conbody>
+</concept>

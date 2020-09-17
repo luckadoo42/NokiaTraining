@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9YZ-09018-UG00-PCZZA-d1e14978"><title>Rule </title><conbody>
+<section><title>What is a rule</title>
+            <p>A Rule is a row in the Rule Group that is comprised of a set of Rule Conditions and a
+                set of Rule Actions. You decide how the AVPs received in the incoming request will
+                influence the call flow by developing customized Rule logic. The rule has a
+                precedence that determines its unique order in the rule group evaluation. Rules will
+                be executed if and only if all of its conditions are met. The results sent to the
+                invoking module, if all the conditions are met, contain a list of actions (“things
+                to do”) to be executed by the application module.</p>
+            <p>A Rule is made up of an optional set of logical conditions (criteria attributes) and
+                a set of attribute results (action attributes) constructed as If-Then statements. If
+                no conditions are provided, then the results are included. If there are one or more
+                conditions then the results will only be included if the Rule evaluates to true. For
+                example, you can create a rule that says if the subscriber's category is gold, then
+                send a notification. If the subscribers category is not gold, the notification will
+                not be sent. </p>
+            <p>The rule expression is as follows:</p>
+            <userinput>if (condition(s)) then (action(s))</userinput>
+            <p>The following is an example of a rule written for Policy:</p>
+            <userinput>if Gx.3GPP-SGSN-MCC-MNC.MCC = [302, 334]</userinput>
+            <userinput>then DSC.Charging/QoS-Rule-Definition-Name = "roaming" </userinput>
+            <p>The following is an example of a rule written for NCC:</p>
+            <userinput>if GY_MESSAGE.Service-Context-Id = 32274@3gpp.org</userinput>
+            <userinput>then CALL_RESULT.Default-Roaming-Decision=RoamingDecision HOME </userinput>
+            <p>A Rule can use attributes provided to the trigger to make its conditions and use
+                those values to build the results. Multiple conditions in the rule can be combined
+                with either “and” or “or” logical operators. Multiple actions are separated by the
+                “and’ logical operator.</p>
+            <p>When evaluating the Rule, only the conditions specified in the Rule instance are
+                considered by the rule engine (for example, any unfilled attributes from the Rule
+                Group Definition are considered to be matched/wild-carded). When a Rule is invoked,
+                all of its actions are taken together as a whole. The first matched Rule from the
+                table whose conditions have been met is executed. After that Rule Group evaluation
+                terminates, the next Rule Group belonging to a trigger is evaluated.</p>
+            <p>The attributes are provided in a Source Context. The results of a Rule are put into a
+                Result Context.</p>
+            <sectiondiv>
+                <p><b>Value type restrictions in this release</b></p>
+                <p>Certain restrictions on the use of binary arrays apply in this release. You must
+                    use hexidecimal string in the rule if the AVP is OctectString, Date Time, or
+                    Address value type. At this time the NCC does not decode attributes containing
+                    binary arrays; therefore, you cannot reference the decoded value in a rule
+                    condition. Instead, you must reference the encoded value using a specific
+                    syntax. </p>
+                <p>For the supported Long and Double value types, the value(s) must be parsible as
+                    required in the following:</p>
+                <ul>
+                    <li>
+                        <p>https://docs.oracle.com/javase/7/docs/api/java/lang/Long.html#parseLong(java.lang.String)</p>
+                    </li>
+                    <li>
+                        <p>https://docs.oracle.com/javase/7/docs/api/java/lang/Double.html#valueOf(java.lang.String)</p>
+                    </li>
+                </ul>
+                <p>See the following examples for using an AVP with octet string value types and
+                    Date Time value types:</p>
+            </sectiondiv>
+            <sectiondiv>
+                <p><b>Examples of OctetString usage for ValueTypes in AVPs in rule
+                    conditions</b></p>
+                <p>
+                    <b>Example 1</b>
+                </p>
+                <p>To apply an action when the 3GPP-RAT-Type equals EUTRAN. The encoded value for
+                    EUTRAN is 0x06; therefore, you must construct a rule condition referencing the
+                    encoded value using the following syntax:</p>
+                <ul>
+                    <li>
+                        <p>GyCCR.Service-Information.PS-Information.3GPP-RAT-Type = \06</p>
+                        <p>where: the criteria are &lt;source context&gt; GyCCR and &lt;attribute
+                            name&gt; Service-Information.PS-Information.3GPP-RAT-Type</p>
+                        <p>the Operator is Equal</p>
+                        <p>
+                            <b>Value that is of type STRING (OctetString in 3GPP standard) and a
+                                value of \06</b>
+                        </p>
+                        <p>\06 = EUTRAN</p>
+                    </li>
+                </ul>
+                <p>
+                    <b>Example 2 </b>
+                </p>
+                <p>To apply an action when 3GPP-Charging-Id equals 1234. The encoded value for 1234
+                    is 0x000004D2; therefore, you must construct a rule condition referencing the
+                    encoded value using the following syntax:</p>
+                <ul>
+                    <li>
+                        <p>GyCCR.Service-Information.PS-Information.PS-Furnish-Charging-Information.3GPP-Charging-Id
+                            = \00\00\04\D2</p>
+                        <p>where: the criteria are &lt;source context&gt; GyCCR and &lt;attribute
+                            name&gt;
+                            Service-Information.PS-Information.PS-Furnish-Charging-Information.3GPP-Charging-Id</p>
+                        <p>the Operator is Equal</p>
+                        <p>
+                            <b>Value that is of type STRING (OctetString in 3GPP standard) and a
+                                value of \00\00\04\D2</b>
+                        </p>
+                        <p>\00\00\04\D2 = 1234</p>
+                    </li>
+                </ul>
+            </sectiondiv>
+            <sectiondiv>
+                <p><b>Example of Date Time usage for ValueTypes in AVPs in rule conditions</b></p>
+                <p>The NCC decodes “Date Time” attributes by evaluating the date and time based on
+                    the number of milliseconds since 1/1/1970 rather than the number of seconds
+                    since 1\1\1900 as is encoded in the value.</p>
+                <p>To apply an action when User-Location-Info-Time equals Feb 7, 2017 5:25:28 PM.
+                    The encoded value for Feb 7, 2017 5:25:28 PM is DC44C7D8; therefore, the user
+                    must construct a rule condition referencing the encoded value converted to
+                    milliseconds since 1\1\1970.</p>
+                <ul>
+                    <li>
+                        <p>GyCCR.Service-Information.PS-Information.User-Location-Info-Time =
+                            1486506328000</p>
+                        <p>where: the criteria are &lt;source context&gt; GyCCR and &lt;attribute
+                            name&gt; Service-Information.PS-Information.User-Location-Info-Time</p>
+                        <p>the Operator is Equal</p>
+                        <p>
+                            <b>Value that is of type LONG or BIGINTEGER (Date Time in 3GPP standard)
+                                and a value of 1486506328000</b>
+                        </p>
+                        <p>The value is derived as follows:</p>
+                        <p>User-Location-Info-Time =  Feb 7, 2017 5:25:28 PM = 3695495128 (seconds
+                            since 1\1\1900) = DC44C7D8</p>
+                        <p>Seconds from 1\1\1900 to 1\1\1970 = 2208988800</p>
+                        <p>Seconds from 1\1\1970 to Feb 7, 2017 5:25:28 PM = 3695495128 – 2208988800
+                            = 1486506328</p>
+                        <p>Milliseconds from 1\1\1970 to Feb 7, 2017 5:25:28 PM = 1486506328000</p>
+                    </li>
+                </ul>
+            </sectiondiv>
+        </section>
+</conbody></concept>

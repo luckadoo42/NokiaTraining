@@ -1,0 +1,420 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//NSN//DTD DITA Concept//EN" "nsnconcept.dtd">
+		<concept id="id9YZ-09018--PL00-FPZZA-d1e21296"><title>Case 17: Smart metering</title><conbody>
+
+<section><title>Overview</title>
+
+<p>Smart metering systems record energy usage at frequent intervals (for example on hourly basis) and send it electronically using Advanced Metering Infrastructure (AMI). The Time of Use (TOU) metering plan enables users to plan their heavy power (electricity) usage during off-peak hours. At the same time, the TOU metering plan promotes overall conservation by applying higher rates to the users with high power consumption.</p>
+<p>The power consumption can be calculated depending on the following utilities:</p><ul>
+
+<li>
+Fixed percentage of base rate
+</li>
+<li>
+Fixed rate per Kwh of power consumption
+</li>
+<li>
+Percentage of total expenses
+</li>
+<li>
+Fixed monthly charges per account
+</li>
+</ul>
+</section>
+<section><title>Flow of events</title>
+
+<p>The following energy tariffs are applied for this use case:<table pgwide="1" colsep="1"
+     rowsep="1">
+     <title>Energy tariffs for this use case</title>
+     <tgroup cols="4">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <colspec colname="col3"/>
+      <colspec colname="col4"/>
+      <thead>
+       <row>
+        <entry/>
+        <entry> Peak hours </entry>
+        <entry> Partial peak hours </entry>
+        <entry> Off-peak hours </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry>
+         <emphasis>Time (weekdays)</emphasis>
+        </entry>
+        <entry> 1pm to 7pm </entry>
+        <entry>
+         <p>10am to 1pm</p>
+         <p>and</p>
+         <p>7pm to 9pm</p>
+        </entry>
+        <entry> remaining hours </entry>
+       </row>
+       <row>
+        <entry>
+         <emphasis>Weekends</emphasis>
+        </entry>
+        <entry> None </entry>
+        <entry> 5pm to 8pm </entry>
+        <entry> remaining hours </entry>
+       </row>
+       <row>
+        <entry>
+         <emphasis>Holidays</emphasis>
+        </entry>
+        <entry> None </entry>
+        <entry> None </entry>
+        <entry> remaining hours </entry>
+       </row>
+       <row>
+        <entry>
+         <emphasis>Tier 1- Monthly allowance</emphasis>
+        </entry>
+        <entry> 100 Kwh </entry>
+        <entry> 100 Kwh </entry>
+        <entry> 400 Kwh </entry>
+       </row>
+       <row>
+        <entry>
+         <emphasis>Tier 2- Monthly allowance</emphasis>
+        </entry>
+        <entry> 101 Kwh to 200 Kwh </entry>
+        <entry> 101 Kwh to 200 Kwh </entry>
+        <entry> 400 Kwh to 800 Kwh </entry>
+       </row>
+       <row>
+        <entry>
+         <emphasis>Tier 3- Monthly allowance</emphasis>
+        </entry>
+        <entry> &gt; 200 Kwh </entry>
+        <entry> &gt; 200 Kwh </entry>
+        <entry> &gt; 800 Kwh </entry>
+       </row>
+       <row>
+        <entry>
+         <emphasis>Tier 1- Rate $</emphasis>
+        </entry>
+        <entry> 10$ </entry>
+        <entry> 7$ </entry>
+        <entry> 5$ </entry>
+       </row>
+       <row>
+        <entry>
+         <emphasis>Tier 2- Rate $</emphasis>
+        </entry>
+        <entry> 20$ </entry>
+        <entry> 17$ </entry>
+        <entry> 15$ </entry>
+       </row>
+       <row>
+        <entry>
+         <emphasis>Tier 3- Rate $</emphasis>
+        </entry>
+        <entry> 30$ </entry>
+        <entry> 27$ </entry>
+        <entry> 25$ </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table></p>
+</section>
+<section><title>Provisioning</title>
+
+<note type="attention">
+
+<p>Ensure that after creating a record, you distribute it to ME. Otherwise, the provisioning will not be successful.</p>
+</note>
+ <p>Following entities are required for this use case.<table pgwide="1" rowsep="1" colsep="1"><title>Entities for case 18</title>
+
+
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+Entity
+</entry>
+<entry>
+Task
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+Charging service
+</entry>
+<entry>
+Create a charging service with a data bucket, counter, and tariff.
+</entry>
+</row>
+<row>
+<entry>
+Bundle
+</entry>
+<entry>
+<p>Create a data bundle and associate the charging service and IOT lifecycles. The bundle contains the minimum monthly charge (<varname>Bundle_TOU_TMP</varname>).</p>
+<p>The list of charging services (<varname>TPP</varname>, <varname>TPE</varname>, <varname>TOP</varname>), and the lifecycle used for subscription (<varname>MonthlySubscLC</varname> and <varname>MonthlyRenewSubscLC</varname>):</p><ul>
+
+<li>
+
+<varname>TPE</varname> is for peak hours
+</li>
+<li>
+
+<varname>TPP</varname> is for partial peak
+</li>
+<li>
+
+<varname>TOP</varname> is for off-peak
+</li>
+</ul>
+</entry>
+</row>
+<row>
+<entry>
+Rate
+</entry>
+<entry>
+Create a rate to be used in charging service.
+</entry>
+</row>
+<row>
+<entry>
+Lifecycles
+</entry>
+<entry>
+Create a device, account, and IOT lifecycles.
+</entry>
+</row>
+<row>
+<entry>
+Rules and Variables
+</entry>
+<entry>
+Create a rule variables for traffic modes (peak, partial peak time) using the <varname>APPLICABILITY</varname> trigger.
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table></p>
+<p>Provision the following data:</p><ol>
+
+<li>Create the <varname>MonthlySubsLC</varname> for object status lifecycle with
+      <uicontrol>Active</uicontrol>, <uicontrol>Disconnected</uicontrol>,
+      <uicontrol>PreActive</uicontrol>, and <uicontrol>Inactive</uicontrol> states and associate it
+     with bundles for other nodes (groups, accounts, devices) in the hierarchy.Similarly, create
+      the <varname>MonthlyRenewSubscLC</varname> periodic renewal lifecycle with
+       <uicontrol>Active</uicontrol>, <uicontrol>PreActive</uicontrol>,
+       <uicontrol>Inactive</uicontrol> states.</li>
+<li>Create a charging service named as <varname>TPP</varname> for Partial Peak hours following the
+     given steps:<ol>
+      <li>Navigate to <uicontrol> Policy &amp; Charging Configuration</uicontrol> and select the
+        <uicontrol>Charging</uicontrol> tab. Browse to select <uicontrol>Charging
+        Services</uicontrol> and click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+       <image href="../images/sdd_button_default.png"/> to create the charging service as shown in
+       the following figure: <!--MMO resource relative URI: ../graphics/Case_18_Charging_service_creation_default.png-->
+       <image href="../images/case_18_charging_service_creation_default.png"/>
+      </li>
+      <li>Configure the tariff formula as shown in the following figure: <!--MMO resource relative URI: ../graphics/Case18_CS1_tariff_formula_default.png-->
+       <image href="../images/case18_cs1_tariff_formula_default.png"/>
+      </li>
+     </ol><p>Similarly, create two more charging services named as <varname>TPE</varname> for Peak
+      hours and <varname>TOP</varname> for Off Peak hours with the following configuration:</p><p>
+      <uicontrol>TPE</uicontrol>
+     </p><table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1"/>
+       <colspec colname="col2"/>
+       <thead>
+        <row>
+         <entry> Parameter </entry>
+         <entry> Value </entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry> Name </entry>
+         <entry> TPE </entry>
+        </row>
+        <row>
+         <entry> Priority </entry>
+         <entry> 555 </entry>
+        </row>
+        <row>
+         <entry> Category </entry>
+         <entry> DefaultCategory </entry>
+        </row>
+        <row>
+         <entry> Applicability Condition </entry>
+         <entry>
+          <p>@TrafficMode = "PeakTime" and</p>
+          <p>@TrafficType = "EnergyMeter"</p>
+         </entry>
+        </row>
+        <row>
+         <entry> Tariff Formula </entry>
+         <entry/>
+        </row>
+        <row>
+         <entry namest="col1" nameend="col2">
+          <!--MMO resource relative URI: ../graphics/Case18_CS2_tariff_formula_default.png-->
+          <image href="../images/case18_cs2_tariff_formula_default.png" id="image_btn_nnt_3lb"/>
+         </entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table><p>
+      <uicontrol>TOP</uicontrol>
+     </p><table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1"/>
+       <colspec colname="col2"/>
+       <thead>
+        <row>
+         <entry> Parameter </entry>
+         <entry> Value </entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry> Name </entry>
+         <entry> TOP </entry>
+        </row>
+        <row>
+         <entry> Priority </entry>
+         <entry> 557 </entry>
+        </row>
+        <row>
+         <entry> Category </entry>
+         <entry> DefaultCategory </entry>
+        </row>
+        <row>
+         <entry> Applicability Condition </entry>
+         <entry>
+          <p>@TrafficMode = "OffPeakTime" and</p>
+          <p>@TrafficType = "EnergyMeter"</p>
+         </entry>
+        </row>
+        <row>
+         <entry> Tariff Formula </entry>
+         <entry/>
+        </row>
+        <row>
+         <entry namest="col1" nameend="col2">
+          <!--MMO resource relative URI: ../graphics/Case18_CS2_tariff_formula_default.png-->
+          <image href="../images/case18_cs2_tariff_formula_default.png" id="image_jtf_pnt_3lb"/>
+         </entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table></li>
+<li>Create a bundle named as <varname>Bundle_TOU_TMP</varname>. To do this, navigate to
+       <uicontrol> Policy &amp; Charging Configuration</uicontrol> and select the
+       <uicontrol>Charging</uicontrol> tab. Browse to select <uicontrol>Bundles</uicontrol> and
+      click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+      <image href="../images/sdd_button_default.png"/> to create the bundle as shown in the
+      following figure:
+     <!--MMO resource relative URI: ../graphics/Case18_Bundle_creation_default.png-->
+     <image href="../images/case18_bundle_creation_default.png"/>
+    </li>
+<li>Create a rate named as <varname>Rate_Tiered_OffPeak</varname> by navigating to <uicontrol>
+      Policy &amp; Charging Configuration</uicontrol> and select the <uicontrol>Charging</uicontrol>
+     tab. Browse to select <uicontrol>Rates</uicontrol> and click <!--MMO resource relative URI: ../../../../../SPS-Charging-UG/Graphics/Release_18.0/Add_button_default.png-->
+     <image href="../images/sdd_button_default.png" id="image_zjp_gnt_3lb"/> to create the rate as
+     shown in the following figure: <!--MMO resource relative URI: ../graphics/Case_18_Rate_creation_default.png-->
+     <image href="../images/case_18_rate_creation_default.png"/>
+     <p>Similarly, create two more rates named as <varname>Rate_Tiered_PartialPeak</varname> and
+       <varname>Rate_Tiered</varname> with the following configuration:</p>
+     <p>
+      <b>Rate_PartialPeakTime</b>
+     </p>
+     <table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1"/>
+       <colspec colname="col2"/>
+       <thead>
+        <row>
+         <entry> Parameter </entry>
+         <entry> Value </entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry> Name </entry>
+         <entry> Rate_Tiered_PartialPeak </entry>
+        </row>
+        <row>
+         <entry> Connection Cost </entry>
+         <entry> $ 2 </entry>
+        </row>
+        <row>
+         <entry> Rate Type </entry>
+         <entry> KWH </entry>
+        </row>
+        <row>
+         <entry> Granularity Level </entry>
+         <entry> KWH </entry>
+        </row>
+        <row>
+         <entry namest="col1" nameend="col2">
+          <!--MMO resource relative URI: ../graphics/Case18_Rate2_default.png-->
+          <image href="../images/case18_rate2_default.png"/>
+         </entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     <p>
+      <b>Rate_PeakTime</b>
+     </p>
+     <table pgwide="1" rowsep="1" colsep="1">
+      <tgroup cols="2">
+       <colspec colname="col1"/>
+       <colspec colname="col2"/>
+       <thead>
+        <row>
+         <entry> Parameter </entry>
+         <entry> Value </entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry> Name </entry>
+         <entry> Rate_Tiered </entry>
+        </row>
+        <row>
+         <entry> Connection Cost </entry>
+         <entry> $ 2 </entry>
+        </row>
+        <row>
+         <entry> Rate Type </entry>
+         <entry> KWH </entry>
+        </row>
+        <row>
+         <entry> Granularity Level </entry>
+         <entry> KWH </entry>
+        </row>
+        <row>
+         <entry namest="col1" nameend="col2">
+          <!--MMO resource relative URI: ../graphics/Case18_Rate3_default.png-->
+          <image href="../images/case18_rate3_default.png"/>
+         </entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+    </li>
+<li>Create a rule for trigger Applicability condition. To do this, go to <uicontrol>Rules and
+      Variables</uicontrol>, select Trigger <uicontrol>Applicability</uicontrol>. <!--MMO resource relative URI: ../graphics/Case_18_rule_creation1_default.png-->
+     <image href="../images/case_18_rule_creation1_default.png"/>
+     <!--MMO resource relative URI: ../graphics/Case_18_rule_creation2_default.png-->
+     <image href="../images/case_18_rule_creation2_default.png"/>
+     <!--MMO resource relative URI: ../graphics/Case17_step5end_default.png-->
+     <image href="../images/case17_step5end_default.png"/>
+    </li>
+</ol>
+</section>
+</conbody></concept>

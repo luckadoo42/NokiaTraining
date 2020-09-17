@@ -1,0 +1,1742 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+		<concept id="id9YZ-09018-IN00-RJZZA-SPS_worksheet"><title>NCC section</title><conbody id="SPS_worksheet">
+
+<p>The NCC section contains configuration data for the NCC applications and database. Modify the
+			values in this section as required and needed.</p>
+<note>
+
+<p>Do not remove the parameters.</p>
+</note>
+<table id="System_leve_keys_table" pgwide="1" rowsep="1" colsep="1"><title>NCC parameters descriptions (part 1)</title>
+
+<tgroup cols="3">
+				<colspec colname="col1" colwidth="1.85*"/>
+				<colspec colname="COLSPEC1" colwidth="1.7*"/>
+				<colspec colname="COLSPEC2" colwidth="1*"/>
+				<thead>
+					<row>
+						<entry> Parameter </entry>
+						<entry> Description </entry>
+						<entry> Update notes </entry>
+					</row>
+				</thead>
+				<tbody>
+					<row>
+						<entry>multiqueue/config </entry>
+						<entry>
+							<p>This parameter does not apply to NCC deployments on VMware and NCC
+								deployments using CBIS on OpenStack. For these deployments,
+								&lt;multiqueue/config&gt; cannot be modified and must be left with
+								the default value. For any questions, contact Nokia Professional
+								Services.</p>
+							<p>This parameter applies to NCC deployments on OpenStack and is used as
+								follows.</p>
+							<p>If OpenStack configuration is overcommitted for CPU and RAM, then the
+								VMs might use the lesser value than you have specified with this
+								parameter. This parameter allows to configure the multi-queue
+								virtio-net functionality on OpenStack.</p>
+							<p>This parameter allows to configure the multi-queue virtio-net
+								functionality on OpenStack.</p>
+							<p>The value of this parameter must be the same for all ME, SM and IG
+								sites in the deployment. If this parameter is not used, the value
+								must be the default value. If this parameter is used, then the value
+								must be the updated value.</p>
+							<p>You can use this parameter only if, when you created images in
+								OpenStack, you added the following:</p>
+							<userinput>property hw_vif_multiqueue_enabled=true</userinput>
+							<p>For more information,
+									see<!--xref URI: t-install-procedure-openstack.xml#Multi-queue_step--><xref
+									keyref="id9YZ-09018-IN00-RJZZA-Uploading-QCOW2-images/Multi-queue_step"
+									>Step 1</xref> in the procedure
+									<!--xref URI: t-install-procedure-openstack.xml#Installing_SPS--><xref
+									keyref="id9YZ-09018-IN00-RJZZA-Installing_SPS"/>.</p>
+							<p>When localization is established at the startup, the multi-queue is
+								attempted to configure. If this parameter is left with its default
+								value of double quotes (“"), then the system knows that no
+								multi-queue is used on this site.</p>
+						</entry>
+						<entry> See this parameter’s description for update information. </entry>
+					</row>
+					<row>
+						<entry>
+							<p>multiqueue/config</p>
+							<p> (continued)</p>
+						</entry>
+						<entry>
+							<p>This parameter is configured with Virtualized Deployment Unit (VDU)
+								names, which are aligned with VM names. The format of this parameter
+								allows to list all the site’s VDUs (Auxiliary is not used) with
+								their respective ethN interfaces and the number of queues that have
+								to be configured. Each ethN’s entry is delimited by the comma (,)
+								character. Each VDU’s configuration is delimited by the semicolon
+								(;) character. The entire value is enclosed by double quotes (“)
+								characters. </p>
+						</entry>
+						<entry/>
+					</row>
+					<row>
+						<entry>
+							<p>multiqueue/config</p>
+							<p> (continued)</p>
+						</entry>
+						<entry>
+							<p>The following example shows how to configure this parameter.</p>
+							<p>If an ME site has the following configuration:</p>
+							<ul>
+								<li>
+									<p>oame: eth0 has 4 queues, eth1 has 4 queues </p>
+								</li>
+								<li>
+									<p>db: eth0 has 6 queues, eth1 has 6 queues </p>
+								</li>
+								<li>
+									<p>ioho: eth0 has 8 queues, eth1 has 8 queues </p>
+								</li>
+								<li>
+									<p>iohd: eth0 has 8 queues, eth1 has 8 queues </p>
+								</li>
+								<li>
+									<p>comsvc:  eth0 has 8 queues </p>
+								</li>
+								<li>
+									<p>diameterapp: eth0 has 8 queues </p>
+								</li>
+								<li>
+									<p>cdr: eth0 has 8 queues</p>
+								</li>
+							</ul>
+							<p>then this ME site’s &lt;multiqueue/config&gt; parameter has the
+								following value:</p>
+							<codeblock>"oame:eth0_4,eth1_4;db:eth0_6,eth1_6;ioho:eth0_8,
+eth1_8;iohd:eth0_8,eth1_8;comsvc:eth0_8;
+diameterapp:eth0_8;cdr:eth0_8"</codeblock>
+							<p>If an SM site has the following configuration:</p>
+							<ul>
+								<li>
+									<p>oame: eth0 has 4 queues, eth1 has 4 queues</p>
+								</li>
+								<li>
+									<p>db: eth0 has 6 queues, eth1 has 6 queues</p>
+								</li>
+								<li>
+									<p>ioho: eth0 has 8 queues, eth1 has 8 queues</p>
+								</li>
+								<li>
+									<p>smapp: eth0 has 8 queues</p>
+								</li>
+							</ul>
+							<p>then this SM site’s &lt;multiqueue/config&gt; parameter has the
+								following value:</p>
+							<codeblock>"oame:eth0_4,eth1_4;db:eth0_6,eth1_6;ioho:eth0_8,
+eth1_8;smapp:eth0_8"</codeblock>
+						</entry>
+						<entry/>
+					</row>
+					<row>
+						<entry>
+							<p>multiqueue/config</p>
+							<p> (continued)</p>
+						</entry>
+						<entry>
+							<p>If an IG site has the following configuration:</p>
+							<ul id="ul_h3r_djj_mmb">
+								<li>
+									<p>oame: eth0 has 4 queues, eth1 has 4 queues </p>
+								</li>
+								<li>
+									<p>db: eth0 has 6 queues, eth1 has 6 queues </p>
+								</li>
+								<li>
+									<p>ioho: eth0 has 8 queues, eth1 has 8 queues </p>
+								</li>
+								<li>
+									<p>iohd: eth0 has 8 queues, eth1 has 8 queues </p>
+								</li>
+								<li>
+									<p>comsvc:  eth0 has 8 queues </p>
+								</li>
+								<li>
+									<p>diameterapp: eth0 has 8 queues </p>
+								</li>
+								<li>
+									<p>cdr: eth0 has 8 queues</p>
+								</li>
+								<li>
+									<p>smapp: eth0 has 8 queues</p>
+								</li>
+							</ul>
+							<p>then this IG site’s &lt;multiqueue/config&gt; parameter has the
+								following value:</p>
+							<codeblock>"oame:eth0_4,eth1_4;db:eth0_6,eth1_6;ioho:eth0_8,
+eth1_8;iohd:eth0_8,eth1_8;comsvc:eth0_8;
+diameterapp:eth0_8;cdr:eth0_8;smapp:eth0_8"</codeblock>
+						</entry>
+						<entry/>
+					</row>
+					<row>
+						<entry>rs_naming_convention_four</entry>
+						<entry>If Resource Naming Convention is 4 is used during installation on
+							VMWare, then values must be modified. The <varname>true</varname> value
+							of this parameter indicates that rs naming convention four is applied.
+							When set to false, this feature will not work.</entry>
+						<entry>Contact Nokia Professional Services to change the value at run
+							time.</entry>
+					</row>
+					<row>
+						<entry>custom/packagekey </entry>
+						<entry>
+							<p>This parameter defines whether or not a custom software package is
+								used with the NCC installation. Configure this parameter only if you
+								use a custom package, otherwise do not change its default value. If
+								you use a custom package, you must configure this parameter,
+								otherwise your custom package will be uninstalled during VM
+								localization. The localization task uses this parameter to determine
+								whether any custom package should be kept in.</p>
+							<p>The value is a unique string, defined for the customer. The string
+								can contain multiple strings separated by comma, for example:</p>
+							<codeblock>"custom/packagekey": "string1,string2,string3"</codeblock>
+							<p>The default value is the empty string.</p>
+							<p>This parameter is used to install One-NDS, HLAPI and any other custom
+								package. </p>
+							<p>If you are using a custom package, which is not One-NDS or HLAPI,
+								contact Nokia Professional Services to configure this parameter.</p>
+							<p>If you are using HLAPI, set this parameter as follows:</p>
+							<p>
+								<userinput>"custom/packagekey": "hlapisurepay"</userinput>
+							</p>
+							<p>For more information on HLAPI plugin, see <i>NCC HLAPI
+								Reference</i>.</p>
+						</entry>
+						<entry> Must update, if you use a custom package. </entry>
+					</row>
+					<row>
+						<entry>custom/packagekey <p>(continued)</p></entry>
+						<entry>
+							<p>When One-NDS is used, this parameter is configured differently for SM
+								sites and ME sites. For SM sites, the ALATPAudnotifonends package is
+								used. For ME sites, the ALATPAonendsldapplugin package is used. To
+								install One-NDS, configure this parameter as follows:</p>
+							<ul id="ul_dhr_ljj_mmb">
+								<li>
+									<p>To install the ALATPAudnotifonends package on SM sites, set
+										the parameter as follows:</p>
+									<p>
+										<userinput>"custom/packagekey": "udnotifonends"</userinput>
+									</p>
+								</li>
+								<li>
+									<p>To install the ALATPAonendsldapplugin package on ME sites,
+										set the parameter as follows:</p>
+									<p>
+										<userinput>"custom/packagekey":
+											"onendsldapplugin"</userinput>
+									</p>
+								</li>
+							</ul>
+							<p>For more information about One-NDS, see <i>Policy User Guide</i>.</p>
+						</entry>
+						<entry/>
+					</row>
+					<row>
+						<entry>autoheal/max_retry_times </entry>
+						<entry>
+							<p>This parameter defines the maximum number of times CBAM tries to heal
+								an unhealthy VM using a scheduled auto-healing operation.</p>
+							<p>The value range is [0,10].</p>
+							<p>The zero value disables auto-healing.</p>
+						</entry>
+						<entry/>
+					</row>
+					<row>
+						<entry>selinux/state </entry>
+						<entry> This parameter defines the SELinux security module state in the NCC.
+							This parameter must be set to <varname>permissive</varname>. </entry>
+						<entry> Do not modify. </entry>
+					</row>
+					<row>
+						<entry>etcd/monitoring/sleep-interval </entry>
+						<entry> This parameter defines how often the ETCD service is checked by the
+							monitoring service. The value is in seconds. </entry>
+						<entry> If you need to modify the default value, you must contact Nokia
+							Professional Services. </entry>
+					</row>
+					<row>
+						<entry nameend="COLSPEC2" namest="col1">
+							<b>External LDAP authentication for Linux parameters</b>
+						</entry>
+					</row>
+					<row>
+						<entry>authconfig/ldap/enableldap </entry>
+						<entry> This parameter defines whether or not to enable LDAP authentication
+							on the system. </entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry>authconfig/ldap/enableldaptls </entry>
+						<entry> This parameter defines whether or not to enable TLS for LDAP
+							communication. </entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry>/authconfig/su/enablepwlesstpaadmin </entry>
+						<entry> If true, this will allow users to "su" to tpaadmin without providing
+							a password. This is convenient for LDAP users as they will typically
+							need to become tpaadmin to perform operations on the system. </entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry>authconfig/ldap/ldapbasedn </entry>
+						<entry> This parameter defines BaseDN on the LDAP server from which users
+							and groups are loaded. </entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry>authconfig/ldap/ldapserver </entry>
+						<entry>
+							<p>This parameter defines the LDAP server location.</p>
+							<p>The LDAP server's fqdn can be used only if it is known by the NCC's
+								nameserver, otherwise the LDAP server's IP address must be used.</p>
+						</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry>authconfig/sshd/disabletpaadmin </entry>
+						<entry> This parameter defines whether or not to disable SSH access by
+							tpaadmin user. This parameter must be used with caution since, if
+							tpaadmin is disabled and LDAP authentication is not configured properly,
+							there is no access to the system using SSH. </entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry>authconfig/basehomedirectory </entry>
+						<entry>
+							<p>This parameter defines the base home directory for LDAP users. This
+								parameter ensures that such a directory exists in the NCC when an
+								LDAP user is created. When an LDAP user first logs in to an NCC
+								node, this user is allocated space in the directory defined by this
+								parameter. For example, if user “sarah” is configured in LDAP to use
+								“/users/homes/sarah”, then the home base directory must be defined
+								as “/users/homes/”, and at the node instantiation time the system
+								automatically creates directory “/users/homes/”.</p>
+							<p>This parameter is only used if &lt;authconfig/disablemkhomedir&gt; is
+								set to false.</p>
+						</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry>authconfig/disablemkhomedir </entry>
+						<entry> This parameter defines whether or not to disable automatic home
+							directory creation. By default the system attempts to create user home
+							directories (which is important because user homes configured in LDAP
+							might not exist in the NCC). </entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry>authconfig/ldap/cacertfile </entry>
+						<entry> This parameter defines the URL pointing to the trusted CA file used
+							by the LDAP server for its certificates. This parameter must be in PEM
+							format. If a URL is provided, NCC nodes automatically attempt to
+							download the file and use it as a trusted CA certificate for LDAP
+							communication. </entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry>authconfig/ldap/disablecertcheck </entry>
+						<entry>
+							<p>This parameter defines whether or not to disable the certificate
+								check on LDAP connections.</p>
+							<p>The values are true and false and indicate the following:</p>
+							<ul>
+								<li>
+									<p>If this parameter is set to true, then the certificate check
+										is disabled.</p>
+								</li>
+								<li>
+									<p>If this parameter is set to false, then the certificate check
+										is enabled.</p>
+								</li>
+							</ul>
+						</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry nameend="COLSPEC2" namest="col1">
+							<b>TCP inbound message-related parameters for the NCC NS component</b>
+						</entry>
+					</row>
+					<row>
+						<entry>ioho/tcp/spsns/port </entry>
+						<entry> This parameter defines the NS port to listen on for inbound TCP
+							messages. </entry>
+						<entry>
+							<p>Modify if needed during installation.</p>
+							<p>To update the value after installation, update this parameter in ETCD
+								and restart the IOHO application.</p>
+						</entry>
+					</row>
+					<row>
+						<entry>ioho/tcp/spsns/token/separator </entry>
+						<entry>
+							<p>This parameter defines the separator between two messages from a TCP
+								client.</p>
+							<p>This separator is used by the NCC NS component.</p>
+						</entry>
+						<entry>
+							<p>Modify if needed during installation.</p>
+							<p>To update the value after installation, update this parameter in ETCD
+								and restart the IOHO application.</p>
+						</entry>
+					</row>
+					<row>
+						<entry nameend="COLSPEC2" namest="col1">
+							<b>PCRF application parameters</b>
+						</entry>
+					</row>
+					<row>
+						<entry>tpaproperties/pcrf/retryable/resultcodes </entry>
+						<entry> This parameter defines how many times a RAR message is attempted to
+							be sent in response to a RAA message with the result codes defined in
+							the RAA message. By default, the RAR message is sent up to three times
+							if the result code in the RAA message is DIAMETER_TOO_BUSY or
+							DIAMETER_UNABLE_TO_DELIVER. </entry>
+						<entry> Contact Nokia Professional Services to change the default value if
+							needed. </entry>
+					</row>
+					<row>
+						<entry>tpaproperties/pcrf/retry/delay </entry>
+						<entry> This parameter defines the delay time in ms with which a RAR message
+							is retried when a RAA message is received. </entry>
+						<entry> Contact Nokia Professional Services to change the default value if
+							needed. </entry>
+					</row>
+					<row>
+						<entry>tpaproperties/pcrf/deviceunlocktask/adjusttime </entry>
+						<entry>
+							<p>This parameter defines time adjustment in milliseconds that is
+								applied to the maximum time that the Device Unlock task might run
+								for. The adjustment is done when a task opens. This adjustment
+								ensures that the task unlocks the device itself and before the lock
+								expiry timer expires. This lock expiry timer is defined by
+								&lt;tpaproperties/ltm/server/lockguardtimer&gt;. </p>
+							<p>The maximum time until a task runs is calculated as follows:</p>
+							<p>&lt;maximum time&gt; =
+								&lt;tpaproperties/ltm/server/lockguardtimer&gt; - &lt;time elapsed
+								till the task is to be initiated&gt;</p>
+							<p>Nokia recommends to keep the default value for
+								&lt;tpaproperties/pcrf/deviceunlocktask/adjusttime&gt;. However, if
+								you modify the default value, ensure that the new value is greater
+								than or equal to &lt;Device Unlock Scheduled Task Delay Time&gt;
+								application preference defined in the Global Configuration
+								Guide.</p>
+							<p>The value range for
+								&lt;tpaproperties/pcrf/deviceunlocktask/adjusttime&gt; is
+								[0,50].</p>
+						</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry>tpaproperties/pcrf/secondary/route/resultnames </entry>
+						<entry>
+							<p>This parameter defines the list of result codes for which a secondary
+								route is configured when the primary route fails and all the retries
+								to the primary are exhausted. This parameter applies to Gx-RAR,
+								Rx-RAR, Rx-ASR messages.</p>
+							<p>The value must be configured in the following format where multiple
+								result codes are separated by comma:</p>
+							<p>
+								<varname>DIAMETER_UNABLE_TO_DELIVER, DIAMETER_TOO_BUSY</varname>
+							</p>
+						</entry>
+						<entry> Contact Nokia Professional Services to change the default value if
+							needed. </entry>
+					</row>
+					<row>
+						<entry>tpaproperties/pcrf/audit/interval/change/on/resultcodes </entry>
+						<entry>
+							<p>This parameter defines the list of result codes for which TEMEntity
+								entry corresponding to a Gx session is updated using
+									<varname>Modified Audit Interval On RAR Failure
+									(seconds)</varname> system preference instead of IPCAN audit
+								parameters. For example, if a Gx-RAR fails with 3002 result code,
+								and 3002 is specified in this parameter (for example, this
+								parameter’s value is <varname>3002,3005</varname>), then TEMEntity
+								entry corresponding to that Gx session is updated as <varname>NOW +
+									the value provisioned in Modified Audit Interval On RAR Failure
+									(seconds)</varname>. </p>
+							<p>This parameter applies to Gx interface only.</p>
+							<p>The value must be configured in the following format where multiple
+								result codes are separated by comma:</p>
+							<p>
+								<varname>3002,3005</varname>
+							</p>
+						</entry>
+						<entry> Contact Nokia Professional Services to change the default value if
+							needed. </entry>
+					</row>
+					<row>
+						<entry nameend="COLSPEC2" namest="col1">
+							<b>External SPR parameters for LDAP</b>
+						</entry>
+					</row>
+					<row>
+						<entry>tpaproperties/sprexternal/enabled </entry>
+						<entry>
+							<p>This parameter enables or disables the external SPR. Set to true or
+								false.</p>
+							<p>The values of true and false are case sensitive and must be in
+								lowercase.</p>
+						</entry>
+						<entry> N/A </entry>
+					</row>
+					<row>
+						<entry>tpaproperties/sprexternal/concentratortimeout </entry>
+						<entry> This parameter defines the processor configuration: rpc request
+							timeout in ms. </entry>
+						<entry> N/A </entry>
+					</row>
+					<row>
+						<entry>tpaproperties/sprexternal/concentratorconnections </entry>
+						<entry> This parameter defines the processor configuration: number of TCP
+							connections to LDAP concentrator. </entry>
+						<entry> N/A </entry>
+					</row>
+					<row>
+						<entry nameend="COLSPEC2" namest="col1">
+							<b>Lock and Transaction Manager (LTM) parameters</b>
+						</entry>
+					</row>
+					<row>
+						<entry>tpaproperties/ltm/comm/port </entry>
+						<entry> This parameter defines the TCP port number that the LTM server
+							listens to. </entry>
+						<entry> Do not modify. </entry>
+					</row>
+					<row>
+						<entry>tpaproperties/ltm/comm/numconnpernode </entry>
+						<entry> This parameter defines the number of communication paths (load
+							sharing) between a client and the centralized server. </entry>
+						<entry> N/A </entry>
+					</row>
+					<row>
+						<entry>tpaproperties/ltm/server/waitlistlen </entry>
+						<entry> This parameter defines the number of requests in the waiting list
+							when the requested lock is already taken by another application. </entry>
+						<entry> N/A </entry>
+					</row>
+					<row>
+						<entry>tpaproperties/ltm/server/lockguardtimer </entry>
+						<entry> This parameter defines the time in ms when the lock is released if
+							it is not explicitly released by the application that granted this lock. </entry>
+						<entry> N/A </entry>
+					</row>
+					<row>
+						<entry nameend="COLSPEC2" namest="col1">
+							<b>NCC application metrics collection parameters</b>
+						</entry>
+					</row>
+					<row>
+						<entry>prometheus_entry_in_cron_status</entry>
+						<entry>
+							<p>This parameter is used to add "prometheus-memory-check.sh" tool in
+								crontab on both oame nodes. </p>
+							<p>The values are:<ol id="ol_o1b_hj4_cmb">
+									<li>enable: Used to add "prometheus-memory-check.sh" tool in
+										crontab.</li>
+									<li>disable: Does not do anything. Any string other than
+										"enable" can be used.</li>
+								</ol></p>
+						</entry>
+						<entry>For more details, see "Prometheus memory monitoring" section in the
+							NCC Operation, Administration, and Maintenance Guide.</entry>
+					</row>
+					<row>
+						<entry>csvmetrics/collection-interval </entry>
+						<entry>
+							<p>This parameter defines the collection interval in minutes during
+								which the metrics is fetched and written into the following
+									location:<filepath>/appdata/sps/meas/</filepath>.</p>
+							<p>The zero value disables counters and scheduling of the NCC
+								application metrics collection.</p>
+							<p>The value range is [0,1440].</p>
+						</entry>
+						<entry> Must update. </entry>
+					</row>
+					<row>
+						<entry>csvmetrics/collection-interval-offset </entry>
+						<entry>
+							<p>This parameter defines the collection interval offset, which is the
+								offset (delay) amount in minutes for the collection interval.</p>
+							<p>The NCC application metrics collection occurs at the beginning of an
+								hour unless the offset is specified</p>
+							<p>The value range is [0 ,csvmetrics/collection-interval].</p>
+						</entry>
+						<entry> Must update. </entry>
+					</row>
+					<row>
+						<entry>metrics/application_metrics_mode </entry>
+						<entry>
+							<p>This parameter defines the metrics mode that an application will run
+								in. The change in this parameter is reflected on the next
+								application restart and does not apply to already running
+								applications. The supported values are case-insensitive and have the
+								following values:</p>
+							<ul>
+								<li>
+									<p>
+										<varname>csv</varname>
+									</p>
+								</li>
+								<li>
+									<p>
+										<varname>prometheus</varname>
+									</p>
+								</li>
+							</ul>
+							<p>If this parameter is set to <i>csv</i>, the application metrics are
+								exported to csv files. If this parameter is set to
+								<i>prometheus</i>, the application metrics are exported to
+								Prometheus tool. If you need to change the default value, it is
+								preferred to update the parameter before the VNF instantiation, so
+								that there is no need to restart all the applications afterwards.
+								However, in case you need to change this parameter for already
+								running systems, this can be done with the configure-metrics-mode
+								tool on the Active OAME VM. For more information, see <i>System and
+									Application metrics measurement</i> section in <i>Operation,
+									Administration and Maintenance Guide</i>.</p>
+						</entry>
+						<entry> Must update. </entry>
+					</row>
+					<row>
+						<entry>config/log/timestamp </entry>
+						<entry>
+							<p>This parameter defines the timestamp format for certain NCC logs.</p>
+							<p>This values are:</p>
+							<ul>
+								<li>
+									<p>
+										<varname>UTC</varname>
+									</p>
+								</li>
+								<li>
+									<p>
+										<varname>System</varname>
+									</p>
+								</li>
+							</ul>
+							<p>This parameter applies to the following logs:</p>
+							<ul>
+								<li>
+									<p>/opt/tpa/logs/AerospikeClientStats.log (SM, ME and IG)</p>
+								</li>
+								<li>
+									<p>/opt/tpa/logs/DiameterInterceptor.log (ME, IG)</p>
+								</li>
+								<li>
+									<p>/opt/tpa/logs/DSCSecurity.log (ME, IG)</p>
+								</li>
+								<li>
+									<p>/opt/tpa/logs/Server.log (SM, ME, IG)</p>
+								</li>
+								<li>
+									<p>/opt/tpa/logs/Spotlight.log (SM, ME, IG)</p>
+								</li>
+								<li>
+									<p>/opt/tpa/logs/SPSServer.log (SM, ME, IG)</p>
+								</li>
+								<li>
+									<p>/var/log/sps/DiameterInterceptor.log (ME, IG)</p>
+								</li>
+								<li>
+									<p>/var/log/sps/DSCSecurity.log (ME, IG)</p>
+								</li>
+								<li>
+									<p>/var/log/sps/HLAPIServer.log (SM, IG)</p>
+								</li>
+								<li>
+									<p>/var/log/sps/LDAPSearch.log (SM, IG)</p>
+								</li>
+								<li>
+									<p>/var/log/sps/ManagedElement.log (SM, IG)</p>
+								</li>
+								<li>
+									<p>/var/log/sps/Provisioning.log (SM, IG)</p>
+								</li>
+								<li>
+									<p>/var/log/sps/Server.log (SM, ME, IG)</p>
+								</li>
+								<li>
+									<p>/var/log/sps/ServiceManager.log (SM, IG)</p>
+								</li>
+								<li>
+									<p>/var/log/sps/Spotlight.log (SM, ME, IG)</p>
+								</li>
+								<li>
+									<p>/var/log/sps/SPSServer.log (SM, ME, IG)</p>
+								</li>
+								<li>
+									<p>/var/log/sps/UserAccess.log (SM, IG)</p>
+								</li>
+							</ul>
+						</entry>
+						<entry>
+							<p>Modify if needed.</p>
+							<p>You can modify this parameter with
+									<codeph>configure-log-timestamp</codeph> tool. The system has to
+								restart to apply the changes. For more information about this tool,
+								see <i>Operation, Administration and Maintenance Guide</i>,</p>
+						</entry>
+					</row>
+					<row>
+						<entry nameend="COLSPEC2" namest="col1">
+							<p>
+								<b>Kafka topic-partition parameters for NCC application</b>
+							</p>
+							<p>For more information on how to calculate the values for the
+								parameters that depend on the number of VMs of a particular type,
+								see <i>NCC Performance Engineering Guidelines</i>.</p>
+						</entry>
+					</row>
+					<row>
+						<entry>tpaproperties/kafka/topic/partition/kafkaHealthCheck </entry>
+						<entry>
+							<p>This parameter defines the number of partitions for the
+								‘KafkaHealthCheck’ topic. The value for this parameter is a small
+								integer, which is greater or equal to one.</p>
+							<p>On the ME: This value should be equal to or a multiple of the number
+								of ComSvc VMs.*</p>
+							<p>On the SM: This value should be equal to or a multiple of the number
+								ofof SmApp VMs.*</p>
+						</entry>
+						<entry/>
+					</row>
+					<row>
+						<entry>tpaproperties/kafka/topic/partition/DpeTemAudit </entry>
+						<entry>
+							<p>This parameter defines the number of partitions created for
+								DpeTemAudit message used by Timed Event Manager (TEM).</p>
+							<p>The number of partitions should be equal to or a multiple of the
+								number of Diameter App VMs.*</p>
+						</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry> tpaproperties/kafka/topic/partition/EntityModelChangeEventsQueue </entry>
+						<entry> This parameter defines the number of partitions created for the
+							EntityModelChangeEventsQueue message topic.  This parameter is used to
+							inform the system of create/update/delete events for various entities.
+							This value should be equal to or a multiple of the combined number of
+							Diameter App and ComSvc VMs.* For example, if there are 2 Diameter App
+							VMs and 3 ComSvc VMs, this parameter can be set to 5, 10, 15, and so on. </entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry> tpaproperties/kafka/topic/partition/DCE_STALE_GY_SESSION_AUDIT </entry>
+						<entry> This parameter defines the number of partitions created for the
+							DCE_STALE_GY_SESSION_AUDIT message topic. This value should be equal to
+							or a multiple of the number of Diameter App VMs.* </entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry> tpaproperties/kafka/topic/partition/DCE_STALE_SY_SESSION_AUDIT </entry>
+						<entry> This parameter defines the number of partitions created for the
+							DCE_STALE_SY_SESSION_AUDIT message topic. This value should be equal to
+							or a multiple of the number of Diameter App VMs.* </entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry> tpaproperties/kafka/topic/partition/DiameterHeartbeatRequestTopic </entry>
+						<entry> This parameter defines the number of partitions created for the
+							DiameterHeartbeatRequestTopic message topic. This value should be equal
+							to or a multiple of the number of ComSvc VMs.*</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry>tpaproperties/kafka/topic/partition/DpeTemPenalty </entry>
+						<entry> This parameter defines the number of partitions created for the DpeTemPenalty message
+							topic. This value should be equal to or a multiple of the number of
+							ComSvc VMs.*</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry>tpaproperties/kafka/topic/partition/DpeTemReset </entry>
+						<entry> This parameter defines the number of partitions created for the DpeTemReset message
+							topic. This value should be equal to or a multiple of the number of
+							Diameter App VMs.*</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry>tpaproperties/kafka/topic/partition/SubscriberDataTopic </entry>
+						<entry>
+							<p>This parameter defines the number of partitions created for
+								SubscriberDataTopic message used for subscriber data change
+								notification.</p>
+							<p>On the ME: This value should be equal to or a multiple of the number of ComSvc VMs.*</p>
+							<p>On the SM: This value should be equal to or a multiple of the number of SmApp VMs.*</p>
+						</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry>tpaproperties/kafka/topic/partition/LifecycleTransitionJob </entry>
+						<entry> This parameter defines the number of partitions created for the LifecycleTransitionJob
+							message topic. This value should be equal to or a multiple of the number
+							of ComSvc VMs.*</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry>tpaproperties/kafka/topic/partition/ThresholdScheduleJob </entry>
+						<entry> This parameter defines the number of partitions created for the ThresholdScheduleJob
+							message topic. This value should be equal to or a multiple of the number
+							of ComSvc VMs.*</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry> tpaproperties/kafka/topic/partition/LifeCycleSendSNR_Provisioning </entry>
+						<entry>
+							<p>This parameter defines the number of partitions for the
+									<i>LifeCycleSendSNR_Provisioning</i> message topic, required for
+								sending the SNR during provisioning or lifecycle.</p>
+							<p>The value should be equal to or a multiple of the number of Diameter App VMs.*</p>
+						</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry>
+							<p>tpaproperties/kafka/topic/partition/LifeCycleSendSNR_Renew_Reset</p>
+						</entry>
+						<entry>
+							<p>This parameter defines the number of partitions for the
+									<i>LifeCycleSendSNR_Renew_Reset</i> message topic, required for
+								sending the SNR during upon renew or reset of account and
+								subscription.</p>
+							<p>The value should be equal to or a multiple of the number of Diameter
+								App VMs.*</p>
+						</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry>tpaproperties/kafka/topic/partition/RuleEngineReload </entry>
+						<entry> This parameter defines the number of partitions created for the RuleEngineReload
+							message topic. This value should be equal to or a multiple of the number
+							of ComSvc VMs.*</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry>tpaproperties/kafka/topic/partition/SysConfigEventsTopic </entry>
+						<entry>
+							<p>This parameter defines the number of partitions created for the
+								SysConfigEventsTopic message topic.</p>
+							<p>On the ME: This value should be equal to or a multiple of the number of ComSvc VMs.*</p>
+							<p>On the SM: This value should be equal to or a multiple of the number of SmApp VMs.*</p>
+						</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry>tpaproperties/kafka/topic/partition/NfControllerKafkaTopic </entry>
+						<entry> This parameter defines the number of partitions created for the NfControllerKafkaTopic
+							message topic. This value should be equal to or a multiple of the number
+							of ComSvc VMs.*</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry> tpaproperties/kafka/topic/partition/NfControllerBroadcastKafkaTopic </entry>
+						<entry> This parameter defines the number of partitions created for the
+							NfControllerBroadcastKafkaTopic message topic. This value should be
+							equal to or a multiple of the number of ComSvc VMs.*</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry> tpaproperties/kafka/topic/partition/HLAPI_RAR_SNR_REQUEST_TOPIC </entry>
+						<entry> This parameter defines the number of partitions created for the
+							HLAPI_RAR_SNR_REQUEST_TOPIC message topic. This value should be equal to
+							or a multiple of the number of Diameter App VMs.*</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry>tpaproperties/kafka/topic/partition/LifeCycleSendSNR_Account </entry>
+						<entry> This parameter defines the number of partitions created for the
+							LifeCycleSendSNR_Account message topic. This value should be equal to or
+							a multiple of the number of Diameter App VMs.*</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry>tpaproperties/kafka/topic/partition/LifeCycleSendSNR_Device </entry>
+						<entry> This parameter defines the number of partitions created for the
+							LifeCycleSendSNR_Device message topic. This value should be equal to or
+							a multiple of the number of Diameter App VMs.*</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry> tpaproperties/kafka/topic/partition/LifeCycleSendSNR_Subscription </entry>
+						<entry> This parameter defines the number of partitions created for the
+							LifeCycleSendSNR_Subscription message topic. This value should be equal
+							to or a multiple of the number of Diameter App VMs.*</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry>tpaproperties/kafka/topic/partition/afStrCacheTopic </entry>
+						<entry> This parameter defines the number of partitions created for the afStrCacheTopic
+							message topic. This value should be equal to or a multiple of the number
+							of ComSvc VMs.*</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry>tpaproperties/kafka/topic/partition/AssignUnassign </entry>
+						<entry> This parameter defines the number of partitions created for the AssignUnassign message
+							topic. This value should be equal to or a multiple of the number of
+							ComSvc VMs.*</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry>tpaproperties/kafka/topic/partition/DpeClearPenalty </entry>
+						<entry> This parameter defines the number of partitions created for the DpeClearPenalty
+							message topic. This value should be equal to or a multiple of the number
+							of Diameter App VMs.*</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry> tpaproperties/kafka/topic/partition/DCE_STALE_IMS_SESSION_AUDIT </entry>
+						<entry> This parameter defines the number of partitions created for the
+							DCE_STALE_IMS_SESSION_AUDIT message topic. This value should be equal to
+							or a multiple of the number of Diameter App VMs.*</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry>tpaproperties/kafka/topic/partition/DeleteSubscriptionJob </entry>
+						<entry> This parameter defines the number of partitions created for the DeleteSubscriptionJob
+							message topic. This value should be equal to or a multiple of the number
+							of ComSvc VMs.*</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+					<row>
+						<entry> tpaproperties/kafka/topic/partition/PROFILE_CHANGE_TOPIC_NAME </entry>
+						<entry> This parameter defines the number of partitions created for the
+							PROFILE_CHANGE_TOPIC_NAME message topic. This value should be equal to
+							or a multiple of the number of ComSvc VMs.*</entry>
+						<entry> Modify if needed. </entry>
+					</row>
+				</tbody>
+			</tgroup>
+</table>
+		<note>*Increasing the value of this parameter results in better load-balancing across
+			partitions. However, more partitions need more disk space on the Kafka disk.</note>
+<section id="SPS_topology_partition_example">
+<title>Database, topology and geo-redundancy configuration parameters </title>
+<p>This section defines the parameters that a site uses to determine which namespaces to apply and also to determine the XDR topology attributes (replication configurations).</p>
+<p>The configuration of the topology spssite and topology spspartition parameters depend on a deployment model. The following deployment models are supported:</p><ul>
+
+<li>
+<p>Isolated 1+1 pairs</p>
+</li>
+<li>
+<p>Networked 1+1 pairs</p>
+</li>
+</ul>
+<table id="SPS-parameter-description-table-part2" pgwide="1" colsep="1" rowsep="1"><title>NCC parameters descriptions (part 2)</title>
+
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC1"/>
+<colspec colname="COLSPEC2"/>
+<thead>
+<row>
+<entry>
+Parameter
+</entry>
+<entry>
+Description
+</entry>
+<entry>
+Update notes
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry nameend="COLSPEC2" namest="col1">
+
+<b>Application and database configuration parameters</b>
+
+</entry>
+</row>
+<row>
+<entry>
+tpaproperties/tpapps/db/maxfailednodes
+</entry>
+<entry>
+<p>The NCC is a 2*(N+K) Active/Active cluster of database VMs designed to process a full-traffic
+									load with the maximum K number of VMs within any of the two
+									groups that can fail before the resources drop below the
+									designed levels. If this occurs, the NCC takes actions such as
+									requesting traffic to shut off and then returning to service
+									when the databases are back at the designed levels.</p>
+<p>The NCC divides the database cluster into two groups, rack1/zone1 and rack2/zone2, to facilitate
+									a faster and more robust software upgrade. For this reason, each
+									group has N+K database VMs.</p>
+<p>This parameter specifies the value of K. The value of N is (M/2) – K, where M is the total number of database VMs in the system (That is the combined number of VMs in the two groups.).</p>
+<p>If the value is not specified, then the value is the default, that is one. If the specified value is less than zero, it is reset to zero. If the specified value is greater than the number of database VMs in the group, it is reset to the number of VMs in that group minus one.</p>
+<p>For example, if this parameter is set to 3, this means that no more than three VMs within any of the two database groups can fail before the entire database cluster becomes out of service.</p>
+</entry>
+<entry>
+Must update.
+</entry>
+</row>
+<row rowsep="0">
+							<entry> aerospike/cluster/rackid/mapping </entry>
+							<entry>
+								<p>This parameter defines the mapping of Aerospike rack IDs to
+									&lt;zones&gt; parameter defined in the Scalable file.</p>
+								<p>
+									<b>For deployments with one, or four and more zones:</b>
+								</p>
+								<p>This parameter is set to the empty string as follows: </p>
+								<codeblock> "aerospike/cluster/rackid/mapping": ""</codeblock>
+								<p>If this parameter is assigned to the empty sting, the rack IDs
+									for the DB VMs are assigned based on the numeric index of a VM’s
+									hostname. If that index is an even number, then the rack ID is
+									1. If that index is an odd number, then the rack ID is 2.</p>
+								<p>For example, if there are four DB VMs, the rack IDs are as
+									follows:</p>
+								<ul>
+									<li>
+										<p>db-0, db-2 are mapped to the rack ID 1.</p>
+									</li>
+									<li>
+										<p>db-1, db-3 are mapped to the rack ID 2.</p>
+									</li>
+								</ul>
+								<p>
+									<b>For deployments with three zones:</b>
+								</p>
+								<p>This parameter is set as follows:</p>
+								<codeblock>"aerospike/cluster/rackid/mapping": [{"zone1":"1"},{"zone2":"2"}]</codeblock>
+							</entry>
+							<entry> Must update. </entry>
+						</row>
+						<row>
+							<entry/>
+							<entry>
+								<p>where:</p>
+								<ul id="ul_yfp_ckj_mmb">
+									<li>
+										<p>&lt;zone1&gt; and &lt;zone2&gt; are the cloud/VIM zones
+											or the names of the logical groupings and must be
+											aligned as follows:</p>
+										<ul id="ul_zfp_ckj_mmb">
+											<li>
+												<p>for OpenStack, &lt;zone1&gt; and &lt;zone2 &gt;
+												must match &lt;availability zone1&gt; and
+												&lt;availability zone2 &gt; in the Scalable
+												file.</p>
+											</li>
+											<li>
+												<p>for VMware, &lt;zone1&gt; and &lt;zone2 &gt; must
+												match &lt;logical grouping 1&gt; and &lt;logical
+												grouping 2&gt; in the Scalable file.</p>
+											</li>
+										</ul>
+									</li>
+									<li>
+										<p>1 and 2 are the Aerospike rack IDs. Aerospike rack IDs
+											are numeric.</p>
+									</li>
+								</ul>
+							</entry>
+							<entry/>
+						</row>
+<row>
+<entry nameend="COLSPEC2" namest="col1">
+
+<b>Database geo-redundancy parameters</b>
+
+</entry>
+</row>
+<row>
+<entry>aerospike/xdr/xdrmaxshipthroughput </entry>
+<entry>
+<p>This parameter controls the XDR throughput per remote site. It can be used to throttle the XDR throughput on a per remote site basis so that XDR traffic would not compete with normal system operations on system/network resources utilization.</p>
+<p>If the system performance is impacted by a burst of high XDR traffic, then this parameter should be carefully tuned by performance and scalability verification team.</p>
+<p>The minimum value is 0, which means unlimited. The maximum value is any valid integer number.</p>
+</entry>
+<entry>
+<p>Must contact Nokia Professional Services to determine the correct values.</p>
+<p>Ensure that the new values are the same for all the sites of the same type. </p>
+</entry>
+</row>
+<row>
+<entry>aerospike/xdr/xdrdigestlogpath/size </entry>
+<entry>
+<p>The parameter specifies the size of the XDR digest log file on DB VMs.</p>
+<p>For lab trial setups, the default value should be sufficient so the parameter does not have to be specified.</p>
+<p>The minimum value is the default value. The maximum value can be very large as long as the system has enough storage space to support that, but the practical maximum is 536870912000 (500 GB).</p>
+<p>This parameter must be carefully dimensioned to accommodate resources/performance requirements.</p>
+<p>The &lt;db_digestlog_volume&gt; volume, which is created and attached to each DB VM, must be large enough to accommodate the digestlog file with the defined size.</p>
+</entry>
+<entry>
+<p>Must contact Nokia Professional Services to determine the correct values.</p>
+<p>Ensure that the new values are the same for all the sites of the same type. </p>
+</entry>
+</row>
+<row>
+<entry>
+aerospike/xdr/xdrdigestlogpath/location
+</entry>
+<entry>
+<p>This parameter defines the location and the name of the XDR digestlog file on DB VMs.</p>
+<p>The &lt;db_digestlog_volume&gt; volume that is created and attached to each DB VM, is mounted to this location</p>
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+						<row>
+							<entry>aerospike/xdr/xdrdigestlogiowaitms</entry>
+							<entry>This parameter controls the time, in milliseconds, of the
+								following two different batch/throttling mechanisms around the
+								digestlog io:<ol id="ol_wvw_wbq_jlb">
+									<li>Time to wait for the queue to be written into the digestlog
+										if the limit of 100 entries has not been reached.</li>
+									<li>Time to wait before  reading digest log entries from the
+										digest log if the limit of 100 entries has not been
+										reached.</li>
+								</ol>The default value of this parameter is 500 ms.<p>This
+									configuration controls the time it takes for the source cluster
+									to pick up a digest for XDR replication, if the rate of writes
+									to the database is really low.</p><p>It also controls the
+									frequency of writes to the digestlog at low traffic.
+								</p></entry>
+							<entry>Modify if needed.</entry>
+						</row>
+<row>
+<entry nameend="COLSPEC2" namest="col1">
+<p>
+<b>Database namespace’s configuration parameters</b>
+</p>
+<p>You must update these parameters for live deployment.</p>
+<p>You must contact Nokia Professional Services to determine the correct values for these parameters. These parameters correlate with the storage parameters. For more information, see <!--xref URI: t-install-intro-prerequisites.xml#Cinder_volumes--><xref keyref="id9YZ-09018-IN00-RJZZA-d1e893/Cinder_volumes"/>.</p>
+<p>The default values are for the lab trial setups only.</p>
+</entry>
+</row>
+<row>
+<entry>
+aerospike/namespace/dsc/memorysize
+</entry>
+<entry morerows="4">
+<p>Use these parameters to customize the namespace's &lt;memorysize&gt;. The value can be in MB or GB.</p>
+<p>The six files per namespace are created with the file sizes set to &lt;memorysize&gt;. </p>
+<p>The &lt;db_datastore_volume&gt; parameter that is created and attached to each DB VM must be large enough to accommodate all the namespace’s files.</p>
+</entry>
+<entry morerows="4">
+<p>Must contact Nokia Professional Services to determine the correct values.</p>
+<p>Ensure that the new values are the same for all the sites of the same type. </p>
+</entry>
+</row>
+<row>
+<entry>
+aerospike/namespace/dsclocal/memorysize
+</entry>
+</row>
+<row>
+<entry>
+aerospike/namespace/dscglobal/memorysize
+</entry>
+</row>
+<row>
+<entry>
+aerospike/namespace/spspd/memorysize
+</entry>
+</row>
+<row>
+<entry>
+aerospike/namespace/spsundologs/memorysize
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC2" namest="col1">
+<p>
+<b>Topology site parameters</b>
+</p>
+<p>The topology site parameters must be configured in accordance with the following:</p><ul>
+
+<li>
+<p>For every topology site parameter, you <b>must modify the &lt;spssiteid&gt;</b> portion of the parameter.</p>
+</li>
+<li>
+<p>Every SM site in addition to its own set of topology site parameters <b>must have</b> in its VNF Extension file <b>all the topology site parameters of all the other SM and ME sites</b> .</p>
+</li>
+<li>
+<p>Every IG site in addition to its own set of topology site parameters <b>must have</b> in its VNF Extension file <b>all the topology site parameters of all the other IG and ME sites</b>.</p>
+</li>
+<li>
+<p>Depending on the deployment model, the following applies:</p><ul>
+
+<li>
+<p>If the NCC is deployed as Isolated 1+1, then every ME site in addition to its own set of topology
+												site parameters <b>must have</b> in its VNF
+												Extension file <b>all the topology site parameters
+												of its mate ME site and all the other SM
+												sites</b>. This allows to scope the global mapping
+												tables only for a particular pair of 1+1 ME sites
+												and make them two-way replicated.</p>
+</li>
+<li>
+<p>If the NCC is deployed as Networked 1+1, then every ME site in addition to its own set of
+												topology site parameters <b>must have</b> in its
+												VNF Extension file <b>all the topology site
+												parameters of all the ME and SM (or IG ) site</b>.
+												This allows for the global mapping tables to
+												include all MEs in the network and make them N-way
+												replicated.</p>
+</li>
+</ul>
+</li>
+</ul>
+</entry>
+</row>
+<row>
+<entry>spssiteid </entry>
+<entry>
+<p>This parameter defines the ID for an NCC site. This parameter supports 32 values in the interval
+									[0,31]. This parameter is used for all the NCC topology
+									parameters and <b>must be unique for each site</b> across all
+									the sites deployed.</p>
+<p>For example, if there are four MEs and two SMs in your NCC, then each site is assigned a unique
+									integer in this group of six; the MEs are numbered 1, 2, 3 and
+									4; the SMs are numbered 5 and 6.</p>
+</entry>
+<entry>
+Must update.
+</entry>
+</row>
+<row>
+<entry>topology/spssite/&lt;spssiteid&gt;/name </entry>
+<entry>
+<p>The value must match the &lt;hostname prefix&gt; as defined in <!--xref URI: #Table_modifiable_parameters--><xref keyref="id9YZ-09018-IN00-RJZZA-VNFD_extensions_parameters/Table_modifiable_parameters"/>. This parameter is defined with the maximum of 25 alphanumeric and dash (-) characters.</p>
+<p>The dot (‘.’) and underscore (‘_’) characters cannot be used.</p>
+</entry>
+<entry>
+Must update.
+</entry>
+</row>
+<row>
+<entry>topology/spssite/&lt;spssiteid&gt;/primarysmsite </entry>
+<entry>
+<p>This parameter defines an SM or IG site as the primary site. In geo-configured deployments the SM/IG sites are Active/Active. This parameter allows the user to manually configure the SM/IG sites as Active/Standby. The Active/Standby configuration is required for some plug-in components such as Ud and HLAPI.</p>
+<p>The values are true or false.</p>
+<p>The values of true and false are case sensitive and must be in lowercase.</p>
+<p>If this parameter is set to “true”, then this site is considered primary. By default or if this parameter is set to “false”, the system chooses the SM/IG with the lowest numerical VIP value to be the primary site.</p>
+<p>This parameter applies to SM and IG sites.</p>
+</entry>
+<entry>
+Modify if needed.
+</entry>
+</row>
+<row>
+<entry>topology/spssite/&lt;spssiteid&gt;/location </entry>
+<entry>
+<p>This parameter defines a site’s location. Location must be unique per physical location. If multiple sites (SM, and/or ME, and/or IG) share a building complex, then these sites should have the same location. For example, if an ME and an SM share location Ottawa, then the ME’s location is “Ottawa” and the SM’s location is “Ottawa”.</p>
+<p>The value is an arbitrary string. Choose a value that is meaningful and reasonable in length.</p>
+<p>For more information on location, see section <i>Location and community</i> in chapter <i>Monitoring and health check</i> in <i>Operation, Administration and Maintenance Guide</i>.</p>
+</entry>
+<entry>
+Must update.
+</entry>
+</row>
+<row>
+<entry>topology/spssite/&lt;spssiteid&gt;/matesite </entry>
+<entry>
+<p>This parameter is used for the dsc namespace to identify the bidirectionspsally paired sites. This parameter is used to set the bidirectional relationship between two sites of the same type. This means that if ME1 has ME2 as its matesite, than ME2 must have ME1 only as its matesite. The same principle applies for SM and IG sites.</p>
+<p>The value is the matesite’s &lt;spssiteid&gt;.</p>
+<p>A site cannot be its own matesite. </p>
+<p>Each SM has another SM as its matesite, each ME has another ME as its matesite, each IG has another IG as its matesite. SMs and MEs, SMs and IGs, MEs and IGs cannot be mated.</p>
+<p>NCC geo-redundant sites must always be deployed in multiples of two sites. This is true for any
+									type of deployment.</p>
+<p>For more information on different deployments, see the Overview Guide.</p>
+<p>For non-geo-redundant sites, the value must be the empty string with double quotes.</p>
+</entry>
+<entry>
+Must update.
+</entry>
+</row>
+<row>
+<entry>topology/spssite/&lt;spssiteid&gt;/types </entry>
+<entry>
+<p>This parameter defines  the type of a site.</p>
+<p>The following are the possible values:</p><ul>
+
+<li>
+<p>for ME: [“SPS-Policy”, "SPS-Charging", “SPS-Notification”, "SPS-CE"]</p>
+</li>
+<li>
+<p>for SM: ["SPS-SM”]</p>
+</li>
+<li>
+<p>For IG: ["SPS-Policy","SPS-Charging","SPS-Notification","SPS-CE","SPS-SM"]</p>
+</li>
+</ul>
+<p>However, <varname>SPS-CE</varname> is one of the possible values, the SPS-CE component is obsolete.</p>
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry>topology/spssite/&lt;spssiteid&gt;/xdr/nodes </entry>
+<entry>
+<p>This parameter defines the external IP addresses of all the DB VMs for a site.</p>
+<p>The external IP addresses of all the DB VMs of this site must be explicitly listed in this parameter.</p>
+<p>The following examples show how to use this parameter:</p><ul>
+
+<li>
+<p>for IPv4: ["10.3.1.1", "10.3.1.2", "10.3.1.3", "10.3.1.4"]</p>
+</li>
+<li>
+<p>for IPv6: ["2000:10:1:0:0:0:1:2","2000:10:1:0:0:0:1:3","2000:10:1:0:0:0:1:4","2000:10:1:0:0:0:1:5"]</p>
+</li>
+</ul>
+<p>Every site in the deployment derives the remote data center information from all the &lt;topology/spssite/&lt;spssiteid&gt;/xdr/nodes&gt; parameters that are listed in the site’s VNF Extension file. </p>
+<p>Both IPv4 and IPv6 are supported but all the IP addresses for this parameter must be of the same version.</p><ul>
+
+<li>
+<p>Within the same site, there cannot be some DB nodes using IPv4 and others IPv6.</p>
+</li>
+<li>
+<p>There cannot be some sites using IPv4 and others IPv6.</p>
+</li>
+<li>
+<p>Do not mix IPv4 and IPv6. This means that either all sites use IPv4, or all sites use IPv6.</p>
+</li>
+</ul>
+<p>The parameter is set to “[]” when geo-redundancy is not used for the sites.</p>
+</entry>
+<entry>
+Must update.
+</entry>
+</row>
+<row>
+<entry>topology/spssite/&lt;spssiteid&gt;/oamipaddress </entry>
+<entry>
+<p>This parameter defines the site’s OAME VIP.</p>
+<p>This parameter allows for one of the following configurations for ME:</p><ul>
+
+<li>
+<p>one single VIP for the IPv4 network used for Heartbeat and other services on ME</p>
+</li>
+<li>
+<p>one single VIP for the IPv6 network used for Heartbeat and other services on ME</p>
+</li>
+</ul>
+<p>This parameter allows for one of the following configurations for SM:</p><ul>
+
+<li>
+<p>one single VIP for the IPv4 network used for Heartbeat and other services on SM</p>
+</li>
+<li>
+<p>one single VIP for the IPv6 network used for Heartbeat and other services on SM</p>
+</li>
+</ul>
+<p>This parameter allows for one of the following configurations for IG:</p><ul>
+
+<li>
+<p>one single VIP for the IPv4 network used for Heartbeat and other NCC services on IG</p>
+</li>
+<li>
+<p>one single VIP for the IPv6 network used for Heartbeat and other NCC services on IG</p>
+</li>
+</ul>
+</entry>
+<entry>
+Must update. 
+</entry>
+</row>
+<row>
+<entry>topology/spssite/&lt;spssiteid&gt;/oamprotocol </entry>
+<entry>
+<p>Aligned with the &lt;topology/spssite/&lt;spssiteid&gt;/oamport&gt; parameter.</p>
+<p>The value is https.</p>
+</entry>
+<entry>
+Do not modify. 
+</entry>
+</row>
+<row>
+<entry>topology/spssite/&lt;spssiteid&gt;/oamport </entry>
+<entry>
+The value is 8443.
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry>topology/spssite/&lt;spssiteid&gt;/trafficipaddress </entry>
+<entry>
+<p>This parameter defines  the site’s IOHO VIP (used for provisioning).</p>
+<p>This parameter allows for one of the following configurations:</p><ul>
+
+<li>
+<p>one single VIP for the IPv4 network used for traffic between the SM or IG IOHO, and ME or IG IOHO</p>
+</li>
+<li>
+<p>one single VIP for the IPv6 network used for traffic between the SM or IG IOHO, and ME or IG IOHO</p>
+</li>
+</ul>
+</entry>
+<entry>
+Must update. 
+</entry>
+</row>
+<row>
+<entry>topology/spssite/&lt;spssiteid&gt;/trafficprotocol </entry>
+<entry>
+<p>Aligned with the &lt;topology/spssite/&lt;spssiteid&gt;/trafficport&gt; parameter. </p>
+<p>The value is https.</p>
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry>topology/spssite/&lt;spssiteid&gt;/trafficport </entry>
+<entry>
+The value is 8443.
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC2" namest="col1">
+<p>
+<b>Diameter origin host and realm configurations</b>
+</p>
+<p>The values for these parameters must be chosen in such a way that when &lt;originhost&gt; is concatinated with &lt;originrealm&gt; to form &lt;&lt;originhost&gt;.&lt;originrealm&gt;&gt; the string  &lt;&lt;originhost&gt;.&lt;originrealm&gt;&gt; is different (unique within the ME and IG) and also unique across all the MEs and IGs in the deployment.</p>
+</entry>
+</row>
+<row>
+<entry>topology/spssite/&lt;spssiteid&gt;/originhost </entry>
+<entry>
+<p>For Policy and/or Charging this parameter defines the site’s Diameter origin host name.</p>
+<p>This parameter is used without the FQDN.</p>
+</entry>
+<entry>
+Must update.
+</entry>
+</row>
+<row>
+<entry>topology/spssite/&lt;spssiteid&gt;/originrealm </entry>
+<entry>
+For Policy and/or Charging this parameter defines the site’s Diameter origin realm name.
+</entry>
+<entry>
+Must update.
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC2" namest="col1">
+<p>
+<b>Topology partition parameters</b>
+</p>
+<p>These parameters represent paired (mate) ME or IG sites configured for the subscriber data. If a paired ME or IG fails, each of its replication neighbors handles a portion of the traffic intended for that failed site.</p>
+<p>Records are assigned in each paired group into their own unique namespace and the Aerospike XDR replication is configured for each namespace.</p>
+<p>The topology partition parameters must be configured in accordance with the following:</p><ul>
+
+<li>
+<p>For every parameter in this set, you <b>must modify the &lt;partitionid&gt;</b> portion of the parameter; &lt;partitionid&gt; only supports 128 values in the interval [0,127].</p>
+</li>
+<li>
+<p>Every SM or IG site <b>must have</b> in its VNF Extension file <b>all the topology partition parameters of all the partitions across all the MEs and IGs.</b>.</p>
+</li>
+<li>
+<p>Depending on the deployment model, the following applies:</p><ul>
+
+<li>
+<p>If the NCC is deployed as Isolated 1+1 or Networked 1+1, then since a single partition is shared
+												between paired 1+1 ME or IG sites with multiple
+												pairs possible in the network, every ME and IG
+												site <b>must have</b> in its VNF Extension file
+												<b>all the topology partition parameters that are
+												used with its paired site for the single partition
+												that these two ME or IG sites share</b>.</p>
+</li>
+</ul>
+</li>
+</ul>
+</entry>
+</row>
+<row>
+<entry>topology/spspartition/&lt;partitionid&gt;/name </entry>
+<entry>
+<p>This parameter define the name for paired ME or IG sites.</p>
+<p>The value must match the &lt;hostname_prefix&gt; of the two ME or IG sites that have the replicated subscriber data, as defined in <!--xref URI: #Table_modifiable_parameters--><xref keyref="id9YZ-09018-IN00-RJZZA-VNFD_extensions_parameters/Table_modifiable_parameters"/>.</p>
+<p>This parameter is defined with the maximum of 51 alphanumeric and dash (-) characters as follows: “hostnameME1-hostnameME2” where hostnameME1 and hostnameME2 are each defined with the maximum of 25 alphanumeric and dash (-) characters.</p>
+<p>The dot (‘.’) and underscore (‘_’) characters cannot be used.</p>
+</entry>
+<entry>
+Must update.
+</entry>
+</row>
+<row>
+<entry>topology/spspartition/&lt;partitionid&gt;/siteids </entry>
+<entry>
+<p>The value must match with the &lt;spssiteid&gt; values of the paired ME or IG sites.</p>
+<p>For example, if ME1 has the &lt;spssiteid&gt; set to 1 and ME2 has the &lt;spssiteid&gt; set to 2, then the value of this parameter must be set to [1,2].</p>
+</entry>
+<entry>
+Must update.
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section id="Diameter_group_example">
+			<title>Diameter configuration parameters</title>
+			<p>This section describes the parameters in the NCC section that define Diameter
+				configuration.</p>
+			<table pgwide="1" colsep="1" rowsep="1">
+				<title>NCC parameters descriptions (part 3)</title>
+				<tgroup cols="3">
+					<colspec colname="col1"/>
+					<colspec colname="COLSPEC1"/>
+					<colspec colname="COLSPEC2"/>
+					<thead>
+						<row>
+							<entry> Parameter </entry>
+							<entry> Description </entry>
+							<entry> Update notes </entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry> diameteragentcfg/diameteragent/client/timeout </entry>
+							<entry>
+								<p>This parameter defines the timeout response that the application
+									waits for. If the response message comes after this time, this
+									response message is ignored.</p>
+								<p>When an outbound message is send and we are expecting a delayed
+									response, for example, when it takes longer for the online
+									charging system (OCS) to process the message and send a
+									response, this value can be increased. If It takes OCS 5 seconds
+									to respond, this value can be set &gt; 5, may be 6 -7
+									seconds.</p>
+							</entry>
+							<entry> N/A </entry>
+						</row>
+						<row>
+							<entry> tpaproperties/tpapps/enable_diameter_response_cache </entry>
+							<entry> This parameter controls whether or not the Diameter response
+								cache is enabled. The values are true if enabled or false if
+								disabled. </entry>
+							<entry> N/A </entry>
+						</row>
+						<row>
+							<entry> tpaproperties/processortype </entry>
+							<entry> This parameter defines the Diameter processor type. This
+								parameter is set to <varname>both</varname> to support Policy and/or
+								Charging. </entry>
+							<entry> Do not modify. </entry>
+						</row>
+						<row>
+							<entry nameend="COLSPEC2" namest="col1">
+								<b>Diameter overload parameters</b>
+							</entry>
+						</row>
+						<row>
+							<entry> diameteragentcfg/diameteragent/overload/highwm </entry>
+							<entry> This parameter defines the Diameter overload high watermark in
+								ms. </entry>
+							<entry> Do not modify. </entry>
+						</row>
+						<row>
+							<entry> diameteragentcfg/diameteragent/overload/lowwm </entry>
+							<entry> This parameter defines the Diameter overload low watermark in
+								ms. </entry>
+							<entry> Do not modify. </entry>
+						</row>
+						<row>
+							<entry nameend="COLSPEC2" namest="col1">
+								<p>
+									<b>Diameter group parameters</b>
+								</p>
+								<p>The Diameter group parameters apply to the following
+									applications:</p>
+								<ul>
+									<li>
+										<p>Policy</p>
+									</li>
+									<li>
+										<p>Charging</p>
+									</li>
+								</ul>
+								<p>The NCC supports TCP and SCTP transport protocols for Diameter over one or more VIPs of
+									the Active IOHD VM. To enable this support, the Diameter group
+									parameters must be configured in accordance with the
+									following:</p>
+								<ul>
+									<li>
+										<p>A TCP Diameter group must be associated with one and only
+											one IOHD VIP address that can be IPv4 or IPv6, but
+											cannot be IPv4 and IPv6.  Only one IP version can be
+											selected and configured.</p>
+									</li>
+									<li>
+										<p>To support Diameter on TCP over multiple IOHD VIP
+											addresses, a separate TCP Diameter group must be created
+											for each VIP address.</p>
+									</li>
+									<li>
+										<p>If SCTP is used, an SCTP Diameter group must be
+											associated with at least one IOHD VIP address that can
+											be IPv4 or/and IPv6.</p>
+									</li>
+									<li>
+										<p>There must not be any VIP address overlaps between
+											SPS-Policy/SPS-Charging Diameter groups. If a VIP
+											address is associated with one SPS-Policy/SPS-Charging
+											Diameter group, it cannot be associated with any other
+											SPS-Policy/SPS-Charging Diameter group.</p>
+									</li>
+									<li>
+										<p>The default Diameter group 1 cannot be removed and must
+											remain assigned to the SPS-Policy/SPS-Charging Diameter
+											group. The IOHD VIP value and IP version can be
+											updated.</p>
+									</li>
+								</ul>
+								<p>Create as many sets of the Diameter group parameters as many
+									groups you are going to use and do it in accordance with the
+									following:</p>
+								<ul>
+									<li>
+										<p>The &lt;groupid&gt; supports numeric values starting at
+											1.</p>
+									</li>
+									<li>
+										<p>The value 1 is reserved for the default group.</p>
+									</li>
+									<li>
+										<p>If you are creating new Diameter groups, modify
+											&lt;groupid&gt;.</p>
+									</li>
+									<li>
+										<p>For new values of &lt;groupid&gt;, start from 2 and
+											increment for each new group.</p>
+									</li>
+									<li>
+										<p>Ensure that &lt;groupid&gt; is unique for each group.</p>
+									</li>
+								</ul>
+								<p>
+									<!--xref URI: #Diameter_group_example-->
+									<xref
+										keyref="id9YZ-09018-IN00-RJZZA-SPS_worksheet/Diameter_group_example"
+									/> demonstrates how to configure the Diameter group
+									parameters.</p>
+							</entry>
+						</row>
+						<row>
+							<entry> diameteroam/max/diameter/local/peers </entry>
+							<entry> This parameter defines the total number of all the Diameter
+								groups configured.   You might configure multiple TCP and SCTP
+								groups, for example, if one new TCP group and one SCTP group added
+								to the default group, this parameter must be set to 3, which is the
+								total number of groups. </entry>
+							<entry> Modify if needed. </entry>
+						</row>
+						<row>
+							<entry> diameteroam/group/&lt;groupid&gt;/diameter/config/secure </entry>
+							<entry>
+								<p>This parameter defines the Diameter security.</p>
+								<p>The values are as follows: </p>
+								<ul>
+									<li>
+										<p>n or y, if TCP over TLS is used.</p>
+									</li>
+									<li>
+										<p>n, if SCTP is used.</p>
+									</li>
+								</ul>
+							</entry>
+							<entry> Modify if needed. </entry>
+						</row>
+						<row>
+							<entry> diameteroam/group/&lt;groupid&gt;/diameter/port </entry>
+							<entry> This parameter defines the Diameter external port. </entry>
+							<entry> Modify if needed. </entry>
+						</row>
+						<row>
+							<entry> diameteroam/group/&lt;groupid&gt;/diameter/protocols </entry>
+							<entry>
+								<p>This parameter defines the Diameter protocols.</p>
+								<p>The values are: </p>
+								<ul>
+									<li>
+										<p>TCP</p>
+									</li>
+									<li>
+										<p>SCTP</p>
+									</li>
+								</ul>
+								<p>One and only one protocol (TCP or SCTP) must be set per Diameter
+									group.</p>
+								<p>To support both TCP and SCTP, at least two Diameter groups must
+									be configured.</p>
+							</entry>
+							<entry> Modify if needed. </entry>
+						</row>
+						<row>
+							<entry> diameteroam/group/&lt;groupid&gt;/diameter/ipv6/addresses </entry>
+							<entry>
+								<p>This parameter defines the site’s IOHD VIPs.</p>
+								<p>This is a list of IOHD virtual IPv6 addresses associated with a
+									Diameter group. The IP addresses are separated by space.</p>
+							</entry>
+							<entry morerows="1">
+								<p>Must update as follows:</p>
+								<ul>
+									<li>
+										<p>If a group’s protocol is TCP, set only one parameter to
+											only one VIP address and assign no value to the other IP
+											address parameter.</p>
+									</li>
+									<li>
+										<p>If a group’s protocol is SCTP, you can set both
+											parameters at the same time and to one or more VIP
+											addresses of each version.</p>
+									</li>
+								</ul>
+							</entry>
+						</row>
+						<row>
+							<entry> diameteroam/group/&lt;groupid&gt;/diameter/ipv4/addresses </entry>
+							<entry>
+								<p>This parameter defines the site’s IOHD VIPs.</p>
+								<p>This is a list of IOHD virtual IPv4 addresses associated with a
+									Diameter group. The IP addresses are separated by space.</p>
+							</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</table>
+			<p>The following is an example of the Diameter group parameters with three peer groups:
+				one SCTP and two TCP groups. In this example, two TCP groups are associated with one
+				IPv4 address and one TCP group is associated with one IPv6 VIP address. The SCTP
+				group is associated with one IPv6 VIP address and two IPv4 addresses.</p>
+			<userinput>"diameteroam/group/1/diameter/config/secure": "n",
+				"diameteroam/group/1/diameter/ipv4/addresses": "",
+				"diameteroam/group/1/diameter/ipv6/addresses": "2000:10:1::100",
+				"diameteroam/group/1/diameter/port": "3868",
+				"diameteroam/group/1/diameter/protocols": "TCP",
+				"diameteroam/group/2/diameter/config/secure": "n",
+				"diameteroam/group/2/diameter/ipv4/addresses": "10.1.0.100",
+				"diameteroam/group/2/diameter/ipv6/addresses": "",
+				"diameteroam/group/2/diameter/port": "3868",
+				"diameteroam/group/2/diameter/protocols": "TCP",
+				"diameteroam/group/3/diameter/config/secure": "n",
+				"diameteroam/group/3/diameter/ipv4/addresses": "10.1.0.130 10.1.0.131",
+				"diameteroam/group/3/diameter/ipv6/addresses": "2000:10:1::100",
+				"diameteroam/group/3/diameter/port": "3868",
+				"diameteroam/group/3/diameter/protocols": "SCTP",
+				"diameteroam/max/diameter/local/peers": "3" </userinput>
+		</section>
+</conbody></concept>

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e25835"><title>Trigger AVP support for VoLTE/ViLTE/Gy calls</title><conbody>
+<section><title>Overview</title>
+<p>This section provides information about the support for the <i>Trigger</i> AVP in NCC for VoLTE,
+                                                  ViLTE, Gy calls.</p>
+<p>NCC call controller supports <i>Trigger</i> AVP in CCA for VoLTE and ViLTE calls using rules.
+                                                  This support is also available for Gy interface.
+                                                  The <i>Trigger</i> AVP is supported for both
+                                                  decentralized and centralized calls. This AVP
+                                                  comes into picture only if some quantity is
+                                                  reserved and granted in CCA. </p>
+<p>A CDR tag is generated with the value of trigger reported in the CCR.</p>
+</section>
+<section><title>Trigger AVP</title>
+<p>The <i>Trigger</i> AVP (AVP code 1264) is of type Grouped and holds the trigger types. The presence of the <i>Trigger</i> AVP  without any <i>Trigger-Type</i> AVP in a CCA allows OCS to disable all the triggers. The presence of the Trigger AVP in the  CCR identifies the event(s) triggering the CCR.  It has the following ABNF grammar:</p>
+<systemoutput>Trigger ::= &lt; AVP Header: 1264 &gt;
+                 * [ Trigger-Type ]</systemoutput>
+</section>
+<section><title>Trigger-Type AVP</title>
+<p>The <i>Trigger-Type</i> AVP (AVP code 870) is of type Enumerated and indicates a single reauthorization event type. When included in the Credit-Control-Answer command, the <i>Trigger-Type</i> AVP indicates the events that cause the credit control client to reauthorize the associated quota. The client do not reauthorize the quota when events, which are not included in the <i>Trigger</i> AVP occur. When included in the Credit-Control-Request command indicates the specific event which caused the reauthorisation request of the <uicontrol>Reporting-Reason</uicontrol> with value <varname>RATING_CONDITION_CHANGE</varname> associated.</p>
+</section>
+<section><title>Application preference</title>
+<p>To enable <i>Trigger</i> AVP support in NCC, the application preference <uicontrol>Trigger
+                                                  Feature Supported</uicontrol> must be set to
+                                                  <varname>true</varname>.</p>
+<table colsep="1" rowsep="1">
+                                                  <tgroup cols="3">
+                                                  <colspec colname="col1" colwidth="1.11*"/>
+                                                  <colspec colname="col2" colwidth="1*"/>
+                                                  <colspec colname="COLSPEC1" colwidth="1.56*"/>
+                                                  <thead>
+                                                  <row>
+                                                  <entry>
+                                                  <p>Trigger Feature Supported</p>
+                                                  </entry>
+                                                  <entry>
+                                                  <p>And...</p>
+                                                  </entry>
+                                                  <entry>
+                                                  <p>Then</p>
+                                                  </entry>
+                                                  </row>
+                                                  </thead>
+                                                  <tbody>
+                                                  <row>
+                                                  <entry> False </entry>
+                                                  <entry> - </entry>
+                                                  <entry> No change </entry>
+                                                  </row>
+                                                  <row>
+                                                  <entry> True </entry>
+                                                  <entry> Trigger Received in CCR-U is armed </entry>
+                                                  <entry> No change </entry>
+                                                  </row>
+                                                  <row>
+                                                  <entry> True </entry>
+                                                  <entry> Trigger Received in CCR-U is NOT armed </entry>
+                                                  <entry> Ignores the triggered Value received in
+                                                  the request, takes the appropriate value from DB
+                                                  (last request) and continue with existing logic.
+                                                  </entry>
+                                                  </row>
+                                                  </tbody>
+                                                  </tgroup>
+                                                  </table>
+</section>
+<section><title>Rule support</title>
+                                                  <p>In NCC, the <i>Trigger-Type</i> AVP is stored
+                                                  in the
+                                                  <uicontrol>CALL_RESULT.Trigger-Type</uicontrol>
+                                                  result context attribute. This attribute is
+                                                  available in the <i>RATING_POST_PROCESSING</i>
+                                                  rule set.</p>
+                                                  <p>
+                                                  <b>Example action:</b>
+                                                  </p>
+                                                  <systemoutput>CALL_RESULT.Trigger-Type =
+                                                  TriggerType_CHANGE_IN_LOCATION</systemoutput>
+                                                  <p>For all valid values of <i>Trigger-Type</i>
+                                                  AVP, see
+                                                  <!--xref URI: ../Chapters/c-CallControlRules.xml#triggerType--><xref
+                                                  href="resultcontext_and_actions_action_attributes.dita#resultcontext_and_actions_action_attributes/triggertype"
+                                                  />.</p>
+                                  </section>
+<section><title>Example: Media-Type trigger</title>
+<p>Set the application preference <uicontrol>Trigger Feature Supported</uicontrol> to <varname>true</varname>.</p>
+<p>In initial request, set <uicontrol>SDP-Media-Name</uicontrol> as <varname>m=video 49170 RTP/AVP 0</varname>. If <i>Trigger-Type</i>
+<varname>CHANGE_IN_MEDIA_COMPOSITION</varname> is armed and it is received in CCRu also, then <uicontrol>SDP-Media-Name</uicontrol> is updated with the new value (<varname>m=audio 49170 RTP/AVP 0</varname>) received in CCRu and charging happens from bucket <varname>bkt_audio</varname>.</p>
+<fig>
+<title>Trigger setup in rules</title>
+<!--MMO resource relative URI: ../Graphics/Release_19.0/triggerMediaType_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-triggermediatype_default.png"/>
+</fig>
+<fig>
+<title>Media-based charging configuration in Tariff</title>
+<!--MMO resource relative URI: ../Graphics/Release_19.0/triggerMediaType2_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-triggermediatype2_default.png"/>
+</fig>
+<p>When running IMS call with different Media-type values in <uicontrol>SDP-Media-Component</uicontrol>:</p><ul>
+<li>
+<p>In initial request, set <uicontrol>SDP-Media-Name</uicontrol> as <varname>m=video 49170 RTP/AVP 0</varname>.</p>
+</li>
+<li>
+<p>In update request, set <uicontrol>SDP-Media-Name</uicontrol> as <varname>m=audio 49170 RTP/AVP 0</varname> and <i>Trigger-Type</i> AVP as <varname>CHANGE_IN_MEDIA_COMPOSITION</varname>.</p>
+</li>
+<li>
+<p>In terminate request, do not set any <uicontrol>SDP-Media-Name</uicontrol>.</p>
+</li>
+</ul>
+</section>
+</conbody></concept>

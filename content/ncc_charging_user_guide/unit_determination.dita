@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e19629"><title>Unit determination and rating from a call controller perspective</title><conbody>
+<section><title>Decentralized and centralized implementation</title>
+<p>Rating and unit determination can be implemented as centralized (on OCF, that is rating or charging engine) or decentralized (on CTF, that is call controller). Unit determination refers to calculation of slice size to be allocated for the request received, such as volume, time, unit, money assigned prior to starting service delivery.</p>
+</section>
+<section><title>Decentralized rating</title>
+<p>Rating refers to the calculation of a price out of the slice determination calculated by the unit determination function. For decentralized rating, the corresponding rating control is performed within call controller (CTF). Consequently, call controller (CTF) and rating or charging engine (OCF) exchange information about monetary units.</p>
+</section>
+<section><title>Decentralized unit determination</title>
+<p>With decentralized unit determination, call controller determines how many units are required to start service delivery, and requests these units from rating or charging engine.</p>
+<p>After checking the account balance of the service user, the rating or charging engine returns the number of granted units to call controller responsible for the supervision of service delivery. Call controller limits the service delivery to the corresponding number of granted units.</p>
+<p>Currently, NCC uses decentralized unit determination for IEC, ECUR, and SCUR. Call controller
+                asks rating or charging engine to assure the deduction of an amount of the specified
+                number of monetary units from the subscriber account as shown in the following
+                figure.</p>
+<fig>
+<title>IEC decentralized unit determination</title>
+<!--MMO resource relative URI: ../Graphics/Release_18.5/IEC_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-iec_default.png"/>
+</fig>
+<p>The request for resource usage flow is as follows:</p><ol>
+<li>
+<p>UE-A requests the desired content from the network element.</p>
+</li>
+<li>
+<p>Units determination depends on the service requested by UE-A, call controller determines the number of units accordingly.</p>
+</li>
+<li>
+<p>Rating control has call controller calculating the number of monetary units that represent the price for the number of units determined.</p>
+</li>
+<li>
+<p>Debit units request has call controller requesting that rating or charging engine assures the deduction of an amount corresponding to the calculated number of monetary units from the subscriber account.</p>
+</li>
+<li>
+<p>Account control has rating or charging engine trigger the deduction of the calculated amount from the subscriber account, provided that the credit balance of user is sufficient.</p>
+</li>
+<li>
+<p>Debit units response has rating or charging engine indicating to call controller the number of deducted monetary units.</p>
+</li>
+<li>
+<p>Content service delivery has call controller delivering the content or service at once, in fractions, or in individually chargeable items, corresponding to the number of units as specified.</p>
+</li>
+<li>
+<p>Credit amount control is a continuation from items 2 to 6.</p>
+</li>
+<li>
+<p>Content service delivery continuation.</p>
+</li>
+<li>
+<p>Session released.</p>
+</li>
+</ol>
+<p>For ECUR-based decentralized unit determination, call controller requests the reservation of units prior to service delivery. An account debit operation is carried out following the conclusion of service delivery as shown in the following figure.</p>
+<fig>
+<title>ECUR decentralized unit determination</title>
+<!--MMO resource relative URI: ../Graphics/Release_18.5/ECUR_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-ecur_default.png"/>
+</fig>
+<p>The request for resource usage flow is as follows:</p><ol>
+<li>
+<p>UE-A requests the desired content from the network element.</p>
+</li>
+<li>
+<p>Units determination depends on the service requested by UE-A, call controller determines the number of units accordingly.</p>
+</li>
+<li>
+<p>Reserve units request where the call controller requests rating or charging engine to reserve the number of units determined.</p>
+</li>
+<li>
+<p>Rating control assisted by the rating entity has rating or charging engine calculating the number of monetary units that represent the price for the number of units determined.</p>
+</li>
+<li>
+<p>Account control has the rating or charging engine check the user account balance is sufficient for the requested reservation.</p>
+</li>
+<li>
+<p>Reservation control makes the corresponding reservation in case the user account balance is sufficient.</p>
+</li>
+<li>
+<p>Reserve units response has rating or charging engine inform call controller of the reserved number of units.</p>
+</li>
+<li>
+<p>Reserved units supervision occurs simultaneously with the service delivery, call controller monitors the consumption of the reserved units.</p>
+</li>
+<li>
+<p>Content service delivery has call controller delivering the content or service at once, in fractions, or in individually chargeable items, corresponding to the number of units.</p>
+</li>
+<li>
+<p>Debit units request has call controller requesting rating or charging engine to assure the deduction of an amount corresponding to the consumed number of units from the subscriber account. In the case that no further units are required for this service, an appropriate indication triggering the release of the remaining reservation is given.</p>
+</li>
+<li>
+<p>Rating control, assisted by the rating entity has rating or charging engine calculate the number of monetary units to deduct from the subscriber account.</p>
+</li>
+<li>
+<p>Account control has the rating or charging engine triggering the deduction of the calculated amount from the subscriber account.</p>
+</li>
+<li>
+<p>Debit units response has rating or charging engine informing the call controller of the units actually deducted.</p>
+</li>
+<li>
+<p>Session released.</p>
+</li>
+</ol>
+<p>For SCUR-based decentralized unit determination, call controller requests rating or charging engine to assure the reservation of an amount of the specified number of monetary units from the subscriber account. An account debit operation that triggers the deduction of the amount from the subscriber account is carried out following the conclusion of session establishment as shown in the following figure.</p>
+<fig>
+<title>SCUR decentralized unit determination</title>
+<!--MMO resource relative URI: ../Graphics/Release_18.5/SCUR_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-scur_default.png"/>
+</fig>
+<p>The request for resource usage flow is as follows:</p><ol>
+<li>
+<p>UE-A requests the session establishment from call controller.</p>
+</li>
+<li>
+<p>Units determination depends on the requested type by UE-A, call controller determines the number of units accordingly.</p>
+</li>
+<li>
+<p>Rating control has call controller calculating the number of monetary units that represent the price for the number of units determined.</p>
+</li>
+<li>
+<p>Reserve units request where call controller requests rating or charging engine to assure the reservation of an amount corresponding to the calculated number of monetary units from the subscriber account.</p>
+</li>
+<li>
+<p>Account control has rating or charging engine to check the user account balance is sufficient for the requested reservation.</p>
+</li>
+<li>
+<p>Reservation control makes the corresponding reservation whether the user credit balance is sufficient.</p>
+</li>
+<li>
+<p>Reserve units response has rating or charging engine to inform call controller of the reserved number of monetary units.</p>
+</li>
+<li>
+<p>Budget control has call controller monitor the consumption of the granted amount simultaneously with the ongoing session. </p>
+</li>
+<li>
+<p>Session ongoing has call controller maintain the session. One or more debit and reserve operations are performed when the session is ongoing.</p>
+</li>
+<li>
+<p>Session released.</p>
+</li>
+<li>
+<p>Debit units request where call controller requests rating or charging engine to assure the deduction of an amount corresponding to the consumed number of monetary units from the subscriber account.</p>
+</li>
+<li>
+<p>Account control has the rating or charging engine trigger the deduction of the consumed amount from the subscriber account.</p>
+</li>
+<li>
+<p>Debit units response has rating or charging engine indicate the number of deducted monetary units to call controller.</p>
+</li>
+</ol>
+</section>
+<section><title>Centralized unit determination</title>
+<p>With centralized unit determination, OCF determines the number and type of units that a user can consume. In this approach, the unit determination is based on the rule defined in the credit request profile. </p>
+<p>When the call controller receives the CCRi request, if the RSU is empty and centralized charging
+                mode is set, then NCC checks whether a rule is configured for this CCR service
+                context in the credit request profile. If a rule is configured, the result action of
+                the rule determines the unit for the call. This information is sent to the rating
+                engine, where the charging services are filtered based on the unit type. The
+                identified unit type and charging mode are saved in the database and used for the
+                subsequent reservation requests. If a rule is not configured, then a default value
+                of <varname>UnitType.TVOL</varname> is used for the call. Note that, it is not
+                possible to switch between the charging modes (centralized/decentralized) in the
+                same session. </p>
+<note>
+<p>The centralized unit determination is not applicable for IEC calls.</p>
+</note>
+<p>For ECUR-based centralized unit determination, call controller (CTF) requests rating or charging engine (OCF) to reserve units based on the service identifier sent by call controller (CTF).</p>
+<p>For SCUR-based centralized unit determination, call controller (CTF) requests rating or charging engine (OCF) to reserve units based on the session identifiers sent by call controller (CTF).</p>
+<fig>
+<title>SCUR centralized unit determination - CCRi</title>
+<!--MMO resource relative URI: ../Graphics/Release_18.5/SCUR_CCRI_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-scur_ccri_default.png"/>
+</fig>
+<p>The CCR-I request for resource usage flow is as follows: </p><ol>
+<li>
+<p>UE-A (it can be a Diameter client) sends a CCRi message to NCC node with an empty RSU.</p>
+</li>
+<li>
+<p>The call controller (CTF) checks whether the RSU is empty and sets the charging mode to <varname>centralized</varname> and retrieves the unit type from the credit request profile.</p>
+</li>
+<li>
+<p>Call controller (CTF) sends the request to rating or charging engine (OCF) to add the unit type value.</p>
+</li>
+<li>
+<p>Rating or charging engine (OCF) retrieves the subscription details for the device that returns bundles. It filters the charging service using the unit type and sorts charging services from bundles. Rating or charging engine (OCF) executes the applicability conditions applicable for the call and gets the tariff to be applied and sends the response to call controller (CTF) with the results of granted units. The unit type identified and the charging mode are saved to be used for further reservation requests.</p>
+</li>
+<li>
+<p>Call controller (CTF) sends the CCA message to UA-E.</p>
+</li>
+</ol>
+</section>
+<section><title>Centralized rating</title>
+<p>Rating refers to the calculation of a price out of the non-monetary units calculated by the unit determination function. With centralized rating, call controller (CTF) and rating or charging engine (OCF) exchange information about non-monetary units. Rating or charging engine (OCF) translates these units into monetary units.</p>
+<p>Three cases for online charging can be distinguished as follows:</p><ul>
+<li>
+<p>Immediate event charging (IEC)</p>
+</li>
+<li>
+<p>Event charging with unit reservation (ECUR)</p>
+</li>
+<li>
+<p>Session charging with unit reservation (SCUR)</p>
+</li>
+</ul>
+</section>
+</conbody></concept>

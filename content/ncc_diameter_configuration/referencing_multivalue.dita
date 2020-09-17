@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-cn01-tczza-d1e9024"><title>Referencing multi-value AVPs</title><conbody>
+<section><title>Overview</title>
+<p>The Diameter protocol specifies that multiple instances of an AVP may occur within a single message. An AVP that is defined as multi-valued may itself be a container for one or more AVPs. Further, an AVP might be single-valued but due to a multi-valued parent ancestor, may appear multiple times within the message. In general, the multiplicity of the multi-value AVPs is often unbounded. As a result, multi-value Diameter messages may be arbitrarily complex in terms of the number of and location of the occurrence of particular AVPs. </p>
+<p>For example, consider the case of the Rx AAR message; it contains an AVP Media-Component-Description, which is multi-valued and of type grouped. This AVP contains, among other AVPs, a multi-valued, grouped Media-Sub-Component AVP that in turn contains a multi-valued Flow-Description AVP.</p>
+<p>The NCC simplifies the process of referencing multi-value AVPs by providing the capability to
+                organize indices, and multi-value actions/attributes. These features provide the
+                flexibility and convenience that allow you to write a message filter that checks
+                whether any of the Flow-Description AVPs (from the Rx AAR message above) has a
+                particular value or matches a specific pattern. </p>
+<p>The following sections provide information about multi-value AVP support:</p><ul>
+<li>
+<p>Read and write indices</p>
+</li>
+<li>
+<p>Multi-value actions/attributes</p>
+</li>
+</ul>
+</section>
+<section><title>Read and write indices</title>
+<p>The NCC provides independent read and write indices that allow you to write message filters to
+                iterate through fixed-size and unbounded collections of AVPs and evaluate conditions
+                at specific locations. You can read, write, and modify the value at a specific
+                location. In addition, you can use the read and write indices to copy a value to any
+                location within a Diameter message, including a newly created AVP.</p>
+<p>You can manage the indices by configuring the action attributes provided by the NCC. These
+                actions are dynamically loaded by the NCC and can be present in the source context
+                and/or the result context for each Diameter AVP. The table below describes the basic
+                actions that can be configured to manage the read and write indices. </p>
+<table colsep="1" pgwide="0" rowsep="1">
+<title>Index management action attributes</title>
+<tgroup cols="2" colsep="1">
+<colspec colname="1" colnum="1"/>
+<colspec colname="2" colnum="2"/>
+<thead>
+<row>
+<entry colname="1">
+<p>Action name</p>
+</entry>
+<entry colname="2">
+<p>Purpose</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry colname="1"> Read-Index </entry>
+<entry colname="2"> Allows you to specify the index from which to read a
+                                single value. The Read-Index attribute is available as both a source
+                                and result context, for AVPs that are multi-valued themselves. You
+                                can set the read indices to return a sub-set of values from the
+                                Diameter message. </entry>
+</row>
+<row>
+<entry colname="1"> Write-Index </entry>
+<entry colname="2"> Allows you to specify the index at which to write a
+                                value. The Write-Index attribute is available as both a source and
+                                result context, for AVPs that are multi-valued themselves. </entry>
+</row>
+<row>
+<entry colname="1"> Clear-Read-Indices </entry>
+<entry colname="2">
+<p>Allows you to clear the Read-Index cache maintained by the NCC.
+                                    The cache is automatically cleared for public rule table
+                                    invocations.</p>
+<p>The action uses the following syntax:</p>
+<p>&lt;Context&gt;.Clear-Read-Indices</p>
+<p>The &lt;context&gt; can be any NCC message context. For example,
+                                    GxCCA.Clear-Read-Indices will clear the Read-Index cache for the
+                                    GxCCA message.</p>
+</entry>
+</row>
+<row>
+<entry colname="1"> Clear-Write-Indices </entry>
+<entry colname="2">
+<p>Allows you to clear the Write-Index cache maintained by the NCC.
+                                    The cache is automatically cleared for public rule table
+                                    invocations.</p>
+<p>The action uses the following syntax:</p>
+<p>&lt;Context&gt;.Clear-Write-Indices</p>
+<p>The &lt;context&gt; can be any NCC message context. For example,
+                                    GxCCA.Clear-Write-Indices will clear the Write-Index cache for
+                                    the GxCCA message.</p>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>Read and write indices are cleared before a message filter is invoked. However, changes made to the indices persist for the duration of the processing of the associated filter. This includes processing message filters invoked either directly or indirectly from that filter. </p>
+<p>Once the NCC completes processing a message filter and prepares to evaluate the next filter, any
+                read and write indices that have been explicitly set using message filters are
+                automatically cleared. You can also write filters to clear the read and/or the write
+                index, if required.</p>
+<p>When associated with single-valued operations (that is, accessing a single-valued attribute or using the common action types), the read and write indices have implicit defaults of zero. </p>
+</section>
+<section><title>Multi-value actions/attributes</title>
+<p>The NCC provides several attributes/actions to support multi-value AVP manipulation. These
+                action/attributes are dynamically loaded by the NCC and can be available in the
+                source and/or result contexts. </p>
+<p>They offer an enhanced toolset that allows you to write message filters to:</p><ul>
+<li>
+<p>indicate whether the message filter should affect a particular instance or all instances of an AVP</p>
+</li>
+<li>
+<p>indicate the indices of each AVP that you wish subsequent actions to be performed on</p>
+</li>
+</ul>
+<p>The following attribute naming convention is used in the table below to describe the actions/attributes, and to define the referential scope of the message filter (single-value or multi-value).</p>
+<codeblock>&lt;App-Cmd&gt;[.&lt;Ancestor-AVP-Name&gt;]*.AVP-Name</codeblock>
+<p>where:</p>
+<p>-&lt;App-Cmd&gt; is the message context name</p>
+<p>-&lt;Ancestor-AVP-Name&gt; is the zero or more ancestor/parent AVPs</p>
+<p>-AVP-Name is the leaf AVP</p>
+<p>-for example: RxAAR.Media-Component-Description.Media-Type</p>
+<table colsep="1" pgwide="1" rowsep="1">
+<title>NCC attributes/actions to support multi-value AVPs </title>
+<tgroup cols="3" colsep="1">
+<colspec colname="1" colnum="1"/>
+<colspec colname="2" colnum="2"/>
+<colspec colname="4" colnum="3"/>
+<thead>
+<row>
+<entry colname="1">
+<p>AVP type</p>
+</entry>
+<entry colname="2">
+<p>Attribute/Action</p>
+</entry>
+<entry colname="4">
+<p>Description</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry colname="1"> single-value </entry>
+<entry colname="2">
+                                &lt;App-Cmd&gt;[.&lt;Ancestor-AVP-Name&gt;]*.AVP-Name </entry>
+<entry colname="4">
+<p>Refer to the AVP by its name to access one instance of that
+                                    AVP.</p>
+<p>For example, to refer to one instance of the Flow-Description
+                                    AVP, use: Media-Component-Description. Media-Sub-Component.
+                                    Flow-Description.</p>
+</entry>
+</row>
+<row>
+<entry colname="1"> multi-value </entry>
+<entry colname="2">
+                                &lt;App-Cmd&gt;[.&lt;Ancestor-AVP-Name&gt;]*.AVP-Name[] </entry>
+<entry colname="4">
+<p>The "[]" notation at the end of an attribute name indicates that
+                                    the attribute returns a collection of values. Use it to access a
+                                    collection of AVPs.</p>
+<p>By default, all the values from the message are returned, but a
+                                    subset of values can be returned by setting relevant read
+                                    indices.</p>
+</entry>
+</row>
+<row>
+<entry colname="1"> multi-value </entry>
+<entry colname="2">
+                                &lt;App-Cmd&gt;[.&lt;Ancestor-AVP-Name&gt;]*.AVP-Name.Total-Number-Of-Values </entry>
+<entry colname="4">
+<p>Use it to return the total number of values of a particular AVP
+                                    across all instances of its ancestor AVPs by applying the
+                                    Read-Index. Read indices can be set to return a number
+                                    representing a subset of values of a given AVP from a Diameter
+                                    message.</p>
+<p>For example, Parent.Child.Grandchild.Total-Number-Of-Values will
+                                    return the total number of children and grandchildren for all
+                                    instances of Parent. Read-Index can be applied at all three
+                                    levels of the AVP.</p>
+<p>To find the number of Flow-Description AVPs that exist in all of
+                                    the Media-Sub-Components of all of the
+                                    Media-Component-Descriptions of the current Rx AAR message being
+                                    processed, use: Media-Component-Description.
+                                    Media-Sub-Component.
+                                    Flow-Description.Total-Number-Of-Values.</p>
+</entry>
+</row>
+<row>
+<entry colname="1"> single-value </entry>
+<entry colname="2">
+                                &lt;App-Cmd&gt;[.&lt;Ancestor-AVP-Name&gt;]*.AVP-Name.Read-Index </entry>
+<entry colname="4"> The index from which to read a single value for AVPs
+                                that are multi-valued themselves. The Read-Index determines which
+                                value will be returned. </entry>
+</row>
+<row>
+<entry colname="1"> single-value </entry>
+<entry colname="2">
+                                &lt;App-Cmd&gt;[.&lt;Ancestor-AVP-Name&gt;]*.AVP-Name.Write-Index </entry>
+<entry colname="4">
+<p>The index at which to write a single value for AVPs that are
+                                    multi-valued themselves. </p>
+<p>The Write-Index affects the following common action types as
+                                    follows:</p>
+<ul>
+<li>
+<p>Add action-Determines where a value is aSPSd</p>
+</li>
+<li>
+<p>Set action-Determines the value to be set</p>
+</li>
+<li>
+<p>Remove-Value action-Write-Index of the leaf AVP
+                                            determines the value to remove</p>
+</li>
+<li>
+<p>Remove-Determines the AVP to remove</p>
+</li>
+</ul>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+</conbody></concept>

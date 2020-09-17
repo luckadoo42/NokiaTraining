@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="id9YZ-09126-MT00-REZZA-SP2-ReplacingCert"><title>Replacing self-signed certificates for the SM GUI</title><taskbody id="d1e99228"><context>
+<sectiondiv>
+<p><b>Overview</b></p>
+<p>This procedure provides instructions on how to replace the self-signed certificates on the SM GUI of the two IOHO nodes with a CA-signed certificate. </p>
+</sectiondiv>
+<note>For the purposes of the following procedure, the keystore files with the trusted CA signed
+                certificate for SM ioho-0 and ioho-1 are called:<p/><ol>
+                    <li>
+                        <p>“trustedSignedCertKeystore-0.p12 for sm-ioho-0”</p>
+                    </li>
+                    <li>
+                        <p>“trustedSignedCertKeystore-1.p12 for sm-ioho-1”</p>
+                    </li>
+                </ol></note><note>The updated keystore file on the IOHO does not survive a software upgrade (SU). Therefore, the
+                procedure must be repeated on the IOHO nodes after a Software Upgrade.<p/></note>
+            <p><b>Before you begin:</b></p>
+            <p>This procedure assumes the following is already available to your system:</p>
+            <ul id="ul_evg_gyt_wmb">
+                <li>
+                    <p>For each IOHO on the SM, there exists a keystore file in pkcs12 format
+                        containing a certificate signed by a trusted signing authority, and the
+                        rootCA certificate for the signing authority (for example:
+                        “trustedSignedCertKeystore.p12”).</p>
+                </li>
+                <li>
+                    <p>The certificate for each IOHO uses the hostname of that specific IOHO for the
+                        DNS entry of the Subject Alternative Name. The hostname for the IOHO is
+                        determined using the hostname command on the IOHO.</p>
+                </li>
+                <li>
+                    <p>The certificate for each IOHO uses the SM’s IOHO VIP for one IP entry of the
+                        Subject Alternative Name.</p>
+                </li>
+                <li>
+                    <p>The certificate for each IOHO also uses the specific IOHO’s internal static
+                        IP address for one IP entry of the Subject Alternative Name (for example,
+                        ioho-0=192.168.3.182 , ioho-1=192.168.3.183).</p>
+                </li>
+                <li>
+                    <p>The signing authority is already trusted by your web browser.</p>
+                </li>
+            </ul></context>
+<steps>
+<step><cmd>Log in to sm-ioho-0 as the “root” user.</cmd><info/></step>
+<step><cmd>Using SFTP, transfer the “trustedSignedCertKeystore-0.p12” to the <i>/opt/tpa/conf/sac</i> directory on <i>sm-ioho-0</i>.</cmd><info/></step>
+<step><cmd>Copy the server.keystore to <i>/opt/tpa/conf/sac/original_server_keystore </i> on <i>sm-ioho-0</i> using the following command:</cmd><info><codeblock>cp /opt/tpa/conf/sac/server.keystore /opt/tpa/conf/sac/original_server.keystore</codeblock></info></step>
+<step><cmd>Enter the following commands on <i>sm-ioho-0</i>:</cmd><info><codeblock>“/opt/tpa/java/bin/keytool -importkeystore -srcstoretype pkcs12 -srckeystore /opt/tpa/conf/sac/trustedSignedCertKeystore-0.p12 -destkeystore /opt/tpa/conf/sac/server.keystore”</codeblock><p>You will need the<i>“destkeystore password”.</i>Your <i>“destkeystore password”</i> may be different from the example fake password provided in this document.</p></info></step>
+<step><cmd>Enter the following on <i>sm-ioho-0</i> to delete the old certificates:</cmd><info><codeblock>/opt/tpa/java/bin/keytool -delete -keystore /opt/tpa/conf/sac/server.keystore -alias serverkeys</codeblock><p>Where:</p><p>&lt;alias&gt; is the alias of the certificate that you want to delete.</p></info></step>
+<step><cmd>As tpaadmin on each node or component, restart <i>sm-ioho-0</i> as follows:</cmd><info><codeblock>TPA_control stop  </codeblock><codeblock>TPA_control start  </codeblock></info></step>
+<step><cmd>Repeat steps 1 to 6 on <i>sm-ioho-1</i> using “trustedSignedCertKeystore-1.p12” instead of trustedSignedCertKeystore-0.p12.</cmd><info/></step>
+<step><cmd>Clear the cache on the web browser.</cmd><info><note>
+<p>Now when you login to the SM GUI using https://&lt;sm-ioho-vip&gt;:8443/servicemanager , the newly signed certificate should be used.</p>
+</note></info></step>
+<step><cmd>As the “root” user on either IOHO, validate that the newly installed CA-signed certificate is being used, as follows. </cmd><info><codeblock># /opt/tpa/java/bin/keytool -list -keystore /opt/tpa/conf/sac/server.keystore</codeblock><p>
+<b>Expected result</b>
+</p><note>
+<p>The entries in the output described below for “tempsps” and “fake-ca-pub” are examples of the keystore.p12 file containing a tempsps certificate signed by a fake CA and are used for illustration purposes only.</p>
+</note><p>Executing keytool -list as the “root” user on either IOHO should yield the result similar to the following:</p><p>
+<systemoutput>[root@sps-sm-1-ioho-1 sac]# /opt/tpa/java/bin/keytool -list -keystore /opt/tpa/conf/sac/server.keystore</systemoutput>
+</p><p>
+<systemoutput>Enter keystore password:</systemoutput>
+</p><p>
+<systemoutput>Keystore type: jks</systemoutput>
+</p><p>
+<systemoutput>Keystore provider: SUN</systemoutput>
+</p><p>
+<systemoutput>Your keystore contains 3 entries</systemoutput>
+</p><p>
+<systemoutput>dscca, Sep 13, 2019, trustedCertEntry,</systemoutput>
+</p><p>
+<systemoutput>Certificate fingerprint (SHA1): 15:93:1D:6A:7B:6E:96:AB:18:49:85:C7:81:5F:F3:7D:6C:C4:65:E9</systemoutput>
+</p><p>
+<systemoutput>tempsps, Sep 17, 2019, PrivateKeyEntry,</systemoutput>
+</p><p>
+<systemoutput>Certificate fingerprint (SHA1): 91:73:55:1F:FA:9E:E6:C2:1A:FB:7D:2E:28:E2:2C:13:22:5B:0F:75</systemoutput>
+</p><p>
+<systemoutput>fake-ca-pub, Sep 17, 2019, trustedCertEntry,</systemoutput>
+</p><p>
+<systemoutput>Certificate fingerprint (SHA1): B6:37:2F:23:45:6A:2B:AF:4B:92:C8:DA:E4:2F:45:B9:FC:E9:8F:9B</systemoutput>
+</p></info></step>
+</steps>
+</taskbody></task>

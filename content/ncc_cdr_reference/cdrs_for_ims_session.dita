@@ -1,0 +1,461 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+		<concept id="d1e19899"><title>CDRs for IMS session</title>
+  <concept id="concept_kkc_4dv_23b">
+    <title>CDR for IMS call</title>
+    <conbody>
+      <section id="section_tsk_4dv_23b">
+        <p>The CDR tags for IMS calls are same as that of Gy call (see <!--xref URI: #gyCDR--><xref
+            href="cdr_tags_for_gy_session.dita#d1e86347/gyCDR"/>). However,
+          the tags mentioned in the following table have different meanings from the corresponding
+          Gy tags.</p>
+        <table rowsep="1" colsep="1" pgwide="1" id="table_usk_4dv_23b">
+          <title>CDR tags for IMS that have different meaning from Gy tags</title>
+          <tgroup cols="2">
+            <colspec colname="col1" colwidth="1*"/>
+            <colspec colname="col2" colwidth="1.99*"/>
+            <thead>
+              <row>
+                <entry>
+                  <p>Tag</p>
+                </entry>
+                <entry>
+                  <p>Description</p>
+                </entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry> ratType </entry>
+                <entry> Value of RAT-Type tag for VoLTE call has to be extracted from
+                  Access-Network-Information(ANI) AVP. </entry>
+              </row>
+              <row>
+                <entry> origUserLocationInfo </entry>
+                <entry>
+                  <p>origUserLocationInfo is extracted from Access-Network-Information AVP. Value
+                    taken is as highlighted in bold in example. </p>
+                  <p>Example: 3GPP-E-UTRAN-TDD;utran-cell-id-3gpp=<b>40587400000006c25</b>
+                  </p>
+                </entry>
+              </row>
+              <row>
+                <entry> userLocationInformation </entry>
+                <entry>
+                  <p>UserLocationInformation to be extracted from Access-Network-Information AVP.
+                    Value taken is as highlighted in bold in example.</p>
+                  <p>3GPP-E-UTRAN-TDD;utran-cell-id-3gpp=<b>40587400000006c25</b>
+                  </p>
+                </entry>
+              </row>
+              <row>
+                <entry> mediaName </entry>
+                <entry>
+                  <p>Value of mediaName tag for VoLTE call is extracted from SdpMediaComponents
+                    AVP.</p>
+                  <p>Its value can be either as audio or video.</p>
+                </entry>
+              </row>
+              <row>
+                <entry> imsChargingIdenifier </entry>
+                <entry> This tag is filled from IMS-Charging-Identifier AVP as is. </entry>
+              </row>
+              <row>
+                <entry> callingPartyAddress </entry>
+                <entry> This tag is evaluated by rules using Calling-Party-Address AVP. </entry>
+              </row>
+              <row>
+                <entry> calledPartyAddress </entry>
+                <entry> This tag is evaluated by rules using Called-Party-Address AVP. </entry>
+              </row>
+              <row>
+                <entry> sessionStartTime </entry>
+                <entry>
+                  <p>This tag is filled from IMS-Information.Time-Stamps.SIP-Request-Timestamp AVP
+                    if present or Event-Timestamp if present. Else platform time is used.</p>
+                  <p>If application preference <varname>IMS Call Start Time Initial =
+                    true</varname>, sessionStartTime is considered as the time when CCR-I is
+                    received. </p>
+                  <p>If SIP-Request-Timestamp sessionStartTime is the time when first CCR-U is
+                    received, then it is considered as the time when the VOLTE call is answered.</p>
+                </entry>
+              </row>
+              <row>
+                <entry> recordEventType </entry>
+                <entry> The record event type is IMS. </entry>
+              </row>
+              <row>
+                <entry> subRecordEventType </entry>
+                <entry> The IMS call type: MOC, MTC, FWD. This is to be evaluated by rules. </entry>
+              </row>
+              <row>
+                <entry> callDuration </entry>
+                <entry> The value difference between CCR-T and the call answer time, in seconds.
+                </entry>
+              </row>
+              <row>
+                <entry> conferenceId </entry>
+                <entry> The value is taken from
+                  Service-Information/MMTel-Information/Supplemantary-Service/Service-ID AVP.
+                </entry>
+              </row>
+              <row>
+                <entry> conferenceActionType </entry>
+                <entry> The value is taken form
+                  Service-Information/MMTel-Information/Supplemantary-Service/Participant-Action-Type
+                  ANP. </entry>
+              </row>
+              <row>
+                <entry> subRecordEventType </entry>
+                <entry>
+                  <p>The value is set to Three_Party or Multi_Party based on the following
+                    condition:</p>
+                  <p/>
+                  <ul id="ul_vsk_4dv_23b">
+                    <li>
+                      <p>If MMTel-SService-Type = 10 &amp;
+                        MMTel-Infromation/Supplementary-Service/Service-Node = 11 then
+                        Three_Party</p>
+                    </li>
+                    <li>
+                      <p>If MMTel-Infromation/Supplementary-Service/MMTel-SService-Type = 10 &amp;
+                        MMTel-Infromation/Supplementary-Service/Service-Node != 11 then
+                        Multi_Party</p>
+                    </li>
+                  </ul>
+                </entry>
+              </row>
+              <row>
+                <entry>Collected-Digits</entry>
+                <entry>The collected digits.</entry>
+              </row>
+              <row>
+                <entry>Supplementary-Service-Category</entry>
+                <entry>The supplementary service category.</entry>
+              </row>
+              <row>
+                <entry>Emergency-Callback-Mode</entry>
+                <entry>Indicates whether emergency call back mode was ON or OFF.</entry>
+              </row>
+              <row>
+                <entry>Preferred-Language</entry>
+                <entry>The prefferred language.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+    </conbody>
+  </concept>
+  <concept id="concept_clg_4dv_23b">
+    <title>Sample CDRs</title>
+    <conbody>
+      <section id="section_wsk_4dv_23b">
+        <p>This section provides sample CDRs for IMS session.</p>
+      </section>
+    </conbody>
+    <concept id="concept_ztk_lg5_5lb">
+      <title>CDR for Video over LTE (ViLTE) call</title>
+      <conbody>
+        <p>The value of the <varname>AF-Charging-Identifier</varname> AVP is saved in the
+            <varname>afChargingIdentifier</varname> tag.</p>
+        <fig id="fig_xsk_4dv_23b">
+          <codeblock expanse="page">--------------------------------------
+CDR length:                       2236
+Release ID | Version ID:           7|2
+Data record format | TS number:    1|7
+Release identifier extension:        0
+Name                                Tag                                   Data
+RecordType                          0                        OCSChargingRecord
+generationTimestamp                 1                      23/11/2018 19:39:16
+sessionId                           1                  EPC-73886;acgGY02;73874
+serviceContextId                    1                           32251@3gpp.org
+requestType                         1                           UPDATE_REQUEST
+sessionSequenceNumber               1                                        1
+sessionStartTime                    1                      23/11/2018 19:39:15
+dayOfWeek                           1                                   Friday
+gGSNAddress                         1                  [IPV4: 192.168.206.146]
+sGSNAddress                         1                  [IPV4: 192.168.206.145]
+pduAddress                          1                        [IPV4: 94.21.1.1]
+deviceId                            1                                 D1-73886
+deviceState                         1                                   Active
+devicePartitionId                   1                                        1
+deviceSiteId                        1                                        1
+causeForRecClosing                  1                                        0
+origUserLocationInfo                1                       0X0137F0900068C271
+userLocationInformation             1                       0X0137F0900068C271
+recordOpeningTime                   1                      23/11/2018 19:39:14
+recordClosureTime                   1                      23/11/2018 19:39:16
+recordSequenceNumber                1                                        4
+RecordTimestamp                     1                      23/11/2018 14:09:16
+  RecordProperty                    0                     listOfSubscriptionID
+    RecordProperty                  0                           subscriptionId
+    subscriptionIdType              1                                        1
+    subscriptionIdData              1                               7388600001
+    RecordProperty                  0                           subscriptionId
+    subscriptionIdType              1                                        0
+    subscriptionIdData              1                               7388600001
+  RecordProperty                    0                               listOfMscc
+    RecordProperty                  0                                     mscc
+    ratingGroup                     1                                       11
+    serviceIdentifier               1                                      122
+    recordEventType                 1                                       PS
+    afChargingIdentifier            1                                 [abcdef]
+    firstDataStart                  1                      23/11/2018 19:39:14
+    grantedUnits                    1                                       30
+    usageType                       1                                     TVOL
+    recordEventResult               1                                       00
+    localSequenceNumber             1                                        2
+    totalVolumeConsumed             1                                       20
+      RecordProperty                0                               deviceInfo
+        RecordProperty              0                         subscriptionInfo
+        subscriptionId              1     e54f877e-ead7-4571-8590-7739fad007ef
+        subscriptionState           1                                   Active
+        bundleName                  1                            Bundle1-73886
+        bundleActivationType        1                               ON_SESSION
+        accountID                   1                            Account-73886
+        subscriptionStartDateTime   1                      23/11/2018 19:14:56
+        subscriptionEndDateTime     1                      23/12/2018 10:30:00
+          RecordProperty            0                      chargingServiceInfo
+          chargingServiceName       1                                CS1-73886
+          chargingServiceType       1                                   VOLUME
+          chargingServicePriority   1                                    73886
+          chargingServiceCategory   1                          DefaultCategory
+            RecordProperty          0                               bucketInfo
+            bucketName              1                            Bucket1-73886
+            bucketUnitType          1                                     Byte
+            bucketKindOfUnit        1                                   VOLUME
+            bucketBalanceBefore     1                                      130
+            bucketBalanceAfter      1                                      110
+            carryOverBucket         1                                    false
+            bucketCommitedUnits     1                                       20
+            bucketReservedUnits     1                                        0
+            tariffID                1              CS1-73886_TariffBucket73886
+            RecordProperty          0                               bucketInfo
+            bucketName              1                            Bucket2-73886
+            bucketUnitType          1                                     Byte
+            bucketKindOfUnit        1                                   VOLUME
+            bucketBalanceBefore     1                                      150
+            bucketBalanceAfter      1                                      150
+            carryOverBucket         1                                    false
+            bucketCommitedUnits     1                                        0
+            bucketReservedUnits     1                                       30
+            tariffID                1              CS1-73886_TariffBucket73886
+</codeblock>
+        </fig>
+      </conbody>
+    </concept>
+    <concept id="concept_lhm_tg5_5lb">
+      <title>Number in allowed global list and UC barred list</title>
+      <conbody>
+        <fig id="fig_mhm_tg5_5lb">
+          <codeblock expanse="page">--------------------------------------
+CDR length:                       2332
+Release ID | Version ID:           7|2
+Data record format | TS number:    1|7
+Release identifier extension:        0
+Name                                Tag                                   Data
+RecordType                          0                        OCSChargingRecord
+generationTimestamp                 1                      25/05/2020 15:29:29
+sessionId                           1                   N-5CG9026GCW;868586011
+serviceContextId                    1                           32260@3gpp.org
+requestType                         1                          INITIAL_REQUEST
+sessionSequenceNumber               1                                        0
+sessionStartTime                    1                      25/05/2020 15:29:28
+dayOfWeek                           1                                   Monday
+deviceId                            1                                Device259
+deviceState                         1                                   Active
+devicePartitionId                   1                                        1
+deviceSiteId                        1                                        1
+imsChargingIdentifier               1                      0.274.34-1431350.81
+callingPartyAddress                 1                                 25900000
+calledPartyAddress                  1                                 44444444
+mediaName                           1                                    audio
+roleOfNode                          1                         Originating-Role
+origUserLocationInfo                1                        40587400000006011
+userLocationInformation             1                        40587400000006011
+ratType                             1                                        6
+roamingIndicator                    1                                     HOME
+causeForRecClosing                  1                                        0
+resultCode                          1                                     2001
+recordOpeningTime                   1                      25/05/2020 15:29:28
+recordClosureTime                   1                      25/05/2020 15:29:28
+recordSequenceNumber                1                                        1
+RecordTimestamp                     1                      25/05/2020 09:59:30
+  RecordProperty                    0                     listOfSubscriptionID
+    RecordProperty                  0                           subscriptionId
+    subscriptionIdType              1                                        0
+    subscriptionIdData              1                                 25900000
+    RecordProperty                  0                           subscriptionId
+    subscriptionIdType              1                                        1
+    subscriptionIdData              1                                 25900000
+  RecordProperty                    0                        supplServiceInfos
+  RecordProperty                    0                               listOfMscc
+    RecordProperty                  0                                     mscc
+    ratingGroup                     1                                        8
+    serviceIdentifier               1                                      121
+    recordEventType                 1                                      IMS
+    ucBundleName                    1                                  Bun1259
+    firstDataStart                  1                      25/05/2020 15:29:28
+    grantedUnits                    1                                      501
+    usageType                       1                                     TIME
+    resultCode                      1                                     2001
+    recordEventResult               1                                       00
+    subRecordEventType              1                                      MOC
+    localSequenceNumber             1                                        1
+      RecordProperty                0                               deviceInfo
+        RecordProperty              0                         subscriptionInfo
+        subscriptionId              1     7835e4e1-74a5-43eb-b040-c1a2fc938a63
+        subscriptionState           1                                   Active
+        bundleName                  1                                  Bun1259
+        bundleActivationType        1                                   NORMAL
+        accountID                   1                               Account259
+        subscriptionStartDateTime   1                      24/05/2020 20:10:14
+        subscriptionEndDateTime     1                      23/06/2020 15:30:00
+          RecordProperty            0                      chargingServiceInfo
+          chargingServiceName       1                                   CS1259
+          chargingServiceType       1                                     TIME
+          chargingServicePriority   1                                      259
+          chargingServiceCategory   1                          DefaultCategory
+            RecordProperty          0                               bucketInfo
+            bucketName              1                                   Bkt259
+            bucketUnitType          1                                   Second
+            bucketKindOfUnit        1                                     TIME
+            bucketBalanceBefore     1                                     3000
+            bucketBalanceAfter      1                                     3000
+            carryOverBucket         1                                    false
+            bucketCommitedUnits     1                                        0
+            bucketReservedUnits     1                                      501
+            tariffID                1                 CS1259_TariffDatapass259
+          RecordProperty            0                              counterInfo
+          counterName               1                                    C3259
+          counterKey                1     7835e4e1-74a5-43eb-b040-c1a2fc938a63
+          counterType               1                             SUBSCRIPTION
+          counterUnitType           1                                   Second
+          counterKindOfUnit         1                                     TIME
+          counterValueBefore        1                                        0
+          counterValueAfter         1                                        0
+</codeblock>
+        </fig>
+      </conbody>
+    </concept>
+    <concept id="concept_ms1_qh5_5lb">
+      <title>Usage control limit reached and threshold rejects call</title>
+      <conbody>
+        <fig id="fig_ns1_qh5_5lb">
+          <codeblock expanse="page">--------------------------------------
+CDR length:                       1343
+Release ID | Version ID:           7|2
+Data record format | TS number:    1|7
+Release identifier extension:        0
+Name                      Tag                                Data
+RecordType                0                     OCSChargingRecord
+generationTimestamp       1                   25/05/2020 15:17:33
+sessionId                 1                          231;47760263
+serviceContextId          1                        32260@3gpp.org
+requestType               1                       INITIAL_REQUEST
+sessionSequenceNumber     1                                     0
+sessionStartTime          1                   25/05/2020 15:17:32
+dayOfWeek                 1                                Monday
+deviceId                  1                             Device231
+deviceOwner               1                               User231
+deviceState               1                                Active
+devicePartitionId         1                                     1
+deviceSiteId              1                                     1
+imsChargingIdentifier     1                   0.274.34-1431350.81
+callingPartyAddress       1                              23100000
+calledPartyAddress        1                             888885555
+mediaName                 1                                 audio
+roleOfNode                1                      Originating-Role
+origUserLocationInfo      1                     40587400000006011
+userLocationInformation   1                     40587400000006011
+ratType                   1                                     6
+roamingIndicator          1                                  HOME
+causeForRecClosing        1                                     0
+resultCode                1                                  4012
+recordOpeningTime         1                   25/05/2020 15:17:32
+recordClosureTime         1                   25/05/2020 15:17:32
+recordSequenceNumber      1                                     1
+RecordTimestamp           1                   25/05/2020 09:47:33
+  RecordProperty          0                  listOfSubscriptionID
+    RecordProperty        0                        subscriptionId
+    subscriptionIdType    1                                     0
+    subscriptionIdData    1                              23100000
+    RecordProperty        0                        subscriptionId
+    subscriptionIdType    1                                     1
+    subscriptionIdData    1                              23100000
+  RecordProperty          0                     supplServiceInfos
+  RecordProperty          0                            listOfMscc
+    RecordProperty        0                                  mscc
+    ratingGroup           1                                     8
+    serviceIdentifier     1                                   121
+    recordEventType       1                                   IMS
+    resultCause           1     Call_Rejected_Usage_Limit_Reached
+    ucBundleName          1                               Bun1231
+    resultCode            1                                  4012
+    recordEventResult     1                                   110
+    subRecordEventType    1                                   MOC
+    localSequenceNumber   1                                     1
+</codeblock>
+        </fig>
+      </conbody>
+    </concept>
+    <concept id="concept_jn5_d35_5lb">
+      <title>Number in global barred list</title>
+      <conbody>
+        <fig id="fig_kn5_d35_5lb">
+          <codeblock expanse="page">-------------------------------------
+CDR length:                       1291
+Release ID | Version ID:           7|2
+Data record format | TS number:    1|7
+Release identifier extension:        0
+Name                      Tag                     Data
+RecordType                0          OCSChargingRecord
+generationTimestamp       1        25/05/2020 15:24:33
+sessionId                 1             18400;47760263
+serviceContextId          1             32260@3gpp.org
+requestType               1            INITIAL_REQUEST
+sessionSequenceNumber     1                          0
+sessionStartTime          1        25/05/2020 15:24:33
+dayOfWeek                 1                     Monday
+deviceId                  1                Device18400
+deviceState               1                     Active
+devicePartitionId         1                          1
+deviceSiteId              1                          1
+imsChargingIdentifier     1        0.274.34-1431350.81
+callingPartyAddress       1                 1840000000
+calledPartyAddress        1                  999999777
+mediaName                 1                      audio
+roleOfNode                1           Originating-Role
+origUserLocationInfo      1          40587400000006011
+userLocationInformation   1          40587400000006011
+ratType                   1                          6
+roamingIndicator          1                       HOME
+causeForRecClosing        1                          0
+resultCode                1                       4011
+recordOpeningTime         1        25/05/2020 15:24:33
+recordClosureTime         1        25/05/2020 15:24:33
+recordSequenceNumber      1                          1
+RecordTimestamp           1        25/05/2020 09:54:33
+  RecordProperty          0       listOfSubscriptionID
+    RecordProperty        0             subscriptionId
+    subscriptionIdType    1                          1
+    subscriptionIdData    1                 1840000000
+    RecordProperty        0             subscriptionId
+    subscriptionIdType    1                          0
+    subscriptionIdData    1                 1840000000
+  RecordProperty          0          supplServiceInfos
+  RecordProperty          0                 listOfMscc
+    RecordProperty        0                       mscc
+    ratingGroup           1                          9
+    serviceIdentifier     1                        121
+    recordEventType       1                        IMS
+    resultCause           1     Number_Barred_Globally
+    resultCode            1                       4011
+    recordEventResult     1                        112
+    subRecordEventType    1                        MOC
+    localSequenceNumber   1                          1
+</codeblock>
+        </fig>
+      </conbody>
+    </concept>
+  </concept></concept>

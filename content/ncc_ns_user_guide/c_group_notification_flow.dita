@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9YZ-08540-UG02-PCZZA-d1e31664_overview">
+   <title>Group notification flow logic</title>
+   <conbody>
+
+      <p>When a notification request is received for Group type, then NS caches all attributes from
+         the request. The Group details and group notification profiles are fetched from the NCC
+         database. Then the notifications are sent according to the following logic.</p>
+      <table rowsep="1" colsep="1" pgwide="1">
+         <tgroup cols="2">
+            <colspec colname="col1"/>
+            <colspec colname="col2"/>
+            <thead>
+               <row>
+                  <entry>
+                     <p>If receiver is...</p>
+                  </entry>
+                  <entry>
+                     <p>Then...</p>
+                  </entry>
+               </row>
+            </thead>
+            <tbody>
+               <row>
+                  <entry>
+Group Admin
+</entry>
+                  <entry>If channel is SMS or EMAIL or both, then notification is sent to the Group
+                     owner. Else, notification is sent to the target URL. </entry>
+               </row>
+               <row>
+                  <entry>
+None
+</entry>
+                  <entry>
+No notification is sent.
+</entry>
+               </row>
+               <row>
+                  <entry> All Members and Group Admin</entry>
+                  <entry>
+                     <p>For each Device in the Group, the notification profile is retrieved,
+                        including language and channel information.</p>
+                     <p>Notification type is retrieved from the group notification profile.</p>
+                     <p>Notification is sent to each Device and admin with appropriate profile,
+                        language, and channel.</p>
+                  </entry>
+               </row>
+               <row>
+                  <entry>All Members except Group Admin</entry>
+                  <entry>
+                     <p>For each Device in the Group, the notification profile is retrieved,
+                        including language and channel information.</p>
+                     <p>Notification type is retrieved from the group notification profile.</p>
+                     <p>Notification is sent to each Device except the group admin with appropriate
+                        profile, language, and channel.</p>
+                  </entry>
+               </row>
+               <row>
+                  <entry> Group Admin and Selected Members </entry>
+                  <entry>
+                     <p>If channel is SMS or EMAIL or both, then send notification to the Group owner. Else, send notification to the target URL.</p>
+                     <p>For the Device ID in the request, send notification to each with appropriate
+                        profile, language, and channel.</p>
+                  </entry>
+               </row>
+               <row>
+                  <entry> Group Selected Members </entry>
+                  <entry>For the Device ID in the request, send notification to each with
+                     appropriate profile, language, and channel. </entry>
+               </row>
+            </tbody>
+         </tgroup>
+      </table>
+   </conbody>
+</concept>

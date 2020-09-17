@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="id9YZ-09126-MT00-REZZA-SP2-cleanrebootremovdata"><title>To bring back a an Aerospike DB node in a database cluster that was removed due to “DB VM is down” or “Out of service” state for extended period</title><taskbody id="d1e85241"><context>
+<sectiondiv>
+<p><b>Overview</b></p>
+<p>This procedure allows you to bring back a DB node in the Aerospike database cluster that was removed because of “DB VM is down” or “out of service” for an extended period.</p>
+</sectiondiv>
+<note>
+<p>Prior to bringing that node back in-service, a clean boot is required anytime a node has been out-of-service for more than a couple of hours to ensure that no deleted records are mistakenly re-inserted back into the database cluster.</p>
+</note></context>
+<steps>
+<step>
+                <cmd>On the OAME, check the logs <i>“/var/log/sps/SPSServer.log”</i> to verify that
+                    there is no data-migration running in the background on the NCC.</cmd>
+                <info/>
+            </step>
+<step>
+                <cmd>Run a “TPA_control stop” on the DB node to bring down this DB node. See the
+                        <!--xref URI: #TPA_Control--><xref href="tpa_control.dita"/> for information
+                    about starting and stopping nodes.</cmd>
+                <info/>
+            </step>
+<step><cmd>Run the following command on the db node to wipe-out all data from the db node.</cmd><info><codeblock>db-remove-data -w</codeblock></info></step>
+<step>
+                <cmd>Wait for a few minutes and ensure from logs (OAME:- /var/log/sps/SPSServer.log)
+                    that there is no data-migration running in the background on the NCC.</cmd>
+                <info/>
+            </step>
+<step>
+                <cmd>Run a `TPA_control start` on db node, to bring-up this db node in the cluster.
+                    See the <!--xref URI: #TPA_Control--><xref href="tpa_control.dita"/> for
+                    information about starting and stopping nodes.</cmd>
+                <info/>
+            </step>
+</steps>
+</taskbody></task>

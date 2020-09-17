@@ -1,0 +1,1157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="values_file">
+    <title>Helm chart parameters</title>
+    <shortdesc>The Helm chart parameters are the parameters that allow to customize the SPS CNF. The
+        Helm chart parameters are defined in <filepath>values.yaml</filepath> and
+            <filepath>README.md</filepath> files. This section describes Helm chart
+        parameters.</shortdesc>
+    <conbody>
+        <p>The Helm chart parameters are arranged into the following sections:</p>
+        <p>
+            <ul id="ul_ubb_xc1_5kb">
+                <li>Global</li>
+                <li>Tags</li>
+                <li>Aerospike</li>
+                <li>ComSvc</li>
+                <li>IOHD</li>
+                <li>Notification Service</li>
+                <li>OAME</li>
+                <li>Charging</li>
+                <li>DB layer</li>
+                <li>SM App</li>
+                <li>LDAP concentrator</li>
+                <li>LDAP plugin </li>
+                <li>CSDC</li>
+            </ul>
+        </p>
+        <note>
+            <p>There is a group of parameters in the Helm chart that can be defined with global
+                or/and application specific scope. These parameters can be defined in the Global
+                section or/and in any other pod-type section. These parameters are defined in table
+                    <b>Parameters with varying scope: Global or/and pod-type.</b></p>
+        </note>
+        <p>The following table describes the parameters of the Global section. The Global section
+            contains the parameters that apply to the entire SPS CNF.</p>
+        <table frame="all" rowsep="1" colsep="1" id="table_fjl_qnk_vkb">
+            <title>Global parameters</title>
+            <tgroup cols="3">
+                <colspec colname="c2" colnum="1" colwidth="1.49*"/>
+                <colspec colname="c3" colnum="2" colwidth="2.46*"/>
+                <colspec colname="c4" colnum="3" colwidth="1*"/>
+                <thead>
+                    <row>
+                        <entry>Parameter</entry>
+                        <entry>Description</entry>
+                        <entry>Update notes<p>Must update / Modify default if needed / Do not
+                                modify</p></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>global.imagePullPolicy</entry>
+                        <entry>This parameter defines the Kubernetes container image pull policy
+                            which determines when images are pulled from the registry.<p>The values
+                                    are:<ul id="ul_xpf_f1z_2lb">
+                                    <li><varname>Always</varname></li>
+                                    <li><varname>IfNotPresent</varname></li>
+                                    <li><varname>Never</varname></li>
+                                </ul></p></entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>global.registry</entry>
+                        <entry>This parameter defines the host name and the port of the Docker
+                            registry to fetch images from.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>global.registry4</entry>
+                        <entry/>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>global.debug</entry>
+                        <entry>This parameter defines whether or not to enable various debugging
+                            facilities including the exposure of app server JMX ports. <p>The values
+                                    are:<ul id="ul_ucs_p2z_2lb">
+                                    <li><varname>true</varname></li>
+                                    <li><varname>false</varname></li>
+                                </ul></p></entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>global.maxAllowedFailedKafkaPods</entry>
+                        <entry>This parameter defines the allowed maximum number of failed Kafka
+                            pods before starting the other SPS pods.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>global.maxAllowedFailedDBPods</entry>
+                        <entry>This parameter defines the allowed maximum number of failed DB pods
+                            before starting the other SPS pods. <p><i>The following is the
+                                    definition of  maxAllowedFailedDB in the SPS VNF configuration
+                                    file.</i></p><p>The SPS is a 2*(N+K) Active/Active cluster of
+                                database VMs designed to process a full-traffic load with the
+                                maximum K number of VMs within any of the two groups that can fail
+                                before the resources drop below the designed levels. If this occurs,
+                                the SPS takes actions such as requesting traffic to shut off and
+                                then returning to service when the databases are back at the
+                                designed levels.</p><p>The SPS divides the database cluster into two
+                                groups, rack1/zone1 and rack2/zone2, to facilitate a faster and more
+                                robust software upgrade. For this reason, each group has N+K
+                                database VMs.</p><p>This parameter specifies the value of K. The
+                                value of N is (M/2) – K, where M number of VMs in the two groups.).
+                                </p><p>If the value is not specified, then the value is the default,
+                                that is one. If the specified value is less than zero, it is reset
+                                to zero. If the specified value is greater than the number of
+                                database VMs in the group, it is reset to the number of VMs in that
+                                group minus one.</p><p>For example, if this parameter is set to 3,
+                                this means that no more than three VMs within any of the two
+                                database groups can fail before the entire database cluster becomes
+                                out of service.</p></entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>global.sitelocation</entry>
+                        <entry>This parameter defines the location of the SPS site.<p><i>The
+                                    following is the definition of  sitelocation in the SPS VNF
+                                    configuration file.</i></p><p>Location must be unique per
+                                physical location. If multiple sites (SM, and/or ME, and/or IG)
+                                share a building complex, then these sites should have the same
+                                location. For example, if an ME and an SM share location Ottawa,
+                                then the ME’s location is “Ottawa” and the SM’s location is
+                                “Ottawa”. </p><p>The value is an arbitrary string. Choose a value
+                                that is meaningful and reasonable in length.</p><p>For more
+                                information on location, see section Location and community in
+                                chapter Monitoring and health check in SPS VNF Operation,
+                                Administration and Maintenance Guide.</p></entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>global.sitename</entry>
+                        <entry>The name of the SPS site.<p><i>The following is the definition of
+                                    sitename in the SPS VNF configuration file.</i></p><p>This
+                                parameter is defined with the maximum of 25 alphanumeric and dash
+                                (-) characters.</p><p>The dot (‘.’) and underscore (‘_’) characters
+                                cannot be used.</p></entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>global.systemid</entry>
+                        <entry>The system ID required by Fluentd.<p><i>The following is the
+                                    definition of  systemid in the SPS VNF configuration
+                                file.</i></p><p>This parameter defines the ID for an SPS site. This
+                                parameter supports 32 values in the interval [0,31]. This parameter
+                                is used for all the SPS topology parameters and must be unique for
+                                each site across all the sites deployed.</p><p>For example, if there
+                                are four MEs and two SMs in your SPS, then each site is assigned a
+                                unique integer in this group of six; the MEs are numbered 1, 2, 3
+                                and 4; the SMs are numbered 5 and 6.</p></entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>global.usePrometheus</entry>
+                        <entry>This parameter defines whether or not Prometheus is used for metrics.
+                                <p>The values are:<ul id="ul_imp_vth_zkb">
+                                    <li><varname>true</varname></li>
+                                    <li><varname>false</varname></li>
+                                </ul></p>If this parameter is set to true, then
+                            &lt;global.metricsmode> must be set to
+                            <varname>prometheus</varname>.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>global.metricsmode</entry>
+                        <entry>This parameter defines the metrics mode for an application. This
+                            parameter correlates with &lt;usePrometheus>.<p>The values are:<ul
+                                    id="ul_v1x_43z_2lb">
+                                    <li><varname>csv</varname></li>
+                                    <li><varname>prometheus</varname></li>
+                                </ul></p><p>If this parameter is set to
+                                    <varname>prometheus</varname>, the application metrics are
+                                exported to Prometheus tool.</p></entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>global.csvmetricsinterval</entry>
+                        <entry>This parameter defines the interval in minutes to collect
+                                    metrics.<p><i>The following is the definition of
+                                    csvmetricsinterval in the SPS VNF configuration
+                                file.</i></p><p>This parameter defines the collection interval in
+                                minutes during which the metrics is fetched and written into the
+                                following location:/appdata/sps/meas/.</p><p>The zero value disables
+                                counters and scheduling of the SPS application metrics
+                                collection.</p><p>The value range is [0,1440].</p></entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>global.csvmetricsintervaloffset</entry>
+                        <entry>This parameter defines the metrics collection interval offset in
+                                    minutes.<p><i>The following is the definition of
+                                    csvmetricsintervaloffset in the SPS VNF configuration
+                                file.</i></p><p>This parameter defines the collection interval
+                                offset, which is the offset (delay) amount in minutes for the
+                                collection interval.</p><p>The SPS application metrics collection
+                                occurs at the beginning of an hour unless the offset is
+                                specified</p><p>The value range is [0
+                                ,csvmetrics/collection-interval].</p></entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>global.useIstio</entry>
+                        <entry>This parameter defines whether or not Istio is available and SPS is
+                            to use it as the Ingress gateway.<p>The values are:<ul
+                                    id="ul_wh1_4hg_ykb">
+                                    <li><varname>true</varname></li>
+                                    <li><varname>false</varname></li>
+                                </ul></p></entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>global.istioHttpProto</entry>
+                        <entry>
+                            <p>This parameter defines the Istio gateway protocol if Istio is used. </p>
+                            <p>The values are:<ul id="ul_kk5_rhz_2lb">
+                                    <li><varname>http</varname></li>
+                                    <li><varname>https</varname></li>
+                                </ul></p>
+                        </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>global.istioHttpPort</entry>
+                        <entry>
+                            <p>This parameter defines the Istio gateway port if Istio is used. Istio
+                                must have an Ingress gateway port mapping from an externally
+                                accessable port to this port.</p>
+                        </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>global.ingressip</entry>
+                        <entry>This parameter defines the IP address for Ingress.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>global.ingressport</entry>
+                        <entry>
+                            <p>This parameter defines the port for Ingress.</p>
+                        </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>global.ingressproto</entry>
+                        <entry>
+                            <p>This parameter defines the protocol for Ingress. </p>
+                            <p>The values are:<ul id="ul_vcb_h3z_2lb">
+                                    <li><varname>http</varname></li>
+                                </ul></p>
+                        </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>global.storageClass</entry>
+                        <entry>This parameter defines the Kubernetes storage class used by
+                            CKAF-ZOOKEEPER, Kafka and Aerospike related components.<p>This paramete
+                                correlates with &lt;localPvSize>.</p></entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>global.opentracing.jaeger</entry>
+                        <entry>
+                            <p>This parameter is configured in
+                                    <filepath>common-configmap.yaml</filepath> file.</p>
+                        </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>global.opentracing.jaeger.endpoint</entry>
+                        <entry>This parameter defines the Jaeger endpoint to send OpenTracing data
+                            to.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>global.opentracing.headers</entry>
+                        <entry>This parameter defines a comma separated list of HTTP headers' names
+                            that are propagated if present.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>global.enableExternalSPR</entry>
+                        <entry>This parameter defines whether or not to enable the external
+                                SPR.<p>The values are:<ul id="ul_awb_tdf_flb">
+                                    <li><varname>true</varname></li>
+                                    <li><varname>false</varname></li>
+                                </ul></p>Set this parameter to <varname>true</varname> if the
+                            external SPR is used. Setting to <varname>true</varname>  also enables
+                            deployment of LDAP concentrator and LDAP plugin. Otherwise, if this
+                            parameter is set to <varname>false</varname>, LDAP concentrator and LDAP
+                            plugin will not be deployed.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>global.etcd.rewrite</entry>
+                        <entry><p>This parameter defines whether or not the SPS configuration values
+                                stored in ETCD are going to be overwritten with the current values.
+                                </p><p>The values are:<ul id="ul_i1m_mjg_flb">
+                                    <li><varname>true</varname></li>
+                                    <li><varname>false</varname></li>
+                                </ul></p>If the value is <varname>true</varname>, then the SPS
+                            configuration values will be overwritten. </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>global.diameter.originrealm</entry>
+                        <entry>This parameter defines the Diameter origin realm to use.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>global.diameter.originhost</entry>
+                        <entry>This parameter defines the Diameter origin host to use, without
+                            realm.</entry>
+                        <entry/>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <p>The following table describes the parameters that can be defined as Global parameters
+            applicable to the entire SPS, or as  parameters that also or only apply to particular
+            types of pods. These are the parameters with varying scope of application. The
+            parameters defined with pod-type scope have higher precedence over the parameter defined
+            with global scope. For example, if &lt;aerospike.jvmheap> and &lt;global.jvmheap> are
+            both defined, then &lt;aerospike.jvmheap> has higher precedence over &lt;global.jvmheap>
+            in relation to Aerospke pods.</p>
+        <table frame="all" rowsep="1" colsep="1" id="table_dmr_mm2_flb">
+            <title>Parameters with varying scope: Global or/and pod-type</title>
+            <tgroup cols="3">
+                <colspec colname="c1" colnum="1" colwidth="1.4*"/>
+                <colspec colname="c2" colnum="2" colwidth="1.8*"/>
+                <colspec colname="c3" colnum="3" colwidth="1*"/>
+                <thead>
+                    <row>
+                        <entry>Parameter</entry>
+                        <entry>Description</entry>
+                        <entry>Update notes<p>Must update / Modify default if needed / Do not
+                                modify</p></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>&lt;scope>.jvmheap</entry>
+                        <entry>This parameter defines the default JVM heap configuration.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>&lt;scope>.applicationLog4jMonitorInterval</entry>
+                        <entry>This parameter defines the monitoring interval in seconds for Log4j
+                            configuration of application logs.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>&lt;scope>.applicationLog4jConfiguration</entry>
+                        <entry>This parameter defines the Log4j configuration of application
+                            logs.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>&lt;scope>.alarmLog4j2Configuration</entry>
+                        <entry>This parameter defines the Log4j2 configuration of alarm
+                            logs.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c3"><b>Resources parameters</b><p>These
+                                parameters define how much resources are requested, and how much
+                                resources can be requested or what is the limit of requests. </p>If
+                            any parameter in &lt;ldapconcentrator>.resources is set, then all four
+                            &lt;ldapconcentrator>.resources parameters must be set. <p>If there are
+                                insufficient cluster resources, the pods might not be
+                                instantiated.</p></entry>
+                    </row>
+                    <row>
+                        <entry>&lt;scope>.resources.requests.cpu</entry>
+                        <entry>
+                            <p>This parameter defines how much CPU is requested initially.</p>
+                        </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>&lt;scope>.resources.requests.memory</entry>
+                        <entry>
+                            <p>This parameter defines how much memory is requested initially.</p>
+                        </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>&lt;scope>.resources.limits.cpu</entry>
+                        <entry><p>This parameter defines the amount of CPU to request for the
+                                pod.</p>This parameter must be greater or equal to
+                            &lt;&lt;scope>.resources.requests.cpu>.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>&lt;scope>.resources.limits.memory</entry>
+                        <entry>
+                            <p>This parameter defines the amount of memory to request for the pod. </p>
+                            <p>This parameter must be greater or equal to
+                                &lt;&lt;scope>.resources.requests.memory>.</p>
+                        </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c3">
+                            <p><b>Horizontal Pod Autoscaler (HPA) parameters</b></p>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>&lt;scope>.hpa.minReplicas</entry>
+                        <entry>This parameter defines the initial number of pods to start. If this
+                            parameter is zero, then the HPA is not created and zero instances of the
+                            pod are started.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>&lt;scope>.hpa.maxReplicas</entry>
+                        <entry>This parameter defines the maximum number of pods running at any time
+                            regardless of the utilization calculation. </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>&lt;scope>.hpa.averageUtilization</entry>
+                        <entry>
+                            <p>This parameter defines the CPU utlization. This parameter represents
+                                the percentage of CPU resource defined in &lt;?>. This parameter is
+                                used to determine whether or not autoscaling is needed and how many
+                                pods have to be added or terminated. If the actual CPU usage is
+                                highter than this value, then new pods are added. If the actual CPU
+                                utlization is lower than this value, then a number of existing pods
+                                are terminated. </p>
+                        </entry>
+                        <entry/>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <p>The following table describes the parameters of the Tags section.</p>
+        <table frame="all" rowsep="1" colsep="1" id="table_rqx_bkz_2lb">
+            <title>Tags parameters</title>
+            <tgroup cols="3">
+                <colspec colname="c1" colnum="1" colwidth="1.03*"/>
+                <colspec colname="c2" colnum="2" colwidth="1.58*"/>
+                <colspec colname="c3" colnum="3" colwidth="1*"/>
+                <thead>
+                    <row>
+                        <entry>Parameter</entry>
+                        <entry>Description</entry>
+                        <entry>Update notes</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>tags.notif</entry>
+                        <entry>This parameter defines whether or not Notification Service is used.
+                                <p>The values are:<ul id="ul_rcl_ylz_2lb">
+                                    <li><varname>true</varname></li>
+                                    <li><varname>false</varname></li>
+                                </ul></p></entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>tags.ldapconcentrator</entry>
+                        <entry>This parameter defines whether or not LDAP concentrator is used.
+                                <p>The values are:<ul id="ul_pcr_ylz_2lb">
+                                    <li><varname>true</varname></li>
+                                    <li><varname>false</varname></li>
+                                </ul></p></entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>tags.ldapplugin</entry>
+                        <entry>This parameter defines whether or not LDAP plugin is used. <p>The
+                                values are:<ul id="ul_jxv_ylz_2lb">
+                                    <li><varname>true</varname></li>
+                                    <li><varname>false</varname></li>
+                                </ul></p></entry>
+                        <entry/>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <p>The following table describes the parameters of the ComSvc section.</p>
+        <table frame="all" rowsep="1" colsep="1" id="table_ktm_fxf_wkb">
+            <title>ComSvc parameters</title>
+            <tgroup cols="3">
+                <colspec colname="c2" colnum="1" colwidth="1.33*"/>
+                <colspec colname="c3" colnum="2" colwidth="2.43*"/>
+                <colspec colname="c4" colnum="3" colwidth="1*"/>
+                <thead>
+                    <row>
+                        <entry>Parameter</entry>
+                        <entry>Description</entry>
+                        <entry>Update notes<p>Must update / Modify default if needed / Do not
+                                modify</p></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>comsvc.jvmheap</entry>
+                        <entry>This parameter defines the size in MB to allocate for the ComSvc Java
+                            VM. This parameter is only applicable to containers which use
+                            Java.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>comsvc.imageTag</entry>
+                        <entry>This parameter defines the tag version of the ComSvc container
+                            image.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>comsvc.replicas</entry>
+                        <entry>This parameter defines the number of replicas in the ComSvc
+                            pod.</entry>
+                        <entry/>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <p>The following table describes the parameters of the Aerospike section.</p>
+        <table frame="all" rowsep="1" colsep="1" id="table_zk2_dxf_wkb">
+            <title>Aerospike parameters</title>
+            <tgroup cols="3">
+                <colspec colname="c1" colnum="1" colwidth="1.53*"/>
+                <colspec colname="c2" colnum="2" colwidth="2.07*"/>
+                <colspec colname="c3" colnum="3" colwidth="1*"/>
+                <thead>
+                    <row>
+                        <entry>Parameter</entry>
+                        <entry>Description</entry>
+                        <entry>Update notes<p>Must update / Modify default if needed / Do not
+                                modify</p></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>aerospike.claimSize</entry>
+                        <entry>This parameter defines the size of the DB Gluster FS PVC. The value
+                            must be defined and cannot be empty, for example,
+                                <varname>500Mi</varname> or <varname>5Gi</varname>.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>aerospike.imageTag</entry>
+                        <entry>This parameter defines the tag version of the DB container
+                            image.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>aerospike.replicas</entry>
+                        <entry>This parameter defines the number of replicas in the database
+                            pod.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>aerospike.localPvSize</entry>
+                        <entry>This parameter defines the size of the DB local storage persistent
+                            volume. This parameter is valid only when &lt;storageClass> is set to
+                                <i>localdb-storageclass</i>. The value must be greater than
+                            &lt;aerospike.claimSize>.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>aerospike.network.heartbeat.interval</entry>
+                        <entry>
+                            <p>This parameter defines the time in milliseconds of a heartbeat
+                                interval. This is the frequency with which the leader notifies
+                                followers that it is still the leader. </p>
+                            <p><i>The following is the definition of  network.heartbeat.interval
+                                    parameters in the SPS VNF configuration file.</i></p>
+                            <p>The heartbeat interval value is recommended to be around the maximum
+                                of the average round-trip time (RTT) between members, normally
+                                around 0.5-1.5x of RRT. The heartbeat interval value should be the
+                                same for all the members in one cluster.</p>
+                        </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>aerospike.storageClass</entry>
+                        <entry>This parameter defines the Kubernetes storage class to use for SPS
+                            database file storage.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c3"><b>logClaim parameters</b></entry>
+                    </row>
+                    <row>
+                        <entry>aerospike.logClaim.enabled</entry>
+                        <entry>This parameter defines whether or not logClaim is enabled. <p>The
+                                values are:<ul id="ul_f3n_qfy_2lb">
+                                    <li><varname>true</varname></li>
+                                    <li><varname>false</varname></li>
+                                </ul></p></entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>aerospike.logClaim.storageClassName</entry>
+                        <entry>This parameter defines the Kubernetes storage class to use for SPS
+                            database logs storage.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>aerospike.logClaim.size</entry>
+                        <entry>This parameter defines the size of the DB log GlusterFS PVC or local
+                            storage PVC, for example <varname>200Mi</varname> or
+                                <varname>2Gi</varname>. The value must be defined and cannot be
+                            empty.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c3">
+                            <p><b>Database namespace’s &lt;filesize> and &lt;memorysize>
+                                    parameters</b></p>
+                            <p><i>The following is the definition of  &lt;filesize> and
+                                    &lt;memorysize> parameters in the SPS VNF configuration
+                                    file.</i></p>
+                            <p>Each namespace's &lt;filesize> and &lt;memorysize> parameters
+                                correlate. </p>
+                            <p>The values must be defined and cannot be empty,</p>
+                            <p>You must update these parameters for live deployment.</p>
+                            <p>You must contact Nokia Professional Services to determine the correct
+                                values for these parameters.</p>
+                            <p>The default values are for the lab trial setups only.</p>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>aerospike.dscNamespace.filesize</entry>
+                        <entry>This parameter defines the file size of the dsc namespace, for
+                                example<varname>343M</varname>.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>aerospike.dscglobalNamespace.filesize</entry>
+                        <entry>This parameter defines the file size of the dscglobal namespace. </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>aerospike.dsclocalNamespace.filesize</entry>
+                        <entry>This parameter defines the file size of the dsclocal
+                            namespace.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>aerospike.spspdNamespace.filesize</entry>
+                        <entry>This parameter defines the file size of the spspd namespaces. This
+                            parameter applies to all partitions. </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>aerospike.dscNamespace.memorysize</entry>
+                        <entry>This parameter defines the memory size of the dsc namespace, for
+                            example <varname>10M</varname>.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>aerospike.dscglobalNamespace.memorysize</entry>
+                        <entry>This parameter defines the memory size of the dscglobal namespace. </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>aerospike.dsclocalNamespace.memorysize</entry>
+                        <entry>This parameter defines the memory size of the dsclocal
+                            namespace.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>aerospike.spspdNamespace.memorysize</entry>
+                        <entry>This parameter defines the memory size of the spspd namespaces. This
+                            parameter applies to all partition.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c3">
+                            <p><b>Resources parameters</b></p>
+                            <p>These parameters define the resources for the Aerospike types of
+                                pods.</p>
+                            <p>If there are insufficient cluster resources, the pods might not be
+                                instantiated. .</p>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>aerospike.resources.requests.cpu</entry>
+                        <entry morerows="3">
+                            <p>For definition, see table <b>Parameters with varying scope: Global
+                                    or/and pod-type.</b></p>
+                        </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>aerospike.resources.requests.memory</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>aerospike.resources.limits.cpu</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>aerospike.resources.limits.memory</entry>
+                        <entry/>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <p>The following table describes the parameters of the IOHD section.</p>
+        <table frame="all" rowsep="1" colsep="1" id="table_s3k_v5l_vkb">
+            <title>IOHD parameters</title>
+            <tgroup cols="3">
+                <colspec colname="c2" colnum="1" colwidth="1.22*"/>
+                <colspec colname="c3" colnum="2" colwidth="2.17*"/>
+                <colspec colname="c4" colnum="3" colwidth="1*"/>
+                <thead>
+                    <row>
+                        <entry>Parameter</entry>
+                        <entry>Description</entry>
+                        <entry>Update notes<p>Must update / Modify default if needed / Do not
+                                modify</p></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>iohd.diameterFloatingIP</entry>
+                        <entry>This parameter defines a YAML list of keepalived floating IPs to use
+                            for external Diameter traffic. These IPs are deployed from the
+                            Deployment container using `bcmt service keepalived'.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>iohd.httpFloatingIP</entry>
+                        <entry>This parameter defines a YAML list of keepalived floating IPs to use
+                            for external HTTP network (5G) traffic. These IPs are deployed from the
+                            Deployment container using `bcmt service keepalived`.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>iohd.httpPort</entry>
+                        <entry>This parameter defines the port to listen for HTTP network (5G)
+                            connections on. This parameter needs to be set to something other than
+                            8443 if using the same floating IP that the IOHO uses in order to avoid
+                            a conflict.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>iohd.httpsPort</entry>
+                        <entry>This parameter defines the port </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>iohd.imageTag</entry>
+                        <entry>This parameter defines the tag version of the IOHD container image to
+                            use.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>iohd.jvmheap</entry>
+                        <entry>This parameter defines the size, in MB to allocate for the Diameter
+                            IOH Java VM. </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>iohd.replicas</entry>
+                        <entry>This parameter defines the number of replicas in the IOHD
+                            pod.</entry>
+                        <entry/>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <p>The following table describes the parameters of the Notification Service (NS)
+            section.</p>
+        <table frame="all" rowsep="1" colsep="1" id="table_z5r_hwl_vkb">
+            <title>NS parameters</title>
+            <tgroup cols="3">
+                <colspec colname="c2" colnum="1" colwidth="1.18*"/>
+                <colspec colname="c3" colnum="2" colwidth="2.51*"/>
+                <colspec colname="c4" colnum="3" colwidth="1*"/>
+                <thead>
+                    <row>
+                        <entry>Parameter</entry>
+                        <entry>Description</entry>
+                        <entry>Update notes<p>Must update / Modify default if needed / Do not
+                                modify</p></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>notif.imageTag</entry>
+                        <entry>This parameter defines the tag version of the NS container image to
+                            use. </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>notif.jvmheap</entry>
+                        <entry>This parameter defines the size, in MB, to allocate for the NS Java
+                            VM. Only applicable to containers which use Java.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>notif.replicas</entry>
+                        <entry>This parameter defines the number of replicas in the NS pod.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>notif.enabled</entry>
+                        <entry>
+                            <p>This parameter defines whether or not NS is enabled.</p>
+                            <p>The values are<ul id="ul_nxw_3ky_2lb">
+                                    <li><varname>true</varname></li>
+                                    <li><varname>false</varname></li>
+                                </ul></p>
+                        </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry namest="c2" nameend="c4"><b>Horizontal Pod Autoscaler
+                                (HPA)</b><p>These parameters define the HPA configuration for the NS
+                                types of pods.</p></entry>
+                    </row>
+                    <row>
+                        <entry>notif.hpa.minReplicas</entry>
+                        <entry morerows="2">
+                            <p>For definition, see table <b>Parameters with varying scope: Global
+                                    or/and pod-type.</b></p>
+                        </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>notif.hpa.maxReplicas</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>notif.hpa.averageUtilization</entry>
+                        <entry/>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <p>The following table describes the parameters of the OAME section.</p>
+        <table frame="all" rowsep="1" colsep="1" id="table_zth_yvl_vkb">
+            <title>OAME parameters</title>
+            <tgroup cols="3">
+                <colspec colname="c2" colnum="1" colwidth="1.3*"/>
+                <colspec colname="c3" colnum="2" colwidth="2.99*"/>
+                <colspec colname="c4" colnum="3" colwidth="1*"/>
+                <thead>
+                    <row>
+                        <entry>Parameter</entry>
+                        <entry>Description</entry>
+                        <entry>Update notes<p>Must update / Modify default if needed / Do not
+                                modify</p></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>oame.imageTag</entry>
+                        <entry>This parameter defines the tag version of the OAME container image to
+                            use.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>oame.jvmheap</entry>
+                        <entry>This parameter defines the size, in MB, to allocate for the OAME Java
+                            VM.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>oame.replicas</entry>
+                        <entry>This parameter defines the number of replicas in the OAME
+                            pod.</entry>
+                        <entry/>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <p>The following table describes the parameters of the Charging section.</p>
+        <table frame="all" rowsep="1" colsep="1" id="table_yjw_dwl_vkb">
+            <title>Charging parameters</title>
+            <tgroup cols="3">
+                <colspec colname="c2" colnum="1" colwidth="1.25*"/>
+                <colspec colname="c3" colnum="2" colwidth="2.56*"/>
+                <colspec colname="c4" colnum="3" colwidth="1*"/>
+                <thead>
+                    <row>
+                        <entry>Parameter</entry>
+                        <entry>Description</entry>
+                        <entry>Update notes<p>Must update / Modify default if needed / Do not
+                                modify</p></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>charging.imageTag</entry>
+                        <entry>The tag version of the and Charging application container image to
+                            use. </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>charging.jvmheap</entry>
+                        <entry>The size, in MB, to allocate for the Charging application Java
+                            VM.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>charging.replicas</entry>
+                        <entry>The number of replicas in the Charging application pod.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry namest="c2" nameend="c4"><b>Horizontal Pod Autoscaler
+                                (HPA)</b><p>These parameters define the HPA configuration for the
+                                Charging types of pods.</p></entry>
+                    </row>
+                    <row>
+                        <entry>charging.hpa.minReplicas</entry>
+                        <entry morerows="2">
+                            <p>For definition, see table <b>Parameters with varying scope: Global
+                                    or/and pod-type.</b></p>
+                        </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>charging.hpa.maxReplicas</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>charging.hpa.averageUtilization</entry>
+                        <entry/>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <p>The following table describes the parameters of the DB layer section.</p>
+        <table frame="all" rowsep="1" colsep="1" id="table_gqc_tyf_wkb">
+            <title>DB layer parameters</title>
+            <tgroup cols="3">
+                <colspec colname="c2" colnum="1" colwidth="1.12*"/>
+                <colspec colname="c3" colnum="2" colwidth="2.18*"/>
+                <colspec colname="c4" colnum="3" colwidth="1*"/>
+                <thead>
+                    <row>
+                        <entry>Parameter</entry>
+                        <entry>Description</entry>
+                        <entry>Update notes<p>Must update / Modify default if needed / Do not
+                                modify</p></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>dblayer.imageTag</entry>
+                        <entry>The tag version of  the DB layer container image to use.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>dblayer.jvmheap</entry>
+                        <entry>The size, in MB, to allocate for the DB layer Java VM. Only
+                            applicable to containers which use Java.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>dblayer.replicas</entry>
+                        <entry>The number of replicas in the DB layer  pod.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry namest="c2" nameend="c4"><b>Horizontal Pod Autoscaler
+                                (HPA)</b><p>These parameters define the HPA configuration for the DB
+                                layer types of pods.</p></entry>
+                    </row>
+                    <row>
+                        <entry>dblayer.hpa.minReplicas</entry>
+                        <entry morerows="2">
+                            <p>For definition, see table <b>Parameters with varying scope: Global
+                                    or/and pod-type.</b></p>
+                        </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>dblayer.hpa.maxReplicas</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>dblayer.hpa.averageUtilization</entry>
+                        <entry/>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <p>The following table describes the parameters of the SM App section.</p>
+        <table frame="all" rowsep="1" colsep="1" id="table_vt5_dzf_wkb">
+            <title>SM App parameters</title>
+            <tgroup cols="3">
+                <colspec colname="c1" colnum="1" colwidth="1.11*"/>
+                <colspec colname="c2" colnum="2" colwidth="2.28*"/>
+                <colspec colname="c3" colnum="3" colwidth="1*"/>
+                <thead>
+                    <row>
+                        <entry>Parameter</entry>
+                        <entry>Description</entry>
+                        <entry>Update notes<p>Must update / Modify default if needed / Do not
+                                modify</p></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>smapp.imageTag</entry>
+                        <entry>The tag version of the SM App container image to use. </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>smapp.jvmheap</entry>
+                        <entry>The size, in MB, to allocate for the SM App Java VM.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>smapp.replicas</entry>
+                        <entry>The number of replicas in the SM App pod. This parameter can be set
+                            to zero if  the SM is not to be co-located.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c3"><b>Horizontal Pod Autoscaler
+                                (HPA)</b><p>These parameters define the HPA configuration for the SM
+                                App types of pods.</p></entry>
+                    </row>
+                    <row>
+                        <entry>smapp.hpa.minReplicas</entry>
+                        <entry morerows="2">
+                            <p>For definition, see table <b>Parameters with varying scope: Global
+                                    or/and pod-type.</b></p>
+                        </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>smapp.hpa.maxReplicas</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>smapp.hpa.averageUtilization</entry>
+                        <entry/>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <p>The following table describes the parameters of the LDAP concentrator  section.</p>
+        <table frame="all" rowsep="1" colsep="1" id="table_ukl_2fg_wkb">
+            <title>LDAP concentrator  parameters</title>
+            <tgroup cols="3">
+                <colspec colname="c1" colnum="1" colwidth="1.44*"/>
+                <colspec colname="c2" colnum="2" colwidth="2.04*"/>
+                <colspec colname="c3" colnum="3" colwidth="1*"/>
+                <thead>
+                    <row>
+                        <entry>Parameter</entry>
+                        <entry>Description</entry>
+                        <entry>Update notes<p>Must update / Modify default if needed / Do not
+                                modify</p></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>ldapconcentrator.jvmheap</entry>
+                        <entry>The size, in MB, to allocate for the LDAP concentrator Java
+                            VM.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c3"><b>Horizontal Pod Autoscaler
+                                (HPA)</b><p>These parameters define the HPA configuration for the
+                                LDAP concentrator types of pods.</p></entry>
+                    </row>
+                    <row>
+                        <entry>ldapconcentrator.hpa.minReplicas</entry>
+                        <entry morerows="2">
+                            <p>For definition, see table <b>Parameters with varying scope: Global
+                                    or/and pod-type.</b></p>
+                        </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>ldapconcentrator.hpa.maxReplicas</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>ldapconcentrator.hpa.averageUtilization</entry>
+                        <entry/>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <p>The following table describes the parameters of the LDAP plugin  section.</p>
+        <table frame="all" rowsep="1" colsep="1" id="table_y1w_pfg_wkb">
+            <title>LDAP plugin  parameters</title>
+            <tgroup cols="3">
+                <colspec colname="c1" colnum="1" colwidth="1.2*"/>
+                <colspec colname="c2" colnum="2" colwidth="2.25*"/>
+                <colspec colname="c3" colnum="3" colwidth="1*"/>
+                <thead>
+                    <row>
+                        <entry>Parameter</entry>
+                        <entry>Description</entry>
+                        <entry>Update notes<p>Must update / Modify default if needed / Do not
+                                modify</p></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>ldapplugin.jvmheap</entry>
+                        <entry>The size, in MB, to allocate for the LDAP plugin  Java VM.</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c3"><b>Horizontal Pod Autoscaler
+                                (HPA)</b><p>These parameters define the HPA configuration for the
+                                LDAP plugin types of pods.</p></entry>
+                    </row>
+                    <row>
+                        <entry>ldapplugin.hpa.minReplicas</entry>
+                        <entry morerows="2">
+                            <p>For definition, see table <b>Parameters with varying scope: Global
+                                    or/and pod-type.</b></p>
+                        </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>ldapplugin.hpa.maxReplicas</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>ldapplugin.hpa.averageUtilization</entry>
+                        <entry/>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <table frame="all" rowsep="1" colsep="1" id="table_cqt_hdf_flb">
+            <title>CSDC  parameters</title>
+            <tgroup cols="3">
+                <colspec colname="c1" colnum="1" colwidth="1*"/>
+                <colspec colname="c2" colnum="2" colwidth="1*"/>
+                <colspec colname="c3" colnum="3" colwidth="1*"/>
+                <thead>
+                    <row>
+                        <entry>Parameter</entry>
+                        <entry>Description</entry>
+                        <entry>Update notes<p>Must update / Modify default if needed / Do not
+                                modify</p></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>csdc.service.StorageClass</entry>
+                        <entry/>
+                        <entry/>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </conbody>
+</concept>

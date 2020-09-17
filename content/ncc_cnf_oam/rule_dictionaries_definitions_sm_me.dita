@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="rule_dictionaries_definitions_sm_me">
+    <title>Rule dictionaries and definitions across SM and MEs</title>
+    
+    <conbody>
+        <section id="section_spx_jfp_plb">
+            <title>Overview</title>
+            <p>The custom rule dictionary, along with the attribute definition, and custom vendor
+                definition files must be copied to all SM and/or ME applications. This includes
+                custom rule dictionaries for Charging, Policy, and SM.</p>
+            <p>The admin must perform both of the following procedures, one after the other:<ul
+                    id="ul_l2w_mfp_plb">
+                    <li>Installing the custom rule dictionary</li>
+                    <li>To install, copy, and distribute the attribute definition and custom vendor
+                        definition files</li>
+                </ul></p>
+            <p>The NCC also supports the use of an unlimited number of VSA dictionary files and the
+                Attribute definition dictionaries. The VSA files can be used across all Diameter
+                interfaces. Each dictionary defines the list of valid attributes that are supported
+                by the vendor and are available for SPS-Policy and SPS-Charging management. The
+                dictionaries must be on the NCC workstation to be loaded. A VSA is added to a vendor
+                dictionary in order to add the VSA to the NCC. To display the VSA in the GUI or to
+                use it in rules, the VSA must also be added to the VsaToContextMapping.xml file in
+                the respective contexts.</p>
+            <p>If adding VSAs, see "Adding VSAs".</p>
+        </section>
+        <section id="section_awf_qfp_plb">
+            <title>Adding VSAs</title>
+            <p>The workflow to create or modify a dictionary is as follows:<ul id="ul_ark_rfp_plb">
+                    <li>create an entry in the CustomVendorDefinition.xml for the vendor</li>
+                    <li>create a dictionary by name and specify all of the VSAs in the
+                        VsaToContextMapping.xml file</li>
+                    <li>reload all of the VSA dictionaries to load the changes</li>
+                    <li>distribute the files to all of the nodes</li>
+                </ul></p>
+            <p>To add or modify attributes, a dictionary must be created, and the attributes must be
+                added or modified (see “To add to the attribute definition and custom vendor
+                definition files”) in the dictionary in the opt/tpa/conf/sac/diameter directory. A
+                VSA dictionary file may be added to the NCC at any time. The format of the file
+                is:<codeblock>/opt/tpa/schemas/DiameterDefinition.xsd</codeblock></p>
+            <p>To display the VSA in the NCC rule engine, the GUI, or to be able to use the VSA in
+                rules for Policy or Charging, the VSA must also be added to the
+                VsaToContextMapping.xml in the respective files and contexts. That is, a VSA entry
+                must be present in a dictionary and a source and/or result context mapping must be
+                in the VSA mapping file.</p>
+            <p>To use a VSA on specific interfaces only, the VsaRuleSourceContext and
+                VsaRuleResultContext must be mapped to the VSA. When the context is mapped to the
+                VSA, the VSA is only available as a criteria or an action along with the configured
+                contexts.</p>
+            <p>To configure VSA entries in a dictionary, use the VsaToContextMapping.xml file. The
+                VsaToContextMapping.xml file provides an xml document that can be modified to
+                include the individual VSA definitions.</p>
+            <p>The VsaToContextMapping.xml file for Policy is located
+                in:<codeblock>/opt/tpa/conf/sac/diameter/rule/VsaToContextMapping.xml</codeblock></p>
+            <p>The VsaToContextMapping.xml file for Charging is located
+                in:<codeblock>/opt/tpa/conf/sac/diameter/rule/ChargingVsaToContextMapping.xml</codeblock></p>
+            <p>Copy the contents of the VSA mapping file and enter the required values for the VSAs
+                being added, as
+                follows:<codeblock>&lt;diameterToRuleContextMap xmlns="diameterRuleContextMap">
+&lt;vsaToContext>
+&lt;vsaToRuleSourceContexts>
+&lt;vsaRuleSourceContext>
+&lt;context type="CONTEXT"/>
+&lt;vendorInfo>
+&lt;name>vendorname&lt;/name>
+&lt;includeAttribute name=”attribute-VSA”/>
+&lt;includeAttribute name=”attribute-VSA2” maxOccurs="unbounded"
+additive="true"/>
+&lt;includeAttribute name=”attribute-VSA3” valueType=
+"EnumValueType" valueTypeClassName="com.alcatel.tpapps.diameter.par.
+EventTrigger"/>
+&lt;includeAttribute name=”attribute-VSA4.attribute-VSA5”
+includeGroupIndexArgs="true"/>
+&lt;/vendorInfo>
+&lt;/vsaRuleSourceContext>
+&lt;/vsaToRuleSourceContexts>
+&lt;vsaToRuleResultContexts>
+&lt;vsaRuleResultContext>
+&lt;context type="CONTEXT"/>
+&lt;vendorInfo>
+&lt;name>vendorname&lt;/name>
+&lt;includeAttribute name=”attribute-VSA”/>
+&lt;includeAttribute name=”attribute-VSA2” maxOccurs="unbounded"
+additive="true"/>
+&lt;includeAttribute name=”attribute-VSA3” valueType=
+"EnumValueType" valueTypeClassName="com.alcatel.tpapps.diameter.par.
+EventTrigger"/>
+&lt;includeAttribute name=”attribute-VSA4.attribute-VSA5”
+includeGroupIndexArgs="true"/>
+&lt;/vendorInfo>
+&lt;/vsaRuleResultContext>
+&lt;/vsaToRuleResultContext>
+&lt;/vsaToContext>
+&lt;/diameterToRuleContextMap></codeblock></p>
+            <p>Save and add the file back to the respective directory.</p>
+            <p>Perform “To install, copy, and distribute the attribute definition and custom vendor
+                definition files” to copy and distribute the VSA mapping file, the attribute
+                definition and custom vendor definition files.</p>
+            <p><b>To install, copy, and distribute the custom rule attribute dictionary</b><ol
+                    id="ol_icl_ggp_plb">
+                    <li>Obtain the CustomRuleAttributeDictionary.xml files that are needed from the
+                        appropriate repository location provided by Nokia (for example, the
+                        PCRFCustomRuleAttributeDictionary.xml,
+                        ChargingCustomRuleAttributeDictionary.xml,
+                        diameter/rule/ChargingVsaToContextMapping.xml,
+                        diameter/rule/VsaToContextMapping.xml or
+                        RSCustomRuleAttributeDictionary.xml).</li>
+                    <li>Connect to the SM active OAME as the root user.</li>
+                    <li>Put the file obtained in step 1 in any chosen directory on the SM’s Active
+                            OAME.<note>Before copying any files to any NCC VMs, the user must
+                            execute the df and du Linux commands from each VM to determine the
+                            storage available and whether or not the copying of new files can
+                            proceed. Usage of the Linux commands df (abbreviation for disk free) and
+                            du (abbreviated from disk usage) can be found on every VM via the Linux
+                            manual page by using “man df” and “man du” as root user. There are two
+                            storage directories that can be used on any VM as follows:<ul
+                                id="ul_tv1_jgp_plb">
+                                <li>First choice, is under the /appdata directory which is created
+                                    and mounted to the cinder volume (OpenStack)/independent disk
+                                    (VMware) on every VM.</li>
+                                <li>Second choice, is under the /var/log directory which is created
+                                    and mounted to the cinder volume (OpenStack)/independent disk
+                                    (VMware) on every VM. If there is enough storage available,
+                                    proceed. When the task is completed, clean-up the files that are
+                                    no longer needed. If there is not enough space, either do some
+                                    clean-up or contact Nokia Support.</li>
+                            </ul></note></li>
+                    <li>If a new PCRFCustomRuleAttributeDictionary.xml file is being installed, a
+                        new ChargingCustomRuleAttributeDictionary.xml, diameter/rule/
+                        ChargingVsaToContextMapping.xml, diameter/rule/VsaToContextMapping.xml or a
+                        new RSCustomRuleAttributeDictionary.xml run the following command on the
+                        SM’s Active
+                            OAME:<codeblock>/opt/tpa/bin/distribute-rules-dictionaries -d &lt;directory> [-e &lt;MEs>]
+[-i &lt;MEs>]</codeblock>Where:<table
+                            frame="all" rowsep="1" colsep="1" id="table_gqd_mgp_plb">
+                            <tgroup cols="2">
+                                <colspec colname="c1" colnum="1" colwidth="1*"/>
+                                <colspec colname="c2" colnum="2" colwidth="1*"/>
+                                <thead>
+                                    <row>
+                                        <entry>Option</entry>
+                                        <entry>Description</entry>
+                                    </row>
+                                </thead>
+                                <tbody>
+                                    <row>
+                                        <entry><codeph>-d &lt;directory></codeph></entry>
+                                        <entry>Source directory containing the custom rules
+                                            attribute dictionary files to distribute. This is not
+                                            required when run on an ME to distribute files that came
+                                            from an SM.</entry>
+                                    </row>
+                                    <row>
+                                        <entry><codeph>-e &lt;MEs></codeph></entry>
+                                        <entry>Excludes the MEs (comma-separated OAME VIPs of MEs)
+                                            from distribution. Only meaningful when run on
+                                            SM.</entry>
+                                    </row>
+                                    <row>
+                                        <entry><codeph>-i &lt;MEs></codeph></entry>
+                                        <entry>Includes the MEs (comma-separated OAME VIPs of MEs)
+                                            for distribution. Only meaningful when run on
+                                            SM.</entry>
+                                    </row>
+                                    <row>
+                                        <entry><codeph>-h</codeph></entry>
+                                        <entry>Displays help for this tool.</entry>
+                                    </row>
+                                </tbody>
+                            </tgroup>
+                        </table>The command performs the following:<ul id="ul_hby_rgp_plb">
+                            <li>Pushes the dictionary files to the SM application nodes in that SM
+                                site.</li>
+                            <li>Reloads rules in all the SM app nodes.</li>
+                            <li>Creates an archive of the dictionary files and pushes it to the
+                                Active OAME node on the ME sites.</li>
+                        </ul></li>
+                    <li>For the PCRFCustomRuleAttributeDictionary.xml file,
+                        ChargingCustomRuleAttributeDictionary.xml, diameter/rule/
+                        ChargingVsaToContextMapping.xml, diameter/rule/VsaToContextMapping.xml or
+                        RSCustomRuleAttributeDictionary.xml run the following command on each ME's
+                        Active
+                        OAME:<codeblock>/opt/tpa/bin/distribute-rules-dictionaries</codeblock>The
+                        command performs the following:<ul id="ul_lnd_vgp_plb">
+                            <li>Extracts the archive already transferred from the SM.</li>
+                            <li>Pushes the dictionary files to the Diameter applications and Common
+                                Services nodes in the ME site.</li>
+                            <li>Reloads the rules in all the applicable nodes.</li>
+                        </ul></li>
+                </ol></p>
+        </section>
+        <section id="section_int_wgp_plb">
+            <title>To add to the attribute definition and custom vendor definition files</title>
+            <p>Use this procedure to add VSAs and vendor definitions to the attribute definition,
+                and custom vendor definition files. Both the AttributeDefinition.xml and
+                CustomVendorDefinition.xml exist in “/opt/tpa/conf/sac/diameter/vsa” on all SM, ME
+                IOHD, Comservice, and Diameter nodes. Other definition files can also exist in the
+                directory as they are required for the configuration and can be distributed in the
+                same manner.<ol id="ol_vhp_xgp_plb">
+                    <li>Connect to the SM active OAME as the root user.</li>
+                    <li>Open the AttributeDefinition.xml and CustomVendorDefinition.xml files that
+                        are needed from the “/opt/tpa/conf/sac/diameter/vsa” directory using a text
+                        editor. The following files are sample files that are installed by
+                            default.<ul id="ul_iwx_ygp_plb">
+                            <li>/opt/tpa/conf/sac/diameter/vsa/AttributeDefinitionTemplate.xml</li>
+                            <li>/opt/tpa/conf/sac/diameter/vsa/CustomVendorDefinition.xml</li>
+                        </ul></li>
+                    <li>To add or modify a dictionary file, define the vendor_name and vendor_id in
+                        the CustomVendorDefinition.xml file to notify the system that the vendor is
+                        valid and supported by the NCC. For example, to add Motorola, type:
+                        <codeblock>&lt;vendor id=”161” name=”MOT”/></codeblock></li>
+                    <li>Save and close the CustomVendorDefinition.xml file.</li>
+                    <li>Open or create a vendor dictionary file to add or modify attributes. Use the
+                        following format for the filename: AttributeDefinition.xml; for
+                        example,<codeblock>AttributeDefinitionTemplate.xml</codeblock>All of the
+                        parameters in the .xml file can be modified, which are described in the
+                        following table. The AttributeDefinition&lt;VENDOR_NAME>.xml file defines a
+                        list of VSAs. Each vendor has a separate file.<table frame="all" rowsep="1"
+                            colsep="1" id="table_a41_fhp_plb">
+                            <tgroup cols="2">
+                                <colspec colname="c1" colnum="1" colwidth="1*"/>
+                                <colspec colname="c2" colnum="2" colwidth="1*"/>
+                                <thead>
+                                    <row>
+                                        <entry>Parameter</entry>
+                                        <entry>Description</entry>
+                                    </row>
+                                </thead>
+                                <tbody>
+                                    <row>
+                                        <entry>attribute code</entry>
+                                        <entry>Integer assigned to the attribute by the
+                                            vendor</entry>
+                                    </row>
+                                    <row>
+                                        <entry>&lt;vendorName></entry>
+                                        <entry>Each vendor has a unique vendor ID.</entry>
+                                    </row>
+                                    <row>
+                                        <entry>&lt;name></entry>
+                                        <entry>Name of the attribute</entry>
+                                    </row>
+                                    <row>
+                                        <entry>&lt;format></entry>
+                                        <entry>The Diameter AVP format</entry>
+                                    </row>
+                                    <row>
+                                        <entry>&lt;mFlag></entry>
+                                        <entry>Determines whether AVP support is mandatory. The
+                                            options are:<ul id="ul_epv_3hp_plb">
+                                                <li>REQUIRED*</li>
+                                                <li>OPTIONAL</li>
+                                                <li>FORBIDDEN</li>
+                                            </ul>Must be set to REQUIRED; otherwise, the VSA is not
+                                            loaded. </entry>
+                                    </row>
+                                    <row>
+                                        <entry>&lt;pFlag></entry>
+                                        <entry>Determines whether end-to-end encryption is required.
+                                            The options are:<ul id="ul_tyr_khp_plb">
+                                                <li>REQUIRED</li>
+                                                <li>OPTIONAL</li>
+                                                <li>FORBIDDEN</li>
+                                            </ul></entry>
+                                    </row>
+                                    <row>
+                                        <entry>&lt;vFlag></entry>
+                                        <entry>Any attribute that is a VSA and is added to a vendor
+                                            dictionary must specify REQUIRED for the in its
+                                            definition; otherwise, the VSA is not loaded.<ul
+                                                id="ul_q12_mhp_plb">
+                                                <li>REQUIRED</li>
+                                                <li>OPTIONAL</li>
+                                                <li>FORBIDDEN</li>
+                                            </ul>This restriction does not apply to standard
+                                            attributes.</entry>
+                                    </row>
+                                    <row>
+                                        <entry>&lt;encrypt></entry>
+                                        <entry>The type of encryption used to encrypt and decrypt
+                                            the attribute. The options are:<ul id="ul_t2l_nhp_plb">
+                                                <li>True to encrypt</li>
+                                                <li>False otherwise</li>
+                                            </ul></entry>
+                                    </row>
+                                    <row>
+                                        <entry>&lt;register></entry>
+                                        <entry>Determines whether the Diameter AVP definition should
+                                            be registered. The options are:<ul id="ul_uvd_php_plb">
+                                                <li>True (to register)</li>
+                                                <li>False otherwise</li>
+                                            </ul></entry>
+                                    </row>
+                                    <row>
+                                        <entry>&lt;proprietary></entry>
+                                        <entry>Determines whether the dictionary is proprietary. The
+                                            options are:<ul id="ul_mkn_qhp_plb">
+                                                <li>True (VSA, proprietary)</li>
+                                                <li>False (standard non-proprietary)</li>
+                                            </ul></entry>
+                                    </row>
+                                </tbody>
+                            </tgroup>
+                        </table></li>
+                    <li>Perform “To install, copy, and distribute the attribute definition and
+                        custom vendor definition files” to copy and distribute the
+                        VsaToContextMapping.xml, attribute definition, and custom vendor definition
+                        files.</li>
+                </ol></p>
+        </section>
+        <section id="section_xdn_shp_plb">
+            <title>To install, copy, and distribute the attribute definition and custom vendor
+                definition files</title>
+            <p>Use this CLI tool in the OAME to install, copy, and distribute the attribute
+                definition, and custom vendor definition files, along with the VSA mapping file from
+                the OAME to the SMs and MEs. Both the AttributeDefinition.xml and
+                CustomVendorDefinition.xml exist in “/opt/tpa/conf/sac/diameter/vsa” on all ME IOHD,
+                Comservice, and Diameter nodes. Other definition files can also exist in the
+                directory as they are required for the configuration and can be distributed in the
+                same manner.<ol id="ol_uk3_thp_plb">
+                    <li>If this is an installation, obtain the VsaToContextMapping.xml,
+                        AttributeDefinition.xml and CustomVendorDefinition.xml files that are needed
+                        from the appropriate repository location provided by Nokia.</li>
+                    <li>Connect to the SM active OAME as the root user.</li>
+                    <li>Put the files obtained in step 1 in a chosen directory on the SM’s Active
+                        OAME. If the VsaToContextMapping.xml, AttributeDefinition.xml and
+                        CustomVendorDefinition.xml files that already exist in the
+                        “/opt/tpa/conf/sac/diameter/vsa” directory have been added to, go to the
+                        next step.<note>Before copying any files to any NCC VMs, the user must
+                            execute the df and du Linux commands from each VM to determine the
+                            storage available and whether or not the copying of new files can
+                            proceed. Usage of the Linux commands df (abbreviation for disk free) and
+                            du (abbreviated from disk usage) can be found on every VM via the Linux
+                            manual page by using “man df” and “man du” as root user. There are two
+                            storage directories that can be used on any VM as follows: <ul
+                                id="ul_a34_5hp_plb">
+                                <li>First choice, is under the /appdata directory which is created
+                                    and mounted to the cinder volume (OpenStack)/independent disk
+                                    (VMware) on every VM.</li>
+                                <li>Second choice, is under the /var/log directory which is created
+                                    and mounted to the cinder volume (OpenStack)/independent disk
+                                    (VMware) on every VM. If there is enough storage available,
+                                    proceed. When the task is completed, clean-up the files that are
+                                    no longer needed. If there is not enough space, either do some
+                                    clean-up or contact Nokia
+                                    Support.<codeblock>/opt/tpa/bin/distribute-diameter-dictionaries -d &lt;directory></codeblock>Where
+                                    the is the directory containing the VsaToContextMapping.xml,
+                                    AttributeDefinition.xml and CustomVendorDefinition.xml files.
+                                    The command performs the following:<ul id="ul_zjr_whp_plb">
+                                        <li>Pushes the dictionary files to the SM application nodes
+                                            in that SM site.</li>
+                                        <li>Reloads rules in all the SM app nodes.</li>
+                                        <li>Creates an archive of the dictionary files and pushes it
+                                            to the Active OAME node on the ME sites.</li>
+                                    </ul></li>
+                            </ul></note></li>
+                    <li>Run the following command on each ME's Active
+                        OAME:<codeblock>/opt/tpa/bin/distribute-diameter-dictionaries</codeblock>The
+                        command performs the following:<ul id="ul_gdw_zhp_plb">
+                            <li>Extracts the archive already transferred from the SM.</li>
+                            <li>Pushes the dictionary files to the Diameter applications and Common
+                                Services nodes in the ME site.</li>
+                            <li>Reloads the rules in all the applicable nodes.</li>
+                        </ul></li>
+                </ol></p>
+        </section>
+    </conbody>
+</concept>

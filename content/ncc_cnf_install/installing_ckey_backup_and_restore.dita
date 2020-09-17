@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="installing_ckey_backup_and_restore">
+    <title>Installing CKEY backup and restore</title>
+    <taskbody>
+        <context>This procedure provides instructions on how to install CKEY backup and
+            restore.<p/></context>
+        <steps>
+            <step>
+                <cmd>Find the related BrPolicy names by entering:</cmd>
+                <info>
+                    <codeblock>kubectl get br -n $NAMESPACE</codeblock>
+                    <p><b>Expected output</b></p>
+                    <codeblock>NAME                AGE
+ckey-ckey           23h
+ckey-cmdb-mariadb   23h</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Use the BrPolicy name to enable/disable the related scheduled backup, for
+                    example:</cmd>
+                <info>
+                    <codeblock>BR_POLICY_NAME=ckey-ckey</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd/>
+                <info>
+                    <codeblock/>
+                </info>
+            </step>
+            <step>
+                <cmd/>
+                <info>
+                    <codeblock/>
+                </info>
+            </step>
+            <step>
+                <cmd/>
+                <info>
+                    <codeblock/>
+                </info>
+            </step>
+            <step>
+                <cmd/>
+                <info>
+                    <ol id="ol_cm5_kxq_5mb">
+                        <li>Find the related BrPolicy names by
+                                    entering:<codeblock>kubectl get br -n $NAMESPACE</codeblock><p><b>Expected
+                                    output</b></p><codeblock>NAME                AGE
+ckey-ckey           23h
+ckey-cmdb-mariadb   23h</codeblock></li>
+                        <li>Use the BrPolicy name to enable/disable the related scheduled backup,
+                            for example:<codeblock>BR_POLICY_NAME=ckey-ckey</codeblock></li>
+                        <li>Enter:</li>
+                    </ol>
+                    <codeblock>curl -vkL -X PUT "http://cbur-master-cbur.$CBUR_MASTER_NAMESPACE.svc.cluster.local:80/v2/cronjob/$NAMESPACE/$BR_POLICY_NAME?query_from=k8swatcher" -H  "accept: application/json"</codeblock>
+                    <note>
+                        <p>To disable scheduled backups for the policy specified in BR_POLICY_NAME,
+                            enter:<codeblock>curl -vkL -X DELETE "http://cbur-master-cbur.$CBUR_MASTER_NAMESPACE.svc.cluster.local:80/v2/cronjob/$NAMESPACE/$BR_POLICY_NAME?query_from=k8swatcher" -H  "accept: application/json"</codeblock></p>
+                    </note>
+                </info>
+            </step>
+        </steps>
+    </taskbody>
+</task>

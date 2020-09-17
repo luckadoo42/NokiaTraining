@@ -1,0 +1,2732 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="enum_types_and_event_triggers">
+    <title>Enumeration types and event triggers</title>
+    
+    <conbody>
+        <section id="section_lk5_jj3_plb">
+            <title>Enumeration types</title>
+            <p>This section describes the enumeration types available for rule variables. The
+                enumeration type parameters are described in the following table.<table frame="all"
+                    rowsep="1" colsep="1" id="table_ynb_lj3_plb">
+                    <title>Enumeration Type parameters</title>
+                    <tgroup cols="3">
+                        <colspec colname="c1" colnum="1" colwidth="1*"/>
+                        <colspec colname="c2" colnum="2" colwidth="1*"/>
+                        <colspec colname="c3" colnum="3" colwidth="1*"/>
+                        <thead>
+                            <row>
+                                <entry>Parameter</entry>
+                                <entry>Description</entry>
+                                <entry>Options</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry>AddressFamily</entry>
+                                <entry>Used by the Tunnel-MediumType AVP to specify the address
+                                    family.</entry>
+                                <entry>
+                                    <p>The following options are supported for address family:<ul
+                                            id="ul_u22_nj3_plb">
+                                            <li>Not Set</li>
+                                            <li>AS Number</li>
+                                            <li>AppleTalk</li>
+                                            <li>BBN 1822</li>
+                                            <li>Banyan Vines</li>
+                                            <li>DNS (Domain Name System)</li>
+                                            <li>Decnet IV</li>
+                                            <li>Distinguished Name</li>
+                                            <li>E-163</li>
+                                            <li>E-164 (SMDS, Frame Relay, ATM)</li>
+                                            <li>E-164 (with NSAP format address)</li>
+                                            <li>EIGRP Common Service Family</li>
+                                            <li>EIGRP IPv4 Service Family</li>
+                                            <li>EIGRP IPv6 Service Family</li>
+                                            <li>F.69 (Telex)</li>
+                                            <li>Fiber Channel World-Wide Node Name</li>
+                                            <li>Fiber Channel World-Wide Port Name</li>
+                                            <li>GWID</li>
+                                            <li>HDLC (8-bit multidrop)</li>
+                                            <li>IEEE 802 Media + Ethernet</li>
+                                            <li>IPX</li>
+                                            <li>IPV4</li>
+                                            <li>IPV6</li>
+                                            <li>NSAP</li>
+                                            <li>Reserved</li>
+                                            <li>X.121 (X.25, Frame Relay)</li>
+                                            <li>XTP native mode XTP</li>
+                                            <li>XTP over IPv4</li>
+                                            <li>XTP over IPv6 </li>
+                                        </ul></p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>BearerControlMode</entry>
+                                <entry>
+                                    <p>The Bearer-Control-Mode AVP type is Enumerated and is sent
+                                        from the PCRF to the PCEF or BBERF; indicates the
+                                        PCRF-selected bearer control mode.</p>
+                                    <p>When Network-Request_ Supported AVP is absent from the CCR-I,
+                                        the NCC default behavior is to set Bearer-Control-Mode to
+                                        “UE_only” in CCA-I.</p>
+                                    <p>CAUTION: When importing a rules system version saved from a
+                                        previous release of the NCC, do not use the
+                                        Bearer-Control-Mode action UE_NW in the NCC operator policy
+                                        rule engine to override a UE_only downlink network (access
+                                        network and SGSN.) If this takes place, this action would
+                                        most likely to be rejected.</p>
+                                    <p>When importing such a rule system version, change the
+                                        Bearer-Control-Mode value from UE_NW to "Not Set".</p>
+                                    <p>Note: If a gateway expects no Bearer-Control-Mode in CCA-I
+                                        when Network-RequestSupported AVP is absent from the CCR-I,
+                                        an operator policy rule should be created in the IP-CAN
+                                        session or gateway control session establishment rule set
+                                        (and session modification rule set, if required), with a
+                                        condition "if NRS not present", and action
+                                        "BCM=Remove-BCM".</p>
+                                </entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>Reserved</b></p>
+                                    <p>This option is not used in this release.</p>
+                                    <p><b>User Equipment Only</b></p>
+                                    <p>The UE can request any resource establishment, modification,
+                                        or termination.</p>
+                                    <p><b>User Equipment and Network</b></p>
+                                    <p>The UE and PCEF can request any resource establishment,
+                                        modification, or termination by adding, modifying, or
+                                        removing traffic flow information.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>BearerOperation</entry>
+                                <entry>The Bearer-Operation AVP type is Enumerated, and indicates
+                                    the bearer event that initiates a request for PCC rules. The AVP
+                                    is provided if the bearer event relates to an IP-CAN bearer
+                                    initiated by the UE.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>Establishment</b></p>
+                                    <p>A new bearer is being established.</p>
+                                    <p><b>Modification</b></p>
+                                    <p>A bearer is being modified.</p>
+                                    <p><b>Termination</b></p>
+                                    <p>A bearer is being terminated</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>BearerUsage</entry>
+                                <entry>
+                                    <p>The Bearer-Usage AVP type is Enumerated, and indicates how
+                                        the bearer is used. If the AVP has not been previously
+                                        provided, its absence indicates that specific information is
+                                        not available.</p>
+                                    <p>If the Bearer-Usage AVP is provided, the value is valid until
+                                        the next time a value is provided. The AVP is used for GPRS
+                                        and EPS access types.</p>
+                                </entry>
+                                <entry>
+                                    <p>Not Set</p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p>General</p>
+                                    <p>Specific bearer usage information is not available.</p>
+                                    <p>IMS</p>
+                                    <p>Signaling The bearer is used for IMS signaling only.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>BitRateCheckResult</entry>
+                                <entry>Defines whether the NCC should be allowed to negotiate the
+                                    requested QoS. This action provides a method to change the
+                                    behavior of the NCC QoS authorization when the UE requests a QoS
+                                    negotiation using the QoS-Negotiation AVP in the IP-CAN
+                                    establishment or modification request. Applies to GPRS IP-CAN
+                                    sessions.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>Not Supported</b></p>
+                                    <p>Reject authorization if the UE has requested more than the
+                                        authorized bandwidth limits.</p>
+                                    <p><b>Supported</b></p>
+                                    <p>Authorize requests beyond the authorized limits by lowering
+                                        the authorized QoS to the maximum available.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>BooleanEnum</entry>
+                                <entry>
+                                    <p>Used with the ALLOW_ ROAMING parameter to disable roaming
+                                        privileges for a subscriber.</p>
+                                    <p>Used with the Subscriber-IsUnknown criteria to determine
+                                        whether the subscriber is a generated Unknown subscriber or
+                                        a provisioned Known subscriber.</p>
+                                </entry>
+                                <entry>
+                                    <p><b>False</b></p>
+                                    <p>For the Subscriber-Is-Unknown criteria, set this parameter to
+                                        false if this subscriber is known. Set this option to
+                                        disable roaming for the subscriber for the ALLOW_ROAMING
+                                        parameter.</p>
+                                    <p><b>True</b></p>
+                                    <p>For the Subscriber-Is-Unknown criteria, if this subscriber is
+                                        unknown, set this parameter to true. Do not use this option
+                                        for the ALLOW_ROAMING parameter, as subscribers are, by
+                                        default, already allowed to roam. The purpose of the ALLOW_
+                                        ROAMING/BooleanEnum parameter s is to disable roaming.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>ChargingCharacteristicsSelectionMode</entry>
+                                <entry>The Charging-CharacteristicsSelection-Mode AVP is of type
+                                    Enumerated and indicates how the applied ChargingCharacteristics
+                                    was selected.</entry>
+                                <entry>The following values are available:<ul id="ul_axg_qv3_plb">
+                                        <li>&lt;Not Set></li>
+                                        <li>APN Specific</li>
+                                        <li>Home Default</li>
+                                        <li>Roaming Default</li>
+                                        <li>Serving Node Supplied</li>
+                                        <li>Subscription Specific</li>
+                                        <li>Visiting Default</li>
+                                    </ul>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>DSCRequestType</entry>
+                                <entry>Used for session-specific conditions and can be set to
+                                    establish, update, or terminate depending on the type of message
+                                    being processed. Request-Type is available in all rule sets and
+                                    is useful for doing specific logic in the QoS Management and
+                                    Dynamic Rule Creation rule sets.</entry>
+                                <entry>
+                                    <p>Not Set</p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p>The following options are available:<ul id="ul_ef5_vv3_plb">
+                                            <li>AF Establish</li>
+                                            <li>AF Terminate</li>
+                                            <li>AF Update</li>
+                                            <li>GWC Establish</li>
+                                            <li>GWC Terminate</li>
+                                            <li>GWC Update</li>
+                                            <li>IP-CAN Establish</li>
+                                            <li>IP-CAN Terminate</li>
+                                            <li>IP-CAN Update</li>
+                                            <li>Subscriber Update</li>
+                                            <li>Sy Session Update</li>
+                                        </ul></p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>DayofWeek</entry>
+                                <entry>Indicates a reference to the day; for example,
+                                    Monday.</entry>
+                                <entry>
+                                    <p>Not Set</p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p>The following options are available:<ul id="ul_gmd_bw3_plb">
+                                            <li>Monday</li>
+                                            <li>Tuesday</li>
+                                            <li>Wednesday</li>
+                                            <li>Thursday</li>
+                                            <li>Friday</li>
+                                            <li>Saturday</li>
+                                            <li>Sunday</li>
+                                        </ul></p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>DaylightSavingTime</entry>
+                                <entry>Indicates the offset between universal time and local time in
+                                    15-min increments where the MS/UE resides</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>+1 hour adjustment for Daylight Saving Time</b></p>
+                                    <p>One hour adjustment for Daylight Saving Time.</p>
+                                    <p><b>+2 hours adjustment for Daylight Saving Time</b></p>
+                                    <p>Two hours adjustment for Daylight Saving Time.</p>
+                                    <p><b>No Adjustment for Daylight Saving Time</b></p>
+                                    <p>No Adjustment for Daylight Saving Time.</p>
+                                    <p><b>Reserved</b></p>
+                                    <p>Reserved</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>DynamicAddressFlag</entry>
+                                <entry>
+                                    <p>The Dynamic-Address-Flag AVP) is of type Enumerated, and
+                                        indicates whether the PDP context/PDN address is statically
+                                        or dynamically allocated.</p>
+                                    <p>If this AVP is not present, the address is statically
+                                        allocated. </p>
+                                </entry>
+                                <entry>
+                                    <p><b>&lt;Not Set></b></p>
+                                    <p>Indicates that the address is statically allocated.</p>
+                                    <p><b>Dynamic</b></p>
+                                    <p>The PDP context/PDN address is dynamically allocated.</p>
+                                    <p><b>Static</b></p>
+                                    <p>The PDP context/PDN address is statically allocated.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <p>EventTrigger</p>
+                                    <p>Note: The NCC sends NO_EVENT_ TRIGGER in a CCA (Gx) or RAR
+                                        (Gx) for a session that previously had registered event
+                                        trigger(s) but no longer does. NO_EVENT_TRIGGER is not
+                                        available as a user selectable action in EventTrigger.</p>
+                                </entry>
+                                <entry>The Event-Trigger AVP type is Enumerated. When the
+                                    Event-Trigger AVP is sent from the PCRF to the PCEF/BBERF, it
+                                    indicates an event that initiates a re-request for the PCC/QoS
+                                    rules. When the Event-Trigger AVP is sent from the PCEF/BBERF to
+                                    the PCRF, it indicates that the corresponding event occurred at
+                                    the gateway. For a description of the event triggers available
+                                    for each environment, see Event Triggers in this chapter. Note:
+                                    The NCC also accepts unknown event triggers that are not based
+                                    on the 3GPP specifications; however, the NCC does not take any
+                                    action when unknown event triggers are sent.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>ADC Revalidation Timeout</b></p>
+                                    <p>This value is used in CCA and RAR commands by the PCRF to
+                                        indicate that upon ADC revalidation timeout, the PCEF will
+                                        inform the PCRF. When used in a CCR command, this value
+                                        indicates that the PCEF generated the request because there
+                                        has been an ADC revalidation timeout.</p>
+                                    <p><b>APN AMBR Modification Failure</b></p>
+                                    <p>The PCEF uses this value to indicate to the PCRF that
+                                        APN-AMBR modifications have failed. The PCEF uses this value
+                                        in a new CCR command that indicates the failure of either a
+                                        PUSH initiated modification or a PULL initiated
+                                        modification. This event trigger needs no subscription.
+                                        Applicable to functionality introduced with the Rel8 feature
+                                        as described in clause 5.4.1.</p>
+                                    <p><b>Access Network Info Report</b></p>
+                                    <p>This value is used in CCA and RAR commands by the PCRF to
+                                        indicate that upon completion of an IP-CAN bearer
+                                        establishment, modification or termination procedure, or
+                                        upon termination of the IP-CAN session, and if the AF
+                                        requests the PCRF to report the access network information,
+                                        the PCEF reports the corresponding user location (or PLMN
+                                        identifier if the user location is not available) and/or UE
+                                        Timezone to the PCRF accordingly.</p>
+                                    <p>When used in a CCR command, this value indicates that the
+                                        PCEF generated the request because the PCEF reports the
+                                        corresponding access network information to the PCRF as
+                                        requested.</p>
+                                    <p>On an AF establish with the specific action for access
+                                        network information report, the current IP-CAN location
+                                        information is returned.</p>
+                                    <p>Note: When the PCEF supports the Gx NetLoc Feature Bit (10)
+                                        as specified under the Gx Supported-Features of
+                                        Feature-List-ID 1, the NCC only forwards the user location
+                                        (or PLMN identifier if the user location is not available)
+                                        and/or the UE Timezone to the AF when the information is
+                                        sent to the PCRF in Gx CCR-u that has event-trigger ACCESS_
+                                        NETWORK_INFO_REPORT.</p>
+                                    <p>When the PCEF supports the Gx NetLoc Feature Bit (10) the
+                                        PCRF does not automatically send the current IP-CAN location
+                                        information on AF establishment with the specific action for
+                                        access network information report. It does not forward the
+                                        information when information is sent to PCRF in Gx RAA, and
+                                        does not forward the information when event-trigger
+                                        ACCESS_NETWORK_INFO_REPORT is not present in Gx CCR-u</p>
+                                    <p><b>Access Node Gateway Change</b></p>
+                                    <p>IPv4, IPv6 or both addresses of the SGW. If the SGW has an
+                                        IPv4 and IPv6 address, two instances of this AVP (one for
+                                        each address type) are used to indicate the IPv4 and the
+                                        IPv6 address of the SGW.</p>
+                                    <p>Used in CCA and RAR commands by the PCRF to indicate when the
+                                        serving access node gateway changes, the PCC rules are
+                                        requested.</p>
+                                    <p>When used in a CCR command, Access Node Gateway Change
+                                        indicates that the PCEF generated the request because the
+                                        serving access node gateway changed. The new value of the
+                                        serving Access Node gateway is in the AN-GW-Address AVP.</p>
+                                    <p><b>Application Change From Tethering State</b></p>
+                                    <p>When used in CCA and RAR commands by the PCRF, this value
+                                        indicates that when the subscriber is entering into
+                                        tethering state, the PCEF informs the PCRF.</p>
+                                    <p>When used in a CCR command, this value indicates that the
+                                        PCEF generated the request because the subscriber is
+                                        entering into tethering state.</p>
+                                    <p><b>Application Start</b></p>
+                                    <p>This value is used in CCA and RAR commands by the PCRF to
+                                        indicate that the PCEF will inform the PCRF when the start
+                                        of the application's traffic for the application, required
+                                        for detection, has been identified, unless a request to mute
+                                        such a notification (Mute-Notification AVP) is part of the
+                                        corresponding ADC-Rule-Definition AVP.</p>
+                                    <p>When used in a CCR command, this value indicates that the
+                                        PCEF identified the start of the corresponding application's
+                                        traffic for an application identified by a
+                                        TDF-Application-Identifier AVP.The detected application(s)
+                                        are identified by the ApplicationDetection-Information
+                                        AVP(s).</p>
+                                    <p>For unsolicited application reporting, the Application Start
+                                        Event Trigger does not need to be subscribed by the
+                                        PCRF.</p>
+                                    <p>For Sd originated flow creation, the corresponding
+                                        TDF-Application-Identifier AVP is included under the
+                                        Application-Detection-Information AVP. When the Event
+                                        trigger indicates APPLICATION_START, the Flow-Information
+                                        AVP for the detected application may be included under the
+                                        Application-DetectionInformation AVP, if deducible.</p>
+                                    <p>The Flow-Information AVP, if present, shall contain the
+                                        Flow-Description AVP and Flow-Direction AVP. The
+                                        TDF-Application-Instance-Identifier, which is dynamically
+                                        assigned by the TDF in order to allow correlation of
+                                        APPLICATION_START and APPLICATION_STOP Event-Triggers to the
+                                        specific Flow-Information AVP. If the service data flow
+                                        descriptions are deducible, they are provided and along with
+                                        the above, the corresponding Event-Trigger
+                                        (APPLICATION_START or APPLICATION_STOP) are provided to the
+                                        PCRF.</p>
+                                    <p>When the TDF-Application-Instance-Identifier is provided
+                                        along with the APPLICATION_START, it shall also be provided
+                                        along with the corresponding APPLICATION_STOP. The PCRF then
+                                        may make the policy decision based on the information
+                                        received and send the updated PCC rules to the PCEF, updated
+                                        QoS rules to the BBERF, if applicable, and the updated ADC
+                                        rules to the TDF.</p>
+                                    <p>Note: Application Start is always provided together with
+                                        Application Stop, when used by the PCRF in CCA and RAR
+                                        commands sent to the PCEF.</p>
+                                    <p><b>Application Stop</b></p>
+                                    <p>This value is used in a CCA and RAR commands by the PCRF to
+                                        indicate that the PCEF will notify the PCRF when the stop of
+                                        the application’s traffic for the application, required for
+                                        detection, has been identified, unless a request to mute
+                                        such a notification (Mute-Notification AVP) is part of the
+                                        corresponding ADC-Rule-Definition AVP.</p>
+                                    <p>When used in a CCR command, this value indicates that the
+                                        PCEF identified the stop of the corresponding application's
+                                        traffic for an application identified by a
+                                        TDF-Application-Identifier AVP. The detected application(s)
+                                        is identified by the ApplicationDetection-Information
+                                        AVP(s).</p>
+                                    <p>For unsolicited application reporting, the Application Stop
+                                        Event Trigger does not need to be subscribed by the
+                                        PCRF.</p>
+                                    <p><b>Charging Correlation Exchange</b></p>
+                                    <p>The PCRF uses this value in CCA and RAR commands to indicate
+                                        that the PCEF reports the access network charging identifier
+                                        associated to one or more dynamic PCC Rules within the
+                                        Access-Network-Charging-Identifier-Gx AVP.</p>
+                                    <p>The Charging-Correlation-Indicator AVP with value
+                                        CHARGING_IDENTIFIER_REQUIRED is provided. When used in a CCR
+                                        command, this value indicates that an access network
+                                        charging identifier has been assigned. The actual value is
+                                        reported with the Access-Network-Charging-Identifier-Gx AVP.
+                                        Applicable to functionality introduced with the Rel8 feature
+                                        as described in clause 5.4.1.</p>
+                                    <p><b>Default EPS Bearer QoS Change</b></p>
+                                    <p>Indicates a change in the subscriber default EPS bearer QoS.
+                                        Not applicable to eHRPD.</p>
+                                    <p>Used in CCA and RAR commands by the PCRF to indicate that
+                                        PCEF informs the PCRF when a change occurs in the default
+                                        EPS Bearer QoS.</p>
+                                    <p>When used in a CCR command, Default EPS Bearer QoS Change
+                                        indicates that the PCEF generated the request because the
+                                        default EPS Bearer QoS changed.</p>
+                                    <p>The new value is provided in the Default-EPS-BearerQoS AVP.
+                                        Not applicable to 3GPP-GPRS access type.</p>
+                                    <p><b>Default EPS Bearer QoS Modification Failure</b></p>
+                                    <p>The PCEF uses this value to indicate to the PCRF that Default
+                                        EPS Bearer QoS modifications have failed. The PCEF uses this
+                                        value in a new CCR command that indicates the failure of
+                                        either a PUSH initiated modification or a PULL initiated
+                                        modification. This event trigger needs no subscription.
+                                        Applicable to functionality introduced with the Rel8 feature
+                                        as described in clause 5.4.1.</p>
+                                    <p>ECGI Change</p>
+                                    <p>This value is used in CCA and RAR commands by the PCRF to
+                                        indicate that upon a change in the ECGI, PCEF informs the
+                                        PCRF. When used in a CCR command, this value indicates that
+                                        the PCEF generated the request because there has been a
+                                        change in the ECGI.</p>
+                                    <p>The new ECGI value is provided in the 3GPP-User-Location-Info
+                                        AVP. If the ECGI has been changed but the PCEF cannot get
+                                        the detail location information, the PCEF sends the
+                                        3GPP-UserLocation-Info AVP to the PCRF by setting the ECI of
+                                        the ECGI to value 0x0000. Applicable only to 3GPP-EPS access
+                                        type and to functionality introduced with the Rel8 feature
+                                        as described in clause 5.4.1.</p>
+                                    <p>IP-CAN Change</p>
+                                    <p>Change of IP-CAN (for example, GPP2 to 3GPP EPS).</p>
+                                    <p>Used in CCA and RAR commands by the PCRF to indicate that
+                                        when the IP-CAN type changes, the PCC rules are
+                                        requested.</p>
+                                    <p>When used in a CCR command, IP-CAN Change indicates that the
+                                        PCEF generated the request because the IP-CAN type
+                                        changed.</p>
+                                    <p><b>Loss of Bearer</b></p>
+                                    <p>Used in CCA and RAR commands by the PCRF to indicate that
+                                        when there is a loss of the bearer, and the GW informs the
+                                        PCRF.</p>
+                                    <p>When used in a CCR command, Loss of Bearer indicates that the
+                                        PCEF generated the request because the bearer associated
+                                        with the PCC rules indicated by the corresponding
+                                        Charging-Rule-Report AVP was lost. The PCC-Rule-Status AVP
+                                        in the Charging-Rule-Report AVP indicates that the PCC rules
+                                        are temporarily inactive.</p>
+                                    <p><b>Max MBR APN AMBR Change</b></p>
+                                    <p>When used in a CCR command, this value indicates that the
+                                        PCEF generated the request because there has been a change
+                                        of MBR/APN-AMBR, Maximum-Bandwidth AVP is required to be
+                                        provided in the same request with the new value. This event
+                                        trigger needs no subscription. Applicable only to 3GPP-GPRS
+                                        and 3GPP-EPS access types.</p>
+                                    <p><b>Out of Credit</b></p>
+                                    <p>User ran out of credit for the service. The
+                                        Charging-Rule-Report indicates the affected rules, as
+                                        specified in TS 29.212 [1].</p>
+                                    <p>When used in CCA and RAR commands by the PCRF, Out of Credit
+                                        indicates that the PCEF informs the PCRF about the PCC rules
+                                        for which credit is no longer available, along with the
+                                        applied termination action.</p>
+                                    <p>When used in a CCR command, Out of Credit indicates that the
+                                        PCEF generated the request because the PCC rules indicated
+                                        by the corresponding Charging-Rule-Report AVP have run out
+                                        of credit, and that the termination action indicated by the
+                                        corresponding Final-Unit-Indication AVP applies.</p>
+                                    <p>PCC rules that run out of credit can be reauthorized using
+                                        the IP-CAN Session Modification rule set with the
+                                        Session-Command type set to Reauthorize.</p>
+                                    <p><b>PGW Trace Control</b></p>
+                                    <p>Indicates that the command contains a trace activation or
+                                        deactivation request for the PGW. Trace activation is
+                                        indicated by the Trace-Data AVP with the relevant trace
+                                        parameters.</p>
+                                    <p>Trace deactivation is indicated by the Trace-Reference AVP.
+                                        This event trigger does not need a subscription.</p>
+                                    <p><b>PLMN Change</b></p>
+                                    <p>Indicates a change in the network operator MCC or MNC used
+                                        for roaming scenarios. The 3GPP-SGSN-MCC-MNC indicates the
+                                        MCC-MNC where the user is attached, as specified in TS
+                                        29.212 [1].</p>
+                                    <p><b>QoS Change</b></p>
+                                    <p>When used in CCA and RAR commands by the PCRF, QoS Change
+                                        indicates that when any QoS is changed (even within the
+                                        limits of the current authorization) at the bearer or APN
+                                        level, the PCC rules are requested.</p>
+                                    <p>When used in a CCR command, the QoS Change indicates that the
+                                        PCEF generated the request because the requested QoS for a
+                                        specific bearer (for example, the previously maximum
+                                        Authorized QoS is exceeded) or the APN changed.</p>
+                                    <p><b>QoS Change Exceeding Authorization</b></p>
+                                    <p>Used in CCA and RAR commands by the PCRF to indicate that
+                                        when a requested QoS change is outside of the current
+                                        authorized values at bearer level, the PCC rules are
+                                        requested.</p>
+                                    <p>When used in a CCR command, QoS Change Exceeding
+                                        Authorization indicates that the PCEF generated the request
+                                        because a change in the requested QoS is outside of the
+                                        authorized values for a specific bearer.</p>
+                                    <p>The Bearer-Identifier AVP is provided to indicate the
+                                        affected bearer. The QoS-Information AVP must be provided in
+                                        the same request with the new value.</p>
+                                    <p><b>RAI Change</b></p>
+                                    <p>When used in CCA and RAR commands by the PCRF, RAI Change
+                                        indicates that when the RAI changes, the PCEF informs the
+                                        PCRF.</p>
+                                    <p>When used in a CCR command, RAI Change indicates that the
+                                        PCEF generated the request because the RAI changed. The new
+                                        RAI value is provided in the RAI AVP.</p>
+                                    <p>If the user location has changed but the PCEF cannot get the
+                                        location information (for example, because of a hand-over
+                                        from a 3G to a 2G network), the PCEF sends the RAI AVP to
+                                        the PCRF by setting the LAC of the RAI to 0x0000.</p>
+                                    <p><b>RAT Change</b></p>
+                                    <p>When used in CCA and RAR commands by the PCRF, RAT Change
+                                        indicates that when a RAT changes, the PCC rules are
+                                        requested. When used in a CCR command, RAT Change indicates
+                                        that the PCEF generated the request because of a RAT
+                                        change.</p>
+                                    <p><b>Reallocation of Credit</b></p>
+                                    <p>User topped up. The Charging-Rule-Report indicates the
+                                        affected rules, as specified in TS 29.212 [1].</p>
+                                    <p>When used in CCA and RAR commands by the PCRF, Reallocation
+                                        of Credit indicates that the PCEF informs the PCRF about the
+                                        PCC rules for which credit is reallocated after an out of
+                                        credit indication.</p>
+                                    <p>When used in a CCR command, Reallocation of Credit indicates
+                                        that the PCEF generated the request because the PCC rules
+                                        indicated by the corresponding Charging-Rule-Report AVP are
+                                        reallocated credit after an out of credit indication.</p>
+                                    <p>PCC rules that have their credit reallocated can be
+                                        reauthorized using the IP-CAN Session Modification rule set
+                                        with the Session-Command type set to Reauthorize.</p>
+                                    <p><b>Recovery of Bearer</b></p>
+                                    <p>Used in CCA and RAR commands by the PCRF to indicate that
+                                        when the bearer is recovered, the GW informs the PCRF.</p>
+                                    <p>When used in a CCR command, Recovery of Bearer indicates that
+                                        the PCEF generated the request because the bearer associated
+                                        with the PCC rules (as indicated by the corresponding
+                                        Charging-Rule-Report AVP) was recovered.</p>
+                                    <p><b>Resource Modification Request</b></p>
+                                    <p>Initiates the PCRF interaction for all resource modification
+                                        requests that do not depend on a specific IP-CAN bearer
+                                        received by the PCEF/BBERF.</p>
+                                    <p>The resource modification request received by the PCEF/BBERF
+                                        may include a request for GBR changes for a traffic
+                                        aggregate and/or the association/disassociation of a traffic
+                                        aggregate with a QCI and/or a modification of a traffic
+                                        aggregate.</p>
+                                    <p><b>Revalidation Timeout</b></p>
+                                    <p>Used in CCA and RAR commands by the PCRF to indicate that
+                                        when a revalidation timeout occurs, the PCEF informs the
+                                        PCRF.</p>
+                                    <p>When used in a CCR command, Revalidation of Timeout indicates
+                                        that the PCEF generated the request because there is a PCC
+                                        revalidation timeout.</p>
+                                    <p><b>SGSN Change</b></p>
+                                    <p>When used in CCA and RAR commands by the PCRF, SGSN Change
+                                        indicates that when the serving SGSN change, PCC rules are
+                                        requested. When used in a CCR command, SGSN Change indicates
+                                        that the PCEF generated the request because the serving SGSN
+                                        changed. The new value of the serving SGSN is in the
+                                        3GPP-SGSN-Address AVP or 3GPP-SGSN-IPv6-Address AVP. Applies
+                                        to 3GPP-GPRS and 3GPP-EPS access types.</p>
+                                    <p>Note: The SGSN Change event trigger is not compliant to 3GPP
+                                        specification 29.212 over 3GPP2. However, if the
+                                        3GPP-SGSN-Address AVP or 3GPP-SGSN-IPv6-Address AVP is
+                                        provided, the NCC will use IP-Can Type 3GPP2 as part of the
+                                        validation process and will process the request.</p>
+                                    <p><b>Service Flow Detection</b></p>
+                                    <p>This value is used in CCAi, CCAu and RAR commands by the PCRF
+                                        to indicate that the PCEF can inform the PCRF of service
+                                        flow detection for those rules that require it. When used in
+                                        a CCR, this value indicates that the PCEF informs the PCRF
+                                        that traffic matching the rule has been detected. The
+                                        affected rules are indicated within the Charging-Rule-Report
+                                        AVP with the PCC-Rule-Status AVP set to the value ACTIVE
+                                        (0).</p>
+                                    <p><b>Subnet Change</b></p>
+                                    <p>This value is used in CCA and RAR commands by the PCRF to
+                                        indicate that upon a change in Subnet Identifier, PCEF
+                                        informs the PCRF. When used in a CCR command, this value
+                                        indicates that the PCEF generated the request because there
+                                        has been a change in the Subnet Identifier.</p>
+                                    <p><b>Successful Resource Allocation</b></p>
+                                    <p>When used in CCA and RAR commands by the PCRF, Successful
+                                        Resource Allocation indicates that the PCEF can inform the
+                                        PCRF of a successful resource allocation for the rules that
+                                        requires the information.</p>
+                                    <p>When used in a CCR or RAA command, Successful Resource
+                                        Allocation indicates that the PCEF informs the PCRF that the
+                                        resources for a rule are successfully allocated. The
+                                        affected rules are indicated in the Charging-Rule-Report AVP
+                                        with the PCC-Rule-Status AVP set to Active (0).</p>
+                                    <p><b>TAI Change</b></p>
+                                    <p>This value is used in CCA and RAR commands by the PCRF to
+                                        indicate that upon a change in the TAI, PCEF informs the
+                                        PCRF. When used in a CCR command, this value indicates that
+                                        the PCEF generated the request because there has been a
+                                        change in the TAI.</p>
+                                    <p>The new TAI value is provided in the 3GPP-UserLocation-Info
+                                        AVP. If the user tracking area location has been changed but
+                                        the PCEF cannot get the detail location information, the
+                                        PCEF sends the 3GPP-User-Location-Info AVP to the PCRF by
+                                        setting the TAC of the TAI to value 0x0000.</p>
+                                    <p>Applicable only to 3GPP-EPS access type and to functionality
+                                        introduced with the Rel8 feature as described in clause
+                                        5.4.1.</p>
+                                    <p><b>TFT Change</b></p>
+                                    <p>When used in CCA and RAR commands by the PCRF, TFT Change
+                                        indicates that when a TFT changes at bearer level, the PCC
+                                        rules are requested.</p>
+                                    <p>When used in a CCR command, the TFT Change indicates that the
+                                        PCEF generated the request because of a change in the
+                                        TFT.</p>
+                                    <p><b>UE Address Allocate</b></p>
+                                    <p>When used in a CCR command, UE IP Address Allocate indicates
+                                        that the PCEF generated the request because a UE IPv4
+                                        address is allocated.</p>
+                                    <p>The Framed-IP-Address AVP is provided in the same request. UE
+                                        IPv4 Address Allocate is reported when the corresponding
+                                        event occurs, even if the event trigger is not provisioned
+                                        by the PCRF.</p>
+                                    <p><b>UE Address Release</b></p>
+                                    <p>When used in a CCR command, UE IPv4 Address Release indicates
+                                        that the PCEF generated the request because a UE IPv4
+                                        address is released.</p>
+                                    <p>The Framed-IP-Address AVP is provided in the same request. UE
+                                        IPv4 Address Release is reported when the corresponding
+                                        event occurs, even if the event trigger is not provisioned
+                                        by the PCRF.</p>
+                                    <p><b>UE TimeZone Change</b></p>
+                                    <p>Used in CCA and RAR commands by the PCRF to indicate that
+                                        when the time zone for the UE changes, the PCC rules are
+                                        requested.</p>
+                                    <p>When used in a CCR command, this value indicates that the
+                                        PCEF generated the request because the time zone for the UE
+                                        changed. The new value of the UE time zone is in the
+                                        3GPP-MS-TimeZone AVP.</p>
+                                    <p><b>Usage Report</b></p>
+                                    <p>Used in a CCA and RAR commands by the PCRF when requesting
+                                        usage monitoring at the PCEF. The PCRF also provides in the
+                                        CCA or RAR command the Usage-Monitoring-Information AVPs
+                                        including the Monitoring-Key AVP.</p>
+                                    <p> When used in a CCR command, this value indicates that the
+                                        PCEF generated the request to report the accumulated usage
+                                        for one or more monitoring keys. The PCEF also provides the
+                                        accumulated usage volume using the
+                                        Usage-Monitoring-Information AVPs, including the
+                                        Monitoring-Key AVP and the Used-Service-Unit AVP.</p>
+                                    <p><b>User CSG Hybrid Subscribed Information Change</b></p>
+                                    <p>The PCRF uses this value to indicate a request of reporting
+                                        the event that the user enters/leaves a hybrid cell that the
+                                        user subscribes to.</p>
+                                    <p>When the user enters a hybrid cell where the user is a
+                                        member, the User-CSG-Information AVP is also provided with
+                                        the event report in the CCR command. Applicable to
+                                        functionality introduced with the Rel9 feature as described
+                                        in clause 5.4.1.</p>
+                                    <p><b>User CSG Hybrid UnSubscribed Information Change</b></p>
+                                    <p>The PCRF uses this value to indicate a request of reporting
+                                        the event that the user enters/leaves a hybrid cell that the
+                                        user does not subscribe to.</p>
+                                    <p>When the user enters a hybrid cell where the user is not a
+                                        member, the User-CSG-Information AVP is provided with the
+                                        event report in the CCR command. Applicable to functionality
+                                        introduced with the Rel9 feature as described in clause
+                                        5.4.1.</p>
+                                    <p><b>User CSG Information Change</b></p>
+                                    <p>The PCRF uses this value to indicate a request of reporting
+                                        the event that the user enters/leaves a CSG cell.</p>
+                                    <p>When the user enters a CSG cell, the User-CSG-Information AVP
+                                        is also provided with the event report in the CCR command.
+                                        Applicable to functionality introduced with the Rel9 feature
+                                        as described in clause 5.4.1.</p>
+                                    <p><b>User Location Change</b></p>
+                                    <p>New location info. For E-UTRAN, change in ECGI, TAI, or both.
+                                        Not applicable to eHPRD.</p>
+                                    <p>When used in CCA and RAR commands by the PCRF, User Location
+                                        Change indicates that when the user location changes, the
+                                        PCEF informs the PCRF.</p>
+                                    <p>When used in a CCR command, User Location Change indicates
+                                        that the PCEF generated the request because the user
+                                        location changed. The new location value is provided in the
+                                        3GPP-User-LocationInfo AVP.</p>
+                                    <p>If the user location has changed but the PCEF cannot get the
+                                        location information (for example, because of a handover
+                                        from a 3G to 2G network), the PCEF sends the
+                                        3GPP-User-Location-Info AVP to the PCRF by setting the LAC
+                                        of the CGI/SAI to 0x0000. Applicable to 3GPP-GPRS, 3GPP-EPS,
+                                        and NON 3GPP_EPS access types. For 3GPP2 access User
+                                        Location Change is used to report and request changes to the
+                                        3GPP2-BSID.</p>
+                                    <p>Note: The User Location Change event trigger is not compliant
+                                        to 3GPP specification 29.212 over 3GPP2. However, if BSID is
+                                        provided, the NCC will process the request provided that the
+                                        IP-Can Type is 3GPP2.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>FinalUnitAction</entry>
+                                <entry>The Final-Unit-Action AVP type is Enumerated and indicates to
+                                    the credit-control client the action to be performed if the user
+                                    account cannot cover the service cost.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>Redirect</b></p>
+                                    <p>The service element must redirect the user to the address
+                                        specified in the Redirect-Server-Address AVP.</p>
+                                    <p><b>Restrict Access</b></p>
+                                    <p>Indicates that the access device must restrict the user
+                                        access according to the IP packet filters defined in the
+                                        Restriction-Filter-Rule AVP or according to the IP packet
+                                        filters identified by the Filter-Id AVP. Packets that do not
+                                        match the filters must be dropped.</p>
+                                    <p><b>Terminate</b></p>
+                                    <p>The credit-control client must terminate the service
+                                        session.</p>
+                                    <p>This is the default handling that applies if the
+                                        credit-control client receives a Final-Unit-Action value
+                                        that is not supported and must be supported by all of the
+                                        Diameter credit-control client implementations that conform
+                                        to this specification.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>FlowDirection</entry>
+                                <entry>The Flow-Direction AVP type is Enumerated, and specifies the
+                                    direction of the IP flows.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>Bidirectional</b></p>
+                                    <p>Specifies all IP flows in both directions</p>
+                                    <p><b>Downlink</b></p>
+                                    <p>Specifies downlink IP flows</p>
+                                    <p><b>Unspecified</b></p>
+                                    <p>Indicates there is no specified IP flow Uplink Specifies
+                                        uplink IP flows </p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>FlowStatus</entry>
+                                <entry>The Flow-Status AVP type is Enumerated, and specifies whether
+                                    the IP flows are enabled. </entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>Disabled</b></p>
+                                    <p>Disables all associated IP flows in both directions</p>
+                                    <p><b>Enabled</b></p>
+                                    <p>Enables all associated IP flows in both directions</p>
+                                    <p><b>Enabled Downlink</b></p>
+                                    <p>Enables associated downlink IP flows and disables associated
+                                        uplink IP flows</p>
+                                    <p><b>Enabled Uplink</b></p>
+                                    <p>Enables associated uplink IP flows and disables associated
+                                        downlink IP flows</p>
+                                    <p><b>Removed</b></p>
+                                    <p>Removes all associated IP flows and the IP filters for the
+                                        associated IP flows. The associated IP flows are not used to
+                                        derive the authorized QoS. </p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>FlowUsage</entry>
+                                <entry>The Flow-Usage AVP is of type Enumerated, and provides
+                                    information about the usage of IP Flows.</entry>
+                                <entry>
+                                    <p><b>AF Signaling</b></p>
+                                    <p>Indicates that the IP flow is used to transport AF Signaling
+                                        Protocols (for example, SIP/SDP).</p>
+                                    <p><b>No Information</b></p>
+                                    <p>Indicates that no information about the usage of the IP flow
+                                        is being provided</p>
+                                    <p><b>RTCP</b></p>
+                                    <p>Indicates that an IP flow is used to transport RTCP.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>FramedProtocol</entry>
+                                <entry>Indicates the framing to be used for framed access. It may be
+                                    used in both Access-Request and Access-Accept packets.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>Appletalk Remote Access Protocol</b></p>
+                                    <p>Enables the Appletalk Remote Access Protocol for accessing
+                                        Appletalk networks.</p>
+                                    <p><b>GPRS PDP Context</b></p>
+                                    <p>Enables the GPRS PDP Context data structure on both GGSN and
+                                        SGSN gateway nodes. The GPRS PDP Context data structure
+                                        contains the subscriber session information for use when a
+                                        mobile device needs to use GPRS.</p>
+                                    <p><b>Gandalf Proprietary Singlelink Multilink Protocol</b></p>
+                                    <p>Enables the Singlelink/Multilink Protocol for Gandalf.</p>
+                                    <p><b>PPP</b></p>
+                                    <p>Enables the Point-to-Point Protocol, which is a multiprotocol
+                                        serial datalink.</p>
+                                    <p><b>SLIP</b></p>
+                                    <p>Enables the Serial Line Internet Protocol for a serial data
+                                        link that only supports IP.</p>
+                                    <p><b>X75 Synchronous</b></p>
+                                    <p>Enables the X75 Synchronous Protocol for communication
+                                        between synchronous terminals and networks.</p>
+                                    <p><b>Xylogics Proprietary IPX SLIP</b></p>
+                                    <p>Enables the IPX Slip Protocol for Xylogics.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>FramedRouting</entry>
+                                <entry>Indicates the routing method for the user, when the user is a
+                                    router to a network. It is only used in Access-Accept
+                                    packets.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>Listen For Routing Packets</b></p>
+                                    <p>A type of routing method</p>
+                                    <p><b>Send And Listen</b></p>
+                                    <p>A type of routing method</p>
+                                    <p><b>Send Routing Packets</b></p>
+                                    <p>A type of routing method</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>GenericValueType</entry>
+                                <entry/>
+                                <entry>
+                                    <p>Not Set</p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p>The following options are available:<ul id="ul_kmw_dbj_plb">
+                                            <li>Attribute</li>
+                                            <li>Charging Information</li>
+                                            <li>Date Time</li>
+                                            <li>Decimal</li>
+                                            <li>Enum</li>
+                                            <li>IP Address</li>
+                                            <li>List</li>
+                                            <li>Managed Object</li>
+                                            <li>No Value</li>
+                                            <li>Number</li>
+                                            <li>String</li>
+                                            <li>Subscriber QoS Override</li>
+                                            <li>Time Duration</li>
+                                            <li>Time Of Day</li>
+                                        </ul></p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>GeographicLocationType</entry>
+                                <entry>The GeographicLocationType AVP is used to provide the actual
+                                    geographic information instead of where the timing source is
+                                    located.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>CGI</b></p>
+                                    <p>Indicates the CGI of where the user is registered. CGI is
+                                        defined in sub-clause 4.3.1 of 3GPP TS 23.003 [2].</p>
+                                    <p><b>ECGI</b></p>
+                                    <p>Indicates the ECGI*. Applicable for E-UTRAN.</p>
+                                    <p><b>RAI</b></p>
+                                    <p>Indicates the RAI of the SGSN where the UE is registered. Not
+                                        applicable for eHRPD or E-UTRAN.</p>
+                                    <p><b>SAI</b></p>
+                                    <p>Indicates the SAI of where the user is registered. SAI is
+                                        defined in sub-clause 9.2.3.9 of 3GPP TS 25.413 [7].</p>
+                                    <p><b>TAI</b></p>
+                                    <p>Indicates the TAI. Applicable for E-UTRAN. TAI and ECGI
+                                        Indicates the TAI and ECGI. Applicable for E-UTRAN.</p>
+                                    <p><b>Future</b></p>
+                                    <p>Indicates future use.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>IMSIUnauthenticatedFlag</entry>
+                                <entry>
+                                    <p>The IMSI-Unauthenticated-Flag AVP is of type Enumerated, and
+                                        indicates the served IMSI is not authenticated. This may
+                                        occur when emergency bearer service is provided (refer to TS
+                                        23.060 [74] and TS 29.274 [91]).</p>
+                                    <p>If this flag is not present, this means the served IMSI is
+                                        authenticated.</p>
+                                </entry>
+                                <entry>
+                                    <p><b>Authenticated</b></p>
+                                    <p>Indicates that the served IMSI is authenticated.</p>
+                                    <p><b>Unauthenticated</b></p>
+                                    <p>Indicates the served IMSI is not authenticated.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>IPCANType</entry>
+                                <entry>
+                                    <p>The IP-CAN-Type AVP type is Enumerated, and indicates the
+                                        type of CAN in which the user is connected.</p>
+                                    <p>The IP-CAN-Type AVP is always present during the IP-CAN
+                                        session establishment.</p>
+                                    <p>During an IP-CAN session modification, the AVP is present
+                                        when the IP-CAN type changes and the PCRF requested to be
+                                        informed of this event.</p>
+                                </entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>3GPP-EPS</b></p>
+                                    <p>Indicates that the IP-CAN is associated with a 3GPP EPS
+                                        access. For more information, see the RAT-Type AVP</p>
+                                    <p><b>3GPP-GPRS</b></p>
+                                    <p>Indicates that the IP-CAN is associated with a 3GPP GPRS
+                                        access. For more information, see the RAT-Type AVP. The
+                                        RAT-Type AVP includes applicable 3GPP values, except
+                                        E-UTRAN.</p>
+                                    <p><b>3GPP2</b></p>
+                                    <p>Indicates that the IP-CAN is associated with a 3GPP2 access.
+                                        For more information, see the RAT-Type AVP</p>
+                                    <p><b>DOCSIS</b></p>
+                                    <p>Indicates that the IP-CAN is associated with a DOCSIS
+                                        access</p>
+                                    <p><b>Non-3GPP-EPS</b></p>
+                                    <p>Indicates that the IP-CAN is associated with an EPC based
+                                        non-3GPP access. For more information, see the RAT-Type
+                                        AVP.</p>
+                                    <p><b>WiMAX</b></p>
+                                    <p>Indicates that the IP-CAN is associated with a WiMAX access
+                                        (IEEE 802.16)</p>
+                                    <p><b>xDSL</b></p>
+                                    <p>Indicates that the IP-CAN is associated with an xDSL
+                                        access.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>IPCANSessionModificationResult</entry>
+                                <entry>Specifies whether the NCC should remove or attempt to move
+                                    the affected PCC rules when an IP-CAN session modification
+                                    involves the termination of IP-CAN bearers. Applicable for GPRS
+                                    IP-CAN sessions.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>Move</b></p>
+                                    <p>Move affected PCC rules</p>
+                                    <p><b>Remove</b></p>
+                                    <p>Remove affected PCC rules</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>LowPriorityIndicator</entry>
+                                <entry>The Low-Priority-Indicator AVP is of type Enumerated and
+                                    indicates if the PDN connection has a low priority, i.e. for
+                                    Machine Type Communications.</entry>
+                                <entry>The value can be Yes or No. </entry>
+                            </row>
+                            <row>
+                                <entry>MediaType</entry>
+                                <entry>The Media-Type AVP type is Enumerated and determines the
+                                    media type of a session component.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p>The following options are available:<ul id="ul_kmw_p2j_plb">
+                                            <li>Application</li>
+                                            <li>Audio</li>
+                                            <li>Control</li>
+                                            <li>Data</li>
+                                            <li>Message</li>
+                                            <li>Other</li>
+                                            <li>Text</li>
+                                            <li>Video</li>
+                                        </ul></p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>MultipleServicesIndicator</entry>
+                                <entry>Defines if the Diameter credit-control client is capable of
+                                    handling multiple services independently within a (sub-)
+                                    session.</entry>
+                                <entry>
+                                    <p><b>Multiple Services Not Supported</b></p>
+                                    <p>Client does not support independent credit-control of
+                                        multiple services within a (sub-)session.</p>
+                                    <p><b>Multiple Services Supported</b></p>
+                                    <p>Client supports independent credit-control of multiple
+                                        services within a (sub-)session</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>NASPortType</entry>
+                                <entry>The NAS-Port-Type AVP type is enumerated and contains the
+                                    type of the port on which the NAS authenticates the user. The
+                                    AVP is required when the NAS uses the same NAS-Port number
+                                    ranges for different service types concurrently.</entry>
+                                <entry>
+                                    <p>The supported values are defined in [RADIUSTypes].</p>
+                                    <p>The following list is for information only and is subject to
+                                        change by the IANA.<ul id="ul_ghs_1n4_plb">
+                                            <li>ADSL-CAP - Asymmetric DSL, Carrierless Amplitude
+                                                Phase Modulation</li>
+                                            <li>ADSL-DMT - Asymmetric DSL, Discrete Multi-Tone</li>
+                                            <li>Async</li>
+                                            <li>Cable</li>
+                                            <li>Ethernet</li>
+                                            <li>FDDI</li>
+                                            <li>FTTP- Fiber to the Premises</li>
+                                            <li>G.3 Fax</li>
+                                            <li>HDLC Clear Channel</li>
+                                            <li>IAPP</li>
+                                            <li>IDSL - ISDN Digital Subscriber Line</li>
+                                            <li>ISDN Async V.110</li>
+                                            <li>ISDN Async V.120</li>
+                                            <li>ISDN Sync</li>
+                                            <li>PIAFS</li>
+                                            <li>PPPoA - PPP over ATM</li>
+                                            <li>PPPoEoA- PPP over Ethernet over ATM</li>
+                                            <li>PPPoEoE- PPP over Ethernet over Ethernet</li>
+                                            <li>PPPoEoQinQ- PPP over Ethernet over IEEE
+                                                802.1QinQ</li>
+                                            <li>PPPoEoVLAN- PPP over Ethernet over VLAN</li>
+                                            <li>SDSL - Symmetric DSL</li>
+                                            <li>Sync</li>
+                                            <li>Token-Ring</li>
+                                            <li>Virtual</li>
+                                            <li>Wireless - 1X-EV</li>
+                                            <li>Wireless - CDMA2000</li>
+                                            <li>Wireless - IEEE 802.11</li>
+                                            <li>Wireless - IEEE 802.16</li>
+                                            <li>Wireless - IEEE 802.20</li>
+                                            <li>Wireless - IEEE 802.22</li>
+                                            <li>Wireless - Other</li>
+                                            <li>Wireless - UMTS</li>
+                                            <li>Wireless -XGP</li>
+                                            <li>X.25</li>
+                                            <li>X.75</li>
+                                            <li>xDSL - Digital Subscriber Line of unknown type</li>
+                                            <li>xPON - Passive Optical Network</li>
+                                        </ul></p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>NetworkRequestSupport</entry>
+                                <entry>
+                                    <p>The Network-Request-Support AVP type is Enumerated; indicates
+                                        the UE and network support of network-initiated
+                                        procedures.</p>
+                                    <p>If the AVP is not previously provided, its absence indicates
+                                        the Network Request Not Supported value. If the Network
+                                        Request Support AVP is provided, its value is valid until a
+                                        value is provided.</p>
+                                </entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>Network Request Not Supported</b></p>
+                                    <p>Indicates that the UE and the access network do not support
+                                        the network-initiated bearer establishment request
+                                        procedure.</p>
+                                    <p><b>Network Request Supported</b></p>
+                                    <p>Indicates that the UE and the access network support the
+                                        network-initiated bearer establishment request
+                                        procedure.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>Offline</entry>
+                                <entry>In offline charging, the resource usage is reported from the
+                                    network to the billing domain after the resource usage
+                                    occurs.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>Disable Offline</b></p>
+                                    <p>Indicates that the offline charging interface for the
+                                        associated PCC rule is disabled.</p>
+                                    <p><b>Enable Offline</b></p>
+                                    <p>Indicates that the offline charging interface for the
+                                        associated PCC rule is enabled.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>Online</entry>
+                                <entry>In online charging, a subscriber account in an Online
+                                    Charging System, is queried before permission to use the
+                                    requested network resources is granted.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>Disable Online</b></p>
+                                    <p>Indicates that the online charging interface for the
+                                        associated PCC rule is disabled.</p>
+                                    <p><b>Enable Online</b></p>
+                                    <p>Indicates that the online charging interface for the
+                                        associated PCC rule is enabled. </p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>PCCRuleStatus</entry>
+                                <entry>The PCC-Rule-Status AVP type is Enumerated, and describes the
+                                    status of one or a group of PCC rules.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>Active</b></p>
+                                    <p>Indicates that the PCC rules are successfully installed (for
+                                        the rules provisioned from the PCRF) or activated (for the
+                                        rules pre-provisioned in PCEF).</p>
+                                    <p><b>Inactive</b></p>
+                                    <p>Indicates hat the PCC rules are removed (for rules
+                                        provisioned from PCRF) or inactive (for the rules
+                                        pre-provisioned in the PCEF)</p>
+                                    <p><b>Temporarily Inactive</b></p>
+                                    <p>Indicates that, for some reason (for example, loss of
+                                        bearer), already installed or activated PCC rules are
+                                        temporarily disabled </p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>PDPContextType</entry>
+                                <entry>The PDP-Context-Type AVP is of type Enumerated and indicates
+                                    the type of a PDP context. This AVP is only be present in the
+                                    CCR Initial.</entry>
+                                <entry>
+                                    <p>The following values are available:<ul id="ul_z21_xn4_plb">
+                                            <li>Not Set</li>
+                                            <li>Primary</li>
+                                            <li>Secondary</li>
+                                        </ul></p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>PSAppendFreeFormatData</entry>
+                                <entry> The PS-Append-Free-FormatData AVP is of type enumerated and
+                                    indicates if the information sent in the PS-Free-Format-Data AVP
+                                    must be appended to the PS-free-format-data stored for the
+                                    online-session. </entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>Append</b></p>
+                                    <p>If this AVP is present and indicates Append, the P-GW appends
+                                        the received PS free format data to the PS free format data
+                                        stored for the online charging session</p>
+                                    <p><b>Overwrite</b></p>
+                                    <p>If this AVP is absent or in value Overwrite, the P-GW
+                                        overwrites all PS free format data already stored for the
+                                        online charging session</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>PacketFilterOperation</entry>
+                                <entry>The Packet-Filter-Operation AVP type is Enumerated, which
+                                    indicates that a UE-initiated resource operation initiates a
+                                    request for PCC rules.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>Addition</b></p>
+                                    <p>Indicates that the UE requests resources allocated for the
+                                        provided packet filters.</p>
+                                    <p><b>Deletion</b></p>
+                                    <p>Indicates that the resources reserved for the provided packet
+                                        filter identifiers are to be deleted and are no longer used
+                                        by the UE.</p>
+                                    <p><b>Modification</b></p>
+                                    <p>Indicates the reserved QoS, the filter, the precedence, or
+                                        any of the fields for the provided packet filter identifiers
+                                        are being modified. </p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>PacketFilterUsage</entry>
+                                <entry>Indicates whether the UE is provisioned with the related
+                                    traffic mapping information (that is the packet filter). Traffic
+                                    mapping information may be sent to the UE as per the relevant
+                                    IP-CAN specifications even if not instructed to do so with the
+                                    Packet-Filter-Usage AVP.</entry>
+                                <entry>
+                                    <p><b>Send To UE</b></p>
+                                    <p>This value is used to indicate that the related traffic
+                                        mapping information (that is, the packet filter is sent to
+                                        the UE, if applicable to the IP-CAN type as per relevant
+                                        IP-CAN specifications.</p>
+                                    <p>Note: The maximum number of packet filters sent to UE is
+                                        limited by the IP-CAN type.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>PolicyCommandType</entry>
+                                <entry>Threshold session action in metering limit.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>Re-Evaluate QoS</b></p>
+                                    <p>Re-evaluates QoS.</p>
+                                    <p><b>Terminate</b></p>
+                                    <p>Allows an action to be set at a threshold where the
+                                        termination of the subscriber session will occur.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>PreEmptionCapability</entry>
+                                <entry>The Pre-emption-Capability AVP type is Enumerated. The AVP
+                                    defines whether a service data flow can get resources that are
+                                    already assigned to another service data flow with a lower
+                                    priority level.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>Pre-emption Capability Disabled</b></p>
+                                    <p>Indicates that the service data flow is not allowed to get
+                                        resources that are already assigned to another service data
+                                        flow with a lower priority level. This is the default value
+                                        if the AVP is not provided.</p>
+                                    <p><b>Pre-emption Capability Enabled</b></p>
+                                    <p>Indicates that the service data flow is allowed to get
+                                        resources that are already assigned to another service data
+                                        flow with a lower priority level</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>PreEmptionVulnerability</entry>
+                                <entry>The Pre-emption Vulnerability AVP is Enumerated, which
+                                    defines whether a service data flow can lose the assigned
+                                    resources in deference to a service data flow with higher
+                                    priority level.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>Pre-emption Vulnerability Disabled</b></p>
+                                    <p>Indicates that the resources assigned to the service data
+                                        flow cannot be pre-empted and allocated to a service data
+                                        flow with a higher priority level</p>
+                                    <p><b>Pre-emption Vulnerability Enable</b></p>
+                                    <p>Indicates that the resources assigned to the service data
+                                        flow can be pre-empted and allocated to a service data flow
+                                        with a higher priority level. This is the default value if
+                                        this AVP is not provided.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>QoSNegotiation</entry>
+                                <entry>The QoS-Negotiation AVP type is Enumerated. The value of the
+                                    AVP specifies a single PCC rule request if the PCRF is allowed
+                                    to negotiate the QoS by supplying an Authorized QoS that differs
+                                    from the requested QoS.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>No QoS Negotiation</b></p>
+                                    <p>A QoS negotiation is not allowed for the corresponding PCC
+                                        rule request.</p>
+                                    <p><b>QoS Negotiation Supported</b></p>
+                                    <p>A QoS negotiation is allowed for the corresponding PCC rule
+                                        request. This is the default value applicable if the AVP is
+                                        not provided. </p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>QoSUpgrade</entry>
+                                <entry>The QoSUpgrade indicates whether the SGSN that supports the
+                                    GGSN upgrades the QoS in a create PDP context response or an
+                                    update PDP context response.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>QoS Upgrade Not Supported</b></p>
+                                    <p>The IP-CAN bearer does not support the upgrade of the
+                                        requested QoS. This is the default value if a QoS-Upgrade
+                                        AVP is not provided for an IP-CAN bearer.</p>
+                                    <p><b>QoS Upgrade Supported</b></p>
+                                    <p>The IP-CAN bearer supports the upgrade of the requested
+                                        QoS.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>QoSUpgradeCheckResult</entry>
+                                <entry>Defines whether the NCC should allow the upgrade of the
+                                    requested QoS. This action provides a method to change the NCC
+                                    QoS authorization when the UE requests a QoS upgrade using the
+                                    QoS-Upgrade AVP in the IP-CAN establishment or modification
+                                    request. Applicable for GPRS IP-CAN sessions.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>Authorize at a Higher Rate</b></p>
+                                    <p>Authorize at a QoS at a higher rate (that is, upgrade the
+                                        requested QoS).</p>
+                                    <p><b>Do Not Authorize at a Higher Rate</b></p>
+                                    <p>Reject authorization if the UE requests a QoS upgrade.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>RATType</entry>
+                                <entry>Identifies the RAT that is serving the UE</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>CDMA2000 1X</b></p>
+                                    <p>The RAT is CDMA2000 1x. For more information, see 3GPP2
+                                        X.S0011-D [20].</p>
+                                    <p><b>EHRPD</b></p>
+                                    <p>The RAT is eHRPD. For more information, refer to 3GPP2
+                                        X.S0057 [24].</p>
+                                    <p><b>EUTRAN</b></p>
+                                    <p>The RAT is E-UTRAN. For more information, see 3GPP TS 29.274
+                                        [22].</p>
+                                    <p><b>GAN</b></p>
+                                    <p>The RAT is GAN. For more information, see 3GPP TS 29.060
+                                        [18].</p>
+                                    <p><b>GERAN</b></p>
+                                    <p>The RAT is GERAN. For more information, see 3GPP TS 29.060
+                                        [18].</p>
+                                    <p><b>HRPD</b></p>
+                                    <p>The RAT is HRPD. For more information, see 3GPP2 X.S0011-D
+                                        [20].</p>
+                                    <p><b>HSPA</b></p>
+                                    <p>Evolution The RAT is HSPA Evolution. For more information,
+                                        see 3GPP TS 29.060 [18].</p>
+                                    <p><b>UMB</b></p>
+                                    <p>The RAT is UMB. For more information, see 3GPP2 X.S0011-D
+                                        [20].</p>
+                                    <p><b>UTRAN</b></p>
+                                    <p>The RAT is UTRANF. For more information, see 3GPP TS 29.060
+                                        [18]. VIRTUAL This value is used to indicate that the RAT is
+                                        unknown. For further details refer to 3GPP TS 29.274
+                                        [22].</p>
+                                    <p><b>WLAN</b></p>
+                                    <p>The RAT is WLAN.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>RATType3Gpp</entry>
+                                <entry>The RATType3GPP AVP type is OctetString and indicates the RAT
+                                    that is serving the UE.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>EUTRAN</b></p>
+                                    <p>The RAT is E-UTRAN. For more information, see 3GPP TS 29.274
+                                        [22].</p>
+                                    <p><b>GAN</b></p>
+                                    <p>The RAT is GAN. For more information, see 3GPP TS 29.060
+                                        [18].</p>
+                                    <p><b>GERAN</b></p>
+                                    <p>The RAT is GERAN. For more information, see 3GPP TS 29.060
+                                        [18].</p>
+                                    <p><b>HSPA</b></p>
+                                    <p>Evolution The RAT is HSPA Evolution. For more information,
+                                        see 3GPP TS 29.060 [18].</p>
+                                    <p><b>Reserved</b></p>
+                                    <p>The RAT is reserved.</p>
+                                    <p><b>UTRAN</b></p>
+                                    <p>The RAT is UTRANF. For more information, see 3GPP TS 29.060
+                                        [18].</p>
+                                    <p><b>VIRTUAL</b></p>
+                                    <p>This value is used to indicate that the RAT is unknown. For
+                                        further details refer to 3GPP TS 29.274 [22].</p>
+                                    <p><b>WLAN</b></p>
+                                    <p>The RAT is WLAN. </p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>RedirectAddressType</entry>
+                                <entry>The Redirect-Address-Type AVP type is Enumerated and defines
+                                    the address type of the address in the Redirect-Server-Address
+                                    AVP.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>IPv4</b></p>
+                                    <p>Address type is in the IPv4 dotted-decimal address format</p>
+                                    <p><b>IPv6</b></p>
+                                    <p>Address type is in the IPv6 address format and is a text
+                                        representation of the address in the preferred or alternate
+                                        text form</p>
+                                    <p><b>SIP URI</b></p>
+                                    <p>Address type is in the SIP URL format</p>
+                                    <p><b>URL</b></p>
+                                    <p>Address type is in the URL format </p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>ReportingLevel</entry>
+                                <entry>The Reporting-Level AVP type is Enumerated, and defines the
+                                    level at which the PCEF reports usage for the related PCC
+                                    rule.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>Rating Group Level</b></p>
+                                    <p>The usage is reported on rating group level.</p>
+                                    <p><b>Service Identifier Level</b></p>
+                                    <p>The usage is reported on service ID and rating group
+                                        combination level.</p>
+                                    <p><b>Sponsored Connectivity Level</b></p>
+                                    <p>Indicates that the usage is reported on sponsor identity and
+                                        rating group combination level, and is applicable when the
+                                        Sponsor-IdentityAVP, Application-Service-Provider-Identity
+                                        AVP and Rating-Group AVP have been provisioned within the
+                                        Charging-Rule-Definition AVP. Applicable for offline
+                                        charging. </p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>ReportingReason</entry>
+                                <entry>The Reporting-Reason AVP is of type Enumerated and specifies
+                                    the reason for usage reporting for one or more types of quota
+                                    for a particular category.</entry>
+                                <entry>
+                                    <p><b>Final</b></p>
+                                    <p>Indicates that the reason for usage reporting of all quota
+                                        types of the Multiple-Service-Credit-Control AVP where its
+                                        appears is that a service termination has happened (for
+                                        example, PDP context or IP-CAN bearer termination).</p>
+                                    <p><b>Forced Reauthorization</b></p>
+                                    <p>Determines that the reason for usage reporting of all quota
+                                        types of the Multiple-Service-Credit-Control AVP where it
+                                        appears is because there has been a Server initiated
+                                        re-authorization procedure (such as a receipt of a RAR
+                                        command)</p>
+                                    <p><b>Other Quota Type</b></p>
+                                    <p>Indicates that the reason for usage reporting of the
+                                        particular quota type indicated in the Used-ServiceUnits AVP
+                                        where it appears is that, for a multi-dimensional quota, one
+                                        reached a trigger condition and the other quota is being
+                                        reported.</p>
+                                    <p><b>Pool Exhausted</b></p>
+                                    <p>Indicates that the reason for usage reporting of the
+                                        particular quota type indicated in the Used-ServiceUnits AVP
+                                        where it appears is that granted units are still available
+                                        in the pool but are not sufficient for a rating group using
+                                        the pool.</p>
+                                    <p><b>QHT</b></p>
+                                    <p>Indicates that the reason for usage reporting of all quota
+                                        types of the Multiple-Service-Credit-Control AVP where its
+                                        appears is that the quota holding time specified in a
+                                        previous CCA command has been hit (for example, the quota
+                                        has been unused for that period of time).</p>
+                                    <p><b>Quota Exhausted</b></p>
+                                    <p>Indicates that the reason for usage reporting of the
+                                        particular quota type indicated in the Used-ServiceUnits AVP
+                                        where it appears is that the quota has been exhausted.</p>
+                                    <p><b>Rating Condition Change</b></p>
+                                    <p>Indicates that the reason for usage reporting of all quota
+                                        types of the Multiple-Service-Credit-Control AVP where its
+                                        appears is that a change has happened in some of the rating
+                                        conditions that were previously armed through the Trigger
+                                        AVP (for example, QoS). The specific conditions that have
+                                        changed are indicated in an associated Trigger AVP.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>ReportingReason (continued)</entry>
+                                <entry/>
+                                <entry>
+                                    <p><b>Threshold</b></p>
+                                    <p>Indicates that the reason for usage reporting of the
+                                        particular quota type indicated in the Used-ServiceUnits AVP
+                                        where it appears is that the threshold has been reached.</p>
+                                    <p><b>Validity Time</b></p>
+                                    <p>Indicates that the reason for usage reporting of all quota
+                                        types of the Multiple-Service-Credit-Control AVP where its
+                                        appears is that the credit authorization lifetime provided
+                                        in the Validity-Time AVP has expired.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>ReservationPriority</entry>
+                                <entry>The Reservation-Priority at the AA-Request level provides the
+                                    relative priority for a session. The Reservation-Priority at the
+                                    media-component-description level provides the relative priority
+                                    for an IP flow in a session. </entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p>0 to 15</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>RuleFailureCode</entry>
+                                <entry> Rule-Failure-Code is sent by the PCEF to the PCRF in a
+                                    Charging-Rule-Report AVP to identify the reason that a PCC rule
+                                    is reported</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>Gateway/PCEF Malfunction</b></p>
+                                    <p>Indicates that the PCC rule cannot be successfully installed
+                                        (for those provisioned from the PCRF) or activated (for
+                                        those pre-provisioned in PCEF) or enforced (for those
+                                        already successfully installed) because of a GW/PCEF
+                                        malfunction.</p>
+                                    <p><b>Incorrect Flow Information</b></p>
+                                    <p>Indicates that the PCC rule could not be successfully
+                                        installed or modified at the PCEF because the provided flow
+                                        information is not supported by the network (for example,
+                                        the provided IP address(es) or IPv6 prefix(es) do not
+                                        correspond to an IP version applicable for the IP-CAN
+                                        session)</p>
+                                    <p><b>Maximum NR Bearers Reached</b></p>
+                                    <p>The PCC rule cannot be successfully installed (for rules
+                                        provisioned from the PCRF) or activated (for rules
+                                        pre-provisioned in the PCEF) or enforced (for rules already
+                                        successfully installed) because the maximum number of
+                                        bearers is reached for the IP-CAN session.</p>
+                                    <p><b>Missing Bearer ID</b></p>
+                                    <p>The PCC rule cannot be successfully installed or enforced at
+                                        the PCEF because the Bearer-Id is not specified in the
+                                        Charging-Rule-Install AVP by the PCRF. Applicable only for
+                                        GPRS when the PCRF performs the bearer binding.</p>
+                                    <p><b>Missing Flow Information</b></p>
+                                    <p>The PCC rule cannot be successfully installed or enforced
+                                        because the Flow-Description AVP is not specified in the
+                                        Charging-Rule-Definition AVP by the PCRF during the first
+                                        installation request for the PCC rule.</p>
+                                    <p><b>No Bearer Bound</b></p>
+                                    <p>Indicates that there is no IP-CAN bearer without traffic
+                                        mapping information which the PCEF can bind the PCC rule(s)
+                                        including Rule-Activation-Time AVP to.</p>
+                                    <p><b>PS to CS Handover</b></p>
+                                    <p>Indicates that the PCC rule could not be maintained because
+                                        of PS to CS handover. This value is only applicable for
+                                        3GPP-GPRS and 3GPP-EPS. Applicable to functionality
+                                        introduced with the Rel9 feature as described in clause
+                                        5.4.1</p>
+                                    <p><b>Rating Group Error</b></p>
+                                    <p>The PCC rule cannot be successfully installed or enforced
+                                        because the Rating-Group specified in the
+                                        Charging-Rule-Definition AVP by the PCRF is unknown or
+                                        invalid.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>RuleFailureCode (continued)</entry>
+                                <entry/>
+                                <entry>
+                                    <p><b>Resource Allocation Failure</b></p>
+                                    <p>The PCC rule cannot be successfully installed because the
+                                        bearer establishment or modification procedure cannot be
+                                        completed successfully.</p>
+                                    <p><b>Resources Limitation</b></p>
+                                    <p>The PCC rule cannot be successfully installed (for rules
+                                        provisioned from the PCRF) or activated (for rules
+                                        pre-provisioned in the PCEF) or enforced (for rules already
+                                        successfully installed) because of a limitation of resources
+                                        at the PCEF.</p>
+                                    <p><b>Service Identifier Error</b></p>
+                                    <p>The PCC rule cannot be successfully installed or enforced
+                                        because the Service-Identifier specified in the
+                                        Charging-Rule-Definition AVP by the PCRF is invalid,
+                                        unknown, or not applicable to the service being charged.</p>
+                                    <p><b>TDF Application Identifier Error</b></p>
+                                    <p>Indicates that the rule could not be successfully installed
+                                        or enforced because the TDF-ApplicationIdentifier is
+                                        invalid, unknown, or not applicable to the application
+                                        required for detection.</p>
+                                    <p><b>Unknown Bearer ID</b></p>
+                                    <p>The PCC rule cannot be successfully installed or enforced at
+                                        the PCEF because the Bearer-Id specified in the
+                                        Charging-Rule-Install AVP by the PCRF is unknown or invalid.
+                                        Applicable only for GPRS when the PCRF performs the bearer
+                                        binding.</p>
+                                    <p><b>Unknown Rule Name</b></p>
+                                    <p>The pre-provisioned PCC rule cannot be successfully activated
+                                        because the Charging-Rule-Name or Charging-Rule-Base-Name is
+                                        unknown to the PCE.</p>
+                                    <p><b>Unsuccessful QoS Validation</b></p>
+                                    <p>Indicates that the QoS validation has failed.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>SIPForkingIndication</entry>
+                                <entry>The SIP-Forking-Indication AVP type is Enumerated and
+                                    describes whether several SIP dialogs are related to one
+                                    Diameter session.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>Several Dialogues</b></p>
+                                    <p>The Diameter session is related to several SIP dialogs.</p>
+                                    <p><b>Single Dialogue</b></p>
+                                    <p>The Diameter session is related to one SIP dialog. This is
+                                        the default value if the AVP is omitted. </p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>ServiceInfoStatus</entry>
+                                <entry>Service-Info-Status indicates the status of the service
+                                    information that the AF is providing to the PCRF. If the
+                                    Service-Info-Status AVP is not provided in the AA request, the
+                                    value Final Service Information is assumed.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>Final Service Information</b></p>
+                                    <p>The service is fully negotiated between the two ends and the
+                                        service information provided is the result of the
+                                        negotiation.</p>
+                                    <p><b>Preliminary Service Information</b></p>
+                                    <p>The service information that the AF has provided to the PCRF
+                                        is preliminary and needs to be further negotiated between
+                                        the two ends (for example, for IMS when the service
+                                        information is sent based on the SDP offer).</p>
+                                    <p>Note 1: The AF may additionally provide preliminary service
+                                        information not fully negotiated yet (for example, based on
+                                        the SDP offer) at an earlier stage. The AF includes the
+                                        Service-Info-Status AVP with the value set to Preliminary
+                                        Service Information.</p>
+                                    <p>Upon receipt of Preliminary Service Information, the PCRF
+                                        performs an early authorization check of the service
+                                        information. The PCRF does not provision PCC rules towards
+                                        the PCEF. However, the PCRF may authorize a PCC/QoS rule
+                                        request received from the PCEF/BBERF as per 3GPP TS 29.212
+                                        [8].</p>
+                                    <p>Note 2: The AF may additionally provide Preliminary Service
+                                        Information not fully negotiated yet (for example, based on
+                                        the SDP offer) at an earlier stage. The AF includes the
+                                        Service-Info-Status AVP with the value set to Preliminary
+                                        Service Information.</p>
+                                    <p>Upon receipt Preliminary Service Information, the PCRF
+                                        performs an early authorization check of the service
+                                        information. The PCRF does not provision PCC rules towards
+                                        the PCEF unsolicited. However, the PCRF may authorize a
+                                        PCC/QoS rule request received from the PCEF/BBERF as per
+                                        3GPP TS 29.212 [8].</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>ServingNodeType</entry>
+                                <entry>The Serving-Node-Type is of type Enumerated and identifies
+                                    the type of Serving Node</entry>
+                                <entry>
+                                    <p>The following values are available:<ul id="ul_ypd_1r4_plb">
+                                            <li>Evolved Packet Data Gateway</li>
+                                            <li>GTP Serving Gateway</li>
+                                            <li>HRPD Serving Gateway</li>
+                                            <li>Mobile Management Entity</li>
+                                            <li>PMIP Serving Gateway</li>
+                                            <li>Serving GPRS Support Node</li>
+                                            <li>Trusted WLAN Access Network</li>
+                                        </ul></p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>SessionCommandType</entry>
+                                <entry>Allows the required action to occur at the session level and
+                                    determines whether a request should be authorized or terminated
+                                    based on the type of request.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p>The Serving-Node-Type AVP (AVP Code 2047) is of type
+                                        Enumerated and identifies the type of Serving Node</p>
+                                    <p><b>Reauthorize</b></p>
+                                    <p>To reauthorize the IP-CAN session.</p>
+                                    <p><b>Terminate</b></p>
+                                    <p>To terminate or reject the session establishment/
+                                        modification request, or to terminate the existing
+                                        session.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>SessionType</entry>
+                                <entry>Determines whether to use a local session or a roaming
+                                    session.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>Local Session</b></p>
+                                    <p>This is for a local session.</p>
+                                    <p><b>Roaming Session</b></p>
+                                    <p>This is for a roaming session.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>SpecificAction</entry>
+                                <entry>The Specific-Action AVP type is Enumerated. In a
+                                    PCRFinitiated reauthorization request, the Specific-Action AVP
+                                    determines the type of the action.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>Access Network Info Report</b></p>
+                                    <p>In the RA-Request (RAR), this value is used by the PCRF to
+                                        report access network information when the PCRF receiving an
+                                        Access Network Information report corresponding to the AF
+                                        session from the PCEF/BBERF.</p>
+                                    <p>In the AA-Request (AAR), this value indicates that the AF
+                                        requests PCRF to report access network information when the
+                                        PCRF receiving an Access Network Information report
+                                        corresponding to the AF session from the PCEF/BBERF.</p>
+                                    <p>Note: When the PCEF supports the Gx NetLoc Feature Bit (10)
+                                        as specified under the Gx Supported-Features of
+                                        Feature-List-ID 1, the NCC only forwards the user location
+                                        (or PLMN identifier if the user location is not available)
+                                        and/or the UE Timezone to the AF when the information is
+                                        sent to the PCRF in Gx CCR-u that has event-trigger ACCESS_
+                                        NETWORK_INFO_REPORT.</p>
+                                    <p>When the PCEF supports the Gx NetLoc Feature Bit (10) the
+                                        PCRF does not automatically send the current IP-CAN location
+                                        information on AF establishment with the specific action for
+                                        access network information report. It does not forward the
+                                        information when information is sent to PCRF in Gx RAA, and
+                                        does not forward the information when event-trigger
+                                        ACCESS_NETWORK_INFO_REPORT is not present in Gx CCR-u</p>
+                                    <p><b>Charging Correlation Exchange</b></p>
+                                    <p>Used in the RAR command to indicate when the server reports
+                                        the access network charging identifier to the AF. The
+                                        Access-Network-Charging-Identifier AVP is included in the
+                                        request. In the AAR, this value indicates that the AF
+                                        requests the server to provide an access network charging
+                                        identifier to the AF at each bearer
+                                        establishment/modification when a new access network
+                                        charging identifier becomes available.</p>
+                                    <p><b>IP-CAN Change</b></p>
+                                    <p>Used in the RAR command by the PCRF to indicate a change in
+                                        the IP-CAN type. In an AAR command, this value indicates
+                                        that the AF is requesting subscription for IP-CAN change
+                                        notification. In RAR, the value indicates that the PCRF
+                                        generated the request because of an IP-CAN change. The
+                                        IP-CAN-Type AVP is provided with the new value in the same
+                                        request. The RAT-Type AVP is also provided when applicable
+                                        for the specific IP-CAN Type (for example, 3GPP IP-CAN
+                                        Type).</p>
+                                    <p><b>Indication Bearer Loss</b></p>
+                                    <p>Used in the RAR command to indicate when the server reports a
+                                        loss of a bearer (for example, for a GPRS PDP context
+                                        bandwidth modification to 0 kb) to the AF.</p>
+                                    <p>The SDFs that are deactivated because of this loss of bearer
+                                        are provided in the Flows AVP. In the AAR, this value
+                                        indicates that the AF requests the server to provide a
+                                        notification at the loss of a bearer.</p>
+                                    <p><b>Indication of Bearer Recovery</b></p>
+                                    <p>Used in the RAR command to indicate when the server reports a
+                                        recovery of a bearer (for example, for a GPRS PDP context
+                                        bandwidth modification from 0 kb to another value) to the
+                                        AF. The SDFs that are reactivated because of the recovery of
+                                        bearer are provided in the Flows AVP. In the AAR, this value
+                                        indicates that the AF requests the server to provide a
+                                        notification at the recovery of a bearer.</p>
+                                    <p><b>Indication of Bearer Release</b></p>
+                                    <p>Used in the RAR command to indicate when the server reports
+                                        the release of a bearer (for example, PDP context removal
+                                        for GPRS) to the AF. The SDFs that are deactivated because
+                                        of this release of bearer are provided in the Flows AVP. In
+                                        the AAR, this value indicates that the AF requests the
+                                        server to provide a notification at the removal of a
+                                        bearer.</p>
+                                    <p><b>Indication of Establishment of Bearer</b></p>
+                                    <p>Used in the RAR command to indicate when the server reports
+                                        the establishment of a bearer (for example, PDP context
+                                        activation for GPRS) to the AF. In the AAR, this value
+                                        indicates that the AF requests the server to provide a
+                                        notification at the establishment of a bearer.</p>
+                                    <p><b>Indication of Failed Resources Allocation</b></p>
+                                    <p>Used in the RAR command by the PCRF to indicate that the
+                                        resources requested for a service information cannot be
+                                        successfully allocated. The SDFs corresponding to the
+                                        resources that cannot be allocated are provided in the Flows
+                                        AVP. In the AAR, this value indicates that the AF requests
+                                        the PCRF to provide a notification when the resources
+                                        associated with the corresponding service information cannot
+                                        be allocated.</p>
+                                    <p><b>Indication of Limited PCC Deployment</b></p>
+                                    <p>Used in the RAR command to indicate when the server reports
+                                        the limited PCC deployment (that is, dynamically allocated
+                                        resources are not applicable), as specified at Annex L in
+                                        3GPP TS 23.203 [2] to the AF. In the AAR, this value
+                                        indicates that the AF requests the server to provide a
+                                        notification for the limited PCC deployment.</p>
+                                    <p><b>Indication of Successful Resources Allocation</b></p>
+                                    <p>Used in the RAR command by the PCRF to indicate that the
+                                        resources requested for service information are successfully
+                                        allocated. The SDFs corresponding to the resources
+                                        successfully allocated are provided in the Flows AVP. In the
+                                        AAR, this value indicates that the AF requests the PCRF to
+                                        provide a notification when the resources associated with
+                                        the corresponding service information are allocated.</p>
+                                    <p><b>Out-of-Credit</b></p>
+                                    <p>Used in the RAR command to indicate when the PCRF reports to
+                                        the AF that SDFs have run out of credit, and that the
+                                        termination action indicated by the corresponding
+                                        Final-Unit-Action AVP applies (3GPP TS 32.240 [23] and 3GPP
+                                        TS 32.299 [24). The SDFs that are impacted because of the
+                                        out of credit condition are provided in the Flows AVP. In
+                                        the AAR, this value indicates that the AF requests the PCRF
+                                        to provide a notification of SDFs for which credit is no
+                                        longer available.</p>
+                                    <p><b>Service Information Request</b></p>
+                                    <p>Used in the RAR command to indicate when the server requests
+                                        the service information from the AF for the bearer event. In
+                                        the AAR, this value indicates that the AF requests the
+                                        server to demand service information at each bearer
+                                        authorization.</p>
+                                    <p><b>Usage Report</b></p>
+                                    <p>In the RA-Request (RAR), this value reports accumulated usage
+                                        volume when the usage threshold provided by the AF has been
+                                        reached. In the AA-Request (AAR), this value indicates that
+                                        the AF requests PCRF to report accumulated usage volume when
+                                        it reaches the threshold. </p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>SubscriberQosOverrideDirection</entry>
+                                <entry>Specifies the direction for the QoS Override when the
+                                    override using the Queue and Rate parameters is
+                                    configured.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p>The following values are available:<ul id="ul_lnm_m54_plb">
+                                            <li>Egress</li>
+                                            <li>Ingress</li>
+                                        </ul></p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>SubscriberQosOverrideFormat</entry>
+                                <entry>Specifies the format of the QoS Override.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>Custom</b></p>
+                                    <p>When this parameter is chosen, the Value parameter is
+                                        displayed. A raw string value may be entered to configure a
+                                        custom QoS Override parameter.</p>
+                                    <p><b>Queue</b></p>
+                                    <p>When this parameter is chosen, parameters may be configured
+                                        for a particular queue. The Direction, Queue ID, PIR, CIR,
+                                        MBS and CBS parameters are displayed.</p>
+                                    <p><b>Rate</b></p>
+                                    <p>When this parameter is chosen, an aggregate rate for all
+                                        queues may be defined. The Direction and Rate parameters are
+                                        displayed.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>SubscriberState</entry>
+                                <entry>The Subscriber-State AVP type is Enumerated, and is used to
+                                    determine the type of identifier that is carried by the
+                                    Subscription-Id AVP.</entry>
+                                <entry>
+                                    <p><b>Disabled (excl. emergency services)</b></p>
+                                    <p>Used to indicate the subscriber is disabled in the account
+                                        but emergency services are not.</p>
+                                    <p><b>Enabled</b></p>
+                                    <p>Used to indicate the subscriber is enabled in the
+                                        account.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>SubscriptionIdType</entry>
+                                <entry>The Subscription-Id-Type AVP type is Enumerated, and is used
+                                    to determine the type of identifier that is carried by the
+                                    Subscription-Id AVP.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>End User E.164</b></p>
+                                    <p>International E.164 format (for example, MSISDN), according
+                                        to the ITU-T E.164 numbering plan defined in [E164] and
+                                        [CE164].</p>
+                                    <p><b>End User IMSI</b></p>
+                                    <p>IMSI format, according to the ITU-T E.212 numbering plan as
+                                        defined in [E212] and [CE212].</p>
+                                    <p><b>End User NAI</b></p>
+                                    <p>NAI, as defined in [NAI].</p>
+                                    <p><b>End User Private</b></p>
+                                    <p>Credit-control server private identifier.</p>
+                                    <p><b>End User SIP URI</b></p>
+                                    <p>SIP URI, as defined in [SIP].</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>TerminateResultCode</entry>
+                                <entry>Used to reject/terminate an unknown subscriber.</entry>
+                                <entry>
+                                    <p><b>Diameter User Unknown</b></p>
+                                    <p>Used when it is desired to reject/terminate an unknown
+                                        subscriber with the result code Diameter User Unknown using
+                                        Session-Command Terminate.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>TriggerType</entry>
+                                <entry>The Trigger-Type AVP is of type Enumerated and indicates a
+                                    single re-authorization event type.</entry>
+                                <entry>
+                                    <p><b>Change in Location</b></p>
+                                    <p>Indicates that a change in the end user location causes the
+                                        credit control client to request a re-authorization of the
+                                        associated quota.</p>
+                                    <p><b>Change in Hybrid Subscribed User CSG Information</b></p>
+                                    <p>Indicates a request to report the event that the user
+                                        enters/leaves a hybrid cell that the user subscribes to.
+                                        When used in a CCR, at entry to a hybrid cell where the user
+                                        is a member, the User-CSG-Information AVP is provided with
+                                        the event report.</p>
+                                    <p><b>Change in Hybrid Unsubscribed User CSG Information</b></p>
+                                    <p>Indicates a request of reporting the event that the user
+                                        enters/leaves a hybrid cell that the user does not subscribe
+                                        to. When used in a CCR, at entry to a hybrid cell where the
+                                        user is not a member, the User-CSG-Information AVP is
+                                        provided with the event report.</p>
+                                    <p><b>Change in Location Cell Id</b></p>
+                                    <p>Indicates that a change in the Cell Identity where the end
+                                        user is located causes the credit control client to request
+                                        a re-authorization of the associated quota.</p>
+                                    <p><b>Change in Location Cell ECGI</b></p>
+                                    <p>Indicates that a change in the ECGI where the end user is
+                                        located causes the credit control client to request a
+                                        re-authorization of the associated quota.</p>
+                                    <p><b>Change in Location Cell LAC</b></p>
+                                    <p>Indicates that a change in the LAC where the end user is
+                                        located causes the credit control client to request a
+                                        re-authorization of the associated quota.</p>
+                                    <p><b>Change in Location Cell MCC</b></p>
+                                    <p>Indicates that a change in the MCC of the serving network
+                                        causes the credit control client to request a
+                                        re-authorization of the associated quota</p>
+                                    <p><b>Change in Location Cell MNC</b></p>
+                                    <p>Indicates that a change in the MNC of the serving network
+                                        causes the credit control client to request a
+                                        re-authorization of the associated quota.</p>
+                                    <p><b>Change in Location Cell RAC</b></p>
+                                    <p>Indicates that a change in the RAC where the end user is
+                                        located causes the credit control client to request a
+                                        re-authorization of the associated quota.</p>
+                                    <p><b>Change in Location Cell TAC</b></p>
+                                    <p>Indicates that a change in the TAC where the end user is
+                                        located causes the credit control client to request a
+                                        re-authorization of the associated quota.</p>
+                                    <p><b>Change in Maximum Bit Rate for Downlink</b></p>
+                                    <p>Indicates that a change in the end user negotiated downlink
+                                        maximum bit rate causes the credit control client to ask for
+                                        a re-authorization of the associated quota.</p>
+                                    <p><b>Change in Maximum Bit Rate for Uplink</b></p>
+                                    <p>Indicates that a change in the end user negotiated uplink
+                                        maximum bit rate causes the credit control client to ask for
+                                        a re-authorization of the associated quota.</p>
+                                    <p><b>Change in Mean Throughput</b></p>
+                                    <p>Indicates that a change in the end user negotiated mean
+                                        throughput causes the credit control client to ask for a
+                                        re-authorization of the associated quota.</p>
+                                    <p><b>Change in Media Composition</b></p>
+                                    <p>Indicates that a change in the media composition (as
+                                        identified within SDP) for an existing SIP session causes
+                                        the credit control client to ask for a re-authorization of
+                                        the associated quota.</p>
+                                    <p><b>Change in Participants NMB</b></p>
+                                    <p>Used specifically for multi participating sessions to
+                                        indicate that a change in the number of active participants
+                                        within a session cause the credit control client to ask for
+                                        a re-authorization of the associated quota.</p>
+                                    <p><b>Change in Peak Throughput</b></p>
+                                    <p>Indicates that a change in the end user negotiated peak
+                                        throughput shall cause the credit control client to ask for
+                                        a re-authorization of the associated quota.</p>
+                                    <p><b>Change in Precedence Class</b></p>
+                                    <p>Indicate that a change in the end user negotiated precedence
+                                        class causes the credit control client to request a
+                                        re-authorization of the associated quota</p>
+                                    <p><b>Change in QoS</b></p>
+                                    <p>Indicates that a change in the end user negotiated QoS causes
+                                        the credit control client to ask for a re-authorization of
+                                        the associated quota.</p>
+                                    <p><b>Change in QoS Delay Class</b></p>
+                                    <p>Indicates that a change in the end user negotiated delay
+                                        class causes the credit control client to ask for a
+                                        re-authorization of the associated quota.</p>
+                                    <p><b>Change in QoS Guaranteed Bit Rate for Downlink</b></p>
+                                    <p>Indicates that a change in the end user negotiated downlink
+                                        guaranteed bit rate shall cause the credit control client to
+                                        ask for a re-authorization of the associated quota.</p>
+                                    <p><b>Change in QoS Guaranteed Bit Rate for Uplink</b></p>
+                                    <p>Indicates that a change in the end user negotiated uplink
+                                        guaranteed bit rate shall cause the credit control client to
+                                        ask for a re-authorization of the associated quota.</p>
+                                    <p><b>Change in QoS Residual BER</b></p>
+                                    <p>Indicates that a change in the end user negotiated residual
+                                        BER causes the credit control client to ask for a
+                                        re-authorization of the associated quota.</p>
+                                    <p><b>Change in QoS SDU Error Ratio</b></p>
+                                    <p>Indicates that a change in the end user negotiated SDU error
+                                        ratio shall cause the credit control client to ask for a
+                                        re-authorization of the associated quota.</p>
+                                    <p><b>Change in QoS Traffic Class</b></p>
+                                    <p>Indicates that a change in the end user negotiated traffic
+                                        class causes the credit control client to ask for a
+                                        re-authorization of the associated quota.</p>
+                                    <p><b>Change in QoS Traffic Handling Priority</b></p>
+                                    <p>Indicates that a change in the end user negotiated traffic
+                                        handling priority causes the credit control client to ask
+                                        for a re-authorization of the associated quota.</p>
+                                    <p><b>Change in QoS Transfer Delay</b></p>
+                                    <p>Indicates that a change in the end user negotiated transfer
+                                        delay causes the credit control client to ask for a
+                                        re-authorization of the associated quota.</p>
+                                    <p><b>Change in RAT</b></p>
+                                    <p>Indicates that a change in the radio access technology causes
+                                        the credit control client to ask for a re-authorization of
+                                        the associated quota.</p>
+                                    <p><b>Change in Reliability Class</b></p>
+                                    <p>Indicates that a change in the end user negotiated
+                                        reliability class causes the credit control client to ask
+                                        for a re-authorization of the associated quota.</p>
+                                    <p><b>Change in SGSN IP Address</b></p>
+                                    <p>Indicates that a change in the SGSN IP address causes the
+                                        credit control client to ask for a re-authorization of the
+                                        associated quota.</p>
+                                    <p><b>Change in Service Condition</b></p>
+                                    <p>Indicates that a change in rating conditions associated with
+                                        a service occurs. The description of the conditions causing
+                                        a change are service specific and may be documented in
+                                        middle-tier specifications or may be configurable.</p>
+                                    <p><b>Change in Serving Node</b></p>
+                                    <p>Indicates that a change in serving node causes the credit
+                                        control client to request re-authorization of the associated
+                                        quota.</p>
+                                    <p><b>Change in Threshold of Participants NMB</b></p>
+                                    <p>Indicate that a change in the threshold of participants
+                                        number within a session causes the credit control client to
+                                        request re-authorization of the associated quota.</p>
+                                    <p><b>Change in UE Timezone</b></p>
+                                    <p>Indicates that a change in the TimeZone where the end user is
+                                        located causes the credit control client to request
+                                        re-authorization of the associated quota.</p>
+                                    <p><b>Change in User CSG Information</b></p>
+                                    <p>Indicates a request of reporting the event that the user
+                                        enters/leaves a CSG cell. When used in a CCR, at entry to a
+                                        CSG cell, the User-CSG-Information AVP is provided with the
+                                        event report.</p>
+                                    <p><b>Change in User Participating Type</b></p>
+                                    <p>Indicates that a change in the user participating type within
+                                        a session causes the credit control client to ask for a
+                                        re-authorization of the associated quota.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>TunnelType</entry>
+                                <entry>Indicates the type of tunnel to be started.</entry>
+                                <entry>
+                                    <p>The supported values are defined in [RFC 2868].<ul
+                                            id="ul_lrp_pw4_plb">
+                                            <li>Not Set</li>
+                                            <li>Ascend Tunnel Management Protocol (ATMP)</li>
+                                            <li>Bay Dial Virtual Services (DVS)</li>
+                                            <li>Generic Route Encapsulation (GRE)</li>
+                                            <li>IP Authentication Header in the Tunnel-mode
+                                                (AH)</li>
+                                            <li>IP Encapsulating Security Payload in the Tunnel-mode
+                                                (ESP)</li>
+                                            <li>IP-in-IP Encapsulation (IP-IP)</li>
+                                            <li>IP-in-IP Tunneling</li>
+                                            <li>Layer Two Forwarding (L2F)</li>
+                                            <li>Layer Two Tunneling Protocol (L2TP)</li>
+                                            <li>Minimal IP-in-IP Encapsulation (MIN-IP-IP)</li>
+                                            <li>Point-to-Point Tunneling Protocol (PPTP)</li>
+                                            <li>Reserved</li>
+                                            <li>Virtual LAN (VLAN)</li>
+                                            <li>Virtual Tunneling Protocol (VTP)</li>
+                                        </ul></p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>UserEquipmentInfoType</entry>
+                                <entry>The User-Equipment-Info AVP type is grouped, and allows the
+                                    credit-control client to indicate the identity and capability of
+                                    the terminal that the subscriber is using for the connection to
+                                    network.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>EU-164</b></p>
+                                    <p>The 64-bit identifier is used to identify the hardware
+                                        instance of the product, as defined in [EUI64].</p>
+                                    <p><b>IMEISV</b></p>
+                                    <p>The identifier contains the International Mobile Equipment
+                                        Identifier and Software Version in the international IMEISV
+                                        format, according to 3GPP TS 23.003 [3GPPIMEI].</p>
+                                    <p><b>MAC</b></p>
+                                    <p>The 48-bit MAC address is formatted, as described in
+                                        [RAD802.1X].</p>
+                                    <p><b>MEID</b></p>
+                                    <p>The MEID contains a globally unique number that identifies a
+                                        physical part of CDMA mobile station equipment. The number
+                                        format is defined by the 3GPP2 report S.R0048.</p>
+                                    <p><b>Modified EU-164</b></p>
+                                    <p>There are a number of types of terminals that have
+                                        identifiers other than IMEI, IEEE 802 MACs, or EUI-64. The
+                                        identifiers can be converted to modified EUI-64 format, as
+                                        described in [IPv6Addr], or by using another method that is
+                                        referred to in the service-specific documentation.</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>UserLocationIdentityType</entry>
+                                <entry>The PCEF sends the 3GPP-User-Location-Info AVP to the PCRF by
+                                    setting the LAC of the CGI/SAI to 0x0000. Applicable only to
+                                    3GPP-GPRS and 3GPP-EPS access types.</entry>
+                                <entry>
+                                    <p><b>Not Set</b></p>
+                                    <p>Indicates that the value field is empty; therefore, there is
+                                        no value configured.</p>
+                                    <p><b>CGI</b></p>
+                                    <p>Indicates the CGI of where the user is registered. CGI is
+                                        defined in sub-clause 4.3.1 of 3GPP TS 23.003 [2].</p>
+                                    <p><b>ECGI</b></p>
+                                    <p>Indicates the ECGI*. Applicable for E-UTRAN.</p>
+                                    <p><b>RAI</b></p>
+                                    <p>Indicates the RAI of the SGSN where the UE is registered. Not
+                                        applicable for eHRPD or E-UTRAN.</p>
+                                    <p><b>SAI</b></p>
+                                    <p>Indicates the SAI of where the user is registered. SAI is
+                                        defined in sub-clause 9.2.3.9 of 3GPP TS 25.413 [7].</p>
+                                    <p><b>TAI</b></p>
+                                    <p>Indicates the TAI. Applicable for E-UTRAN.</p>
+                                    <p><b>Future</b></p>
+                                    <p>Indicates future use.</p>
+                                </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table></p>
+        </section>
+        <section id="section_c51_wbp_plb">
+            <title>Event triggers</title>
+            <p>This section describes the event triggers used in SPS-Policy. The event trigger
+                parameters are described in the following table.<table frame="all" rowsep="1"
+                    colsep="1" id="table_oqb_zbp_plb">
+                    <title>Applicable event triggers</title>
+                    <tgroup cols="15">
+                        <colspec colname="c1" colnum="1" colwidth="1*"/>
+                        <colspec colname="c2" colnum="2" colwidth="1*"/>
+                        <colspec colname="c3" colnum="3" colwidth="1*"/>
+                        <colspec colname="c4" colnum="4" colwidth="1*"/>
+                        <colspec colname="c5" colnum="5" colwidth="1*"/>
+                        <colspec colname="c6" colnum="6" colwidth="1*"/>
+                        <colspec colname="c7" colnum="7" colwidth="1*"/>
+                        <colspec colname="c8" colnum="8" colwidth="1*"/>
+                        <colspec colname="c9" colnum="9" colwidth="1*"/>
+                        <colspec colname="c10" colnum="10" colwidth="1*"/>
+                        <colspec colname="c11" colnum="11" colwidth="1*"/>
+                        <colspec colname="c12" colnum="12" colwidth="1*"/>
+                        <colspec colname="c13" colnum="13" colwidth="1*"/>
+                        <colspec colname="c14" colnum="14" colwidth="1*"/>
+                        <colspec colname="c15" colnum="15" colwidth="1*"/>
+                        <thead>
+                            <row>
+                                <entry>Event Trigger</entry>
+                                <entry>R7 GX GPRS</entry>
+                                <entry>R8 Gx Mar</entry>
+                                <entry>R8 Gx Dec</entry>
+                                <entry>R8 Gx Mar GPRS</entry>
+                                <entry>R8 Gx Dec GPRS</entry>
+                                <entry>R8 Gx Mar EPS</entry>
+                                <entry>R8 Gx Dec EPS</entry>
+                                <entry>R9 Gx Dec</entry>
+                                <entry>R9 Gx Dec GPRS</entry>
+                                <entry>R9 Gx Dec EPS</entry>
+                                <entry>R10 Gx Dec</entry>
+                                <entry>R910 Gx Dec GPRS</entry>
+                                <entry>R10 Gx Dec EPS</entry>
+                                <entry>Gx Sandvine</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry>AN GW Change</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry/>
+                            </row>
+                            <row>
+                                <entry>Access Node Gateway Change</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry/>
+                            </row>
+                            <row>
+                                <entry>Default EPS Bearer QoS Change</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry/>
+                            </row>
+                            <row>
+                                <entry>Default EPS Bearer QoS Modification Failure</entry>
+                                <entry/>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                            </row>
+                            <row>
+                                <entry>IP-CAN Change</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                            </row>
+                            <row>
+                                <entry>Loss of Bearer</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry/>
+                            </row>
+                            <row>
+                                <entry>Max MBR APN AMBR Change</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                            </row>
+                            <row>
+                                <entry>Out of Credit</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                            </row>
+                            <row>
+                                <entry>PGW Trace Control </entry>
+                                <entry/>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                            </row>
+                            <row>
+                                <entry>PLMN Change</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                            </row>
+                            <row>
+                                <entry>QoS Change</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                            </row>
+                            <row>
+                                <entry>QoS Change Exceeding Authorization</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry/>
+                            </row>
+                            <row>
+                                <entry>RAI Change</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                            </row>
+                            <row>
+                                <entry>RAT Change</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                            </row>
+                            <row>
+                                <entry>Reallocation of Credit</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                            </row>
+                            <row>
+                                <entry>Recovery of Bearer</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry/>
+                            </row>
+                            <row>
+                                <entry>Resource Modification Request</entry>
+                                <entry/>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                            </row>
+                            <row>
+                                <entry>Revalidation of Timeout</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                            </row>
+                            <row>
+                                <entry>SGSN Change</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                            </row>
+                            <row>
+                                <entry>Service Flow Detection</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                            </row>
+                            <row>
+                                <entry>Successful Resource Allocation</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                            </row>
+                            <row>
+                                <entry>TAI Change</entry>
+                                <entry/>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                            </row>
+                            <row>
+                                <entry>TFT Change</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry/>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry/>
+                            </row>
+                            <row>
+                                <entry>UE Address Allocate </entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                            </row>
+                            <row>
+                                <entry>UE Address Release</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                            </row>
+                            <row>
+                                <entry>UE Time Zone Change</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                            </row>
+                            <row>
+                                <entry>Usage Report </entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                            </row>
+                            <row>
+                                <entry>User Location Change</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry/>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                                <entry>x</entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table><note>The NCC has predefined default event triggers in the rule set that are
+                    defined by 3GPP TS 29.212; however, the default event triggers may be
+                    overwritten by defining custom event triggers to meet custom requirements. The
+                    Event Triggers marked with an asterisk (*) are dynamically added because they
+                    are added based on the IP-CAN type, interface type, and device type.</note></p>
+        </section>
+    </conbody>
+</concept>

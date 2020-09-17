@@ -1,0 +1,1555 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+		<concept id="id9YZ-09018-IN00-RJZZA-d1e893"><title>Before installing NCC</title><conbody>
+
+<section><title>Overview</title>
+
+<note>
+
+<p>Each SM, ME and IG site is associated with one VNF and one stack, including nested stacks.</p>
+</note>
+<p>Before installing the NCC, do the following: </p><ul>
+
+<li>
+<p>Determine the number of SM, ME and IG sites needed for the NCC deployment, whether or not
+                        Geo-redundancy is applicable to any of the sites in the deployment as well
+                        as the number of VMs needed for each site.</p>
+</li>
+<li>
+<p>Configure network. For more information, see <!--xref URI: #Network-configuration--><xref keyref="id9YZ-09018-IN00-RJZZA-d1e893/Network-configuration"/>.</p>
+</li>
+<li>
+<p>Install and configure CBAM. For more information, see <!--xref URI: #CBAM-configuration--><xref keyref="id9YZ-09018-IN00-RJZZA-d1e893/CBAM-configuration"/>.</p>
+</li>
+<li>
+<p>Install and configure cloud platforms: VMware vCloud NFV or OpenStack.</p>
+</li>
+<li>
+<p>If CBIS is used for OpenStack deployment, install and configure CBIS. For more information, see <!--xref URI: #CBIS-installation-and-configuration--><xref keyref="id9YZ-09018-IN00-RJZZA-d1e893/CBIS-installation-and-configuration"/>.</p>
+</li>
+<li>
+<p>Configure cloud-platform resources and services. For more information, see <!--xref URI: #OpenStack_flavors--><xref keyref="id9YZ-09018-IN00-RJZZA-d1e893/OpenStack_flavors"/>.</p>
+</li>
+</ul>
+</section>
+<section id="CBIS-installation-and-configuration"><title>CBIS installation and configuration</title>
+
+<p>To use CBIS as infrastructure for the NCC, network, firewall and quotas must be configured as
+                required by CBIS. For information on CBIS, including architecture, required hardware
+                and installation, see
+                    <!--xref URI: ../IP/SPS_Installation.xml#document_support--><xref
+                    keyref="id9YZ-09018-IN00-RJZZA-document_support"/>.</p>
+</section>
+<section id="Network-configuration"><title>NCC and networks</title>
+
+<p>The NCC supports internal and external networks.</p>
+<note>
+
+<p>The default internal and external networks in the VNF_CONF files cannot be deleted. These default
+                    networks can be modified but only as described in the NCC VNF Artifacts
+                    Generator Tool Guide.</p>
+</note>
+<p>The success of the NCC installation is critically dependent on the network. The network must be
+                planned and configured before the NCC deployment. When designing the network
+                infrastructure, do the following:</p><ul>
+
+<li>
+<p>Define the number of SM sites, ME sites and IG sites.</p>
+</li>
+<li>
+<p>Consider the networks for multiple services such as</p><ul>
+
+<li>
+<p>Operation Administration and Management (OAM)</p>
+</li>
+<li>
+<p>Geo-redundancy for DB VMs</p>
+</li>
+<li>
+<p>Diameter traffic on IOHD (Diameter Load Balancer) VMs </p>
+</li>
+<li>
+<p>LDAP provisioning traffic on IOHO (HTTP and TCP Load Balancer) VMs</p>
+</li>
+</ul>
+</li>
+</ul>
+<note>
+
+<p/><ul>
+
+<li>
+<p>For OpenStack deployments, Neutron is used as networking service.</p>
+</li>
+<li>
+<p>Although NAT is used internally and transparent to users, NAT is not used externally.</p>
+</li>
+</ul>
+</note>
+<sectiondiv>
+<p><b>NCC internal network</b></p>
+<p>The NCC internal network is a single network that uses IPv4 only. If there is a conflict between
+                    the default IP addresses and your network, replace the internal network host
+                    identifier by the new x.y.z value. If you change the default IP addresses, you
+                    must set the new values as follows:</p><ul>
+
+<li>
+<p>&lt;internal network host identifier&gt;.20</p>
+</li>
+<li>
+<p>&lt;internal network host identifier&gt;.21</p>
+</li>
+<li>
+<p>&lt;internal network host identifier&gt;.22</p>
+</li>
+<li>
+<p>&lt;internal network host identifier&gt;.23</p>
+</li>
+<li>
+<p>&lt;internal network host identifier&gt;.24</p>
+</li>
+</ul>
+<p>The internal network host identifier can be set to any x.y.z value. However, it is highly recommended to use a private IP range (as defined by RFC1918) since the internal network host identifier is used as a backplane internal network. To change the internal network host identifier, choose  any x.y.z values within the following ranges but ensure that they do not conflict with any other external subnet used by your network: </p><ul>
+
+<li>
+<p>10.0.0-10.255.255</p>
+</li>
+<li>
+<p>172.16.0-172.31.255</p>
+</li>
+<li>
+<p>192.168.0-192.168.255</p>
+</li>
+</ul>
+<p>There is no restriction on the use of the same internal network identifier on different sites in
+                    the NCC. The same internal network identifier can be used by all the sites in
+                    the NCC.</p>
+<note>
+
+<p>If the internal network host identifier is changed, ensure that this change is consistent with all the applicable IP addresses in the VNF Extension file.</p>
+</note>
+<p>The /24 internal subnet should be reserved networkwide for the designated use by the NCC
+                    only.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>NCC external networks</b></p>
+<p>The NCC external network can be a single network or it can consist of multiple networks, and use
+                    both IPv4 and IPv6. The NCC supports assigning IP addresses to external
+                    interfaces of each VM. However, the NCC supports only static IP address
+                    assignment. All the external virtual IP addresses and fixed IP addresses must be
+                    statically assigned.</p>
+<p>When defining IPv6 subnets, ensure that the number of these subnets is equal or greater than the number of ComSvc VMs to be deployed. A full /80 IPv6 subnet must be reserved for each ComSvc VM. Each /80 IPv6 subnet must be a slice of the external IPv6 subnet attached to the ComSvc VMs. Each ComSvc VM uses its reserved /80 IPv6 subnet to assign IPv6 addresses to local containers.</p>
+<note>
+
+<p>Since IETF strongly recommends to use fixed /64 bits prefix-length when assigning IPv6 addresses,
+                        the IPv6 prefix-length assigned to any NCC node's external IPv6 interfaces
+                        must be /64. The other IPv6 length prefixes are not supported. For more
+                        information, see RFC 7421.</p>
+</note>
+<note>
+
+<p>When planning the NCC network, ensure that the communication between CBAM and OAME will be
+                        available and the CBAM VM will be able to communicate with both OAME VMs
+                        (SSH over IPv4 or IPv6 depending on the network configuration used).</p>
+</note>
+</sectiondiv>
+<sectiondiv id="SPS-networks">
+<p><b>Supported network combinations</b></p>
+<p>The following table describes the network combinations supported by the NCC. </p>
+<table pgwide="1" colsep="1" rowsep="1"><title>Supported network combinations</title>
+
+<tgroup cols="6">
+<colspec colname="col3"/>
+<colspec colname="col4"/>
+<colspec colname="col5"/>
+<colspec colname="col6"/>
+<colspec colname="col7"/>
+<colspec colname="COLSPEC0"/>
+<thead>
+<row>
+<entry morerows="2">
+Network combination
+</entry>
+<entry>
+Internal network
+</entry>
+<entry nameend="COLSPEC0" namest="col5">
+External networks
+</entry>
+</row>
+<row>
+<entry>
+IPv4
+</entry>
+<entry nameend="col6" namest="col5">
+IPv4
+</entry>
+<entry nameend="COLSPEC0" namest="col7">
+IPv6
+</entry>
+</row>
+<row>
+<entry>
+Single network
+</entry>
+<entry>
+Single network
+</entry>
+<entry>
+Multiple networks
+</entry>
+<entry>
+Single network
+</entry>
+<entry>
+Multiple networks
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+combination #1
+</entry>
+<entry>
+yes
+</entry>
+<entry>
+yes
+</entry>
+<entry>
+no
+</entry>
+<entry>
+no
+</entry>
+<entry>
+no
+</entry>
+</row>
+<row>
+<entry>
+combination #2
+</entry>
+<entry>
+yes
+</entry>
+<entry>
+no
+</entry>
+<entry>
+<p>yes </p>
+<p>See the note following this table.</p>
+</entry>
+<entry>
+no
+</entry>
+<entry>
+no
+</entry>
+</row>
+<row>
+<entry>
+combination #3
+</entry>
+<entry>
+yes
+</entry>
+<entry>
+no
+</entry>
+<entry>
+no
+</entry>
+<entry>
+yes
+</entry>
+<entry>
+no
+</entry>
+</row>
+<row>
+<entry>
+combination #4
+</entry>
+<entry>
+yes
+</entry>
+<entry>
+no
+</entry>
+<entry>
+no
+</entry>
+<entry>
+no
+</entry>
+<entry>
+<p>yes</p>
+<p>See the note following this table.</p>
+</entry>
+</row>
+<row>
+<entry>
+combination #5
+</entry>
+<entry>
+yes
+</entry>
+<entry>
+yes
+</entry>
+<entry>
+no
+</entry>
+<entry>
+yes
+</entry>
+<entry>
+no
+</entry>
+</row>
+<row>
+<entry>
+combination #6
+</entry>
+<entry>
+yes
+</entry>
+<entry>
+no
+</entry>
+<entry>
+no
+</entry>
+<entry>
+no
+</entry>
+<entry>
+no
+</entry>
+</row>
+<row>
+<entry>
+combination #7
+</entry>
+<entry>
+yes
+</entry>
+<entry>
+no
+</entry>
+<entry>
+yes
+</entry>
+<entry>
+no
+</entry>
+<entry>
+yes
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<note id="Static_routes">
+
+<p>If a VM has two or more public IP interfaces of the same IP version, the static IP routes for that IP version need to be identified and updated when the CSAR package is generated. The static IP routes are automatically configured during the VNF instantiation. To configure static routes on the site that has been instantiated, contact Nokia Professional Services.</p>
+</note>
+<p>The following table lists the network combinations available for all the VM types. However, for each VM type only one combination should be chosen. For example, out of six combinations available for IOHO VMs, only one must be chosen.</p>
+<table pgwide="1" colsep="1" rowsep="1"><title>Network combinations available for VMs</title>
+
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+VM type
+</entry>
+<entry>
+Network combinations
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+IOHO
+</entry>
+<entry>
+combinations: #1, #2, #3, #4, #5, #7
+</entry>
+</row>
+<row>
+<entry>
+OAME
+</entry>
+<entry>
+combination #1, #2, #3, #4, #5, #7
+</entry>
+</row>
+<row>
+<entry>
+DB
+</entry>
+<entry>
+combination #1, #3
+</entry>
+</row>
+<row>
+<entry>
+Auxiliary
+</entry>
+<entry>
+combination #6
+</entry>
+</row>
+<row>
+<entry>
+SM App
+</entry>
+<entry>
+combination #3, #6
+</entry>
+</row>
+<row>
+<entry>
+IOHD
+</entry>
+<entry>
+combination #1, #2, #3, #4, #5, #7
+</entry>
+</row>
+<row>
+<entry>
+ComSvc
+</entry>
+<entry>
+combination #1, #3, #5
+</entry>
+</row>
+<row>
+<entry>
+Diameter App
+</entry>
+<entry>
+combination #3, #6
+</entry>
+</row>
+<row>
+<entry>
+CDR
+</entry>
+<entry>
+combination #1, #3, #5
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+</section>
+<section id="OpenStack_flavors"><title>NCC cloud-platform resources and services</title>
+
+<p>The cloud-platform resources that are used by the NCC such as Nova flavors and Cinder volumes for
+                OpenStack, and Independent disk for VMware have to be configured according to NCC
+                Dimensioning and Engineering Guidelines. For assistance, contact Nokia Professional
+                Services.</p>
+<p>The following table describes the minimum NCC configuration. For more information on NCC
+                configurations, see the Overview Guide.</p>
+<table pgwide="1" rowsep="1" colsep="1"><title>Minimum NCC configuration</title>
+
+<tgroup cols="7">
+<colspec colname="col2"/>
+<colspec colname="col3"/>
+<colspec colname="col4"/>
+<colspec colname="col5"/>
+<colspec colname="col6"/>
+<colspec colname="col7"/>
+<colspec colname="COLSPEC1"/>
+<thead>
+<row>
+<entry>
+VNF
+</entry>
+<entry>
+VM name segment
+</entry>
+<entry>
+Number of VMs based on scalability factor or cluster size (for Auxiliary)
+</entry>
+<entry>
+vCPUs
+</entry>
+<entry>
+Memory (RAM) in GB
+</entry>
+<entry>
+Root disk in GB
+</entry>
+<entry>
+Minimum storage volume per VM in GB
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry morerows="4">
+SM
+</entry>
+<entry>
+ioho
+</entry>
+<entry>
+2<sub>(1+1)</sub>
+
+</entry>
+<entry> 8 </entry>
+<entry> 12 </entry>
+<entry>
+60
+</entry>
+<entry> 20 </entry>
+</row>
+<row>
+<entry>
+oame
+</entry>
+<entry>
+2<sub>(1+1)</sub>
+
+</entry>
+<entry>
+4
+</entry>
+<entry>
+6
+</entry>
+<entry>
+60
+</entry>
+<entry>
+30
+</entry>
+</row>
+<row>
+<entry>
+db
+</entry>
+<entry>
+4<sub>2*(N+K)</sub>
+
+</entry>
+<entry>
+2
+</entry>
+<entry>
+6
+</entry>
+<entry>
+60
+</entry>
+<entry>
+22
+</entry>
+</row>
+<row>
+<entry>
+auxiliary
+</entry>
+<entry>
+5
+</entry>
+<entry>
+4
+</entry>
+<entry>
+8
+</entry>
+<entry>
+80
+</entry>
+<entry>
+20
+</entry>
+</row>
+<row>
+<entry>
+smapp
+</entry>
+<entry>
+2<sub>(N+K)</sub>
+
+</entry>
+<entry>
+2
+</entry>
+<entry>
+6
+</entry>
+<entry>
+60
+</entry>
+<entry>
+21
+</entry>
+</row>
+<row>
+<entry morerows="7">
+ME
+</entry>
+<entry>
+ioho
+</entry>
+<entry>
+2<sub>(1+1)</sub>
+
+</entry>
+<entry>
+2
+</entry>
+<entry>
+6
+</entry>
+<entry>
+60
+</entry>
+<entry>
+11
+</entry>
+</row>
+<row>
+<entry>
+iohd
+</entry>
+<entry>
+2<sub>(1+1)</sub>
+
+</entry>
+<entry>
+2
+</entry>
+<entry>
+6
+</entry>
+<entry>
+60
+</entry>
+<entry>
+11
+</entry>
+</row>
+<row>
+<entry>
+oame
+</entry>
+<entry>
+2<sub>(1+1)</sub>
+
+</entry>
+<entry>
+4
+</entry>
+<entry>
+6
+</entry>
+<entry>
+60
+</entry>
+<entry>
+30
+</entry>
+</row>
+<row>
+<entry>
+comsvc
+</entry>
+<entry>
+2<sub>(N+K)</sub>
+
+</entry>
+<entry>
+4
+</entry>
+<entry>
+24
+</entry>
+<entry>
+80
+</entry>
+<entry>
+21
+</entry>
+</row>
+<row>
+<entry>
+db
+</entry>
+<entry>
+4<sub>2*(N+K)</sub>
+
+</entry>
+<entry>
+2
+</entry>
+<entry>
+6
+</entry>
+<entry>
+60
+</entry>
+<entry>
+22
+</entry>
+</row>
+<row>
+<entry>
+diameterapp
+</entry>
+<entry>
+2<sub>(N+K)</sub>
+
+</entry>
+<entry>
+2
+</entry>
+<entry>
+6
+</entry>
+<entry>
+60
+</entry>
+<entry>
+11
+</entry>
+</row>
+<row>
+<entry>
+cdr
+</entry>
+<entry>
+2<sub>(N+K)</sub>
+
+</entry>
+<entry>
+2
+</entry>
+<entry>
+6
+</entry>
+<entry>
+60
+</entry>
+<entry>
+21
+</entry>
+</row>
+<row>
+<entry>
+auxiliary
+</entry>
+<entry>
+5
+</entry>
+<entry>
+4
+</entry>
+<entry>
+8
+</entry>
+<entry>
+80
+</entry>
+<entry>
+20
+</entry>
+</row>
+<row>
+<entry morerows="8">
+IG
+</entry>
+<entry>
+ioho
+</entry>
+<entry>
+2<sub>(1+1)</sub>
+
+</entry>
+<entry> 8 </entry>
+<entry> 12 </entry>
+<entry>
+60
+</entry>
+<entry> 20 </entry>
+</row>
+<row>
+<entry>
+iohd
+</entry>
+<entry>
+2<sub>(1+1)</sub>
+
+</entry>
+<entry>
+2
+</entry>
+<entry>
+6
+</entry>
+<entry>
+60
+</entry>
+<entry>
+11
+</entry>
+</row>
+<row>
+<entry>
+oame
+</entry>
+<entry>
+2<sub>(1+1)</sub>
+
+</entry>
+<entry>
+4
+</entry>
+<entry>
+6
+</entry>
+<entry>
+60
+</entry>
+<entry>
+30
+</entry>
+</row>
+<row>
+<entry>
+comsvc
+</entry>
+<entry>
+2<sub>(N+K)</sub>
+
+</entry>
+<entry>
+4
+</entry>
+<entry>
+24
+</entry>
+<entry>
+80
+</entry>
+<entry>
+21
+</entry>
+</row>
+<row>
+<entry>
+db
+</entry>
+<entry>
+4<sub>2*(N+K)</sub>
+
+</entry>
+<entry>
+2
+</entry>
+<entry>
+6
+</entry>
+<entry>
+60
+</entry>
+<entry>
+22
+</entry>
+</row>
+<row>
+<entry>
+diameterapp
+</entry>
+<entry>
+2<sub>(N+K)</sub>
+
+</entry>
+<entry>
+2
+</entry>
+<entry>
+6
+</entry>
+<entry>
+60
+</entry>
+<entry>
+11
+</entry>
+</row>
+<row>
+<entry>
+cdr
+</entry>
+<entry>
+2<sub>(N+K)</sub>
+
+</entry>
+<entry>
+2
+</entry>
+<entry>
+6
+</entry>
+<entry>
+60
+</entry>
+<entry>
+21
+</entry>
+</row>
+<row>
+<entry>
+auxiliary
+</entry>
+<entry>
+5
+</entry>
+<entry>
+4
+</entry>
+<entry>
+8
+</entry>
+<entry>
+80
+</entry>
+<entry>
+20
+</entry>
+</row>
+<row>
+<entry>
+smapp
+</entry>
+<entry>
+2<sub>(N+K)</sub>
+
+</entry>
+<entry>
+2
+</entry>
+<entry>
+6
+</entry>
+<entry>
+60
+</entry>
+<entry>
+11
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>
+<codeph/>
+</p>
+<sectiondiv>
+<p><b>Storage configuration</b></p>
+<p>The following table lists the volumes used for storage for different VM types.</p>
+<table colsep="1" rowsep="1"><title>Volume types used for various VM types</title>
+
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+VM type
+</entry>
+<entry>
+Volume type
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+Auxiliary
+</entry>
+<entry>
+Data and log
+</entry>
+</row>
+<row>
+<entry>
+OAME
+</entry>
+<entry>
+Data, backup and log 
+</entry>
+</row>
+<row>
+<entry>
+DB
+</entry>
+<entry>
+Data, datastore, log and digest log
+</entry>
+</row>
+<row>
+<entry>
+IOHO
+</entry>
+<entry>
+Data and log
+</entry>
+</row>
+<row>
+<entry>
+IOHD
+</entry>
+<entry>
+Data and log
+</entry>
+</row>
+<row>
+<entry>
+ComSvc
+</entry>
+<entry>
+Data, Kafka and log
+</entry>
+</row>
+<row>
+<entry>
+Diameter App 
+</entry>
+<entry>
+Data and log
+</entry>
+</row>
+<row>
+<entry>
+CDR
+</entry>
+<entry>
+Data, log and record
+</entry>
+</row>
+<row>
+<entry>
+SM App
+</entry>
+<entry>
+Data, Kafka and log
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>
+<codeph/>
+</p>
+<p>The following table describes the volumes used for storage. For OpenStack deployments, these volumes apply to Cinder volumes. For VMware deployments, these volumes apply to Independent disk.</p>
+<note>
+
+<p/><ul>
+
+<li>
+<p>Storage volumes are configured before instantiation and as described in the NCC VNF Artifacts
+                                Generator Tool Guide. </p>
+</li>
+<li>
+<p>Storage volumes must be configured according to NCC Dimensioning and Engineering Guidelines.</p>
+</li>
+</ul>
+</note>
+<table id="Cinder_volumes" pgwide="1" rowsep="1" colsep="1"><title>Storage volumes</title>
+
+<tgroup cols="5">
+<colspec colname="COLSPEC0"/>
+<colspec colname="col1"/>
+<colspec colname="col3"/>
+<colspec colname="COLSPEC1"/>
+<colspec colname="COLSPEC2"/>
+<thead>
+<row>
+<entry>
+VM name segment
+</entry>
+<entry>
+Volume name
+</entry>
+<entry>
+Description
+</entry>
+<entry>
+Applies to
+</entry>
+<entry>
+Minimum storage volume per VM in GB
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry morerows="1">
+auxiliary
+</entry>
+<entry>
+auxiliary_data_volume
+</entry>
+<entry>
+<p>This volume is used on Auxiliary VMs.  </p>
+<p>This volume is mounted on /appdata directory.</p>
+<p>Zookeeper data is stored at this mountpoint.</p>
+</entry>
+<entry>
+<p>ME</p>
+<p>SM</p>
+<p>IG</p>
+</entry>
+<entry>
+10
+</entry>
+</row>
+<row>
+<entry>
+auxiliary_log_volume
+</entry>
+<entry>
+<p>This volume is used on Auxiliary VMs.</p>
+<p>This volume is mounted on /var/log directory.</p>
+</entry>
+<entry>
+<p>ME</p>
+<p>SM</p>
+<p>IG</p>
+</entry>
+<entry>
+10
+</entry>
+</row>
+<row>
+<entry morerows="3">
+db
+</entry>
+<entry>
+db_data_volume
+</entry>
+<entry>
+<p>This volume is used on DB VMs.  </p>
+<p>This volume is mounted on /appdata directory.</p>
+</entry>
+<entry>
+<p>ME</p>
+<p>SM</p>
+<p>IG</p>
+</entry>
+<entry>
+1
+</entry>
+</row>
+<row>
+<entry>
+db_datastore_volume
+</entry>
+<entry>
+<p>This volume is used on DB VMs. </p>
+<p>The mountpoint is /opt/tpa/datastore/dsc where Aerospike data is stored.</p>
+</entry>
+<entry>
+<p>ME</p>
+<p>SM</p>
+<p>IG</p>
+</entry>
+<entry>
+10
+</entry>
+</row>
+<row>
+<entry>
+db_log_volume
+</entry>
+<entry>
+<p>This volume is used on DB VMs.  </p>
+<p>This volume is mounted on /var/log directory.</p>
+</entry>
+<entry>
+<p>ME</p>
+<p>SM</p>
+<p>IG</p>
+</entry>
+<entry>
+10
+</entry>
+</row>
+<row>
+<entry>
+db_digestlog_volume
+</entry>
+<entry>
+<p>This volume is used to on DB VMs.</p>
+<p>The mountpoint is defined by &lt;aerospike/xdr/xdrdigestlogpath/location&gt; parameter in the NCC
+                                        section of the VNF Extension file.</p>
+<p>The Aerospike XDR digestlog is stored at this mountpoint.</p>
+</entry>
+<entry>
+<p>ME</p>
+<p>SM</p>
+<p>IG</p>
+</entry>
+<entry>
+1
+</entry>
+</row>
+<row>
+<entry morerows="1">
+ioho
+</entry>
+<entry>
+ioho_data_volume
+</entry>
+<entry>
+<p>This volume is used on IOHO VMs.  </p>
+<p>This volume is mounted on /appdata directory.</p>
+</entry>
+<entry>
+<p>ME</p>
+<p>SM</p>
+<p>IG</p>
+</entry>
+<entry>
+1
+</entry>
+</row>
+<row>
+<entry>
+ioho_log_volume
+</entry>
+<entry>
+<p>This volume is used on IOHO VMs.  </p>
+<p>This volume is mounted on /var/log directory.</p>
+</entry>
+<entry>
+<p>ME</p>
+<p>SM</p>
+<p>IG</p>
+</entry>
+<entry>
+10
+</entry>
+</row>
+<row>
+<entry morerows="2">
+oame
+</entry>
+<entry>
+oame_data_volume
+</entry>
+<entry>
+<p>This volume is used on OAME VMs for Prometheus data, and system and application metrics.</p>
+<p>This volume is mounted on /appdata directory.</p>
+</entry>
+<entry>
+<p>ME</p>
+<p>SM</p>
+<p>IG</p>
+</entry>
+<entry>
+10
+</entry>
+</row>
+<row>
+<entry>
+oame_backup_volume
+</entry>
+<entry>
+<p>This volume is used on OAME VMs for backup and recovery.</p>
+<p>Several mountpoints (for example, /BACKUP) are used for the storage of backup, and recovery data and files.</p>
+</entry>
+<entry>
+<p>ME</p>
+<p>SM</p>
+<p>IG</p>
+</entry>
+<entry>
+10
+</entry>
+</row>
+<row>
+<entry>
+oame_log_volume
+</entry>
+<entry>
+<p>This volume is used on OAME VMs.   </p>
+<p>This volume is mounted on /var/log directory.</p>
+</entry>
+<entry>
+<p>ME</p>
+<p>SM</p>
+<p>IG</p>
+</entry>
+<entry>
+10
+</entry>
+</row>
+<row>
+<entry morerows="2">
+cdr
+</entry>
+<entry>
+cdr_data_volume
+</entry>
+<entry>
+<p>This volume is used on CDR VMs.  </p>
+<p>This volume is mounted on /appdata directory.</p>
+</entry>
+<entry>
+<p>ME</p>
+<p>IG</p>
+</entry>
+<entry>
+1
+</entry>
+</row>
+<row>
+<entry>
+cdr_log_volume
+</entry>
+<entry>
+<p>This volume is used on CDR VMs.  </p>
+<p>This volume is mounted on /var/log directory.</p>
+</entry>
+<entry>
+<p>ME</p>
+<p>IG</p>
+</entry>
+<entry>
+10
+</entry>
+</row>
+<row>
+<entry>
+cdr_record_volume
+</entry>
+<entry>
+<p>This volume is used for charging data records on CDR VMs.   </p>
+<p>This volume is mounted on /cdr directory.</p>
+</entry>
+<entry>
+<p>ME</p>
+<p>IG</p>
+</entry>
+<entry>
+10
+</entry>
+</row>
+<row>
+<entry morerows="2">
+comsvc
+</entry>
+<entry>
+comsvc_data_volume
+</entry>
+<entry>
+<p>This volume is used on ComSvc VMs. </p>
+<p>This volume is mounted on /appdata directory.</p>
+</entry>
+<entry>
+<p>ME</p>
+<p>IG</p>
+</entry>
+<entry>
+1
+</entry>
+</row>
+<row>
+<entry>
+comsvc_kafka_volume
+</entry>
+<entry>
+<p>This volume is used on ComSvc VMs.  </p>
+<p>The mountpoint is /kafka_data where Kafka data is stored.</p>
+</entry>
+<entry>
+<p>ME</p>
+<p>IG</p>
+</entry>
+<entry>
+10
+</entry>
+</row>
+<row>
+<entry>
+comsvc_log_volume
+</entry>
+<entry>
+<p>This volume is used on ComSvc VMs.   </p>
+<p>This volume is mounted on /var/log directory.</p>
+</entry>
+<entry>
+<p>ME</p>
+<p>IG</p>
+</entry>
+<entry>
+10
+</entry>
+</row>
+<row>
+<entry morerows="1">
+diameterapp
+</entry>
+<entry>
+diameterapp_data_volume
+</entry>
+<entry>
+<p>This volume is used on Diameter App VMs.   </p>
+<p>This volume is mounted on /appdata directory.</p>
+</entry>
+<entry>
+<p>ME</p>
+<p>IG</p>
+</entry>
+<entry>
+1
+</entry>
+</row>
+<row>
+<entry>
+diameterapp_log_volume
+</entry>
+<entry>
+<p>This volume is used on Diameter App VMs.  </p>
+<p>This volume is mounted on /var/log directory.</p>
+</entry>
+<entry>
+<p>ME</p>
+<p>IG</p>
+</entry>
+<entry>
+10
+</entry>
+</row>
+<row>
+<entry morerows="1">
+iohd
+</entry>
+<entry>
+iohd_data_volume
+</entry>
+<entry>
+<p>This volume is used on IOHD VMs. </p>
+<p>This volume is mounted on /appdata directory.</p>
+</entry>
+<entry>
+<p>ME</p>
+<p>IG</p>
+</entry>
+<entry>
+1
+</entry>
+</row>
+<row>
+<entry>
+iohd_log_volume
+</entry>
+<entry>
+<p>This volume is used on IOHD VMs.  </p>
+<p>This volume is mounted on /var/log directory.</p>
+</entry>
+<entry>
+<p>ME</p>
+<p>IG</p>
+</entry>
+<entry>
+10
+</entry>
+</row>
+<row>
+<entry morerows="2">
+smapp
+</entry>
+<entry>
+smapp_data_volume
+</entry>
+<entry>
+<p>This volume is used on SM App VMs.  </p>
+<p>This volume is mounted on /appdata directory.</p>
+</entry>
+<entry>
+<p>SM</p>
+<p>IG</p>
+</entry>
+<entry>
+1
+</entry>
+</row>
+<row>
+<entry>
+smapp_log_volume
+</entry>
+<entry>
+<p>This volume is used on SM App VMs.  </p>
+<p>This volume is mounted on /var/log directory.</p>
+</entry>
+<entry>
+<p>SM</p>
+<p>IG</p>
+</entry>
+<entry>
+10
+</entry>
+</row>
+<row>
+<entry>
+smapp_kafka_volume
+</entry>
+<entry>
+<p>This volume is used on SM App VMs.</p>
+<p>The mountpoint is /kafka_data where Kafka data is stored.</p>
+</entry>
+<entry>
+SM
+</entry>
+<entry>
+10
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</sectiondiv>
+<sectiondiv>
+<p><b>Anti-affinity rules</b></p>
+<p>The anti-affinity rules are applied automatically. For more information, contact Nokia Professional Services.</p>
+</sectiondiv>
+</section>
+<section id="CBAM-configuration"><title>CBAM configuration</title>
+
+<p>CBAM is the only VNF manager that can use the available CSAR packages and Scalable files required
+                for the NCC installation.</p>
+<note>
+
+<p>When planning the NCC network, ensure that the communication between CBAM and OAME will be
+                    available and the CBAM VM will be able to communicate with both OAME VMs (SSH
+                    over IPv4 or IPv6 depending on the network configuration used).</p>
+</note>
+<p>In earlier NCC versions, CBAM had to be configured before installing the NCC. Currently this
+                configuration is not required. Any NCC-specific ansible configurations are
+                automatically bundled into the CSAR package. </p>
+<p>For more information on CBAM, see CloudBand Application Manager (CBAM) documentation in the Nokia Discovery Center by going to <xref format="html" scope="external" href="https://doc.networks.nokia.com">https://doc.networks.nokia.com</xref>
+</p>
+</section>
+<section><title>NCC security hardening</title>
+
+<p>Security hardening attempts to "harden" or "tighten" a system. In general, hardening activities
+                include an operating system, services, middleware, databases, and so on to provide
+                more secure, yet usable systems by minimizing the number of possible attacks. The
+                SELinux security module in the NCC is “enabled” and “permissive”. The NCC comes
+                “pre-hardened” but default passwords must be changed.</p>
+<p>For information on passwords and user management, see sections <i>Security and user management</i> and <i>User administration</i> in <i>Operation, Administration and Maintenance Guide</i>.</p>
+</section>
+</conbody></concept>

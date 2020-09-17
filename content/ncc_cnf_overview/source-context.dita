@@ -1,0 +1,482 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+		<concept id="id9YZ-09018-UG00-PCZZA-d1e17650" ><title>Source Context</title><conbody>
+
+<section><title>Overview</title>
+
+<p>Source Contexts are grouped by the data they provide and provide a place where Rules can get data to make conditions and populate values from results. The contexts are different for each application (Charging and Policy), except for Diameter Request, which provides common across the SPS architecture. </p>
+<p>The source context provides data about the specific context for use during rules evaluation and the various Source Contexts are available specific to the assigned Rule Sets. For example, if your Rule Set has access to the Gx-Message source context for a Rule Set, you can make rules with conditions or results that depend on Gx message information. </p>
+</section>
+<section><title>Diameter Request source context for common rule engine plugin</title>
+
+<p>To support the primary Diameter message routing functions of the SPS, the SPS rule engine creates message context objects, which provide a flexible framework for Diameter message representation and manipulation. The message context is a wrapper around a Diameter message and makes the Diameter AVPs for a message type available in the same hierarchical structure as defined in the relevant standards document for the Diameter application. </p>
+<p>The Diameter Request source context encapsulates the common AVPs that any Diameter request can contain, for example, Origin-Host or Route-Record. When the SPS receives a Diameter Request message, the rule engine is first invoked to execute the generic Diameter Request rule set, which makes the message available as a source context so that you can write rules that apply to many or all Diameter request message types. For example, if you wanted to change the value of the destination-host AVP for all request messages, you would write the rule in the Diameter Request rule set.</p>
+<p>Once the rule tables for the generic Diameter Request rule have been evaluated, the SPS rule engine is invoked a second time with the rule set that matches the specific request type (for example, the Gx CCR). </p>
+<p>After evaluating the rule tables for both the generic Diameter Request and application message-specific rule sets, the SPS checks to see whether the Result-Code or the Experimental-Result-code attributes of the Diameter Answer are populated, indicating that the request has been answered. If so, the SPS responds to the request with a Diameter Answer after invoking the rule engine on the response. Otherwise, the SPS forwards the request. For example, when the rule engine processes an Rx AAR message type, the generic Diameter Request rule set is executed during the first invocation of the rule engine. The application message-specific Rx AAR rule set is executed during the second invocation.</p>
+</section>
+<section><title>Source contexts applicable to criteria for SPS-Charging</title>
+
+<p>The following describes the source contexts for SPS-Charging.</p>
+<note>
+
+<p>The full dictionaries for SMS, MMS, IMS, and PS are supported so that any of their AVPs can be selected in the rules editor by source context.</p>
+</note>
+<table colsep="1" rowsep="1">
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+Source Context
+</entry>
+<entry>
+Description
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+GYCCR 
+</entry>
+<entry>
+This context provides the SPS-Charging rule engine with access to AVPs arriving in the Service-Information grouped attribute. At this time only PS-Information AVPs are supported. Future SPS-Charging releases will expand support to cover addition service types (for example, IMS-Information, SMS-Information MMS-Information etc.). This context is used to report the credit control service information received on the Gy interface. It is for use in rules. 
+</entry>
+</row>
+<row>
+<entry>
+CALL_COMMON
+</entry>
+<entry>
+This context provides the SPS-Charging rule engine with access to attributes used in applicability conditions and tariffs by the Rating Engine for a specific call.
+</entry>
+</row>
+<row>
+<entry>
+SPR_DEVICE
+</entry>
+<entry>
+This context provides Device specific details to the SPS-Charging Rule Engine.
+</entry>
+</row>
+<row>
+<entry>
+THRESHOLD_PROFILE
+</entry>
+<entry>
+This context provides the SPS-Charging rule engine with access to threshold specific information.
+</entry>
+</row>
+<row>
+<entry>
+GY_MESSAGE
+</entry>
+<entry>
+This context contains command level Gy message attributes.
+</entry>
+</row>
+<row>
+<entry>
+SERVICE_INFO
+</entry>
+<entry>
+This context provides the SPS-Charging rule engine with access to call sub-type information.
+</entry>
+</row>
+<row>
+<entry>
+COMPLEX_MAP
+</entry>
+<entry>
+<p>Available as a source context in all triggers. This context provides the SPS rule engine with the ability to author a complex map as a rule with an ordered list of keys that match to an ordered list of values. </p>
+<p>A mapping provides a lookup that can have multiple input fields (keys) and multiple output fields. A mapping table defines the input key fields (what it is mapping from), and the output fields (what it is mapping to). The number of input and output fields, and their respective types, are assigned by the operator. The meaning of the keys and values are customer specific, and treated generically by the SPS. You define the meaning behind the fields through rules.</p>
+<p>The following attributes are available for complex mapping:</p><ul>
+
+<li>
+<p>COMPLEX_MAP.Get-Row-Boolean </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Get-Row-DateTime </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Get-Row-Decimal </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Get-Row-IPAddress </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Get-Row-IPAddress-List </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Get-Row-Input-Key-By-Index </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Get-Row-Input-Keys </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Get-Row-Key-By-Index </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Get-Row-Keys </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Get-Row-Long </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Get-Row-String </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Get-Row-TimeDuration </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Get-Row-TimeOfDay </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Load-Row-10Key </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Load-Row-1Key </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Load-Row-2Key </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Load-Row-3Key </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Load-Row-4Key </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Load-Row-5Key </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Load-Row-6Key </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Load-Row-7Key </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Load-Row-8Key </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Load-Row-9Key</p>
+</li>
+</ul>
+<p>See the section: “Mapping tables” in the <i>SPS Policy User Guide</i> for more information.</p>
+</entry>
+</row>
+<row>
+<entry>
+CONVERSION
+</entry>
+<entry>
+<p>Available as a source context in all triggers. This context provides the SPS rule engine with the ability to author a rule that converts the following types of information:</p><ul>
+
+<li>
+<p>Boolean-To-Enum</p>
+</li>
+<li>
+<p>Date-Time-String-To-Date-Time</p>
+</li>
+<li>
+<p>Enum-To-Boolean</p>
+</li>
+<li>
+<p>String-To-Integer</p>
+</li>
+<li>
+<p>String-To-Long</p>
+</li>
+</ul>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section><title>Source contexts applicable to criteria for SPS-Policy</title>
+
+<p>The following table describes the source context parameters used to construct criteria for rules in SPS-Policy.</p>
+<table colsep="1" rowsep="1" pgwide="1" id="ai8mbmlss7"><title>Source Context parameters</title>
+
+<tgroup cols="3" colsep="1">
+<colspec colnum="1" colname="1"/>
+<colspec colnum="2" colname="2"/>
+<colspec colnum="3" colname="3"/>
+<thead>
+<row>
+<entry colname="1">
+Source Context
+</entry>
+<entry colname="2">
+Description in the context of SPS-Policy
+</entry>
+<entry colname="3">
+Description in the context of LTE
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry colname="1">
+AF Session
+</entry>
+<entry colname="2">
+An AF Session is established in the SPS-Policy through an explicit request from the AF server over the Rx interface. This context provides the SPS-Policy rule engine with access to application specific information and is only available after the session has been created.
+</entry>
+<entry colname="3">
+An AF Session is an application level session established by an application level signaling protocol offered by the AF that requires a session set-up with explicit session descriptions before the use of the service.
+</entry>
+</row>
+<row>
+<entry>
+COMPLEX_MAP
+</entry>
+<entry>
+<p>Available as a source context in all triggers. This context provides the SPS rule engine with the ability to author a complex map as a rule with an ordered list of keys that match to an ordered list of values. </p>
+<p>A mapping provides a lookup that can have multiple input fields (keys) and multiple output fields. A mapping table defines the input key fields (what it is mapping from), and the output fields (what it is mapping to). The number of input and output fields, and their respective types, are assigned by the operator. The meaning of the keys and values are customer specific, and treated generically by the SPS. You define the meaning behind the fields through rules.</p>
+<p>The following attributes are available for complex mapping:</p><ul>
+
+<li>
+<p>COMPLEX_MAP.Get-Row-Boolean </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Get-Row-DateTime </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Get-Row-Decimal </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Get-Row-IPAddress </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Get-Row-IPAddress-List </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Get-Row-Input-Key-By-Index </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Get-Row-Input-Keys </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Get-Row-Key-By-Index </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Get-Row-Keys </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Get-Row-Long </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Get-Row-String </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Get-Row-TimeDuration </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Get-Row-TimeOfDay </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Load-Row-10Key </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Load-Row-1Key </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Load-Row-2Key </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Load-Row-3Key </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Load-Row-4Key </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Load-Row-5Key </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Load-Row-6Key </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Load-Row-7Key </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Load-Row-8Key </p>
+</li>
+<li>
+<p>COMPLEX_MAP.Load-Row-9Key</p>
+</li>
+</ul>
+<p>See the section: “Mapping tables” in the Policy User Guide for more information.</p>
+</entry>
+<entry>
+This context is internal to the SPS-Policy and is used to control the behavior of the policy rules engine.
+</entry>
+</row>
+<row>
+<entry>
+CONVERSION
+</entry>
+<entry>
+<p>Available as a source context in all triggers. This context provides the SPS rule engine with the ability to author a rule that converts the following types of information:</p><ul>
+
+<li>
+<p>Boolean-To-Enum</p>
+</li>
+<li>
+<p>Date-Time-String-To-Date-Time</p>
+</li>
+<li>
+<p>Enum-To-Boolean</p>
+</li>
+<li>
+<p>String-To-Integer</p>
+</li>
+<li>
+<p>String-To-Long</p>
+</li>
+</ul>
+</entry>
+<entry>
+This context is internal to the SPS-Policy and is used to control the behavior of the policy rules engine.
+</entry>
+</row>
+<row>
+<entry colname="1">
+DSC
+</entry>
+<entry colname="2">
+This context exposes information regarding subscribers and their sessions and is to be used as criteria in rule creation. For example, the number of active AF Sessions associated with an IP-CAN session or the request-type can be used. 
+</entry>
+<entry colname="3">
+This context is internal to the SPS-Policy and is used to control the behavior of the policy rules engine.
+</entry>
+</row>
+<row>
+<entry colname="1">
+Gx Combined Msg/Session
+</entry>
+<entry colname="2">
+This context provides the SPS-Policy rule engine with access to the AVPs arriving on the Gx interface and those within the IP-CAN session. It is for use in rules that want to evaluate to true in both cases. The priority is given to the Gx interface. The SPS-Policy first tries to match against the Gx AVP but if it is unavailable, then the IP-CAN session level attributes are queried.
+</entry>
+<entry colname="3">
+This context is internal to the SPS-Policy and is used to control the behavior of the policy rules engine.
+</entry>
+</row>
+<row>
+<entry colname="1">
+Gx Message
+</entry>
+<entry colname="2">
+This context provides the SPS-Policy rule engine with access to the AVPs arriving on the Gx interface. This context applies to Gx messages for IP-CAN sessions.
+</entry>
+<entry colname="3">
+The Gx message provides transfer of (QoS) policy and charging rules from PCRF to Policy and Charging Enforcement Function (PCEF) in the PDN GW.
+</entry>
+</row>
+<row>
+<entry colname="1">
+IP-CAN Session
+</entry>
+<entry colname="2">
+This context provides the SPS-Policy rule engine with access to the existing IP-CAN session. This is only available after the initial IP-CAN session has been established.
+</entry>
+<entry colname="3">
+An IP-CAN session is the association between a UE and an IP network.
+</entry>
+</row>
+<row>
+<entry colname="1">
+Properties
+</entry>
+<entry colname="2">
+This context provides the SPS-Policy rule engine with access to the existing Java and system properties. Allows you to write rules to read from both Java and managed object properties.
+</entry>
+<entry colname="3">
+This context provides the SPS-Policy rule engine with access to the existing Java and system properties. Allows you to write rules to read from both Java and managed object properties.
+</entry>
+</row>
+<row>
+<entry colname="1">
+Rx Message
+</entry>
+<entry colname="2">
+This context provides the SPS-Policy Rule Engine with access to incoming AVPs arriving on the Rx interface. 
+</entry>
+<entry colname="3">
+The Rx message is used to exchange application level session information between the Policy and Charging Rules Function (PCRF) and the Application Function (AF). 
+</entry>
+</row>
+<row>
+<entry colname="1">
+SPR Device
+</entry>
+<entry colname="2">
+This context provides Device specific details to the SPS-Policy Rule Engine.
+</entry>
+<entry colname="3">
+Devices are synonymous with Subscribers. For SPR modification, the new/current record is held in the SPR context.
+</entry>
+</row>
+<row>
+<entry colname="1">
+Service Information
+</entry>
+<entry colname="2">
+<p>Select this context to provide the SPS-Policy rule engine with access to established PCC rules. </p>
+<p>Service Information is the data required to create a new or updated PCC rule (for example, service flow information (Rx), QoS Information/Filters (Gx). If you are updating a PCC Rule, Service Information retains the previous version of the rule so the older rule can be used in decisions.</p>
+</entry>
+<entry colname="3">
+This context is internal to the SPS-Policy and is used to control the behavior of the policy rules engine.
+</entry>
+</row>
+<row>
+<entry colname="1">
+Sy Message
+</entry>
+<entry colname="2">
+<p>This context provides the SPS-Policy rule engine with access to Sy message attributes.</p>
+<p>This context operates on the Sy Message context data which represents the new incoming policy counter information. </p>
+</entry>
+<entry colname="3">
+This context is used to control the QoS on the gateway based on the Sy data using the policy rules engine.
+</entry>
+</row>
+<row>
+<entry colname="1">
+Sy Session
+</entry>
+<entry colname="2">
+This context operates on the existing values in the database and provides the SPS-Policy rule engine with access to Sy session attributes.
+</entry>
+<entry colname="3">
+This context is used to control the QoS on the gateway based on the Sy data using the policy rules engine.
+</entry>
+</row>
+<row>
+<entry colname="1">
+System
+</entry>
+<entry colname="2">
+Use this context to provide the SPS-Policy Rule Engine with access to system level details, such as current date time or to write a rule with conditions that allow it to be run on specified days of the week at specific times.
+</entry>
+<entry colname="3">
+This context is internal to the SPS-Policy and is used to control the behavior of the policy rules engine.
+</entry>
+</row>
+<row>
+<entry colname="1">
+Variables
+</entry>
+<entry colname="2">
+This context provides the SPS-Policy rule engine with access to existing variables by name-value-pair. Allows you to write rules to read the variables that have been set.
+</entry>
+<entry colname="3">
+This context provides the SPS-Policy rule engine with access to existing variables by name-value-pair. Allows you to write rules to read the variables that have been set.
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+</conbody></concept>

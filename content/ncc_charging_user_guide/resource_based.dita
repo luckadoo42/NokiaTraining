@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e211819"><title>Resource-based notifications</title><conbody>
+<section><title>Overview</title>
+<p>NCC allows operators to send notifications based on resource usage. The
+                    <systemoutput>Send-Notification</systemoutput> action is supported for resource
+                based counters. </p>
+</section>
+<section><title>BUCKET source context</title>
+<p>The following BUCKET source context can be used to select the algorithm to be used for the call.</p>
+<table frame="all" pgwide="1" colsep="1" rowsep="1">
+                <title>BUCKET source context</title>
+                <tgroup cols="2">
+                    <colspec colname="col1" colwidth="1*"/>
+                    <colspec colname="col2" colwidth="1.74*"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Attribute name </p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry valign="bottom"> Bucket-Current-Charging-Step </entry>
+                            <entry valign="bottom"> The current step if it is a step charge bucket.
+                            </entry>
+                        </row>
+                        <row>
+                            <entry valign="bottom"> Bucket-Name </entry>
+                            <entry valign="bottom"> The name of the bucket which is being used while
+                                rating a call. </entry>
+                        </row>
+                        <row>
+                            <entry valign="bottom"> Bucket-Unit-Type </entry>
+                            <entry valign="bottom"> The unit type of bucket such as TIME, MONEY,
+                                VOLUME, UNIT. </entry>
+                        </row>
+                        <row>
+                            <entry valign="bottom"> Bundle-Name </entry>
+                            <entry valign="bottom"> The name of the bundle which is being used while
+                                rating a call. </entry>
+                        </row>
+                        <row>
+                            <entry valign="bottom"> Regular-Current-Value </entry>
+                            <entry valign="bottom">
+                                <p>The regular bucket current value before reservation. It is of
+                                    type Big decimal.</p>
+                                <p>The rules does not support operations between Big decimal and
+                                    other types such as integer, long.</p>
+                                <p>Equal operation is not supported between Big decimal types. Only
+                                    &gt;, &lt;. &gt;=, &lt;= are supported.</p>
+                                <p>The following rules can result in failure:</p>
+                                <p>
+                                    <userinput>Rule 1: DYNAMIC_SLICE.Slice-Size =
+                                        Bucket.Regular-Current-Value</userinput> Here, slice size is
+                                    of type Long.</p>
+                                <p>
+                                    <userinput>Rule 2 : if Bucket.Regular-Current-Value =
+                                        1000</userinput>
+                                </p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry valign="bottom"> Total-Current-Value </entry>
+                            <entry valign="bottom">
+                                <p>The sum of regular bucket current value and it's carryover
+                                    current value before reservation. It is of type Big decimal.</p>
+                                <p>The rules does not support operations between Big decimal and
+                                    other types such as integer, long.</p>
+                                <p>Equal operation is not supported between Big decimal types. Only
+                                    &gt;, &lt;. &gt;=, &lt;= are supported.</p>
+                                <p>The following rules can result in failure:</p>
+                                <p>
+                                    <userinput>Rule 1: DYNAMIC_SLICE.Slice-Size =
+                                        Bucket.Total-Current-Value</userinput> Here, slice size is
+                                    of type Long.</p>
+                                <p>
+                                    <userinput>Rule 2 : if Bucket.Total-Current-Value =
+                                        1000</userinput>
+                                </p>
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+</section>
+<section><title>Additional information</title><ul>
+<li>
+<p>If a bundle is added or removed, then the configuration of sending RAR must be done by operators.</p>
+</li>
+<li>
+<p>The carryover buckets are excluded from the BUCKET source context. The rules applicable to normal bucket are applicable to carryover buckets as well.</p>
+</li>
+</ul>
+</section>
+<section><title>Examples</title>
+<sectiondiv>
+<p><b>Example 1: Toggle speed based on data in XML notification </b></p>
+<p>Consider that a group has a device attached to it. Group has subscribed to unlimited bundles which can be used by devices linked to it. Device has its own bundle. Operators can toggle the QoS based on data received in notification. Once the device bundle is used up completely and there are no more resources available for the call, then unlimited bundles are used for the call. In this case, operators can throttle the speed to LOW. If another bundle becomes active (either by subscription renewal or a new subscription), the speed is set to HIGH. The toggling of speed can be maintained in a custom data of device or can be managed using rules. Once a notification is sent, custom data of device is updated. The bundle usage can be tracked using the resource based counters. Operators can select different slicing algorithm based on the bucket used for the call. That is, select dynamic algorithm for normal buckets and static algorithm for step-buckets.</p>
+<p>Configure the following entities:</p><ol>
+<li>
+<p>Create a custom data for Device <uicontrol>IMSI-Throttling</uicontrol> with HIGH as default value. Attach this custom data to the Device.</p>
+</li>
+<li>
+<p>Create charging services (<varname>CS1</varname> and <varname>CS2</varname>) for unlimited
+                            bundles to be used for the complex map.</p>
+</li>
+<li><p>Create a complex map (<varname>CS-Reserve</varname>) to be used in threshold rules.</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_20.3/Complex_map_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-complex_map_default.png"
+                            scale="55"/>
+                    </li>
+<li>
+<p>Create a resource based counter and attach it to the Device. Ensure to select <uicontrol>Resource Based</uicontrol> when you create a counter. Note that, based on your requirement you can attach the resource based counter to a Device or Group. </p>
+</li>
+<li>
+<p>Create a Notification Profile that contains the notification text to be sent. In the current case, you can configure the notification content as follows:</p>
+<p>
+<systemoutput>Device-ID=$[DEVICEID],GROUP-ID=$[GROUPID],IMSI=$[IMSI],E164=$[MSISDN],Throttling-Status=$[IMSI_Throttling_Status]</systemoutput>
+</p>
+</li>
+<li><p>Configure a rule in Threshold to send notification for HIGH or LOW speed as follows:</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_20.3/Threshold_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-threshold_default.png"
+                            scale="50"/>
+                    </li>
+<li><p>Configure the slicing profile as follows to select dynamic or static algorithm based on
+                            whether normal or step-bucket is used for the call. For carryover
+                            bucket, rules applied for normal bucket are applicable.</p>
+                        <!--MMO resource relative URI: ../Graphics/Release_20.3/Slicing_algo_default.png-->
+                        <image href="../images/img9yz-09126-ug01-pczza-sp1-slicing_algo_default.png"
+                            scale="55"/>
+                    </li>
+</ol>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 2: Multiple scenarios</b></p>
+<p>Consider that a device is configured with a custom data and has the following subscriptions:</p><ul>
+<li>
+<p>Unlimited Bundle <varname>B1 BOU</varname> with two charging services, having a bucket in
+                                <varname>CS1</varname> in pass 0 and a free rate in
+                                <varname>CS2</varname> in pass 1.</p>
+</li>
+<li>
+<p>Bundle <varname>B2 non-BOU</varname> having buckets in pass 0.</p>
+</li>
+<li>
+<p>Default bundle <varname>B3 non-BOU</varname> having step-bucket in pass 1.</p>
+</li>
+</ul>
+<p>The initial slicing profile algorithm configuration is Dynamic slicing algorithm.</p>
+<p>
+                    <uicontrol>Scenario 1: </uicontrol>The unlimited Bundle <varname>B1
+                        BOU</varname> with bucket available is applicable and active. The custom
+                    data of device is initially set to false, indicating that speed is HIGH.
+                    Subscriber consumes from Bundle <varname>B1</varname> and custom data is not
+                    changed and throttling notification is not sent.</p>
+<p>
+                    <uicontrol>Scenario 2: </uicontrol>The unlimited Bundle <varname>B1
+                        BOU</varname> with no buckets available and not applicable. Subscriber
+                    consumes from Bundle <varname>B2</varname>, so custom data is not changed and
+                    throttling notification is not sent.</p>
+<p>
+                    <uicontrol>Scenario 3: </uicontrol>The unlimited Bundle <varname>B1
+                        BOU</varname> with no bucket available is applicable and active. There is no
+                    other resource available. The custom data of Device is initially set to false,
+                    indicating that speed is <varname>HIGH</varname>. Subscriber consumes from
+                    Bundle <varname>B1</varname> as free rate form pass 1. The custom data is
+                    changed to True and throttling notification is sent. If a subscriber reports
+                    another consumption from <varname>B1</varname>, then the custom data is not
+                    changed as its already True and notification is not sent.</p>
+<p>
+                    <uicontrol>Scenario 4: </uicontrol>The unlimited Bundle <varname>B1</varname> is
+                    not applicable and there is no other resource available in pass 0. The custom
+                    data of device is True. On consumption, default bundle <varname>B3</varname> is
+                    used and the value of custom data is changed to false and throttling
+                    notification is sent. Since <varname>B3</varname> is configured with
+                    step-bucket, static algorithm is used instead of dynamic algorithm.</p>
+<p>
+                    <uicontrol>Scenario 5: </uicontrol>The unlimited Bundle <varname>B1
+                        BOU</varname> with no bucket available is applicable but expires. There is
+                    no other resource available. The custom data of device is True. On consumption,
+                    the default bundle <varname>B3</varname> is used and the value of custom data is
+                    changed to false and throttling notification is sent. Since
+                        <varname>B3</varname> is configured with step-bucket, static algorithm is
+                    used instead of dynamic algorithm.</p>
+</sectiondiv>
+</section>
+</conbody></concept>

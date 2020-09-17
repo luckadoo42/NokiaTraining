@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9YZ-08540-UG02-PCZZA-d1e32977_overview">
+   <title>REST notifications</title>
+   <conbody>
+
+      <p>In this case, the external system uses REST as the end point for sending the notification message to the external server. REST web services allow the requesting systems to access and manipulate textual representations of web resources. REST relies on a stateless (state is not maintained at server side after the request), client-server, communications protocol that can be cached. In all the cases, the HTTP protocol is used. </p>
+      <p>Configure the parameters such as IP address, port, resource URI, in the REST server entity.
+         For complete list of parameters, see <xref
+            href="c_rest_server_configuration.dita"/>.</p>
+      <p>For triggering a REST notification, configure the appropriate channel in the notification
+         profile and notification template entities. The channel parameter in both the entities must
+         be of the same type. For more information on the entities, see <xref
+            href="c_configuring_notification_templates.dita"/> and
+            <xref href="c_np.dita#id9YZ-08540-UG02-PCZZA-np"/>.</p>
+      <p>During the channel processing, the notification service retrieves the template and constructs the REST message and triggers a notification to the external server.</p>
+      <p>The following figure shows the flow of messages between the REST client, notification service, and external server. POST is the HTTP method used, which submits the data to be processed, to a specified resource. <fig>
+
+            <title>REST message flow </title>
+            <!--MMO resource relative URI: ../Graphics/REST_message1_default.png-->
+            <image href="../images/rest_message1_default.png"/>
+         </fig>
+      </p>
+      <p>The following table lists the REST request and response types:<table rowsep="1" colsep="1" frame="all" pgwide="1">
+            <title>Request and response types - REST</title>
+
+
+            <tgroup cols="2">
+               <colspec colname="col1"/>
+               <colspec colname="col2"/>
+               <thead>
+                  <row>
+                     <entry>
+                        <p>Type</p>
+                     </entry>
+                     <entry>
+                        <p>Details</p>
+                     </entry>
+                  </row>
+               </thead>
+               <tbody>
+                  <row>
+                     <entry>
+Request type
+</entry>
+                     <entry>
+The service consumes the contents in the <varname>application.xml</varname> format. The request is specified in the Content-Type header of the client. On the server side, the annotation <varname>@Consumes(MediaType.APPLICATION_XML)</varname> is used.
+</entry>
+                  </row>
+                  <row>
+                     <entry>
+Response type
+</entry>
+                     <entry>
+The response of the service is in the xml format. The response is specified in the Accept header of the client. On the server side, the annotation <varname>@Produces(MediaType.APPLICATION_XML)</varname> is used.
+</entry>
+                  </row>
+               </tbody>
+            </tgroup>
+         </table>
+      </p>
+      <p>The following tables list the details of the HTTP status codes.<table rowsep="1" colsep="1" frame="all" pgwide="1">
+            <title>HTTP status codes</title>
+
+
+            <tgroup cols="4">
+               <colspec colname="col1"/>
+               <colspec colname="COLSPEC0"/>
+               <colspec colname="col2"/>
+               <colspec colname="COLSPEC1"/>
+               <thead>
+                  <row>
+                     <entry>
+                        <p>HTTP status code</p>
+                     </entry>
+                     <entry>
+                        <p>Message</p>
+                     </entry>
+                     <entry>
+                        <p>Description</p>
+                     </entry>
+                     <entry>
+                        <p>Retry</p>
+                     </entry>
+                  </row>
+               </thead>
+               <tbody>
+                  <row>
+                     <entry>
+200
+</entry>
+                     <entry>
+OK. SUCCESS
+</entry>
+                     <entry>
+Notification service receives this message for a successful request.
+</entry>
+                     <entry>
+No
+</entry>
+                  </row>
+                  <row>
+                     <entry>
+404
+</entry>
+                     <entry>
+BAD REQUEST
+</entry>
+                     <entry>
+This message is received in case of an invalid request or if the URI is not found. The error response will also return the details.
+</entry>
+                     <entry>
+No
+</entry>
+                  </row>
+                  <row>
+                     <entry>
+405
+</entry>
+                     <entry>
+METHOD NOT ALLOWED
+</entry>
+                     <entry>
+This message is receives when the client sends a request on the service URL with any HTTP method other than POST.
+</entry>
+                     <entry>
+No
+</entry>
+                  </row>
+                  <row>
+                     <entry>
+406
+</entry>
+                     <entry>
+NOT ACCEPTED
+</entry>
+                     <entry>
+This message is received when the client sends an accept header for media type that the service does not support.
+</entry>
+                     <entry>
+No
+</entry>
+                  </row>
+                  <row>
+                     <entry>
+415
+</entry>
+                     <entry>
+UNSUPPORTED MEDIA TYPE
+</entry>
+                     <entry>
+This message is received when it (client) sends a content-type header that the service does not support.
+</entry>
+                     <entry>
+No
+</entry>
+                  </row>
+                  <row>
+                     <entry>
+500
+</entry>
+                     <entry>
+INTERNAL SERVER ERROR
+</entry>
+                     <entry>
+This message is received in case of service errors like database communication error, IPAddress or port are missing.
+</entry>
+                     <entry>
+Yes
+</entry>
+                  </row>
+               </tbody>
+            </tgroup>
+         </table>
+      </p>
+      <p>Following is an example of a back office REST client request format. </p>
+      <fig>
+         <codeblock>&lt;ext:entities xmlns:ext="externalNotificationSPS"&gt;
+&lt;entity&gt;
+&lt;id&gt;Test&lt;/id&gt;
+&lt;type&gt;Device&lt;/type&gt;
+&lt;templateId&gt;Back_Office_Rest&lt;/templateId&gt;
+&lt;templateParameters&gt;
+&lt;templateParameter&gt;
+&lt;key&gt;CC&lt;/key&gt;
+&lt;value&gt;45&lt;/value&gt;
+&lt;/templateParameter&gt;
+&lt;templateParameter&gt;
+&lt;key&gt;CB&lt;/key&gt;
+&lt;value&gt;567&lt;/value&gt;
+&lt;/templateParameter&gt;
+&lt;/templateParameters&gt;
+&lt;/entity&gt;
+&lt;/ext:entities&gt;</codeblock>
+      </fig>
+      <p>Following is an example of a successful response message from server to client:</p>
+      <fig>
+         <codeblock>HTTP 200 OK
+&lt;response&gt;
+&lt;responseCode&gt;200&lt;/responseCode&gt;
+&lt;responseMessage&gt;Success&lt;/responseMessage&gt;
+&lt;/response&gt;</codeblock>
+      </fig>
+      <p>Following is an example of a failure message from server to client:</p>
+      <fig>
+         <codeblock>HTTP 400 BAD REQUEST
+&lt;response&gt;
+&lt;responseCode&gt;400&lt;/responseCode&gt;
+&lt;responseMessage&gt;BAD REQUEST&lt;/responseMessage&gt;
+&lt;/response&gt;</codeblock>
+      </fig>
+   </conbody>
+</concept>

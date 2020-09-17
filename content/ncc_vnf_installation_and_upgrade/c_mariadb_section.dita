@@ -1,0 +1,437 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+		<concept id="id9YZ-09018-IN00-RJZZA-MariaDB-section"><title>MariaDB section</title><conbody id="MariaDB-section">
+
+<p>The MariaDB section is used for configuring parameters for MariaDB component. The following table describes the parameters of the MariaDB section.</p>
+<note>
+
+<p>Do not remove the parameters. However, if your deployment is non-Geo, you must remove mariadb/datacenter parameter from the VNF Extension file.</p>
+</note>
+<table pgwide="1" colsep="1" rowsep="1"><title>MariaDB parameters descriptions</title>
+
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="COLSPEC3"/>
+<colspec colname="COLSPEC0"/>
+<thead>
+<row>
+<entry>
+Parameter
+</entry>
+<entry>
+Description
+</entry>
+<entry>
+Update notes
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+maxscale/FILE/promotion.sql
+</entry>
+<entry>
+This parameter defines the SQL query, which is executed when a server is promoted to Master.
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry>
+maxscale/RO-Service/enable_root_user
+</entry>
+<entry>
+<p>This parameter defines whether or not to enable the root user to have read-only database access.</p>
+<p>This parameter controls the ability of the root user to connect to MaxScale and have access to the backend servers using MaxScale.</p>
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry>
+maxscale/RWSplit-Service/enable_root_user
+</entry>
+<entry>
+<p>This parameter defines whether or not to enable the root user to have read-and-write database access. This represents the database access such that all writes are directed to the Master node and all reads are directed to non-Master nodes.</p>
+<p>This parameter controls the ability of the root user to connect to MaxScale and to the backend servers using MaxScale.</p>
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry>
+maxscale/maxscale/query_retries
+</entry>
+<entry>
+This parameter defines how many times an interrupted internal query is retried.
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry>
+maxscale/maxscale/query_retry_timeout
+</entry>
+<entry>
+<p>This parameter defines the timeout in seconds for any retried query.</p>
+<p>An interrupted query is retried for either the configured amount of attempts, which is defined by &lt;maxscale/maxscale/query_retries&gt;, or until the timeout is reached.</p>
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry>
+maxscale/maxscale/threads
+</entry>
+<entry>
+This parameter controls the number of worker threads that are handling the events coming from the kernel. MaxScale detects the number of available processors and sets the amount of threads to be equal to that number. This should only be used for systems dedicated tasks to run MaxScale.
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry>
+mariadb/databases
+</entry>
+<entry>
+<p>This parameter defines MariaDB databases. </p>
+<p>&lt;key&gt; is the database name and must be set to <i>SPSMARIADB</i>.</p>
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC0" namest="col1">
+<p>
+<b>mariadb/bootstrap_config</b>
+</p>
+<p>This parameter defines the system configurations for MariaDB.</p>
+</entry>
+</row>
+<row>
+<entry>
+CLEAN_LOGS_INTERVAL
+</entry>
+<entry>
+This parameter defines the interval in seconds for automatic cleaning of the replication logs on the Master node.
+</entry>
+<entry>
+Modify if needed.
+</entry>
+</row>
+<row>
+<entry>
+MAXSCALE_USER
+</entry>
+<entry>
+This parameter defines the user for MaxScale management of the cluster. The value must be <i>maxscale</i>.
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry>
+MAXSCALE_RW_PORT
+</entry>
+<entry>
+<p>This parameter defines the MaxScale proxy read/write splitter-listener port.</p>
+<p>MariaDB MaxScale splits the statements in such a way that write statements are sent to the current Master server in the replication cluster and read statements are balanced across the rest of the servers.</p>
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry>
+MAXSCALE_RO_PORT
+</entry>
+<entry>
+<p>This parameter defines the MaxScale proxy read-only listener port.</p>
+<p>If an application needs to send only read-only operations, use this port and then read requests are directed to Slave nodes only.</p>
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry>
+MAXSCALE_MSTR_PORT
+</entry>
+<entry>
+<p>This parameter defines the port for the Master node. </p>
+<p>If an application needs to send all traffic to the Master node only, use this port and then all traffic is directed to the Master node.</p>
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry>
+MAXSCALE_CTL_PORT
+</entry>
+<entry>
+This parameter defines the MaxScale remote monitoring port.
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry>
+REPLICATION_USER
+</entry>
+<entry>
+This parameter defines the user for RM/RS roles. The value must be <i>repl@b.c</i>
+
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry>
+USE_XTRABACKUP
+</entry>
+<entry>
+<p>This parameter defines whether or not to use mariabackup. </p>
+<p>The values are:</p><ul>
+
+<li>
+<p>yes</p>
+</li>
+<li>
+<p>no</p>
+</li>
+</ul>
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC0" namest="col1">
+<p>
+<b>mariadb/mysqld</b>
+</p>
+<p>This parameter defines site-specific data that is automatically added to <filepath>MariaDB /etc/my.cnf.d/server.cnf</filepath> configuration file.</p>
+</entry>
+</row>
+<row>
+<entry>
+datadir
+</entry>
+<entry>
+This parameter defines the location for MariaDB file system.
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry>
+port
+</entry>
+<entry>
+This parameter defines the port for mysqld.
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry>
+userstat
+</entry>
+<entry>
+This parameter defines whether or not to turn on user statistics.
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry>
+gtid_ignore_duplicates
+</entry>
+<entry>
+This parameter defines whether or not different Master connections in multi-source replication are allowed to receive and process event groups with the same GTID (when using GTID mode). 
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry>
+rpl_semi_sync_master_enabled
+</entry>
+<entry>
+This parameter enables semisynchronous replication plugin on the Master side.
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry>
+rpl_semi_sync_slave_enabled
+</entry>
+<entry>
+This parameter enables semisynchronous replication plugin on the Slave side.
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry>
+rpl_semi_sync_master_wait_point
+</entry>
+<entry>
+This parameter defines the system variable which controls the point at which a semisynchronous replication Master waits for Slave acknowledgment of transaction receipt before returning a status to the client that committed the transaction.
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC0" namest="col1">
+<p>
+<b>mariadb/bootstrap_nodes</b>
+</p>
+<p>This parameter defines the nodes that MariaDB uses.</p>
+</entry>
+</row>
+<row>
+<entry>
+ip_address
+</entry>
+<entry>
+This parameter defines the node’s external network IP address used for cluster or replication traffic. For example, for sps-sm-ioho-0 this parameter is the external fixed IP address of ioho-0 and for sps-me-ioho-1 this parameter is the external fixed IP address of ioho-1. 
+</entry>
+<entry>
+Must update.
+</entry>
+</row>
+<row>
+<entry>
+key
+</entry>
+<entry>
+This parameter defines the hostname of the node. This parameter must match &lt;hostname_prefix&gt; parameter. For more information, see <!--xref URI: #VNFD_extensions_parameters--><xref keyref="id9YZ-09018-IN00-RJZZA-VNFD_extensions_parameters"/>. 
+</entry>
+<entry>
+Modify if needed.
+</entry>
+</row>
+<row>
+<entry>
+role
+</entry>
+<entry>
+<p>This parameter defines the replication role. The values are <i>RM</i>, <i>RS</i>, and <i>MXS</i>
+</p>
+<p>where:</p><ul>
+
+<li>
+<p>RM is the replication Master node. For Master/Master replication, define both nodes with this role.</p>
+</li>
+<li>
+<p>RS is the replication Slave node. One node is the Master node and the others are Slave nodes.</p>
+</li>
+<li>
+<p>MXS is the proxy node that services SQL requests and provides a proxy function for the rest of DB nodes.</p>
+</li>
+</ul>
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry>
+service_host
+</entry>
+<entry>
+This parameter defines the external IP address of the IOHO VM (directly). 
+</entry>
+<entry>
+Must update.
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC0" namest="col1">
+<p>
+<b>mariadb/datacenter</b>
+</p>
+<p>This parameter defines the datacenter. This parameter applies to SM or IG sites in Geo deployments. If your deployment is non-Geo, you must remove this parameter from the VNF Extension file.</p>
+</entry>
+</row>
+<row>
+<entry>
+lag_set_threshold
+</entry>
+<entry>
+This parameter defines the time limit in seconds for generating a replication lag alarm. If during an ongoing replication, a node gets in time behind the Master node, a replication lag alarm is generated. When the replication lag reduces to half of the threshold, the lag alarm clears automatically.
+</entry>
+<entry>
+Modify this parameter if needed if your deployment is Geo deployment.
+</entry>
+</row>
+<row>
+<entry>
+slave_purge_interval
+</entry>
+<entry>
+This parameter defines the Slave binary log purge interval in minutes. When this time elapses, binary logs are purged in all the Slave servers at the start of this interval.
+</entry>
+<entry>
+Modify this parameter if needed if your deployment is Geo deployment.
+</entry>
+</row>
+<row>
+<entry>
+remote_host
+</entry>
+<entry>
+This parameter defines the IP address of the remote datacenter of the MaxScale node. This IP address must be the VIP of the IOHO node of the remote datacenter installed on a remote site in Geo deployment.
+</entry>
+<entry>
+You must update this parameter if your deployment is Geo deployment.
+</entry>
+</row>
+<row>
+<entry>
+site_position
+</entry>
+<entry>
+<p>This parameter defines the unique site position of the datacenter in the form of <varname>position:number</varname>
+</p>
+<p>where:</p><ul>
+
+<li>
+<p>
+<varname>position</varname> is the site number to install.</p>
+</li>
+<li>
+<p>
+<varname>number</varname> is the total number of sites where <varname>number</varname> cannot be greater than 2.</p>
+</li>
+</ul>
+<p>For example, the first installed site has the value 1:2. The second installed site has the value 2:2.</p>
+</entry>
+<entry>
+You must update this parameter if your deployment is Geo deployment.
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</conbody></concept>

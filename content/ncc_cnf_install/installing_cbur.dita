@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="installing_cbur">
+    <title>Installing CBUR</title>
+    <taskbody>
+        <context>
+            <p>This procedure provides instructions on how to install the CBUR master component for
+                a CNF of any type. The CBUR master has self-defined CRDs: BrPolicy and BrHook. The
+                installation of these CRDs depends on the configuration of the
+                    <codeph>cburScope</codeph> parameter in the CBUR
+                    <filepath>values.yaml</filepath> file. If the <codeph>cburScope</codeph>
+                parameter is set to <codeph>"Cluster"</codeph>, these CRDs are installed with the
+                CBUR-master Helm chart. If the <codeph>cburScope</codeph> parameter is set to
+                    <codeph>"Namespaced"</codeph>, these CRDs must be installed manually.</p>
+        </context>
+        <steps>
+            <step>
+                <cmd>Ensure that you are working in the CNF's directory.</cmd>
+            </step>
+            <step>
+                <cmd>Create BrPolicy and  BrHook CRDs by entering:</cmd>
+                <info>
+                    <codeblock>kubectl apply -f br-policy-schema.yaml
+kubectl apply -f br-hook.v1.yaml</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Copy the Overrides file from the examples folder by entering:</cmd>
+                <info>
+                    <codeblock>cp ../configuration-examples/overrides_cbur_values_openshift.yaml .</codeblock>
+                </info>
+            </step>
+            <step>
+                <cmd>Install CBUR by entering:</cmd>
+                <info><codeblock>helm install cbur-master cbur-1.4.0.tgz -f overrides_cbur_values_openshift.yaml --set clusterName="sps-btel-cbur",clusterId="sps-btel-cbur",nodeSelector.is_control=null -n sps-btel</codeblock>where:<codeblock>clusterName="&lt;any name you like>" 
+clusterId="&lt;Any Id to specify the cluster>"</codeblock></info>
+            </step>
+            <step>
+                <cmd>If HTTPS is needed, set the following:</cmd>
+                <info>
+                    <ul id="ul_vsc_ldq_ymb">
+                        <li><codeph>https.enabled=true</codeph></li>
+                        <li><codeph>https.tls.enabled=true</codeph></li>
+                        <li>tls related key and cert file</li>
+                    </ul>
+                </info>
+            </step>
+            <step>
+                <cmd>If needed, modify the other settings depending on your backend
+                    requirement.</cmd>
+            </step>
+        </steps>
+    </taskbody>
+</task>

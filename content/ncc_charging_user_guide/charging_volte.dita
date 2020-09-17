@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e236940"><title>Charging VoLTE new directory assistance calls</title><conbody>
+<section><title>Overview</title>
+<p>NCC supports charging for Directory Assistance (DA) calls, by detecting DA query leg and DA
+                                                  transfer leg and applying different charging
+                                                  accordingly.</p>
+</section>
+<section><title>DA query</title><p>When NCC receives VoLTE CCR-I with the following set of
+                                                  <varname>Service-Specific-Info</varname> AVP under
+                                                  <varname>IMS-Information</varname>, then it
+                                                  recognizes it as a DA query request and applies
+                                                  the DA query surcharge if configured.</p>
+                                                  <fig>
+                                                  <title>DA query identification</title>
+                                                  <codeblock>[Service-Specific-Info]
+                         [Service-Specific-Data] = 14
+                         [Service-Specific-Type] = 2868904938
+
+[Service-Specific-Info]
+                         [Service-Specific-Data] != 59
+                         [Service-Specific-Type] = 2868904943</codeblock>
+                                                  </fig>
+                                                  <p>The tariff is applied as per call charging rate
+                                                  configuration.</p>
+                                                  <note>
+                                                  <p>The DA query surcharge is applied when the
+                                                  first CCR-U with non-zero call usage or CCR-T with
+                                                  non-zero call usage is received.</p>
+                                                  </note>
+                                                  <p>In NCC, the following condition is used in
+                                                  tariff to identify a DA query call:</p>
+                                                  <systemoutput>IMS_SERVICE_INFO.Directory-Assistance=DirectoryAssistanceType_QUERY</systemoutput>
+                                                  </section>
+<section><title>DA transfer</title>
+                                                  <p>When NCC receives VoLTE CCR-I with the
+                                                  following set of
+                                                  <varname>Service-Specific-Info</varname> AVP under
+                                                  <varname>IMS-Information</varname>, then it
+                                                  recognizes it as a DA transfer request and applies
+                                                  the DA transfer surcharge if configured. The
+                                                  charge is applied per call rate configuration.</p>
+                                                  <fig>
+                                                  <title>DA transfer identification</title>
+                                                  <codeblock>[Service-Specific-Info]
+                         [Service-Specific-Data] = 14                   
+                         [Service-Specific-Type] = 2868904938
+
+[Service-Specific-Info]                                            
+                         [Service-Specific-Data] = 59
+
+                         [Service-Specific-Type] = 2868904943</codeblock>
+                                                  </fig>
+                                                  <note>
+                                                  <p>The <i>DA Transfer Surcharge</i> is applied
+                                                  when the first CCR-U or CCR-T is received.</p>
+                                                  </note>
+                                                  <p>In NCC, the following condition is used in
+                                                  tariff to identify a DA transfer call:</p>
+                                                  <systemoutput>IMS_SERVICE_INFO.Directory-Assistance=DirectoryAssistanceType_TRANSFER</systemoutput>
+                                                  </section>
+<section><title>Example: Differential charging for DA query and DA transfer calls</title>
+<p>In the following example, the tariff formula is configured in a way so that there is no charge for DA query calls and the DA transfer calls are charged.</p>
+<fig>
+<title>Example: Charging service tariff rule for DA query and DA transfer</title>
+<!--MMO resource relative URI: ../Graphics/DA_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-da_default.png"/>
+</fig>
+</section>
+</conbody></concept>

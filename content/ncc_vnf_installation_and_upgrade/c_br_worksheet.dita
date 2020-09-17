@@ -1,0 +1,529 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+		<concept id="id9YZ-09018-IN00-RJZZA-BR_worksheet"><title>BR section</title><conbody id="BR_worksheet">
+
+<p>The BR section is used for the backup and restore settings related to configuring backup repositories and adding the Veritas NetBackup server. </p>
+<p>The following table describes the parameters of the BR section.</p>
+<note>
+
+<p>Do not remove the parameters.</p>
+</note>
+<note>
+
+<p>Ensure that there is sufficient disk space where you intend to store the backup files including
+				the oame_backup_volume. All VM sizing is done prior to instantiation and there is no
+				re-sizing. Prior to instantiation, see the NCC Dimensioning and Engineering
+				Guidelines for dimensioning information and the NCC VNF Artifacts Generator Tool
+				Guide for instructions on how to set an appropriate size. </p>
+</note>
+<table pgwide="1" rowsep="1" colsep="1"><title>BR parameters descriptions</title>
+
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<colspec colname="COLSPEC0"/>
+<thead>
+<row>
+<entry>
+Parameter
+</entry>
+<entry>
+Description
+</entry>
+<entry>
+Update notes
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+BR/backup_ip_type
+</entry>
+<entry>
+<p>This parameter indicates which IP type is used for the backup and restore.</p>
+<p>The following values are supported:</p><ul>
+
+<li>
+<p>IPv4</p>
+</li>
+<li>
+<p>IPv6</p>
+</li>
+</ul>
+<p>This parameter must be set. It cannot be the empty string.</p>
+</entry>
+<entry>
+Modify if needed.
+</entry>
+</row>
+<row>
+<entry>
+BR/backup_mode
+</entry>
+<entry>
+<p>This parameter indicates what backup mode is used for the backup and restore.</p>
+<p>The following values are supported:</p><ul>
+
+<li>
+<p>NONE</p>
+</li>
+<li>
+<p>NETBKUP</p>
+</li>
+</ul>
+<p>where:</p><ul>
+
+<li>
+<p>NONE indicates that the backup and restore is local.</p>
+</li>
+<li>
+<p>NETBKUP is the backup and restore with the NetBackup server.</p>
+</li>
+</ul>
+<p>If you choose NETBKUP, you must install the client.</p>
+</entry>
+<entry>
+Modify if needed.
+</entry>
+</row>
+<row>
+<entry>
+BR/net_interface
+</entry>
+<entry>
+<p>This parameter indicates which net interface is used for the backup and restore.</p>
+<p>The following values are supported:</p><ul>
+
+<li>
+<p>external</p>
+</li>
+<li>
+<p>internal</p>
+</li>
+</ul>
+<p>If the NetBackup server is used, &lt;BR/net_interface&gt; must be set to
+									<varname>external</varname> because the backup server should be
+								in a different data center than the NCC.</p>
+</entry>
+<entry>
+Modify if needed.
+</entry>
+</row>
+<row>
+<entry>
+BR/package_url
+</entry>
+<entry>
+<p>This parameter defines the URL link that is used to download the NetBackup client. </p>
+<p>The value is <xref format="html" scope="external" href="http://1.1.1.1/download/NetBackup_CLIENT.tar.gz">http://1.1.1.1/download/NetBackup_CLIENT.tar.gz</xref>
+</p>
+<p>This parameter must be set if you want to use HTTP to retrieve the software.</p>
+<p>This parameter must be set to the empty string if &lt;BR/backup_mode&gt; is NetBackup, and you want to use FTP to retrieve the software. In this case, the FTP package parameters must be set. </p>
+<p>This parameter can be set to the empty string if &lt;BR/backup_mode&gt; is NONE. In this case, any value assigned to this parameter is ignored.</p>
+</entry>
+<entry>
+Modify if needed.
+</entry>
+</row>
+<row>
+<entry>
+BR/partition_type
+</entry>
+<entry>
+<p>This parameter indicates which backup repository is used.</p>
+<p>The values are as follows:</p><ul>
+
+<li>
+<p>CV</p>
+</li>
+<li>
+<p>NFS</p>
+</li>
+</ul>
+<p>where:</p><ul>
+
+<li>
+<p>CV is Cinder volume for OpenStack and Independent disk for VMware.</p>
+</li>
+<li>
+<p>NFS is NFS export.</p>
+</li>
+</ul>
+</entry>
+<entry>
+Modify if needed.
+</entry>
+</row>
+<row>
+<entry>
+BR/sched_bkup_precedence
+</entry>
+<entry>
+<p>This parameter defines the precedence of one group of VMs over the other group of VMs in scheduled backup. This parameter applies only to group backups with dependencies. The possible values are:</p><ul>
+
+<li>
+<p>["vdu-OAME", "vdu-DB"] </p>
+</li>
+<li>
+<p>empty string (“ “)</p>
+</li>
+</ul>
+<p>This parameter must be set to ["vdu-OAME", "vdu-DB"]. When the NCC is backed up, vdu-OAME must
+								always be backed up before vdu-DB.</p>
+<p>If this parameter is set to the empty string, then no precedence is needed.</p>
+<p>If a VDU group specified in the value does not exist, backup runs as scheduled.</p>
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC0" namest="col1">
+<p>
+<b>BR/package_ftp</b>
+</p>
+<p>BR/package_ftp parameters define the NetBackup FTP settings.</p>
+<p>The package FTP parameters are ignored if the following applies:</p><ul>
+
+<li>
+<p>&lt;BR/backup_mode&gt; is NONE.</p>
+</li>
+<li>
+<p>&lt;BR/package_url&gt; is configured,</p>
+</li>
+</ul>
+<p>If &lt;BR/backup_mode&gt; is NETBKUP, the package FTP parameters must be configured.</p>
+</entry>
+</row>
+<row>
+<entry>
+ftp_path
+</entry>
+<entry>
+<p>This parameter defines the path which is used to download the client package using FTP.</p>
+<p>For example:</p><ul>
+
+<li>
+<p>
+<xref format="html" scope="external" href="ftp://1.1.1.1/download/NetBackup_CLIENT.tar.gz">ftp://1.1.1.1/download/NetBackup_CLIENT.tar.gz</xref> is the FTP path for the NetBackup client.</p>
+</li>
+</ul>
+</entry>
+<entry>
+Modify if needed.
+</entry>
+</row>
+<row>
+<entry>
+key
+</entry>
+<entry>
+<p>This parameter defines the key in the FTP package. </p>
+<p>The following values are supported:</p><ul>
+
+<li>
+<p>NETBKUP</p>
+</li>
+</ul>
+</entry>
+<entry>
+Modify if needed.
+</entry>
+</row>
+<row>
+<entry>
+passwd
+</entry>
+<entry>
+This parameter defines the password which is used to access the NetBackup clients using FTP.
+</entry>
+<entry>
+Modify if needed.
+</entry>
+</row>
+<row>
+<entry>
+user_name
+</entry>
+<entry>
+This parameter defines the user name which is used to access the NetBackup clients using FTP.
+</entry>
+<entry>
+Modify if needed.
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC0" namest="col1">
+<p>
+<b>BR/partition_info</b>
+</p>
+<p>BR/partition_info parameters define the backup repository settings.</p>
+</entry>
+</row>
+<row>
+<entry>
+IP
+</entry>
+<entry>
+<p>The values are as follows: </p><ul>
+
+<li>
+<p>If &lt;BR/partition_info/key&gt; is CV, the value is the empty string.</p>
+</li>
+<li>
+<p>If &lt;BR/partition_info/key&gt; is NFS, this parameter must be set and the value is the IP address of the remote NFS server.</p>
+</li>
+</ul>
+</entry>
+<entry>
+Modify if needed.
+</entry>
+</row>
+<row>
+<entry>
+key
+</entry>
+<entry>
+<p>This parameter defines the key.</p>
+<p>The values are as follows:</p><ul>
+
+<li>
+<p>CV</p>
+</li>
+<li>
+<p>NFS</p>
+</li>
+</ul>
+<p>where:</p><ul>
+
+<li>
+<p>CV is Cinder volume.</p>
+</li>
+<li>
+<p>NFS is the network file system.</p>
+</li>
+</ul>
+</entry>
+<entry>
+Modify if needed.
+</entry>
+</row>
+<row>
+<entry>
+path
+</entry>
+<entry>
+<p>The values are as follows:</p><ul>
+
+<li>
+<p>If &lt;BR/partition_info/key&gt; is CV, the value is the empty string.</p>
+</li>
+<li>
+<p>If &lt;BR/partition_info/key&gt; is NFS, this parameter must be set.</p>
+</li>
+</ul>
+</entry>
+<entry>
+Modify if needed.
+</entry>
+</row>
+<row>
+<entry>
+tag
+</entry>
+<entry>
+<p>This parameter defines the disk volume. For the OpenStack, it defines the Cinder volume. For VMware, it defines the Independent disk.</p>
+<p>The values are as follows:</p><ul>
+
+<li>
+<p>If &lt;BR/partition_info/key&gt; is CV, this parameter must be set to the following value:</p><ul>
+
+<li>
+<p>for VMware, <varname>sdc</varname>
+</p>
+</li>
+<li>
+<p>for OpenStack <varname>oame_backup_volume</varname>
+											</p>
+</li>
+</ul>
+</li>
+<li>
+<p>If &lt;BR/partition_info/key&gt; is NFS, the value is the empty string.</p>
+</li>
+</ul>
+</entry>
+<entry>
+Modify if needed.
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC0" namest="col1">
+<p>
+<b>BR/server_info</b>
+</p>
+<p>BR/server_info parameters define the NetBackup remote backup server settings.</p>
+<p>These parameters should be configured when the &lt;BR/backup_mode&gt; is NETBKUP.</p>
+<p>If &lt;BR/backup_mode&gt; is NONE, the server_info parameters are ignored.</p>
+</entry>
+</row>
+<row>
+<entry>
+host_IP
+</entry>
+<entry>
+This parameter defines the IP address of the remote backup server.
+</entry>
+<entry>
+Modify if needed.
+</entry>
+</row>
+<row>
+<entry>
+host_name
+</entry>
+<entry>
+This parameter defines the host name of the remote backup server. 
+</entry>
+<entry>
+Modify if needed.
+</entry>
+</row>
+<row>
+<entry>
+key
+</entry>
+<entry>
+<p>This parameter defines the remote backup server.</p>
+<p>The following values are supported:</p><ul>
+
+<li>
+<p>NETBKUP</p>
+</li>
+</ul>
+</entry>
+<entry>
+Modify if needed.
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<p>The following figure shows an example of the BR section. In this example, the backup and recovery is configured to use external network interface and NetBackup as a backup server. The client software in this example is retrieved using HTTP.</p>
+<section><fig>
+<title>BR section configured with external network and NetBackup server</title>
+<codeblock>"BR": {
+	"[Global]": {},
+	"[Local]": {},
+	"[System]": {
+		"BR/backup_ip_type": "IPv4",
+		"BR/backup_mode": "NETBKUP",
+		"BR/net_interface": "external",
+		"BR/package_ftp": [
+			{
+				"ftp_path": "ftp://1.1.1.1/download/NetBackup_CLIENT.tar.gz",
+				"key": "NETBKUP",
+				"passwd": "appplat",
+				"user_name": "appplat"
+			},
+			{
+				"ftp_path": "ftp://1.1.1.1/download/NetWorker_CLIENT.rpm",
+				"key": "NETWK",
+				"passwd": "appplat",
+				"user_name": "appplat"
+			}
+		],
+		"BR/package_url": "http://111.111.11.111/dev_umage/NetBackup_7.7.3_CLIENTS2.tar.gz",
+		"BR/partition_info": [
+			{
+				"IP": "",
+				"key": "CV",
+				"path": "",
+				"tag": "vdc"
+			},
+			{
+				"IP": "1.1.1.1",
+				"key": "NFS",
+				"path": "/home",
+				"tag": ""
+			}
+		],
+		"BR/partition_type": "CV",
+		"BR/sched_bkup_precedence": [
+			"vdu-OAME",
+			"vdu-DB"
+		],
+		"BR/server_info": [
+		{
+			"host_IP": "11.111.1.11",
+			"host_name": "netbackup",
+			"key": "NETBKUP"
+		},
+		{
+			"host_IP": "1.1.1.1",
+			"host_name": "networker",
+			"key": "NETWK"
+  	}
+ 	]
+}
+}</codeblock>
+</fig></section>
+<section><fig>
+<title>BR configured with NFS repository</title>
+				<p>The following example shows the BR section configured with NFS as a backup
+					repository.</p>
+<codeblock>"BR": {
+  "[Global]": {},
+  "[Local]": {},
+  "[System]": {
+    "BR/backup_ip_type": "IPv4",
+    "BR/backup_mode": "NONE",
+    "BR/net_interface": "internal",
+    "BR/package_ftp": [
+      {
+        "ftp_path": "ftp://1.1.1.1/download/NetBackup_CLIENT.tar.gz",
+        "key": "NETBKUP",
+        "passwd": "appplat",
+        "user_name": "appplat"
+      },
+      {
+        "ftp_path": "ftp://1.1.1.1/download/NetWorker_CLIENT.rpm",
+        "key": "NETWK",
+        "passwd": "appplat",
+        "user_name": "appplat"
+      }
+    ],
+    "BR/package_url": "http://1.1.1.1/download/NetBackup_CLIENT.tar.gz",
+    "BR/partition_info": [
+      {
+        "IP": "",
+        "key": "CV",
+        "path": "",
+        "tag": "sdc"
+      },
+      {
+        "IP": "135.252.170.46",
+        "key": "NFS",
+        "path": "/home/NFS",
+        "tag": ""
+      }
+    ],
+    "BR/partition_type": "NFS",
+    "BR/BR/sched_bkup_precedence": ["vdu-OAME","vdu-DB"],
+    "BR/server_info": [
+      {
+        "host_IP": "1.1.1.1",
+        "host_name": "netbackup",
+        "key": "NETBKUP"
+      },
+      {
+        "host_IP": "1.1.1.1",
+        "host_name": "networker",
+        "key": "NETWK"
+      }
+    ]
+  }
+}
+</codeblock>
+</fig></section>
+</conbody></concept>

@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+		<concept id="id9YZ-09018-IN00-RJZZA-Bootstrap_ETCD_worksheet"><title>Bootstrap ETCD section</title><conbody id="Bootstrap_ETCD_worksheet">
+
+<p>The Bootstrap ETCD section contains the parameters required for the installation of the ETCD
+            cluster. In the NCC, ETCD is configured as Local ETCD where peer and client addresses
+            must be listed. These addresses define the internal IP addresses of the Auxiliary VMs
+            that act as ETCD servers.</p>
+<section>
+<title>Bootstrap ETCD parameters</title>
+<p>The following table describes the parameters of the Bootstrap ETCD section.</p>
+<note>
+
+<p>The following applies to the Bootstrap ETCD parameters:</p><ul>
+
+<li>
+<p>Do not remove the parameters.</p>
+</li>
+<li>
+<p>If you have changed the internal network host identifier, you must ensure that this change is consistent with all the applicable IP address values of sdc_config_data parameter.</p>
+</li>
+</ul>
+</note>
+<table pgwide="1" rowsep="1" colsep="1"><title>Bootstrap ETCD parameters descriptions</title>
+
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="col3"/>
+<colspec colname="COLSPEC2"/>
+<thead>
+<row>
+<entry>
+Parameter
+</entry>
+<entry>
+Description
+</entry>
+<entry>
+Update notes
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+Confd Backend Type
+</entry>
+<entry>
+This parameter defines the backend type used for the ETCD cluster. Supported values are: etcd for v2 of ETCD, etcdv3 for v3 of ETCD, and sdc for the versioning data feature.
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry>
+Data Dir
+</entry>
+<entry>
+<p>This parameter defines the directory to store ETCD data, that is, wal and snapshot files. </p>
+<p>This parameter represents the environment variable ETCD_DATA_DIR.</p>
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry>
+Election Timeout
+</entry>
+<entry>
+<p>This is one of the ETCD cluster's time parameters used by the underlying distributed consensus protocol.</p>
+<p>This parameter defines time (in milliseconds) for an election to timeout. The timeout is the interval that a follower node will go without hearing a heartbeat before attempting to become leader itself.</p>
+<p>This parameter should be based on the heartbeat interval and average round-trip time between members. Election timeouts must be at least 10 times greater than the round-trip time so it can account for variance in the network.</p>
+<p>The upper limit is 50000 ms, which should only be used when deploying a globally-distributed ETCD cluster.</p>
+<p>The election timeout value should be the same for all the members in one cluster. </p>
+<p>This parameter represents the environment variable ETCD_ELECTION_TIMEOUT.</p>
+</entry>
+<entry>
+Contact Nokia Professional Services to change the default value if needed.
+</entry>
+</row>
+<row>
+<entry>
+Etcd CA File 
+</entry>
+<entry>
+This is the file name of the certificate used for SSL/TLS connections to ETCD. When this option is set, you can set advertise-client-urls using HTTPS schema. This parameter represents the environment variable ETCD_CA_FILE.
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>
+Etcd Cert File
+</entry>
+<entry>
+<p>Etcd Cert File and Etcd Key File are the signed key pair.</p>
+<p>This parameter represents the environment variable ETCD_CERT_FILE.</p>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>
+Etcd Client Cert Auth
+</entry>
+<entry>
+<p>This parameter defines whether client cert authentication is enabled or disabled. Supported values are "FALSE" for disabled, and "TRUE" for enabled, that is, provide the client key and cert file. </p>
+<p>This parameter represents the environment variable ETCD_CLIENT_CERT_AUTH.</p>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>
+Etcd Key File
+</entry>
+<entry>
+<p>Etcd Cert File and Etcd Key File are the signed key pair.</p>
+<p>This parameter represents the environment variable ETCD_KEY_FILE.</p>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>
+Etcdctl Cert File
+</entry>
+<entry>
+<p>This is the file name of the client cert file. It is required only if Etcd Client Cert Auth is set to TRUE. </p>
+<p>This parameter represents the environment variable ETCDCTL_CERT_FILE.</p>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>
+Etcdctl key file
+</entry>
+<entry>
+<p>This is the file name of the client key file. It is required only if Etcd Client Cert Auth is set to TRUE. </p>
+<p>This parameter represents the environment variable ETCDCTL_KEY_FILE.</p>
+</entry>
+<entry>
+N/A
+</entry>
+</row>
+<row>
+<entry>
+Heartbeat Interval
+</entry>
+<entry>
+<p>This is one of the ETCD cluster's time parameters used by the underlying distributed consensus protocol. </p>
+<p>This parameter defines the time (in milliseconds) of a heartbeat interval. This is the frequency with which the leader will notify followers that it is still the leader. The heartbeat interval value is recommended to be around the maximum of the average round-trip time (RTT) between members, normally around 0.5-1.5x of the round-trip time. The easiest way to measure the RTT is to use the PING utility. The heartbeat interval value should be the same for all the members in one cluster.</p>
+<p>This parameter represents the environment variable ETCD_HEARTBEAT_INTERVAL.</p>
+</entry>
+<entry>
+Contact Nokia Professional Services to change the default value if needed.
+</entry>
+</row>
+<row>
+<entry>
+Network Config
+</entry>
+<entry>
+The value is set to <i>Local</i>. 
+</entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry>
+Remote Servers
+</entry>
+<entry> This parameter represents remote ETCD servers. It is required only if Network Config is set
+                                to Remote, which the NCC does not use. The value is set to empty
+                                square brakets "[]". </entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+                                                  <row>
+                                                  <entry> SDC Client Retry Count</entry>
+                                                  <entry>
+                                                  <p>The SDC API retries to access ETCD the given
+                                                  number of times. For example, if the value is 5,
+                                                  then SDC API will retry to access ETCD cluster for
+                                                  5 times. </p>
+                                                  <p>For poor performance lab, this value can be
+                                                  10.</p>
+                                                  <p>Default value: 5</p>
+                                                  </entry>
+                                                  <entry>Can be modified.</entry>
+                                                  </row>
+                                                  <row>
+                                                  <entry> SDC Client Retry Interval</entry>
+                                                  <entry>
+                                                  <p>The SDC API retries to access the ETCD cluster
+                                                  at the configured interval of time. For example,
+                                                  if this value is 1, then SDC will retry at the
+                                                  interval of 1 second. The SDC API Retry Interval
+                                                  should not be less than 1second.</p>
+                                                  <p>For poor performance lab, this value can be
+                                                  2.</p>
+                                                  <p>Default value: 1</p>
+                                                  </entry>
+                                                  <entry>Can be modified.</entry>
+                                                  </row>
+                                                  <row>
+                                                  <entry namest="col1" nameend="COLSPEC2">Combined
+                                                  together (SDC Client Retry Count and SDC Client
+                                                  Retry Interval), SDC retries to access the ETCD
+                                                  cluster 5 times at an interval of 1 second.
+                                                  <note>It is recommended not to add large values
+                                                  for these parameters - SDC Client Retry Count and
+                                                  SDC Client Retry Interval. This causes the SDC
+                                                  client to hang for a long time to wait for result.
+                                                  </note></entry>
+                                                  </row>
+<row>
+<entry>
+Snapshot Count
+</entry>
+<entry>
+<p>This parameter defines  the number of ETCD changes before a snapshot is done.</p>
+<p>If the use of ETCD’s memory and disk is too high, you can lower the snapshot threshold. The values such as 5000 or 1000 are acceptable.</p>
+</entry>
+<entry>
+Contact Nokia Professional Services to change the default value if needed.
+</entry>
+</row>
+<row>
+<entry>
+System Name
+</entry>
+<entry> This parameter represent the system name of a VNF. The NCC does not use this parameter. The
+                                value is the empty string. </entry>
+<entry>
+Do not modify.
+</entry>
+</row>
+<row>
+<entry nameend="COLSPEC2" namest="col1">
+<p>
+<b>Local ETCD </b>
+</p>
+<p>This parameter defines the peer and client addresses of the Auxiliary VMs acting as servers.</p>
+</entry>
+</row>
+<row>
+<entry>
+Client Address
+</entry>
+<entry>
+This parameter is the internal IP address of the Auxiliary VM.
+</entry>
+<entry morerows="1">
+<p>Must update, if you have changed the internal network host identifier. </p>
+<p>Must ensure that this change is consistent with all the applicable IP address values of sdc_config_data parameter.</p>
+</entry>
+</row>
+<row>
+<entry>
+Peer Address
+</entry>
+<entry>
+This parameter is the internal IP address of the Auxiliary VM.
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+</conbody></concept>

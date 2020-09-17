@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="SPS_CDR_Streams_Stream_Overview_asn.1_encoder_node">
+<title>ASN.1 Encoder Node</title>
+<body>
+                
+                <p>ASN.1 Encoder Node converts the batch of output records into a file in given
+                    ASN.1 format. By default, NCC generic ASN.1 schema is used:</p>
+        <codeblock>--GenericRecord
+GenericRecordTypes
+DEFINITIONS IMPLICIT TAGS ::=
+BEGIN
+GenericRecord ::= SET
+{
+recordType [0] OCTET STRING,
+recordElements [1] SEQUENCE OF RecordElement OPTIONAL,
+recordExtensions [2] SEQUENCE OF GenericRecordExtension OPTIONAL
+}
+GenericRecordExtension ::= SEQUENCE
+{
+recordProperty [0] OCTET STRING OPTIONAL,
+recordElements [1] SEQUENCE OF RecordElement OPTIONAL,
+recordSubExtensions [2] SEQUENCE OF GenericRecordExtension OPTIONAL
+}
+RecordElement ::= SEQUENCE
+{
+varName [0] OCTET STRING OPTIONAL,
+varValue [1] OCTET STRING OPTIONAL
+}
+END</codeblock>
+                <p>The ASN.1 file format conforms to the CDR file format specified in 3GPP TS
+            32.297. Each file has a file header, and each record a CDR header. A file usually
+            contains multiple CDRs or EDRs.</p>
+                <p>ASN.1 Encoder Node can use the metadata of the batch (for example, creation time
+            and sequence number) when deciding the output file name. </p>
+        <section id="section_rvv_xf5_cmb">
+            <title>Rejected data storage</title>
+            <p>ASN.1 Encoder Node can reject records if there is a problem in encoding them in the
+                given ASN.1 schema. If the node rejects a record, the record is stored in Data
+                Refinery Rejected Data storage area called DEFAULT. This area can be inspected at
+                any time, and the records can be reprocessed either manually or via a schedule,
+                while other options include taking the records offline or removing them. For more
+                details, see Data Refinery documentation.</p>
+        </section>
+            </body>
+</topic>

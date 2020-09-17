@@ -1,0 +1,765 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+		<concept id="id9YZ-09018-IN00-RJZZA-VNFD_extensions_parameters"><title>VNF Extension parameters</title><conbody id="VNFD_extensions_parameters">
+        <note>
+            <p>If you do not modify or configure a parameter in the VNF Extension file before
+                instantiation, leave this parameter unchanged and assigned to its default value as
+                defined in the current NCC release. To modify the default settings of any parameter,
+                see the description of the parameter.</p>
+        </note>
+        <p>The following table describes the VNF Extension parameters. For information on the
+            storage parameters, see
+                <!--xref URI: t-install-intro-prerequisites.xml#Cinder_volumes--><xref
+                keyref="id9YZ-09018-IN00-RJZZA-d1e893/Cinder_volumes"/>.</p>
+        <note>
+            <p>Do not remove the parameters.</p>
+        </note>
+        <table id="Table_modifiable_parameters" pgwide="1" colsep="1" rowsep="1">
+            <title>VNF Extension parameters descriptions</title>
+            <tgroup cols="3">
+                <colspec colname="col1"/>
+                <colspec colname="col3"/>
+                <colspec colname="COLSPEC0"/>
+                <thead>
+                    <row>
+                        <entry> Parameter </entry>
+                        <entry> Description </entry>
+                        <entry> Update notes </entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry> comsvc_container_ipv6_prefixes </entry>
+                        <entry>
+                            <p>This parameter is configured and used only if the following
+                                applies:</p>
+                            <ul>
+                                <li>
+                                    <p>The ComSvc VMs (that include the containers) use IPv6.</p>
+                                </li>
+                                <li>
+                                    <p>The external networks of ComSvc VMs and containers must be of
+                                        the same IP version. If the external network of ComSvc is
+                                        IPv6, then the containers’ external network must also be
+                                        IPv6.</p>
+                                </li>
+                            </ul>
+                            <p>This parameter defines the list of /80 IPv6 subnets. The subnets in
+                                this list are separated by the comma character (,).</p>
+                            <p>For example,</p>
+                            <p>
+                                <i>2000:10:4:0:201::/80,2000:10:4:0:202::/80</i>
+                            </p>
+                            <p>The number of IPv6 subnets in this list must be equal or greater than
+                                the number of VMs to be deployed. A full /80 IPv6 subnet must be
+                                reserved for each VM.</p>
+                            <p>Each /80 IPv6 subnet must be a slice of the external IPv6 subnet
+                                attached to the VMs.</p>
+                            <p>Each VM uses its reserved /80 IPv6 subnet to assign IPv6 addresses to
+                                local containers.</p>
+                        </entry>
+                        <entry> Must update if IPv6 external network is used for ComSvc VMs.
+                        </entry>
+                    </row>
+                    <row rowsep="0">
+                        <entry>hostname_prefix </entry>
+                        <entry>
+                            <p>This parameter defines the prefix section of the VM hostname and is
+                                applied to all the VMs of a particular site. It is applicable to
+                                both VMware and Openstack.</p>
+                            <p>The VM hostname is automatically created based on the definitions
+                                captured in the HOT files that are part of the CSAR package. The VM
+                                hostname is a concatenation of several parts and is defined as
+                                &lt;hostname_prefix&gt;-&lt;VM name segment&gt;-&lt;numeric
+                                index&gt;, for example, <i>sps-me1-auxiliary-2</i>
+                            </p>
+                            <p>where:</p>
+                            <ul>
+                                <li>
+                                    <p>
+                                        <i>sps-me1</i> is &lt;hostname_prefix&gt;. Note, the dash
+                                        character can be used in &lt;hostname_prefix&gt;.</p>
+                                </li>
+                                <li>
+                                    <p>
+                                        <i>auxiliary</i> is &lt;VM name segment&gt; that is defined
+                                        for every VM type. For the complete list of VM name
+                                        segments, see
+                                            <!--xref URI: t-install-artifacts.xml#Images--><xref
+                                            keyref="id9YZ-09018-IN00-RJZZA-d1e4043/Images"/>.</p>
+                                </li>
+                                <li>
+                                    <p>
+                                        <i>2</i> is &lt;numeric index&gt; that consists of 1-3
+                                        digits.</p>
+                                </li>
+                            </ul>
+                            <p>The length of &lt;hostname_prefix&gt; is bound by the maximum length
+                                of the VM hostname. According to RFC 1035, RFC-952 and RFC-1123, the
+                                VM hostname’s maximum length is 63 characters. The VM hostname is
+                                defined with up to 63 alphanumeric and dash (-) characters. Note,
+                                that the dot (.) and underscore (_) characters cannot be used in the
+                                VM hostname.</p>
+                            <p>The 63 characters of the VM hostname are used as follows:</p>
+                            <ul>
+                                <li>
+                                    <p>2 characters are reserved for two dash delimiters.</p>
+                                </li>
+                                <li>
+                                    <p>3 characters are reserved for &lt;numeric index&gt;.</p>
+                                </li>
+                                <li>
+                                    <p>13 characters are reserved for &lt;VM name segment&gt;.</p>
+                                </li>
+                                <li>
+                                    <p>Up to 47 characters can be used for &lt;hostname_prefix&gt;.
+                                        Although &lt;hostname_prefix&gt; might contain as little as
+                                        6 characters only, but for customer deployments and
+                                        according to the VNF naming convention requirement, the
+                                        minimum length of &lt;hostname_prefix&gt; should be 25
+                                        characters.</p>
+                                </li>
+                            </ul>
+                            <p>To support the VNF naming convention requirement, this parameter must
+                                align with both &lt;vnf_name&gt; and the VNF name used in CBAM for
+                                this VNF.</p>
+                        </entry>
+                        <entry>
+                            <p>Must update.</p>
+                            <p>Ensure that the updated value matches the following:</p>
+                            <ul>
+                                <li>
+                                    <p>&lt;topology/spssite/spssiteid/name&gt; parameter in the NCC
+                                        section</p>
+                                    <p>-logrotate keys</p>
+                                    <p>-keys of mariadb/bootstr ap_nodes</p>
+                                </li>
+                                <li>
+                                    <p>&lt;topology/spspartition/&lt;partitionid&gt;/name&gt;
+                                        parameter in the NCC section</p>
+                                </li>
+                            </ul>
+                            <p>For more information, see
+                                    <!--xref URI: #System_leve_keys_table--><xref
+                                    keyref="id9YZ-09018-IN00-RJZZA-SPS_worksheet/System_leve_keys_table"
+                                />.</p>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry/>
+                        <entry>The following is applicable only to VMware when the Resource Naming
+                            Convention is 4. <p>The VM hostname is a concatenation of several parts
+                                and is defined
+                                as</p><p>&lt;hostname_prefix>&lt;name_separator>&lt;VM name segment
+                                for
+                                res_name4>&lt;name_separator>&lt;vnf_type_indicator>&lt;name_separator>&lt;numeric_index>for
+                                example,</p><p>Resource Naming Convention is 4</p><p>hostname_prefix
+                                is sps-me1</p><p>name_separator is "-"</p><p>vnf_type_indicator is
+                                sv1</p><p>res_name_suffix_start_value is
+                                1</p><p>res_name_suffix_length is 3</p><p>in case of auxiliary, the
+                                VM hostname will be sps-me1-aux-sv1-001</p><p>See <xref
+                                    href="#id9YZ-09018-IN00-RJZZA-VNFD_extensions_parameters/table_sft_1fl_ylb"
+                                    format="dita"/>for details on VM name segment for res_name4.
+                            </p></entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>vnf_name </entry>
+                        <entry>
+                            <p>This parameter is used to identify the VNF's name. To support the VNF
+                                naming convention requirement, this parameter must be defined with
+                                up to 47 alphanumeric and dash (-) characters. The minimum length of
+                                &lt;vnf_name&gt; is 6 characters. However, for customer deployments
+                                and according to the VNF naming convention requirement, the minimum
+                                length of &lt;vnf_name&gt; should be 25 characters. Note that the
+                                dot (.) and underscore (_) characters cannot be used in
+                                &lt;vnf_name&gt;.</p>
+                            <p>This parameter must align with both &lt;hostname_prefix&gt; and the
+                                VNF name used in CBAM for this VNF.</p>
+                        </entry>
+                        <entry> Must update. </entry>
+                    </row>
+                    <row>
+                        <entry>localize_and_start_sps </entry>
+                        <entry>
+                            <p>This parameter allows to enable or disable the automatic localization
+                                and startup of the NCC Application and Aerospike database.</p>
+                            <p>The only values supported are “true” and “false”.</p>
+                            <p>By default, this parameter is set to true and must be left
+                                untouched. This parameter is set to false only by Nokia personnel
+                                for debugging and testing purposes.</p>
+                            <p>The values of true and false are case sensitive and must be in
+                                lowercase.</p>
+                        </entry>
+                        <entry> Do not modify unless an NCC procedure explicitly requires it. </entry>
+                    </row>
+                    <row>
+                        <entry>ntp_servers </entry>
+                        <entry>
+                            <p>This parameter defines the Network Time Protocol (NTP) server
+                                configuration. It follows the NTP protocol specification defined
+                                under the Internet Engineering Task Force (IETF) standards. One or
+                                several NTP severs can be listed and configured.</p>
+                            <p>The format of the string for a single NTP server is as follows:</p>
+                            <codeblock>&lt;NTP server IP or name&gt;,&lt;NTP version&gt;,&lt;NTP server's preference indicator&gt;</codeblock>
+                            <p>Each server contains the following elements separated by the comma
+                                char (,) :</p>
+                            <ul>
+                                <li>
+                                    <p>&lt;NTP server IP or name&gt; is used to list the NTP
+                                        server's IP address or the NTP server's name.</p>
+                                </li>
+                                <li>
+                                    <p>&lt;NTP version&gt; is used to list the NTP server's NTP
+                                        version used and is based on the IETF NTP versions
+                                        supported. It uses a numeric value in the interval [1,4].
+                                        The numeric value can be entered, or the entry can be left
+                                        empty and the NTP server's value is automatically discovered
+                                        and used. </p>
+                                </li>
+                                <li>
+                                    <p>&lt;NTP server's preference indicator&gt;defines if the NTP
+                                        server is the preferred server when multiple NTP servers are
+                                        used. One of the NTP servers listed must be set to preferred
+                                        server. It uses a string that can be set to y (for "yes") or
+                                        n (for "no").</p>
+                                </li>
+                            </ul>
+                            <p>The format supports listing several NTP servers and delimiting the
+                                above single NTP server format by the vertical bar character (|), as
+                                follows:</p>
+                            <codeblock>"&lt;NTP server#1 IP or name&gt;,&lt;NTP version&gt;,&lt;NTP server's preference indicator&gt;|&lt;NTP server#2 IP or name&gt;,&lt;NTP version&gt;,&lt;NTP server's preference indicator&gt;|etc."</codeblock>
+                            <p>Following is an example with three NTP servers being used:</p>
+                            <codeblock>"100.111.9.166,4,y|100.120.252.54,3,n|foo.bar.com,,n"</codeblock>
+                        </entry>
+                        <entry> Must update. </entry>
+                    </row>
+                    <row>
+                        <entry>sps_auxiliary_mod </entry>
+                        <entry>
+                            <p>This parameter is used on the auxiliary VM only for the ETCD
+                                datastore mounting.</p>
+                            <p>Following are the supported mounting options:</p>
+                            <ul>
+                                <li>
+                                    <p>
+                                        <varname>"cinder"</varname>
+                                    </p>
+                                </li>
+                                <li>
+                                    <p>
+                                        <varname>"local"</varname>
+                                    </p>
+                                </li>
+                                <li>
+                                    <p> "<varname>ram"</varname>
+                                    </p>
+                                </li>
+                            </ul>
+                            <p>where:</p>
+                            <ul>
+                                <li>
+                                    <p>
+                                        <varname>“cinder”</varname> is used for production
+                                        deployment.</p>
+                                </li>
+                                <li>
+                                    <p>
+                                        <varname>local</varname> is used for debugging and testing
+                                        purposes inside Nokia. This option does not support any
+                                        other LCM operations except for instantiate (for example,
+                                        SU, backup and restore, and others).</p>
+                                </li>
+                                <li>
+                                    <p>
+                                        <varname>ram</varname> is used for debugging and testing
+                                        purposes inside Nokia. This option does not support any
+                                        other LCM operations except for instantiate (for example,
+                                        SU, backup and restore and others).</p>
+                                </li>
+                            </ul>
+                        </entry>
+                        <entry> Do not modify. </entry>
+                    </row>
+                    <row>
+                        <entry>time_zone </entry>
+                        <entry>
+                            <p>This parameter defines the time zone that the VNFs will use. </p>
+                            <p>It is essential that this parameter's value is correctly set for all
+                                the VNFs deployed in a particular time zone.</p>
+                            <p>On every VM, this will set the timezone in Linux, by updating the
+                                /etc/localtime with the appropriate timezone file from
+                                /usr/share/zoneinfo based on the value entered for this
+                                parameter.</p>
+                            <p>For example, if the value is set to "America/Toronto", then the
+                                following will be seen on the VMs:</p>
+                            <codeblock>lrwxrwxrwx. 1 root root 35 Feb 27 09:40 /etc/localtime -&gt; /usr/share/zoneinfo/America/Toronto</codeblock>
+                        </entry>
+                        <entry> Must update. </entry>
+                    </row>
+                    <row>
+                        <entry>sdc_config_data </entry>
+                        <entry> This parameter is specific to each site and is used for service
+                            discovery and configuration parameters. For more information, see
+                                <!--xref URI: #Modify_SDC_parameter--><xref
+                                keyref="id9YZ-09018-IN00-RJZZA-d1e13583/Modify_SDC_parameter">Step
+                                1</xref> in the procedure <!--xref URI: #Modifying_Excel--><xref
+                                keyref="id9YZ-09018-IN00-RJZZA-Modifying_Excel"/>. </entry>
+                        <entry> Must update. </entry>
+                    </row>
+                    <row>
+                        <entry>template_name </entry>
+                        <entry> This parameter defines the name of the OVF template which is used
+                            for VMware deployment. This parameter’s value must be the same as the
+                            name of the template uploaded to vCloud. </entry>
+                        <entry> Must update. </entry>
+                    </row>
+                    <row>
+                        <entry>vnf_network_config </entry>
+                        <entry>
+                            <p>This parameter defines the IPv6 network configuration of a particular
+                                site. However, the current VMware VCD version does not support IPv6
+                                configuration. </p>
+                            <p>This parameter is only used in JavaScript for VMWare with IPv6.</p>
+                            <p>Value: "Reserved" or network parameter. </p>
+                            <p>Example used for VMware: {"externalOAME_IPv6_ECP": {"gateway":
+                                "2016:2016::1", "prefix": "64"}, "externalIOHO_IPv6_ECP":
+                                {"gateway": "2016:2016::1", "prefix": "64"}}</p>
+                        </entry>
+                        <entry> Must update if IPv6 external network is used for ComSvc VMs.
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>set_oos_drr </entry>
+                        <entry>
+                            <p>This parameter defines whether or not a VNF stays in the OOS state
+                                after this VNF has been instantiated.</p>
+                            <p>The default value of this parameter should only be changed if an NCC
+                                procedure explicitly requires it.</p>
+                            <p>The values are true or false.</p>
+                            <p>The values of true and false are case sensitive and must be in
+                                lowercase.</p>
+                        </entry>
+                        <entry> Update the default value only if an NCC procedure explicitly
+                            requires it. </entry>
+                    </row>
+                    <row>
+                        <entry>configure_authentication </entry>
+                        <entry> This parameter must be set to true to use authconfig and the
+                            External LDAP authentication for Linux feature; otherwise, it should
+                            remain false (default). </entry>
+                        <entry> Update the default value only if External LDAP authentication with
+                            Linux is explicitly required. </entry>
+                    </row>
+                    <row>
+                        <entry>vapp_name_prefix </entry>
+                        <entry>
+                            <p>This parameter defines the prefix added in front of vApp name to make
+                                vApp name more meaningful (vApp name is provided by CBAM). This
+                                parameter applies to VMware deployments only.</p>
+                            <p>This parameter is an alphanumeric expression that must not contain
+                                the following:</p>
+                            <ul>
+                                <li>
+                                    <p>VNFD value or this regex pattern CBAM-[0-9a-f]{32}. This
+                                        means that this parameter cannot contain sequences that
+                                        consist of <varname>CBAM-</varname> followed by any
+                                        alphanumeric combination of 32 characters. For example,
+                                            <varname>CBAM-b82e9d60d613450db69f5351aa68a33d</varname>
+                                        is an invalid value for this parameter.</p>
+                                </li>
+                                <li>
+                                    <p>Any special characters such as backslash (/), forward slash
+                                        (\) or percent (%).</p>
+                                </li>
+                            </ul>
+                            <p>The maximum length of this parameter depends on the actual vCloud
+                                configuration and CBAM requirements. For example, in vCloud Director
+                                8.20 (NFV 2.0.1), vApp name is restricted to 128 characters, and
+                                CBAM uses 74 character-long vApp names without prefix. Thus, this
+                                parameter can be maximum 54 characters long (128 vCloud Director
+                                limit - 74 CBAM limit). In addition, a delimiter such as dash (-) at
+                                the end of this parameter is recommended to increase readability,
+                                for example, <varname>SPS_IG_11_1_XX_111-</varname>.</p>
+                            <p>For information on the supported NFV version, see the NCC Release
+                                Note. For the actual vCloud configuration, see the VMware site.</p>
+                            <p>If this parameter is not specified, no prefix is set on newly created
+                                vApps in vCloud and the prefixes are removed from the existing vApp
+                                names.</p>
+                        </entry>
+                        <entry> Update if required. </entry>
+                    </row>
+                    <row>
+                        <entry rowsep="0">vm_name_prefix</entry>
+                        <entry rowsep="0">This parameter defines the prefix section of the VM name
+                            present/seen on VDC and is applied to all the VMs of a particular site.
+                            This parameter is only valid for VMWare. Not available for
+                                openstack.<p>The length of &lt;vm_name_prefix> is bound by the
+                                maximum length of the VM hostname. According to RFC 1035, RFC-952
+                                and RFC-1123, the VM hostname’s maximum length is 63 characters. The
+                                VM name is defined with up to 63 alphanumeric and dash (-)
+                                characters. Note, that the dot (.) and underscore (_) characters
+                                cannot be used in the VM hostname.</p><p>If Resource Naming
+                                Convention is 1 (1 is default value of Resource Naming Convention),
+                                then vm_name_prefix be left as blank during upgrade. In this case,
+                                vnf_name will be used as vm_name_prefix.</p><p>The VM name is a
+                                concatenation of several parts and is defined as
+                                &lt;vm_name_prefix>-&lt;VM name segment>-&lt;numeric index>, for
+                                example, sps-vm1-auxiliary-2 where: - sps-vm1 is
+                                &lt;vm_name_prefix>. Note, the dash character can be</p><p>used in
+                                &lt;vm_name_prefix>.</p><p>- auxiliary is &lt;VM name segment> that
+                                is defined for every VM type. For the complete list of VM name
+                                segments, see Table 2-2, “Images” (p. 24).</p><p>- 2 is &lt;numeric
+                                index> that consists of 1-3 digits.</p><p>Parameter is only in
+                                effect when Resource Naming Convention is 4, then vm_name_prefix is
+                                mandatory.</p></entry>
+                        <entry>Update if required</entry>
+                    </row>
+                    <row>
+                        <entry rowsep="0"/>
+                        <entry rowsep="0">
+                            <p>The VM name is a concatenation of several parts and is defined as </p>
+                            <p>&lt;vm_name_prefix>&lt;name_separator>&lt;VM name segement for
+                                res4>&lt;name_separator>&lt;vnf_type_indicator>&lt;name_separator>&lt;numeric
+                                index>, </p>
+                            <p>For example, </p>
+                            <p>Resource Naming Convention is 4</p>
+                            <p>vm_name_prefix is sps-vm1</p>
+                            <p>for details on VM name segment for res_name4. </p>
+                        </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry/>
+                        <entry>
+                            <p>name_separator is "-"</p>
+                            <p>vnf_type_indicator is sv1</p>
+                            <p>res_name_suffix_start_value is 1</p>
+                            <p>res_name_suffix_length is 3</p>
+                            <p>in case of auxiliary, the VM name will be sps-vm1-aux-sv1-001</p>
+                            <p>See <xref
+                                    href="#id9YZ-09018-IN00-RJZZA-VNFD_extensions_parameters/table_sft_1fl_ylb"
+                                    format="dita"/></p>
+                        </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry rowsep="0">computer_name_prefix</entry>
+                        <entry rowsep="0">
+                            <p>This parameter is only valid for VMWare. It is not available for
+                                openstack.</p>
+                            <p>This parameter defines the prefix section of the computer name
+                                present/seen on VDC and is applied to all the VMs of a particular
+                                site.</p>
+                            <p>The length of &lt;computer_name_prefix> is bound by the maximum
+                                length of the VM hostname. According to RFC 1035, RFC-952 and
+                                RFC-1123, the VM hostname’s maximum length is 63 characters. The
+                                computer name is defined with up to 63 alphanumeric and dash (-)
+                                characters. Note, that the dot (.) and underscore (_) characters
+                                cannot be used in the VM hostname.</p>
+                            <p>The computer name is a concatenation of several parts and is defined
+                                as </p>
+                            <p>&lt;computer_name_prefix>&lt;name_separator>&lt;VM name segement for
+                                res4>&lt;name_separator>&lt;vnf_type_indicator>&lt;name_separator>&lt;numeric
+                                index>, </p>
+                        </entry>
+                        <entry>Update if required, applies to res_naming_convention=4</entry>
+                    </row>
+                    <row>
+                        <entry rowsep="0"/>
+                        <entry rowsep="0">
+                            <p>for example, </p>
+                            <p>Resource Naming Convention is 4</p>
+                            <p>computer_name_prefix is sps-comp1</p>
+                            <p>name_separator is "-"</p>
+                            <p>vnf_type_indicator is sv1</p>
+                            <p> for details on VM name segment for res_name4.</p>
+                        </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry/>
+                        <entry>
+                            <p>res_name_suffix_start_value is 1</p>
+                            <p>res_name_suffix_length is 3</p>
+                            <p>in case of auxiliary, the computer name will be
+                                sps-comp1-aux-sv1-001</p>
+                            <p>See <xref
+                                    href="#id9YZ-09018-IN00-RJZZA-VNFD_extensions_parameters/table_sft_1fl_ylb"
+                                    format="dita"/></p>
+                        </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry rowsep="0">name_separator</entry>
+                        <entry rowsep="0">
+                            <p>This parameter is only valid for VMWare. It is not available for
+                                openstack.</p>
+                            <p>This parameter is only in effect when Resource Naming Convention is
+                                4.</p>
+                            <p>Possible values are hypen "-" or can be left as blank "". </p>
+                            <p>This parameter is used for defining hostname, VM name and computer
+                                name on VDC.</p>
+                            <p>&lt;prefix>&lt;name_separator>&lt;VM name segement for
+                                res4>&lt;name_separator>&lt;vnf_type_indicator>&lt;name_separator>&lt;numeric
+                                index></p>
+                        </entry>
+                        <entry>
+                            <p>Update if required, applies to res_naming_convention=4</p>
+                            <p>Ensure that the updated value</p>
+                            <p>matches the following:</p>
+                            <p>- logrotate keys</p>
+                            <p>- keys of mariadb/bootstrap_nodes </p>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry rowsep="0"/>
+                        <entry rowsep="0">
+                            <p>For example, </p>
+                            <p>Resource Naming Convention is 4</p>
+                            <p>computer_name_prefix is sps-comp1</p>
+                            <p>name_separator is ""</p>
+                            <p>vnf_type_indicator is sv1</p>
+                            <p>for details on VM name segment for res_name4.</p>
+                        </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry/>
+                        <entry>
+                            <p>res_name_suffix_start_value is 1</p>
+                            <p>res_name_suffix_length is 3</p>
+                            <p>then computer name will be sps-comp1auxsv1001</p>
+                            <p>See <xref
+                                    href="#id9YZ-09018-IN00-RJZZA-VNFD_extensions_parameters/table_sft_1fl_ylb"
+                                    format="dita"/></p>
+                        </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry rowsep="0">vnf_type_indicator</entry>
+                        <entry rowsep="0">
+                            <p>This parameter is only valid for VMWare. It is not available for
+                                openstack.</p>
+                            <p>This parameter is only in effect when Resource Naming Convention is
+                                4.</p>
+                            <p>The values are usually sv for server (others are for example,
+                                rt=router, lb=loadbalancer, fw=firewall)</p>
+                            <p>The values are case sensitive. For example, sv1, sv2.</p>
+                            <p>This parameter is used for defining hostname, VM name and computer
+                                name on VDC.</p>
+                            <p>&lt;prefix>&lt;name_separator>&lt;VM name segement for
+                                res4>&lt;name_separator>&lt;vnf_type_indicator>&lt;name_separator>&lt;numeric
+                                index></p>
+                        </entry>
+                        <entry>
+                            <p>Update if required, applies to res_naming_convention=4</p>
+                            <p>Ensure that the updated value</p>
+                            <p>matches the following:</p>
+                            <p>- logrotate keys</p>
+                            <p>- keys of mariadb/bootstrap_nodes </p>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry rowsep="0"/>
+                        <entry rowsep="0">
+                            <p>For example, </p>
+                            <p>Resource Naming Convention is 4</p>
+                            <p>computer_name_prefix is sps-comp1</p>
+                            <p>name_separator is "-"</p>
+                            <p> for details on VM name segment for res_name4. </p>
+                        </entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry/>
+                        <entry>
+                            <p>vnf_type_indicator is SV1</p>
+                            <p>res_name_suffix_start_value is 1</p>
+                            <p>res_name_suffix_length is 3</p>
+                            <p>then computer name will be sps-comp1-aux-SV1-001</p>
+                            <p>See <xref
+                                    href="#id9YZ-09018-IN00-RJZZA-VNFD_extensions_parameters/table_sft_1fl_ylb"
+                                    format="dita"/></p>
+                        </entry>
+                        <entry/>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <p>If Resource Naming Convention 4 is used during installation on VMware, then the VM-name
+            segment is hardcoded as shown in the following table:</p>
+        <table frame="all" rowsep="1" colsep="1" id="table_sft_1fl_ylb">
+            <title>Resource Naming Convention 4</title>
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="1*"/>
+                <colspec colname="c2" colnum="2" colwidth="1*"/>
+                <thead>
+                    <row>
+                        <entry>VM name</entry>
+                        <entry>VM name segment for res_name4</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>oame</entry>
+                        <entry>oame</entry>
+                    </row>
+                    <row>
+                        <entry>auxiliary</entry>
+                        <entry>aux</entry>
+                    </row>
+                    <row>
+                        <entry>ioho</entry>
+                        <entry>ioho</entry>
+                    </row>
+                    <row>
+                        <entry>iohd</entry>
+                        <entry>iohd</entry>
+                    </row>
+                    <row>
+                        <entry>db</entry>
+                        <entry>db</entry>
+                    </row>
+                    <row>
+                        <entry>cdr</entry>
+                        <entry>cdr</entry>
+                    </row>
+                    <row>
+                        <entry>diameterapp</entry>
+                        <entry>diam</entry>
+                    </row>
+                    <row>
+                        <entry>comsvc</entry>
+                        <entry>coms</entry>
+                    </row>
+                    <row>
+                        <entry>smapp</entry>
+                        <entry>sm</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <example><b>Example:</b></example>
+        <example>
+            <table frame="all" rowsep="1" colsep="1" id="table_pgy_zgl_ylb">
+                <tgroup cols="4">
+                    <colspec colname="c1" colnum="1" colwidth="1*"/>
+                    <colspec colname="c2" colnum="2" colwidth="1*"/>
+                    <colspec colname="c3" colnum="3" colwidth="1*"/>
+                    <colspec colname="c4" colnum="4" colwidth="1*"/>
+                    <thead>
+                        <row>
+                            <entry>Configured parameters</entry>
+                            <entry>Example 1</entry>
+                            <entry>Example 2</entry>
+                            <entry>Example 3</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>Vmname prefix</entry>
+                            <entry>ts8spss</entry>
+                            <entry>Ts8spss</entry>
+                            <entry>MI-SPSV50</entry>
+                        </row>
+                        <row>
+                            <entry>computername prefix</entry>
+                            <entry>ts8spss</entry>
+                            <entry>Ts8spss</entry>
+                            <entry>mi01v-sps-sm</entry>
+                        </row>
+                        <row>
+                            <entry>hostname prefix</entry>
+                            <entry>ts8spss</entry>
+                            <entry>Ts8spss</entry>
+                            <entry>mi01v-sps-sm</entry>
+                        </row>
+                        <row>
+                            <entry>Type indicator</entry>
+                            <entry>sv1</entry>
+                            <entry>sv4</entry>
+                            <entry>sv</entry>
+                        </row>
+                        <row>
+                            <entry>Separator</entry>
+                            <entry>Blank</entry>
+                            <entry>Blank</entry>
+                            <entry>-</entry>
+                        </row>
+                        <row>
+                            <entry>Start suffix</entry>
+                            <entry>0</entry>
+                            <entry>1</entry>
+                            <entry>0</entry>
+                        </row>
+                        <row>
+                            <entry>Suffix length</entry>
+                            <entry>2</entry>
+                            <entry>3</entry>
+                            <entry>2</entry>
+                        </row>
+                        <row>
+                            <entry>internal network name configured</entry>
+                            <entry>DX01_VDC02_Internal20</entry>
+                            <entry>DX01_VDC02_Internal20</entry>
+                            <entry>DX01_VDC02_Internal20</entry>
+                        </row>
+                        <row>
+                            <entry>External network name configured</entry>
+                            <entry>DX01_DIRECT_02</entry>
+                            <entry>DX01_DIRECT_02</entry>
+                            <entry>DX01_DIRECT_02</entry>
+                        </row>
+                        <row>
+                            <entry namest="c1" nameend="c4"><b>Values per VM after
+                                installation</b></entry>
+                        </row>
+                        <row>
+                            <entry>VM_name</entry>
+                            <entry>ts8spssoamesv100, ts8spssoamesv101</entry>
+                            <entry>Ts8spssoamesv4001,<p>Ts8spssoamesv4002</p></entry>
+                            <entry>MI-SPSV50-oame-sv-00, <p>MI-SPSV50-oame-sv-01</p></entry>
+                        </row>
+                        <row>
+                            <entry/>
+                            <entry>ts8spsscomssv100, <p>ts8spsscomssv101,
+                                    </p><p>ts8spsscomssv102</p></entry>
+                            <entry>Ts8spsscomssv4001, Ts8spsscomssv4002, Ts8spsscomssv4003</entry>
+                            <entry>MI-SPSV50-diam-sv-00, MI-SPSV50-sm-sv-00,
+                                MI-SPSV50-coms-sv-00</entry>
+                        </row>
+                        <row>
+                            <entry>Hostname</entry>
+                            <entry>ts8spsscomssv100, ts8spsscomssv101, ts8spsscomssv102</entry>
+                            <entry>Ts8spsscomssv4001, Ts8spsscomssv4002, Ts8spsscomssv4003</entry>
+                            <entry>mi01v-sps-sm-diam-sv-00, mi01v-sps-sm-sv-00,
+                                mi01v-sps-sm-coms-sv-00</entry>
+                        </row>
+                        <row>
+                            <entry morerows="1">computer name</entry>
+                            <entry>ts8spssoamesv100, ts8spssoamesv101</entry>
+                            <entry>Ts8spssoamesv4001, Ts8spssoamesv4002</entry>
+                            <entry>mi01v-sps-sm-oame-sv-00, mi01v-sps-sm-oame-sv-01</entry>
+                        </row>
+                        <row>
+                            <entry>ts8spsscomssv100, ts8spsscomssv101, ts8spsscomssv102</entry>
+                            <entry>Ts8spsscomssv4001, Ts8spsscomssv4002, Ts8spsscomssv4003</entry>
+                            <entry>mi01v-sps-sm-diam-sv-00, mi01v-sps-sm-sv-00,
+                                mi01v-sps-sm-coms-sv-00</entry>
+                        </row>
+                        <row>
+                            <entry morerows="1">Network name per VM on VDC</entry>
+                            <entry>DX01_VDC02_Internal20</entry>
+                            <entry>DX01_VDC02_Internal20</entry>
+                            <entry>DX01_VDC02_Internal20</entry>
+                        </row>
+                        <row>
+                            <entry>DX01_DIRECT_02</entry>
+                            <entry>DX01_DIRECT_02</entry>
+                            <entry>DX01_DIRECT_02</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </example>
+    </conbody></concept>

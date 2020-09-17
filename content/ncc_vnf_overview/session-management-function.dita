@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9YZ-09018-UG00-PCZZA-d1e7718"><title>Session Management Function (SMF) and PCF</title><conbody>
+<section id="section_fnd_k5g_jlb">
+<title>SMF/PCF interworking</title>
+<p>Policy supports the 5G Npcf interface and the related functionality needed to support
+                                                  interworking with a Session Management Function
+                                                  (SMF or 5G gateway). The Npcf and Nsmf are the 5G
+                                                  interfaces that enable the PCF to have dynamic
+                                                  policy and charging control at an SMF for the
+                                                  signalling of policy and charging decisions. For
+                                                  5G, the NCC supports a request/response mechanism
+                                                  between the SMF and the PCF. The SMF-PCF N7
+                                                  interface in a 5G environment can be considered
+                                                  the equivalent of a Gx interface between a
+                                                  PGW/PCEF and a PCRF in a 4G environment. </p>
+<p>Policy supports both 4G and 5G traffic simultaneously acting as either a PCRF or a 5G PCF. Any
+                                                  given session will be either 4G or 5G, and is
+                                                  handled separately from either a 4G/legacy core or
+                                                  a 5G core. Only the HTTP/2 interface and its
+                                                  interactions are displayed. You will not see any
+                                                  Diameter related alarms or traps from PCF for 5G
+                                                  sessions, whether the 5G session arrived by 5G SBI
+                                                  via 5GNR or the 4G EPC session arrived from the
+                                                  SMF. </p>
+<p>The following figure shows a generic call flow for 5G messages.</p>
+<fig id="fig_gnd_k5g_jlb">
+<title>Generic call flow for PDU session establishment showing SMF requesting
+                    policy</title>
+<image href="../images/generic5gcallflow_default.png" id="image_hnd_k5g_jlb" scale="70"/>
+</fig>
+<p>See <!--xref URI: #sessest--><xref keyref="id9YZ-09018-UG00-PCZZA-d1e7718/sessest"/>
+                for more detailed information about PDU session establishment.</p>
+<p>When Policy receives a 5G SBI message from the 5G network, the 5G message request is processed
+                                                  and a 5G message response corresponding to the
+                                                  original request is sent back. If a Diameter Gx
+                                                  message is received directly by the PCF and NOT
+                                                  from the Converter/5G network, the NCC PCF can
+                                                  respond in-turn with a Diameter message itself
+                                                  that is compliant with native 4G Diameter
+                                                  messages. </p>
+<p>5G networks connect with PDU sessions. The following functions are supported:</p>
+<ul id="ul_ind_k5g_jlb">
+<li>
+<p>establishment of PDU Session by the SMF</p>
+</li>
+<li>
+<p>request for policy and charging control decision from the SMF to the PCF</p>
+</li>
+<li>
+<p>provisioning of policy and charging control decision from the PCF to the
+                        SMF</p>
+</li>
+<li>
+<p>delivery of network events and PDU Session parameters from the SMF to the
+                        PCF</p>
+</li>
+<li>
+<p>termination of the PDU Session by the SMF or the PCF</p>
+</li>
+</ul>
+<note>
+<p>EUTRAN-NB-IoT is also supported as a 5G RAT type.</p>
+</note>
+<p>5G web service call flows between the PCF and the SMF are as follows:</p>
+<ul id="ul_jnd_k5g_jlb">
+<li>
+<p>
+<!--xref URI: #sessest-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e7718/sessest"/>PDU session
+                        establishment</p>
+</li>
+<li>
+<p>
+<!--xref URI: #sessmod-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e7718/sessmod"/>PDU session
+                        modification (initiated by SMF and/or PCF)</p>
+</li>
+<li>
+<p>
+<!--xref URI: #sessterm-->
+<xref keyref="id9YZ-09018-UG00-PCZZA-d1e7718/sessterm"/>PDU session
+                        termination</p>
+</li>
+</ul>
+<p>4G terms are mapped to 5G as follows:</p>
+<ul id="ul_knd_k5g_jlb">
+<li>
+<p>the IP-CAN session of TS 23.203 [4] maps to the PDU Session in 5G</p>
+</li>
+<li>
+<p>the APN of TS 23.203 [4] maps to DNN in 5G</p>
+</li>
+<li>
+<p>the IP-CAN bearer of TS 23.203 [4] maps to the QoS Flow in 5G</p>
+</li>
+<li>
+<p>the PCRF of TS 23.203 [4] maps to the PCF in 5G</p>
+</li>
+<li>
+<p>the PCEF of TS 23.203 [4] maps to the combination of SMF and UPF in 5G</p>
+</li>
+</ul>
+</section>
+<section id="sessest">
+<title>PDU session establishment</title>
+<p>As shown in the following figure, the SMF contacts the PCF to get policy for a new
+                PDU session which is being established. This is the 5G equivalent to a Gx-CCR-I. The
+                PCF subscribes for events from the SMF, which could be per PDU session.</p>
+<fig id="fig_mnd_k5g_jlb">
+<title>PDU session establishment</title>
+<image href="../images/pduestablish_default.png" id="image_nnd_k5g_jlb"/>
+</fig>
+</section>
+<section id="sessmod">
+<title>PDU session modification</title>
+<p>As shown in the following figure, the SMF notifies the PCF of an event (among the
+                events the PCF subscribed to). This is the 5G equivalent to a Gx-CCR-U. The PCF may
+                push an updated policy to the SMF as a result.</p>
+<fig id="fig_ond_k5g_jlb">
+<title>PDU session modification</title>
+<image href="../images/updatnotify_default.png" id="image_pnd_k5g_jlb"/>
+</fig>
+<p>The "Npcf_SMPolicyControl_UpdateNotify" web service call is to a URL that the SMF
+                provided to the PCF (a 'callback' URL) during the session establishment above.</p>
+</section>
+<section id="sessterm">
+<title>PDU session termination</title>
+<p>As shown in the following figure, the SMF is terminating the PDU session and notifies
+                the PCF. This is the 5G equivalent of a Gx-CCR-T.</p>
+<fig id="fig_qnd_k5g_jlb">
+<title>PDU session termination</title>
+<image href="../images/sessdelete_default.png" id="image_rnd_k5g_jlb"/>
+</fig>
+</section>
+</conbody></concept>

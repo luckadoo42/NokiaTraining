@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e20069"><title>Redirection functionality</title><conbody>
+<section><title>Overview</title>
+<p>NCC supports redirection to an URL, or graceful termination of the service. For example, during a
+                session, when the credit runs low or is exhausted, NCC can redirect the call for
+                recharging, and send a RAR for the session after recharge to ensure the continuity
+                of the session. External Equipment (EE) tries to book quota slices. But, as there is
+                insufficient credit in the user account to accept the reservation, the charging
+                service responds with a result code to warn the EE of non-availability of credit in
+                the sub-session. After the account is recharged, the OCS sends RAR for
+                re-authorization of credit and call continuity. A redirection timer can be used to
+                add to the slice validity time (for the session) when redirection has to happen.
+                This allows redirection to happen without closing the session. The corresponding
+                TEMEntities get updated as per the validity time in the rule.</p>
+<p>The graceful termination of the ongoing session happens when the subscriber has consumed all the final granted units. </p>
+<p>The <i>Final-Unit-Action</i> AVP defines the behavior of service element when the user account cannot cover the cost of the service and must always be present when the <i>Final-Unit-Indication</i> AVP is included in a command.</p>
+<p>The <i>Restriction-Filter-Rule</i> AVP or the <i>Filter-Id</i> AVP is present in the Credit-Control-Answer message to check whether the user is also allowed to access other services not accessible through the address given in the <i>Redirect-Server</i> AVP.</p>
+<p>Following are the <i>Final-Unit-Action</i> AVP values:</p><ul>
+<li>
+<p>
+<varname>TERMINATE</varname>: If the <i>Final-Unit-Action</i> AVP is set to <varname>TERMINATE</varname>, then no other AVPs must be present.</p>
+</li>
+<li>
+<p>
+<varname>REDIRECT</varname>: If the <i>Final-Unit-Action</i> AVP is set to <varname>REDIRECT</varname>, then at least the <i>Redirect-Server</i> AVP must be present.</p>
+</li>
+<li>
+<p>
+<varname>RESTRICT_ACCESS</varname> (currently not supported): If the <i>Final-Unit-Action</i> AVP is set to <varname>RESTRICT_ACCESS</varname>, then either the <i>Restriction-Filter-Rule</i> AVP or the <i>Filter-Id</i> AVP must be present.</p>
+</li>
+</ul>
+<p>See <!--xref URI: #fuiavpformat--><xref href="#id9yz-09126-ug01-pczza-sp1-d1e20069/fuiavpformat"
+                    format="dita"/> for FUI AVP format.</p>
+<note>
+<p>Redirection for main balance threshold is not supported. </p>
+</note>
+<p>See section <uicontrol>5.6 Graceful Service Termination</uicontrol> in <uicontrol>RFC 4006</uicontrol> for more details.</p>
+</section>
+<section><title>Assumptions</title>
+<p>Following assumptions apply to redirection feature:</p><ul>
+<li>
+<p>Redirection is not applicable to the threshold linked to group or resources linked to group.</p>
+</li>
+<li>
+<p>Redirection support for Ro voice calls is not supported.</p>
+</li>
+<li>
+<p>In case of multiple MSCC, if redirection is done for a Rating Group (RG), then same is not applicable for other RG, if applicable.</p>
+</li>
+<li>
+<p>In cases of redirection where some grant (GSU) is also given in CCA, it is assumed that PGW does the redirection after consumption of the GSU units.</p>
+</li>
+</ul>
+</section>
+<section><title>Redirection and termination behavior</title>
+<p>NCC behaves differently based on the configurations made. Few cases are listed as follows: </p><ul>
+<li>
+                    <p>
+                        <uicontrol>Graceful session termination</uicontrol>: Consider that an IMS
+                        session is ongoing. Subscriber credit finishes including all
+                        buckets/balances used for charging the ongoing session. In this case,
+                            <i>Final Unit Indication</i> in CCA.FUA = <varname>TERMINATE</varname>.
+                        That is, FUI AVP is sent with terminate action. The session gets terminated
+                        gracefully. See the rule in the following figure.</p>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.0/Redirect_ex_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-redirect_ex_default.png"
+                        scale="50"/>
+                </li>
+<li>
+                    <p>
+                        <uicontrol>Redirection to a URL</uicontrol>: Consider that a Gy session is
+                        ongoing. Subscriber credit finishes including all buckets or balances used
+                        for charging the ongoing session. In this case, consider that a redirection
+                        URL is configured. Subscriber is redirected to the configured URL.
+                        Subscriber recharges. RAR is sent to gateway in case of Gy session. To
+                        continue the session, the new MSCC in update and terminate feature is
+                        used.</p>
+                    <!--MMO resource relative URI: ../Graphics/Release_19.0/Redirect_ex0_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-redirect_ex0_default.png"
+                        scale="50"/>
+                </li>
+</ul>
+<p>Note the following additional points:</p><ul>
+<li>
+<p>Operators can configure the redirect URL per <i>Rating Result Code</i> from rating. This ensures that the redirection is made to the right server based on the condition of the call. There can be different servers to redirect to based on the status of call (result_code). For example, if the account is in barred state, redirect to customer care. If a subscription is exhausted, redirect to self-care. Operators can create any condition that is supported in the <i>RATING_POST_PROCESSING</i> trigger. In most of the cases, MSCC and rating result code is used.</p>
+</li>
+<li>
+<p>NCC behaves differently based on the value indicated in the <i>Final-Unit-Action</i> AVP. Based
+                        on the value, NCC may perform the actions
+                            <systemoutput>TERMINATE</systemoutput> or
+                            <systemoutput>REDIRECT</systemoutput>.</p>
+</li>
+<li>
+<p>Operators can also configure NCC not to send <i>Final-Unit-Action</i> set to
+                            <systemoutput>REDIRECT</systemoutput>, but
+                            <systemoutput>TERMINATE</systemoutput>, which can be done using
+                        rules.</p>
+</li>
+<li>
+<p>If the <i>Final-Unit-Indication</i> action is set to <systemoutput>TERMINATE</systemoutput> and if the subsequent call is of type <systemoutput>Update</systemoutput>, then RSU is ignored and the session is terminated.</p>
+</li>
+<li>
+<p>If the MSCC result code is 4012 and FUI rules with redirect action is configured in the <i>RATING_POST_PROCESSING</i> trigger, then the validity time of Gy session is set to 24 hours. The session audit clears the session after this time. The <i>Validity Time</i> configured in the rule does not impact the default behavior.</p>
+</li>
+</ul></section>
+    <section id="fuiavpformat"><title>FUI AVP</title>
+<p>The FUI AVP format is as follows.</p>
+<fig>
+<codeblock>Final-Unit-Indication ::= &lt; AVP Header: 430 &gt;
+                                { Final-Unit-Action }
+                               *[ Restriction-Filter-Rule ]
+                               *[ Filter-Id ]
+                                [ Redirect-Server ]</codeblock>
+</fig>
+</section>
+<section>
+<p><b>Terminate action</b></p>
+<p>The <i>Final-Unit-Indication</i> AVP with <i>Final-Unit-Action</i>
+                    <systemoutput>TERMINATE</systemoutput> does not include any other information.
+                    When the subscriber has consumed the final granted units, the service element
+                    terminates the service. This is the default handling applicable whenever an
+                    unsupported <i>Final-Unit-Action</i> value is received. A final
+                    Credit-Control-Request message to NCC is sent when the
+                        <i>Final-Unit-Indication</i> AVP indicating action
+                        <systemoutput>TERMINATE</systemoutput> was present. The
+                        <i>CC-Request-Type</i> AVP in the request is set to the value
+                        <varname>TERMINATION_REQUEST</varname>.</p>
+</section>
+<section>
+<p><b>Redirect action</b></p>
+<p>The <i>Final-Unit-Indication</i> AVP with  <i>Final-Unit-Action</i>
+<systemoutput>REDIRECT</systemoutput> indicates that upon consumption of the final granted units, the subscriber must be redirected to the address specified in the <i>Redirect-Server</i> AVP.</p>
+</section>
+<section><title>Result codes</title>
+<p>See <!--xref URI: ../Chapters/a-ResultCode.xml#cresultcode--><xref href="cresultcode.dita"/> for
+                charging result codes.</p>
+</section>
+<section><title>Examples</title>
+<p>All the scenarios listed in this section work for IMS as well. Configure FUI rules in <i>GY_CREDIT_REQUEST</i> only in case device is in barred state and request type is <varname>INITIAL</varname>.</p>
+<sectiondiv>
+<p><b>Example 1: Not enough credit (partial reservation case)</b></p>
+<p>NCC receives a GY CCR(U) but does not have sufficient balance to reserve all the RSU. Only
+                    partial reservation is possible. It sends CCA with 2001 result code and FUI AVP
+                    with 2002 at MSCC level. </p>
+<p>Configure a rule with <i>RATING_POST_PROCESSING</i> trigger as follows:</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_19.0/Redirect_ex1_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-redirect_ex1_default.png"/>
+</fig>
+<p>For CCA with FUI AVP within MSCC AVP for update message is received.</p>
+<fig>
+<codeblock>AVP Validity-Time: 448 , M: true              , V: 0      , value: 390 (unsigned32)
+  Group Final-Unit-Indication: 430             , M: true              , V: 0
+    AVP Final-Unit-Action: 449       , M: true              , V: 0      , value: 1 (enumerated)
+    Group Redirect-Server: 434     , M: true              , V: 0
+        AVP Redirect-Address-Type: 433       , M: true              , V: 0      , value: 2 (enumerated)
+        AVP Redirect-Server-Address: 435    , M: true              , V: 0      , value: www.redirectURLRSV.com (UTF8String)
+</codeblock>
+</fig>
+<p>In this example, the validity time is 390. 360 is from slicing profile + 30 is configured in the rule.</p>
+<p>When the call is redirected to the specified URL and the device renews the subscription, NCC
+                    sends a RAR message followed by RAA from the PGW. Thereafter, PGW comes back
+                    with CCR(U) for the same session and the call continues.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Example 2: No balance available (4012 case)</b></p>
+<p>NCC receives a GY CCR(U) but does not have balance even for partial reservation. It sends CCA
+                    with 2001 result code and FUI AVP with 4012 at MSCC level.</p>
+<p>Configure a rule with <i>RATING_POST_PROCESSING</i> trigger as follows:</p>
+<fig>
+<!--MMO resource relative URI: ../Graphics/Release_19.0/Redirect_Ex2_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-redirect_ex2_default.png"/>
+</fig>
+<p>CCA with FUI AVP for update message is received.</p>
+<fig>
+<codeblock>Group Final-Unit-Indication: 430 , M: true ,
+V: 0
+AVP Final-Unit-Action: 449 , M: true , V: 0 ,
+value: 1 (enumerated)
+Group Redirect-Server: 434 , M: true , V: 0
+AVP Redirect-Address-Type: 433 , M: true , V:
+0 , value: 2 (enumerated)
+AVP Redirect-Server-Address: 435 , M: true , V:
+0 , value: www.notEnoughBalanceRedirect.com (UTF8String)
+</codeblock>
+</fig>
+<p>In this case, GSU is not granted. As specified in the assumptions, the validity time of Gy session is set to 24 hours.</p>
+</sectiondiv>
+<sectiondiv>
+                <p><b>Example 3: Account is in barred state</b></p><p>Charging is done from the
+                    account (main balance) and it is in barred state.</p><p>Condition is on rating
+                    result code <systemoutput>20007 NOT_ENOUGH_CREDIT_ACCOUNT_BARRED</systemoutput>
+                </p><p>Configure the following charging rule for <i>RATING_POST_PROCESSING</i>
+                    trigger.</p>
+                <userinput>if CALL_COMMON.Rating.Result-Code = 20007 then
+                    RATING.Final-Unit-Action-Redirect ( "http://www.nokia.com" , 60,
+                    RedirectAddressType_URL ) </userinput>
+                <p>CCA with FUI AVP successful initial message received.</p><fig>
+                    <codeblock>Group Final-Unit-Indication: 430             , M: true              , V: 0
+    AVP Final-Unit-Action: 449       , M: true              , V: 0      , value: 1 (enumerated)
+    Group Redirect-Server: 434     , M: true              , V: 0
+        AVP Redirect-Address-Type: 433       , M: true              , V: 0      , value: 2 (enumerated)
+        AVP Redirect-Server-Address: 435    , M: true              , V: 0      , value: http://www.nokia.com (UTF8String)
+</codeblock>
+                </fig>
+            </sectiondiv>
+<sectiondiv>
+                <p><b>Example 4: Account barred during update</b></p><p>NCC receives GY CCRI and
+                    sends CCA. </p><p>The account state is changed to barred.</p><p>NCC receives GY
+                    CCRU (an update request) and sends CCA with 4010 mscc result code, FUI AVP at
+                    MSCC level.</p><p>Charging is done from the main account
+                    balance.</p><p>Configure a charging rule with RATING_POST_PROCESSING trigger.
+                    </p><p>Condition is on rating result code that is <systemoutput>41019
+                        NEW_RES_NOT_ALLOWED_ACCOUNT_BARRED</systemoutput>.</p>
+                <userinput>if CALL_COMMON.Rating.Result-Code = 41019 then
+                    RATING.Final-Unit-Action-Redirect ( "http://www.nokia.com" , 60,
+                    RedirectAddressType_URL)</userinput>
+                <p>CCA with FUI AVP for update message is received.</p>
+                <fig>
+                    <codeblock>Group Final-Unit-Indication: 430             , M: true              , V: 0
+    AVP Final-Unit-Action: 449       , M: true              , V: 0      , value: 1 (enumerated)
+    Group Redirect-Server: 434     , M: true              , V: 0
+        AVP Redirect-Address-Type: 433       , M: true              , V: 0      , value: 2 (enumerated)
+        AVP Redirect-Server-Address: 435    , M: true              , V: 0      , value: http://www.nokia.com (UTF8String)
+</codeblock>
+                </fig>
+            </sectiondiv>
+</section>
+</conbody></concept>

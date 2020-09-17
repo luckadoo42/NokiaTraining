@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="message_filters">
+    <title>Message filters</title>
+    
+    <conbody>
+        <section id="section_q1q_12p_plb">
+            <title>Message filters and routing functions</title>
+            <p>To support the primary Diameter message routing functions of the NCC, the NCC uses
+                the filter group infrastructure to build conditional rules. This functionality is
+                separate from the Rule engine functionality but uses the same contexts to formulate
+                a condition to provide a flexible framework for Diameter message representation and
+                manipulation.</p>
+            <p>The message context is a wrapper around a Diameter message and makes the Diameter
+                AVPs for a message type available in the same hierarchical structure as defined in
+                the relevant standards document for the Diameter application.</p>
+            <p>The NCC uses message filters for base Diameter message validation and application
+                plugin message processing. For a given context, a filter applies a specified action
+                to a message based on a specified attribute.</p>
+            <p>A context is a source of information and/or a place to apply an action. The most
+                commonly used context for the NCC is the message context, which consists of
+                attributes and actions related to a Diameter message. The NCC also uses the system
+                context which, among other things, contains the system overload state. The NCC
+                creates a separate message-specific context for each supported Diameter message
+                type, including the basic Diameter request and Diameter answer message types.</p>
+            <p>An attribute is something that can be accessed/read, for example an attribute could
+                be the application type, a command, or AVPs. An action is something that can be
+                invoked. For example, modifying an incoming request before forwarding or populating
+                a response message to send back to the origin host. </p>
+            <p>A message filter consists of a list of criterion and a list of actions. The criteria
+                are matched against incoming messages. If the message matches all of the criteria,
+                the NCC executes the corresponding action(s) of the message filter. All of the
+                actions of a matching filter are executed. After evaluating one filter, the NCC
+                proceeds to the next filter if applicable. If that filter is deemed to be a match
+                for the incoming messages then the action(s) of that filter are executed.</p>
+            <p>Message filters are used under the Diameter Configuration icon and under the
+                Subscriber Manager icon of the SM GUI for:<ul id="ul_gqn_d2p_plb">
+                    <li>Overload protection</li>
+                    <li>Throttling</li>
+                    <li>Message validation</li>
+                    <li>Diameter routing</li>
+                    <li>White listing</li>
+                    <li>Message tracing</li>
+                </ul></p>
+            <p>For each application listed above, a filter may be built with the criteria and
+                actions that will be sequentially applied to each message. Filters can be built by
+                adding elements from the menu on the left in the editor.</p>
+            <p>The options available are dependent on the element that is currently selected. For
+                example, filter criterion can only be added when a filter is selected. The XML
+                source of a message filter may be viewed by switching to Text mode.</p>
+            <p>Note that when building a filter, any necessary filter criteria must be placed before
+                the filter action(s) in the GUI or API call. Filters can be dragged up or down to
+                determine the sequence in which they should be evaluated.</p>
+            <p>When using applications and commands as part of message filter criteria values can be
+                either textual names or numeric values, for example, criteria such as Application =
+                “Gx” or Command = “CCR”. Because a command’s definition is relative to a particular
+                application, command criteria cannot appear without also defining the application
+                criteria in the same message filter.</p>
+        </section>
+    </conbody>
+</concept>

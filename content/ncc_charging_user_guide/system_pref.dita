@@ -1,0 +1,1575 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-system_pref"><title>Charging application preferences</title><conbody>
+<section id="sys_pref"><title>Overview</title>
+<p>The NCC application preferences are maintained in a common entity called <i>TPASystem</i>. All
+                the application preferences are loaded on NCC application initialization within
+                    <i>TPASystem</i>. These application preferences are then loaded with some
+                default values present in the <filepath>Constants</filepath> file.</p>
+<table pgwide="1" colsep="1" rowsep="1" scale="80" id="pref">
+                <title>Application preferences</title>
+                <tgroup cols="4">
+                    <colspec colname="col1" colwidth="1.49*" colsep="1" rowsep="1"/>
+                    <colspec colname="col2" colwidth="1.41*" colsep="1" rowsep="1"/>
+                    <colspec colname="col3" colwidth="3.34*" colsep="1" rowsep="1"/>
+                    <colspec colname="COLSPEC0" colwidth="1*" colsep="1" rowsep="1"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Parameter</p>
+                            </entry>
+                            <entry>
+                                <p>Type</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                            <entry>
+                                <p>Introduced in release</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>Aggregate Counter Priority </entry>
+                            <entry> Integer (&gt;1) </entry>
+                            <entry>
+                                <p>This parameter is used in virtual policy counter sorting logic.
+                                    This value is used as charging service priority parameter for
+                                    aggregate counters.</p>
+                                <p>Default: 1</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Allow Out Of Sequence Request </entry>
+                            <entry> Boolean </entry>
+                            <entry>
+                                <p>This parameter allows out of sequence request to handle assume
+                                    positive requests. If this parameter value is true, then it
+                                    allows the requests with lower CC-Request-Number by comparing
+                                    expected request number from session</p>
+                                <p>Default: False</p>
+                            </entry>
+                            <entry> 20.6 </entry>
+                        </row>
+                        <row>
+                            <entry>Allowed Concurrent Gy Sessions per Device</entry>
+                            <entry>Integer</entry>
+                            <entry>
+                                <p>This parameter is used to limit the number of concurrent Gy
+                                    sessions allowed per device. </p>
+                                <p>On receiving the request to create a new Gy session for a device,
+                                    if this number is already reached then the oldest Gy session for
+                                    that device is deleted (any reservations with that session are
+                                    committed) and new session is created.</p>
+                                <p>Default: 0 (no restriction on number of concurrent Gy sessions
+                                    for each device).</p>
+                            </entry>
+                            <entry>20.9</entry>
+                        </row>
+                        <row>
+                            <entry>AmountToReserve for Home Location </entry>
+                            <entry> Integer </entry>
+                            <entry> Reserved for future use. </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>AmountToReserve for Roaming Location </entry>
+                            <entry> Integer </entry>
+                            <entry> Reserved for future use. </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>AutoGen SPR Ids</entry>
+                            <entry>Boolean</entry>
+                            <entry>Used to enable the automatic generation of IDs for subscriber
+                                model entities (Device, Account, User and Group). When this
+                                parameter is set to <varname>true</varname>, auto-generated UUIDs
+                                are stored as ID in Device, Account, User and Group entities. <p>The
+                                    user friendly ID given in provisioning request will be stored as
+                                    entity Name. These auto generated Ids (UUIDs) will not be
+                                    visible in the Provisioning request/Response, EDR/CDR,
+                                    Notification and Rules.</p><p>Valid values are <i>true</i> and
+                                        <i>false</i>.</p><p>Default value is
+                                <i>false</i>.</p></entry>
+                            <entry>20.9</entry>
+                        </row>
+                        <row>
+                            <entry>Assume Positive Flag </entry>
+                            <entry> Boolean </entry>
+                            <entry> If this flag is set to <varname>True</varname>, then assume
+                                positive feature is enabled. Supported values are
+                                    <varname>True</varname> and <varname>False</varname>. </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Assume Positive GSU </entry>
+                            <entry> Long </entry>
+                            <entry>
+                                <p>This value provides the static GSU to be allocated in cases where
+                                    the assume positive feature is used.</p>
+                                <p>Supported range is greater than 0 and less than long Max
+                                    value.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Assume Positive VT </entry>
+                            <entry> Integer </entry>
+                            <entry>
+                                <p>This value provides the static validity time in cases where the
+                                    assume positive feature is used.</p>
+                                <p>Supported range is greater than 0 and less than long Max
+                                    value.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Balance Manager Host Id </entry>
+                            <entry> String </entry>
+                            <entry> Reserved for future use. </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Balance Manager Usage Configuration </entry>
+                            <entry> String </entry>
+                            <entry> Reserved for future use. </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>BOU Activation Priority </entry>
+                            <entry> String </entry>
+                            <entry>
+                                <p>This value provides the activation priority for a Bundle On Use
+                                    type of bundle.</p>
+                                <p>The supported values are as follows:</p>
+                                <ul>
+                                    <li>
+                                        <p>
+                                            <varname>DEFAULT</varname>: BOU bundle is activated when
+                                            the conditions configured in the rules are met,
+                                            irrespective of the actual usage.</p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <varname>ON_RESERVATION</varname>: BOU bundle is
+                                            activated when the resources are reserved. </p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <varname>ON_COMMIT</varname>: BOU bundle is activated
+                                            only when the actual usage is reported.</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>BOU Usage Priority </entry>
+                            <entry> String </entry>
+                            <entry>
+                                <p>This value provides the sorting order for usage of the Bundle On
+                                    Use type of bundle.</p>
+                                <p>The supported values are as follows:</p>
+                                <ul>
+                                    <li>
+                                        <p>
+                                            <varname>DEFAULT_SORTING_ORDER</varname>: The BOU
+                                            bundles are activated based on the existing CS priority
+                                            order.</p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <varname>LEAST_PRIORITY_ORDER</varname>: The BOU bundles
+                                            are activated only when no other resource is
+                                            available.</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Calculation Precision</entry>
+                            <entry>Integer</entry>
+                            <entry>This is the precision value that is considered while doing
+                                mathematical calculation on monetary resources like Account balance
+                                or Monetary bucket.<p>Default: 5</p></entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>CDR custom flag </entry>
+                            <entry> Boolean </entry>
+                            <entry>
+                                <p>If this flag is set to <varname>true</varname>, then custom CDR
+                                    tags are supported.</p>
+                                <p>Valid values are <varname>true</varname> and
+                                        <varname>false</varname>.</p>
+                                <p>Default value is <varname>false</varname>.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>CDR Generated per MSCC </entry>
+                            <entry> Boolean </entry>
+                            <entry>
+                                <p>If this flag is set to <varname>true</varname>, then CDRs are
+                                    generated per MSCC. Otherwise, CDRs are generated per request
+                                    (CCR).</p>
+                                <p>Valid values are <varname>true</varname> and
+                                        <varname>false</varname>.</p>
+                                <p>Default value is <varname>true</varname>.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>CDR Mapping Cache Reload Interval (In Minutes) </entry>
+                            <entry> Integer </entry>
+                            <entry>
+                                <p>Defines the time interval in minutes in which the CDR mapping
+                                    cache is reloaded across different nodes. This is used to
+                                    maintain the integrity of cache across different nodes.</p>
+                                <p>Valid values: 1 to 2147483647 </p>
+                                <p>Default value: 1440</p>
+                                <p>
+                                    <b>Note:</b> This application preference applies to both
+                                    charging and policy.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Change-Plan:Subscription Scheduled Time Without Final State (in
+                                secs) </entry>
+                            <entry> Integer </entry>
+                            <entry>
+                                <p>This attribute can be used to update the configured time to
+                                    delete the subscription when NCC executes <i>ChangePlan</i>
+                                    using either <b>Immediately with Prorating</b>, or
+                                        <b>Immediately</b>, or<b> On Next Cycle mode</b>, or
+                                        <uicontrol>IMMEDIATE_BACKDATED</uicontrol> and the
+                                    subscription does not have a final state configured for it's
+                                    entity lifecycle. </p>
+                                <p> The default value is <varname>86400 secs</varname>.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry rowsep="0">Clear session if no RG Active </entry>
+                            <entry rowsep="0"> Boolean </entry>
+                            <entry rowsep="0"> Currently, the result code at command level in CCA is
+                                always set to 2001 irrespective of the result code values at MSCC
+                                level. Therefore, a new configurable boolean parameter named
+                                    <varname>clear session if no RG active</varname> has been
+                                introduced in charging and its applicable only for CCAi. <p>If this
+                                    flag is false, then the current behavior where CCA is always
+                                    2001 is followed. </p><p>If this flag is true and an active MSCC
+                                    or RG does not exist for a given session, then perform the
+                                    following task:</p><ul id="ul_yqx_2jw_xmb">
+                                    <li>
+                                        <p>Set the MSCC level result code at command level, if only
+                                            one MSCC is returned in CCAi.</p>
+                                    </li>
+                                    <li>
+                                        <p>Set the same error result code at command level and
+                                            session is not created, if there are multiple MSCCs
+                                            returned in the CCAi with the same Error Result
+                                            code.</p>
+                                    </li>
+                                    <li>
+                                        <p>Set the result code to 2001 at command level and session
+                                            is created, if there are multiple MSCCs returned in CCAi
+                                            with different Error Result code.</p>
+                                    </li>
+                                </ul><p>There is no change in behavior for following cases (where
+                                    CCA = 2001) irrespective of the value set for <varname>Clear
+                                        session if no RG</varname> active parameter:</p><ul
+                                    id="ul_grx_2jw_xmb">
+                                    <li>
+                                        <p>Event call behavior </p>
+                                    </li>
+                                    <li>
+                                        <p>CCRt behavior where the root level result code is set to
+                                                <varname>2001</varname> irrespective of the MSCC
+                                            result code and always terminate the session</p>
+                                    </li>
+                                </ul></entry>
+                            <entry rowsep="0"/>
+                        </row>
+                        <row>
+                            <entry>CS Selection Order </entry>
+                            <entry> Enum </entry>
+                            <entry>
+                                <p>This attribute allows you to sort the charging service based on
+                                    creation time of subscription or end-time of
+                                    subscription/account when both CS have same priority
+                                    (considering all CS sorting mechanisms are same for both CS). </p>
+                                <p>Supported values are as follows:</p>
+                                <ul>
+                                    <li>
+                                        <p>
+                                            <varname>ON_CREATION_TIME</varname>: If this is
+                                            selected, then the charging service is sorted based on
+                                            the creation time.</p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <varname>ON_END_TIME</varname>: If this is selected,
+                                            then the charging service is sorted based on
+                                            end-time/validity time of subscription or end-time of
+                                            account, whichever is applicable.</p>
+                                    </li>
+                                </ul>
+                                <p>The default value is <varname>ON_CREATION_TIME</varname>.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>CUG Based Charging Applicability </entry>
+                            <entry> Integer </entry>
+                            <entry>
+                                <p>Enable or disable the identification of in-group/out-group
+                                    calls.</p>
+                                <p>Valid values:</p>
+                                <ul>
+                                    <li>
+                                        <p>
+                                            <varname>0</varname> - Disabled.</p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <varname>1</varname> - Enabled. Only MOC call type is
+                                            supported.</p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <varname>2</varname> - Enabled. Both MOC and FWD call
+                                            types are supported.</p>
+                                    </li>
+                                </ul>
+                                <p>Default: 0</p>
+                                <p>
+                                    <b>Note:</b> For SMS and MMS, 0 stand for disabled. Both 1 and 2
+                                    are considered as enabled.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>DB_PRECISION </entry>
+                            <entry> Integer </entry>
+                            <entry>
+                                <p>This attribute represents the precision with which values are
+                                    saved in the NCC database (DB).</p>
+                                <p> The default value is <varname>2</varname>.</p>
+                                <p>For example, if the DB_PRECISION is 2, then the values till 2
+                                    decimal places are allowed, such as 999.9, 999.99. But, values
+                                    with more than 2 decimal places 999.999999 are not allowed.</p>
+                            </entry>
+                            <entry>Updated in 20.9</entry>
+                        </row>
+                        <row>
+                            <entry>Deduct Postpaid Fee Flag </entry>
+                            <entry> Boolean </entry>
+                            <entry>
+                                <p>This parameter allows to enable Monthly Recurring Charge (MRC) to
+                                    be paid for postpaid account from the account main balance. That
+                                    is, when this flag is set to true, the MRC for postpaid account
+                                    is charged from main balance of the account.</p>
+                                <p>The default value is <varname>false</varname>.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Default Concurrent Execution Delay for SNR </entry>
+                            <entry> Integer </entry>
+                            <entry>
+                                <p>This attribute represents the default delay required in the SNR
+                                    concurrent execution.</p>
+                                <p>The default delay time is 300000 milliseconds (5 mins). However,
+                                    this value may vary depending on the system configuration.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Default Dynamic slicing profile </entry>
+                            <entry> String </entry>
+                            <entry>
+                                <p>This attribute represents the name of the default dynamic slicing
+                                    profile.</p>
+                                <p>The dynamic slicing rules are used to have different slice
+                                    related values for different call conditions. These values can
+                                    be either directly specified in the rule or obtained from
+                                    executing a slicing algorithm. The execution of the algorithm is
+                                    invoked by a rule action. Several instances of the slicing
+                                    profile object can be defined.</p>
+                                <p> The default value is <varname>default_profile</varname>.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Default Response Time for RAA </entry>
+                            <entry> Integer </entry>
+                            <entry>
+                                <p>This attribute represents the wait time of Re-Auth-Answer (RAA)
+                                    after sending the Re-Auth-Request (RAR). </p>
+                                <p>The default response time for RAA is <varname>150
+                                        milliseconds</varname>.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Default Response Time for SNA </entry>
+                            <entry> Integer </entry>
+                            <entry>
+                                <p>This attribute represents the default response time for SNA after
+                                    sending the SNR.</p>
+                                <p>The default response time for SNA is <varname>500
+                                        milliseconds</varname>.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Default Signalling State in SLA (initial) </entry>
+                            <entry> Boolean </entry>
+                            <entry>
+                                <p>If the value of this attribute is set to <varname>true</varname>,
+                                    then the default state of the subscriber policy counters is sent
+                                    in SLA.</p>
+                                <p>If the value of this attribute is set to
+                                    <varname>false</varname>, then the default state of subscribed
+                                    policy counters is the state defined current value in the
+                                    threshold profile.</p>
+                                <p>For resource counter, when not used, the policy counter state
+                                    will be -99. If it is used, then latest signaling sent for this
+                                    counter is sent in SLR initial.</p>
+                                <p>By default, the parameter value is set to
+                                        <varname>false</varname>.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Default Signalling State Value </entry>
+                            <entry> Integer </entry>
+                            <entry>
+                                <p>This parameter is used to set a value for default signalling
+                                    state. This is not applicable if configuration is done
+                                    correctly.</p>
+                                <p>Default: -99</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Device Identifier Priority Order </entry>
+                            <entry> String </entry>
+                            <entry>
+                                <p>Defines the order in which the device is fetched based on the
+                                    identifier type from the database during a call.</p>
+                                <p>Valid values: IMSI, SIP_URI, NAI, PRIVATE, and E164</p>
+                                <p>These values can be provided in any order, separated by commas.
+                                    All five values must be provided. The values are case sensitive,
+                                    that is, the values must be in upper case.</p>
+                                <p>Default: IMSI, SIP_URI, NAI, PRIVATE, E164</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Diameter Request Timeout Duration (ms) </entry>
+                            <entry> LONG </entry>
+                            <entry>
+                                <p>This parameter is used to change time out (in milliseconds) of
+                                    diameter request. In the SM GUI, this is a read-only. This can
+                                    be edited manually in the <i>TPA_systemProp</i> file.</p>
+                                <p>
+                                    <b>Note:</b> This parameter applies to both charging and
+                                    policy.</p>
+                                <p>Valid values: 1-9223372036854775807</p>
+                                <p>Default: 2990</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Dynamic Notification Custom Flag </entry>
+                            <entry> Boolean </entry>
+                            <entry> If this flag is <varname>true</varname>, then the TCP/IP
+                                notification with dynamic variables is sent to back-office system.
+                                If <varname>false</varname>, then the TCP/IP notification is not
+                                sent to the back-office system. The purpose of this flag is to
+                                enable or disable the TCP/IP dynamic notification feature. </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Dynamic Policy Counter Identifier</entry>
+                            <entry>String</entry>
+                            <entry>
+                                <p>This application preference enables the possibility to add a
+                                    dynamic policy counter to be attached to a resource-based device
+                                    counter whose name is dependent on parameters received in an
+                                    ongoing request. This counter maintains QoS for consumption from
+                                    device resources.</p>
+                                <p>Possible values for this flag are <varname>ENABLED</varname> and
+                                        <varname>DISABLED</varname>.</p>
+                                <p>If this flag is enabled, then NCC sends out
+                                        <varname>Experimental-Result-Code =
+                                        DIAMETER_ERROR_NO_AVAILABLE_POLICY_COUNTERS</varname> with
+                                    error code 4241 in Sy-SLA for both initial and intermediate
+                                    calls due to the unavailability of the policy counter name
+                                    during the session due to unavailability of current Gy
+                                    parameters.</p>
+                                <p>With this feature enabled, virtual counters are the only counters
+                                    recommended to be used in resource-based device counters.</p>
+                                <p>Default value: <varname>DISABLED</varname></p>
+                            </entry>
+                            <entry>20.9</entry>
+                        </row>
+                        <row>
+                            <entry>global session mapping</entry>
+                            <entry>Boolean</entry>
+                            <entry>
+                                <p>This parameter is making the session info optional, which means
+                                    CSM record is not created. Therefore, the mapping table is no
+                                    longer used to fetch session keys. If this parameter value is
+                                        <varname>false</varname>, then during update and terminate
+                                    requests, device subscription Ids are mandatory. First, the
+                                    device is read from the database, then sessions are fetched by
+                                        <i>Device Id</i>.</p>
+                                <p>Default value: <varname>true</varname></p>
+                            </entry>
+                            <entry>20.9</entry>
+                        </row>
+                        <row>
+                            <entry>Granularity Skip for Low Balance </entry>
+                            <entry> Boolean </entry>
+                            <entry>
+                                <p>If this flag is true and if available balance in resources, that
+                                    is, Account (main balance) or Bucket for the current call is
+                                    less than the requested cost, then granularity is ignored while
+                                    rating and it depletes the resource balance.</p>
+                                <p>The default value is <varname>False</varname>. </p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Group SNR Delay Timer </entry>
+                            <entry> Integer </entry>
+                            <entry>
+                                <p>During the pending PLC and ELC execution, the tps of an SNR gets
+                                    very high, around 2000 tps, which restricts providing enough
+                                    space for Gy calls to run.</p>
+                                <p>The reason for the high tps of SNR was that since we send SNR on
+                                    group in case of PLC renewal or on reaching threshold.
+                                    Therefore, if a group has 10 devices and all of them have Sy
+                                    sessions established, then the SNR goes for all 10 devices.</p>
+                                <p>This timer takes values in minutes and sends an SNR after a
+                                    configurable time interval to delay the SNR traffic for the
+                                    device associated with current call only.</p>
+                                <p>It takes values in minutes and the values range from 0 minutes to
+                                    60 minutes (an hour).</p>
+                                <p>
+                                    <b>Note:</b> In case of on call lifecycle renewal, an SNR is
+                                    sent for the current device and all other devices attached with
+                                    same group are delayed with configured time.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>GY Client Currency Code </entry>
+                            <entry> Integer </entry>
+                            <entry> Reserved for future use. </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>GY Client Drouter Mode </entry>
+                            <entry> Boolean </entry>
+                            <entry> Reserved for future use. </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>GY Client Retry Flag </entry>
+                            <entry> Boolean </entry>
+                            <entry> Reserved for future use. </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>GY Client Service Context </entry>
+                            <entry> String </entry>
+                            <entry> Reserved for future use. </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>GY Client Time out (unit: second) </entry>
+                            <entry> Integer </entry>
+                            <entry> Reserved for future use. </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>GY Delta Interval For VT (seconds) </entry>
+                            <entry> Integer </entry>
+                            <entry>
+                                <p>This attribute represents the delta interval which ensures that a
+                                    session is available for boundary case where a delay has
+                                    happened from network in sending CCR-U or CCR-T on VT
+                                    expiry.</p>
+                                <p>The default value is <varname>4</varname> seconds.</p>
+                                <p>The range is from <varname>0 to 10</varname> seconds.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Gy Session Authorisation Validity (seconds) </entry>
+                            <entry> Integer </entry>
+                            <entry>
+                                <p>If it is set to 0, then CCR authorization feature is disabled.
+                                    Else CCR authorization feature is enabled. </p>
+                                <p>Its value specifies the time in seconds after which the Gy
+                                    session created due to CCR Authorization is closed if no further
+                                    request is received for that session.</p>
+                                <p>The default value is 0 and the valid range is 0-259200
+                                    (integer).</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Gy Session Inactivity Duration (seconds) </entry>
+                            <entry> Integer </entry>
+                            <entry>
+                                <p>This attribute represents the inactivity duration for Gy session.
+                                    Only if the <i>Validity-Time</i> is absent in the CCA, then this
+                                    parameter is used as inactive duration.</p>
+                                <p>The default value is <varname>86400</varname>. </p>
+                                <p>The range is from 0 to <varname>259200</varname>.</p>
+                                <p>During the old Gy session audit, the Gy session expiry is
+                                    determined by either of the given rules:</p>
+                                <ol>
+                                    <li>
+                                        <p>If the <i>Validity-Time</i> AVP exists in CCA, then the
+                                            Gy session expiry interval is equal to the VT value in
+                                            Multiple Services Sequence (MSCC) and the delta value.
+                                            The delta value is configured using the TPA system
+                                            property <i>GY Delta Interval For VT (seconds)</i> that
+                                            ensures a session is available for the boundary case in
+                                            case there is a delay from the network in sending a
+                                            CCR-U on VT expiry.</p>
+                                        <p>For example, if the <i>Validity-Time</i> in CCA is 10
+                                            seconds and <i>GY Delta Interval For VT (seconds)</i> is
+                                            4 seconds, then this Gy session is considered old after
+                                            14 seconds in case there is no further CCR-U or CCR-T
+                                            messages received within 14 seconds.</p>
+                                    </li>
+                                    <li>
+                                        <p>If the <i>Validity-Time</i> AVP does not exist in CCA,
+                                            then the Gy session expiry interval is equal to the
+                                            value of TPA system property <i>Gy Session Inactivity
+                                                Duration (seconds)</i>.</p>
+                                    </li>
+                                </ol>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Gy TCU Indeterminate </entry>
+                            <entry> Enum </entry>
+                            <entry>
+                                <p>It indicates how to process the usage of
+                                        <i>Tariff-Charge_Usage</i> AVP = 2 (UNIT_INDETERMINATE). The
+                                    default value is IGNORE. </p>
+                                <p>Following are the supported values:</p>
+                                <ul>
+                                    <li>
+                                        <p>
+                                            <varname>BEFORE</varname>: The usage with
+                                                <i>Tariff-Charge-Usage</i> AVP =
+                                                <varname>2</varname> is added to before tariff
+                                            change.</p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <varname>AFTER</varname>: The usage with
+                                                <i>Tariff-Charge-Usage</i> AVP =
+                                                <varname>2</varname> is added after tariff
+                                            change.</p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <varname>IGNORE</varname>: The usage with
+                                                <i>Tariff-Charge-Usage</i> = <varname>2</varname> is
+                                            ignored.</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Ignore USU in update Reporting Reason-FINAL </entry>
+                            <entry> String </entry>
+                            <entry>
+                                <p>When NCC sends the <systemoutput>DIAMETER_CREDIT_LIMIT_REACHED
+                                        (4012)</systemoutput> result code for a given MSCC, then GSU
+                                    is not assigned and the session for that particular MSCC is
+                                    closed. If the network sends USU AVP (with any value) in the
+                                    next CCR-U for that closed MSCC, then it is rejected by NCC. The
+                                        <uicontrol>Ignore USU in update Reporting
+                                        Reason-FINAL</uicontrol> flag is used to avoid this
+                                    situation.</p>
+                                <p>When this flag is true and CCR-U arrives with any value of RSU or
+                                    USU and the Reporting Reason = FINAL for MSCC and session does
+                                    not exist for that MSCC, then a Result-Code=2001 is returned in
+                                    CCA for that MSCC. The USU AVP is not considered for such
+                                    request. That is, when the flag is true, the RSU and USU is
+                                    ignored in CCR-U.</p>
+                                <p>The RecordEventResult Tag of CDR is set to
+                                    CC_NO_GSU_FOR_USU_RR_FINAL("235").</p>
+                                <p>Default value: false</p>
+                                <p>This flag is applicable only for Gy session calls.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>IMS Call Start Time Initial </entry>
+                            <entry> Boolean </entry>
+                            <entry>
+                                <p>Indicates how the session start time is set for IMS calls.</p>
+                                <p/>
+                                <ul>
+                                    <li>
+                                        <p>
+                                            <varname>true</varname> - in CDRs, the session start
+                                            time is set as time when CCR-I is received.</p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <varname>false</varname> - the session start time is set
+                                            as the time when first CCR-U is received, which is also
+                                            the time when the VoLTE call is answered.</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>IMS connection cost at CCRI </entry>
+                            <entry> Boolean </entry>
+                            <entry>
+                                <p>When the value set to <varname>true</varname>, the connection
+                                    cost is deducted at CCR-I.</p>
+                                <p>When the value set to <varname>false</varname>, the connection
+                                    cost is deducted on first CCR-U.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Ims Delta Interval For VT (seconds) </entry>
+                            <entry> Integer (0-10) </entry>
+                            <entry>
+                                <p>Set delta time interval for IMS TEM-Entity expiry time.</p>
+                                <p>Default value: 4</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Ims Session Inactivity Duration (seconds) </entry>
+                            <entry> Integer (0-259200) </entry>
+                            <entry>
+                                <p>Set inactivity duration time for IMS session.</p>
+                                <p>Default value: 300</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Include All Policy Counters in SNR </entry>
+                            <entry> Boolean </entry>
+                            <entry>
+                                <p>This parameter is used to enable/disable whether all Policy
+                                    counters can be included in SNR.</p>
+                                <p>If this parameter is set to <varname>true</varname>, then while
+                                    sending the SNR to PCRF, all the Policy counter(s) that are
+                                    already present in the Sy session are also included in the SNR
+                                    with their state.</p>
+                                <p>Default: false</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Include Final Usage in BCR EDRs </entry>
+                            <entry> Enum </entry>
+                            <entry>
+                                <p>Set this parameter to not generate final billing cycle reset
+                                    (BCR) before first call of the day. By default, it is
+                                    generated.</p>
+                                <p>To enable this feature, also set the application preferences
+                                        <uicontrol>VT Adjustment Factor (seconds)</uicontrol> and
+                                        <uicontrol>TTC Adjustment Factor (seconds)</uicontrol> to a
+                                    value greater than zero. Set the <b>TTC enabled</b> flag to
+                                        <varname>true</varname>. See section <i>TTC feature
+                                        configuration</i> for more details.</p>
+                                <p><ul id="ul_jy4_1xj_ymb">
+                                        <li><varname>DISABLED</varname>: Final BCR is generated
+                                            before the first call of the day.</li>
+                                        <li><varname>FIRST_CALL</varname>: Final BCR is not
+                                            generated before first call of the day. <p>If active
+                                                session is in progress, and the account/subscription
+                                                BCR time is crossed by the allocated slice (VT
+                                                exceeds BCR time), then lifecycle is not triggered
+                                                by TEM scheduled regularly. However, TEM gets
+                                                triggered by the first call of the day. This
+                                                facilitates to include the total usage of billing
+                                                cycle in related BCR EDRs.</p></li>
+                                        <li><varname>LAST_DATA_CALL</varname>: Final BCR EDR
+                                            processing waits for the final usage for the active data
+                                            sessions, CCR-U/T or Audit.</li>
+                                        <li><varname>LAST_CALL</varname>: Final BCR EDR processing
+                                            waits for the final usage for all the active sessions
+                                            (both data and voice sessions), for CCR-U/T or
+                                            Audit.</li>
+                                    </ul>Default value: DISABLED</p>
+                            </entry>
+                            <entry>Updated in 20.9</entry>
+                        </row>
+                        <row>
+                            <entry>Lifecycle CDR Logging Enabled </entry>
+                            <entry> Boolean </entry>
+                            <entry>
+                                <p>To disable the generation of CDR of all lifecycle actions, the
+                                    system property <i>Lifecycle CDR Logging Enabled</i> is
+                                    added.</p>
+                                <p>The default value is <varname>true</varname>, which means
+                                    lifecycle actions generate CDR.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Location Policy Counter ID </entry>
+                            <entry> String </entry>
+                            <entry>
+                                <p>Indicates a location policy counter ID whose PC status is
+                                    associated with the current location of the device is globally
+                                    refined. If this is not null, then when a device is created, the
+                                        <i>Location Policy Counter ID</i> is attached to the
+                                    device.</p>
+                                <p>Default value is null.</p>
+                            </entry>
+                            <entry> 20.6 </entry>
+                        </row>
+                        <row>
+                            <entry>Location Policy Counter Default Status </entry>
+                            <entry> String </entry>
+                            <entry>
+                                <p>Indicates a default location policy counter status when no
+                                    location information or no mapping from location to PC status is
+                                    found.</p>
+                                <p>Default value is <varname>-99</varname>.</p>
+                            </entry>
+                            <entry> 20.6 </entry>
+                        </row>
+                        <row>
+                            <entry>Max LifeCycle Trigger Count </entry>
+                            <entry> Integer (&gt;2) </entry>
+                            <entry>
+                                <p>At certain times, when an old backup of LifeCycle TEMEntities is
+                                    restored, multiple renewals start to happen in one go, and thus
+                                    leading to pressurizing the db and comsvc nodes. </p>
+                                <p>The default value is 5, which means that post five transitions,
+                                    the LifeCycle renewals will cease and an updated TEM is created
+                                    which will again be pushed to Kafka Queue. This preference has a
+                                    range from 2 to 25.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Max Past LifeCycle Trigger Count </entry>
+                            <entry> Integer </entry>
+                            <entry>
+                                <p>This system parameter flag allows to provision a bundle or
+                                    subscription with past activation time. The end time for
+                                    subscription is calculated based on the timezone configured in
+                                    an account and the creation time is set to the current time,
+                                    that is <varname>Now</varname> even when the bundle activation
+                                    date/time is in past.</p>
+                                <p>Following are the options based on which the subscription end
+                                    time is calculated:</p>
+                                <ol>
+                                    <li>
+                                        <p>
+                                            <uicontrol>Max Past LifeCycle Trigger Count</uicontrol>
+                                            is set as <varname>0</varname>: In this case, the
+                                            lifecycle considers the current time for execution and
+                                            therefore, sets the start time as system current time.
+                                            Only a single periodic lifecycle executes.</p>
+                                        <p>For example, consider a scenario where we have a
+                                            subscription with 6-hour periodic lifecycle. If current
+                                            date time is <varname>11th Feb 2020, 20:00</varname> and
+                                            bundle past activation time is <varname>10th Feb
+                                                2020,23:00</varname>, then after one periodic cycle
+                                            is executed, the start time becomes <varname>11th Feb
+                                                2020, 20:00</varname> and end time is <varname>12th
+                                                Feb 2020, 02:00</varname>.</p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <uicontrol>Max Past LifeCycle Trigger Count</uicontrol>
+                                            is set as <varname>1</varname>: In this case, the
+                                            lifecycle considers past time for execution, which is
+                                            calculated by the activation time plus periodic length.
+                                            The end time is calculated until it crosses the system
+                                            current time and considers the start time of this cycle
+                                            as start time and executes the lifecycle. Only a single
+                                            periodic lifecycle executes.</p>
+                                        <p>For example, consider a scenario where we have a
+                                            subscription with 6-hour periodic lifecycle. If current
+                                            date time is <varname>11th Feb 2020, 20:00</varname> and
+                                            bundle past activation time is <varname>10th Feb
+                                                2020,23:00</varname>, then after one periodic cycle
+                                            is executed, the start time becomes <varname>11th Feb
+                                                2020, 17:00</varname> and end time is <varname>11th
+                                                Feb 2020, 23:00</varname>.</p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <uicontrol>Max Past LifeCycle Trigger Count</uicontrol>
+                                            is set as <varname>2</varname>: In this case, the
+                                            lifecycle considers past time for execution, which is
+                                            calculated by the activation time plus periodic length.
+                                            The end time is calculated until it crosses the system
+                                            current time and considers the start time of this cycle
+                                            as start time and executes the lifecycle. Maximum of two
+                                            periodic lifecycles are executed.</p>
+                                        <p>For example, consider a scenario where we have a
+                                            subscription with 6-hour periodic lifecycle. If current
+                                            date time is <varname>11th Feb 2020, 20:00</varname> and
+                                            bundle past activation time is <varname>10th Feb
+                                                2020,23:00</varname>, then after two periodic cycles
+                                            are executed, the start time becomes <varname>11th Feb
+                                                2020, 11:00</varname> or <varname>11th Feb 2020,
+                                                17:00</varname> and end time is <varname>11th Feb
+                                                2020, 23:00</varname> or <varname>11th Feb 2020,
+                                                17:00</varname>.</p>
+                                    </li>
+                                </ol>
+                                <p>The default value is <varname>0</varname>.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Max Sy Sessions Limit </entry>
+                            <entry> Integer </entry>
+                            <entry>
+                                <p>Defines the maximum number of Sy and/or NChf_SpendingLimitStatus
+                                    sessions that are allowed.</p>
+                                <p/>
+                                <ul>
+                                    <li>
+                                        <p>If the value is 1: Only one Sy or
+                                            NChf_SpendingLimitStatus session is allowed.</p>
+                                    </li>
+                                    <li>
+                                        <p>If the value is &gt;1: NCC can respond to new SLR and
+                                            NChf_SpendingLimitStatus requests, as well as maintain
+                                            these newly created sessions, while also maintaining
+                                            previously established, in-progress Sy and/or
+                                                <i>NChf_SpendingLimitStatus</i> sessions.</p>
+                                    </li>
+                                </ul>
+                                <p>Default: 1</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Maximum Allowed Subscription For Device and Group</entry>
+                            <entry>Integer</entry>
+                            <entry><p>This parameter is used to restrict number of subscriptions
+                                    allowed for Device/Group. Only active subscriptions attached to
+                                    Device/Group are counted for restricting subscriptions count.
+                                </p>For example, if the value is 2, a maximum of two subscriptions
+                                can be attached to device and a maximum of two subscriptions can be
+                                attached to group.<p>Default value: 0 (no restriction on number of
+                                    subscriptions attached to Device/Group.</p></entry>
+                            <entry>20.9</entry>
+                        </row>
+                        <row>
+                            <entry>Min Spread (seconds) </entry>
+                            <entry> Integer </entry>
+                            <entry> This parameter refers to the minimum interval between the VT and
+                                TTC. </entry>
+                            <entry> 20.6SP1 </entry>
+                        </row>
+                        <row rowsep="1">
+                            <entry rowsep="0">New Call Start in Update or Terminate </entry>
+                            <entry rowsep="0"> Boolean </entry>
+                            <entry rowsep="0">
+                                <p>During migration from existing charging system to NCC, CCRu or
+                                    CCRt for ongoing session on existing charging system arrives on
+                                    NCC. As Gy sessions for these CCRu or CCRt do not exist on NCC,
+                                    these CCRu or CCRt are rejected. To handle this case, the
+                                        <varname>New Call Start in Update or Terminate</varname>
+                                    attribute is introduced.</p>
+                                <p>If this flag is set to <varname>true</varname>, then NCC performs
+                                    the following tasks:</p>
+                                <ol>
+                                    <li>
+                                        <p>Accepts the CCRu or CCRt, which are active on the
+                                            existing charging system and treats them as CCRi or
+                                            CCRt.</p>
+                                    </li>
+                                    <li>
+                                        <p>Commits the used quantities which are reported in such
+                                            CCRu or CCRt.</p>
+                                    </li>
+                                </ol>
+                                <p>Valid values are <varname>true</varname> and
+                                        <varname>false</varname>. The default value is
+                                        <varname>false</varname>.</p>
+                                <p>
+                                    <uicontrol>Note</uicontrol>: <i>Subscription-ID</i> AVP is a
+                                    mandatory parameter to be sent in CCRU/T request from the
+                                    existing charging system to NCC. Otherwise, NCC rejects the
+                                    call.</p>
+                            </entry>
+                            <entry rowsep="0"/>
+                        </row>
+                        <row rowsep="1">
+                            <entry>OCS Sy CDR Generation </entry>
+                            <entry> Boolean </entry>
+                            <entry>
+                                <p>If this parameter is set to <varname>true</varname>, then CDR
+                                    logging for Sy interface is enabled.</p>
+                                <p>Default: true</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>OCS Sy Counter Not Present </entry>
+                            <entry> String </entry>
+                            <entry> This attribute represents the counter definition does not exist
+                                in the database. The non-policy counter exist in the database and
+                                may or may not be subscribed. </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>OCS Sy Counter Not Subscribed </entry>
+                            <entry> String </entry>
+                            <entry>
+                                <p>This attribute represents the value indicating the policy counter
+                                    (Sy) exists in the database not subscribed by the OCS.</p>
+                                <p>This parameter is available only when the variable
+                                        <userinput>DEFAULT_CALL_DECISION</userinput> value is true.
+                                    This means that the call is allowed in case of one or more
+                                    unknown policy counters.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>OCS Sy Default Call Decision </entry>
+                            <entry> String </entry>
+                            <entry>
+                                <p>This attribute represents whether the call is allowed or rejected
+                                    in case of one or more unknown policy counters.</p>
+                                <p>The policy counter identifiers which is not known by the OCS is
+                                    known as unknown policy counter.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>OSI Session Audit Interval (seconds) </entry>
+                            <entry> Integer </entry>
+                            <entry>
+                                <p>This attribute represents the time interval to check whether
+                                    there is OSI change for Peer OSI audit.</p>
+                                <p>The default value is <varname>300</varname> seconds. </p>
+                                <p>The range is from <varname>60 to 86400</varname> seconds.</p>
+                                <p>The changes in Origin-State-Id (OSI) can be detected either by a
+                                    Diameter message (request or response) with a new OSI value or
+                                    capabilities that exchange message from a peer containing a new
+                                    OSI value.</p>
+                                <p>On each application blade, the DiameterPeerManager detects the
+                                    change and updates itself with the latest OSI for the peer. All
+                                    application blades try to update the database with the latest
+                                    OSI for the peer, but only one is successful. A part of updating
+                                    the database is that the old peer entry has a timestamp
+                                    indicating that a cleanup audit of it is underway starting.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Peer OSI Index Suffix value </entry>
+                            <entry> Integer </entry>
+                            <entry>
+                                <p>The number to be appended in the peer OSI index value while
+                                    saving session in the database.</p>
+                                <p>The default value is 50.</p>
+                                <p>The range is from 1 to 100.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Pending Lifecycle Renewal </entry>
+                            <entry> Integer </entry>
+                            <entry>
+                                <p>This parameter indicates whether the pending lifecycle renewal is
+                                    triggered by the REST or DIAMETER call. The measurement unit is
+                                    seconds.</p>
+                                <p>Following are the supported values:</p>
+                                <ul>
+                                    <li>
+                                        <p>
+                                            <varname>0</varname>: The pending lifecycle renewal
+                                            feature is disabled.</p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <varname>1</varname>: If this flag is set as
+                                                <varname>1</varname>, then both pending lifecycle
+                                            execution and call execution are executed in the same
+                                            transaction. We can configure the time to execute the
+                                            pending lifecycle and call execution, the default time
+                                            for pending lifecycle execution is 1000 ms. First, all
+                                            pending lifecycle is triggered (this action takes place
+                                            in the best effort mode, which means only those
+                                            lifecycles are executed, which we can execute in 1000 ms
+                                            or configured time). If triggered operation take more
+                                            time than 2980 ms, then all trigger operations are
+                                            rollback and even call fails.</p>
+                                    </li>
+                                    <li>
+                                        <p>
+                                            <varname>2</varname>: If this flag is set as
+                                                <varname>2</varname>, then first pending lifecycles
+                                            are executed in one transaction, After execution, this
+                                            transaction is closed and then the call is executed in
+                                            another transaction. It is a dual transaction mode. We
+                                            can configured the time to execute pending lifecycle and
+                                            call execution default time for pending lifecycle
+                                            execution is 1000 ms. First, all pending lifecycle is
+                                            triggered (this action takes place in best effort mode,
+                                            which means only those lifecycle are executed, which we
+                                            can execute in 1000 ms or configured time). After
+                                            executing all pending lifecycle, we first close the
+                                            transaction and then to execute the call, we open new
+                                            transaction. If triggered operation take more then 4980
+                                            ms, then all trigger operation is rollback and even call
+                                            fails. The advantage of this approach is that if we have
+                                            executed all pending lifecycle but got error during call
+                                            execution, then in that case, at least lifecycles are
+                                            updated successfully even if the call is failed and
+                                            related data is rollback.</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Prorate Bucket Multiplier Factor </entry>
+                            <entry> Integer </entry>
+                            <entry>
+                                <p>This parameter value is considered in bytes and is used in
+                                    rounding the bucket initial or current prorated value as per the
+                                    multiplier factor.</p>
+                                <p>
+                                    <b>NOTE:</b> The bucket initial or current value is rounded as
+                                    per the multiplier factor only when the bucket is of type
+                                        <varname>VOLUME</varname> and <i>Prorate Bucket Multiplier
+                                        Factor</i> is set to default value <varname>0</varname>,
+                                    which means bucket initial or current value is calculated as per
+                                    the existing behaviour.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Publish Retry Timer for TEM Scanner </entry>
+                            <entry> Integer </entry>
+                            <entry>
+                                <p>To avoid ever increasing Kafka offset and multiple retries of
+                                    lifecycle and AUDIT TEM entities during the load, this attribute
+                                    is introduced, which indicates a publish retry timer for
+                                    lifecycle transitions and AUDIT. It specifies the interval in
+                                    seconds after which a retry can be made in case of an
+                                    unsuccessful attempt.</p>
+                                <p>
+                                    <b>Note:</b> A lower value means multiple retries are required
+                                    and a higher value means fewer retries are required.</p>
+                                <p>The default value is 300 seconds.</p>
+                                <p>The range is from 300 to 28800 seconds.</p>
+                            </entry>
+                            <entry> Updated in 20.6 </entry>
+                        </row>
+                        <row>
+                            <entry>Removed Signalling State Value </entry>
+                            <entry> String </entry>
+                            <entry>
+                                <p>This parameter is used to communicate removed Policy counter
+                                    state. If this parameter has some value, for example,
+                                        <varname>removed</varname>, and if a Policy counter is
+                                    removed from the Device, then an SNR is sent to the PCRF with
+                                    that Policy counter with policy state
+                                    <varname>removed</varname>. If an acknowledgment is received
+                                    from the PCRF, then the Policy counter is removed from the
+                                    system. Else, it remains in the Sy session and is sent again in
+                                    subsequent SNR(s) sent by Charging for any Policy counter.</p>
+                                <p>This is applicable in the following scenario:</p>
+                                <p/>
+                                <ul>
+                                    <li>
+                                        <p>If there is no other Policy counter with the same name
+                                            exists for the Device.</p>
+                                    </li>
+                                    <li>
+                                        <p>If the Policy Bucket/Counter is part of a
+                                            subscription.</p>
+                                    </li>
+                                    <li>
+                                        <p>Policy counter is removed means a subscription lifecycle
+                                            is transiting to final state from its Lifecycle. The
+                                            transition from <varname>Barred</varname> to
+                                                <varname>Final</varname> state has a Send-SNR action
+                                            with Policy Counter name and its state is same as
+                                            configured in application preference <i>Removed
+                                                Signalling State Value</i>. It is recommended to
+                                            have lifecycle of each subscription to have
+                                                <varname>barred</varname> and
+                                                <varname>final</varname> state defined.</p>
+                                    </li>
+                                </ul>
+                                <p>Default: Null</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Re-Rating on Location updates (IMS) </entry>
+                            <entry> Boolean </entry>
+                            <entry>
+                                <p>If this flag is enabled with indication of location or timezone
+                                    change, then OCS is re-rated based on stored location
+                                    updates.</p>
+                                <p>Default: false</p>
+                            </entry>
+                            <entry> 20.6 </entry>
+                        </row>
+                        <row>
+                            <entry>Rounding Mode for rating calculations </entry>
+                            <entry> String </entry>
+                            <entry> This attribute represents the rounding mode for calculations
+                                done in the rating engine. <p>Supported values are: Up, Down,
+                                    Ceiling, Floor, Half_Up, Half_Down, Half_even,
+                                    Unnecesary.</p><p>Default: Ceiling</p></entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Rounding Mode in Database </entry>
+                            <entry> String </entry>
+                            <entry> This attribute represents the rounding mode for values stored in
+                                the database. This parameter is used for rounding decimals while
+                                storing them in database. <p>Supported values are: Up, Down,
+                                    Ceiling, Floor, Half_Up, Half_Down, Half_even,
+                                    Unnecesary.</p><p>Default: Ceiling</p></entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Scheduled transition time update buffer interval (in seconds) </entry>
+                            <entry> Integer </entry>
+                            <entry>
+                                <p>A buffer time interval (default 60 seconds and configurable)
+                                    added in the current system time when the new scheduled time
+                                    (either by using SET or DECR operation) is near the current
+                                    system time. This time is added to consider TEM scanner interval
+                                    time (currently 500 ms) and system processing time under load
+                                    and other system conditions.</p>
+                                <p>The default value is 60 seconds.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Service Definition Cache TimeOut (in seconds) </entry>
+                            <entry> Integer </entry>
+                            <entry> This attribute represents the time period after which the
+                                service definition cache refreshes itself. </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>SNR Pacing factor </entry>
+                            <entry> Integer </entry>
+                            <entry>
+                                <p>This determines the pacing at which SNRs should be throttled.
+                                    This decides how many SNRs should be sent in one burst and the
+                                    time interval between two consecutive bursts.</p>
+                                <p>Number of SNRs in one burst = SNR Scheduler Rate / SNR Pacing
+                                    factor.</p>
+                                <p>Time interval between two consecutive bursts (in milliseconds) =
+                                    1000 / SNR Pacing factor</p>
+                                <p>Default value: 1</p>
+                                <p>The value should be &gt;= 1.</p>
+                                <p>This value, if changed, needs application restart to come into
+                                    effect.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>SNR Polling interval (milliseconds) </entry>
+                            <entry> Integer </entry>
+                            <entry>
+                                <p>This parameter is used to define the SNR message timeout in
+                                    milliseconds.</p>
+                                <p>Default value: 5000</p>
+                                <p>This value, if changed, is updated at run time and comes into
+                                    effect without application restart.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>SNR Scheduler Rate (max outbound messages per second) </entry>
+                            <entry> Integer </entry>
+                            <entry>
+                                <p>This parameter indicates whether SNR throttling is enabled.</p>
+                                <p>Valid values:</p>
+                                <ul>
+                                    <li>
+                                        <p>If this value is 0, it means that throttling is
+                                            disabled.</p>
+                                    </li>
+                                    <li>
+                                        <p>If the value &gt; 0, it means that throttling is enabled,
+                                            and maximum number of outbound SNRs are allowed per
+                                            second.</p>
+                                    </li>
+                                </ul>
+                                <p>Default value: 0</p>
+                                <p>If changed, this value is updated at run time, that is, it comes
+                                    into effect without application restart. The value should be
+                                    &gt;= 0.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Step-Up On Commit </entry>
+                            <entry> Boolean </entry>
+                            <entry>
+                                <p>If this flag is set to True, then step-up fee is deducted from
+                                    the account balance on committing the actual usage. </p>
+                                <p>If this flag is set to False, then the step-up fee is deducted
+                                    from the account when units are reserved for the call. </p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Store location updates </entry>
+                            <entry> Boolean </entry>
+                            <entry>
+                                <p>If this flag is enabled, it stores location details in GY
+                                    calls.</p>
+                                <p>Default: false</p>
+                            </entry>
+                            <entry> 20.6 </entry>
+                        </row>
+                        <row>
+                            <entry>Sy Session Inactivity Duration (seconds) </entry>
+                            <entry> Integer </entry>
+                            <entry>
+                                <p>This attribute is used by the NCC application to represent the
+                                    inactivity duration for a charging Sy session. </p>
+                                <p>The default value is <varname>86400</varname> seconds.</p>
+                                <p>The range is from <varname>0 to 259200</varname> seconds.</p>
+                                <p>The reason for taking this attribute in seconds is granularity
+                                    which is used in charging.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Threshold Notification Type </entry>
+                            <entry> Enum </entry>
+                            <entry>
+                                <p>This attribute represents the base value in percentage threshold
+                                    profile. Possible values are <varname>INDIVIDUAL</varname> and
+                                        <varname>CUMULATIVE</varname>.</p>
+                                <p>If the value is <varname>INDIVIDUAL</varname>, then only the main
+                                    bucket initial value is used to calculate the threshold
+                                    percentage value. If the value is <varname>CUMULATIVE</varname>,
+                                    then the cumulative value of main and carry-over bucket is
+                                    used.</p>
+                                <p>The default value is <varname>INDIVIDUAL</varname>.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Time Interval for PPC in SY </entry>
+                            <entry> Hour </entry>
+                            <entry>
+                                <p>If the policy counter end date is less than the current time of
+                                    SLR/SNR plus the number of hours configured in this attribute,
+                                    then the Pending Policy counter information is sent in the
+                                    SLA/SNR.</p>
+                                <p>
+                                    <uicontrol>Example</uicontrol>: If the Policy Counter End Date:
+                                    1 Jan 2018 18:00 GMT, attribute value: 3 hours, current time of
+                                    SLA/SNR: 1 Jan 2018 16:00 GMT, then while processing SLA/SNR,
+                                    the policy counter expires before the current time, that is
+                                        <varname>1 Jan 2018 16:00 + 3 hours</varname>.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Timer for invoking SOAP API after sendRAR in milliseconds </entry>
+                            <entry> Integer </entry>
+                            <entry>
+                                <p>For Real-time update query, when a query request comes, RAR is
+                                    sent for all relevant sessions. NCC waits for timer assuming
+                                    that all CCRs arrive. After the timer expiry, latest data is
+                                    queried from DB. The value of this timer can be configured. </p>
+                                <p>The default value is 3000 milliseconds.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Trigger Feature Supported </entry>
+                            <entry>Boolean </entry>
+                            <entry> If this parameter is set to true, then in CCAi sends all the
+                                triggers armed by NCC. </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Trigger Transactional Timer </entry>
+                            <entry>Integer </entry>
+                            <entry>
+                                <p>This parameter is defined in milliseconds and is applicable only
+                                    to Diameter trigger.</p>
+                                <p>It is used to manage the time taken by pending lifecycle triggers
+                                    at each step in the best effort mode. For example, if configured
+                                    timer value is 1000 ms for four pending lifecycle triggers (a,
+                                    b, c, and d) but within the time frame of 1000 ms, the system is
+                                    able to execute only trigger a and b, then in that case, trigger
+                                    c and d are skipped and the system continues with the call
+                                    processing.</p>
+                                <p>
+                                    <b>Note:</b> The measurement unit in milliseconds and this value
+                                    should be less then 5000 ms.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>TTC Adjustment Factor (seconds) </entry>
+                            <entry> Integer </entry>
+                            <entry>
+                                <p>This parameter is used to randomize the TTC value present in
+                                    returned CCA message. This is done to ease out the time change
+                                    processing on the PGW.</p>
+                                <p>The measurement unit is seconds and the default value is 0.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>TTC Adjustment Factor Large (seconds) </entry>
+                            <entry>Integer </entry>
+                            <entry> This parameter refers to the upper bound or higher limit of
+                                    <i>TTC Adjustment Factor</i> when VT is set to <systemoutput>TTC
+                                    + Min Spread (seconds)</systemoutput> as per the computation. </entry>
+                            <entry> 20.6SP1 </entry>
+                        </row>
+                        <row>
+                            <entry>Use All Steps First</entry>
+                            <entry>Boolean</entry>
+                            <entry>If this flag is enabled, then all the steps of step-bucket are
+                                consumed before moving to next resource even when some resource is
+                                available for usage. <p>Default: false</p><p>Example: Consider that
+                                    charging services are sorted in the following order.</p>CS → 10;
+                                CS2 → 10, 20, 30; CS3 → 10 (CS2 has step-bucket). The consumption of
+                                step-bucket depends on the value set for <b>Use All Steps First</b>
+                                flag as follows: <ul id="ul_vxp_r5y_rmb">
+                                    <li>If <b>Use All Steps First</b> flag is set to true, then move
+                                        from CS2.Step1 to CS2.Step2.</li>
+                                    <li>If <b>Use All Steps First</b> flag is set to false, then
+                                        move from CS2.Step1 to CS3 (Default behavior).</li>
+                                </ul></entry>
+                            <entry>20.9</entry>
+                        </row>
+                        <row>
+                            <entry>Use stored location updates (IMS) </entry>
+                            <entry>Boolean </entry>
+                            <entry>
+                                <p>If this flag is enabled, it uses location stored in device DB in
+                                    IMS calls.</p>
+                                <p>Default: false</p>
+                            </entry>
+                            <entry> 20.6 </entry>
+                        </row>
+                        <row>
+                            <entry>ViLTE Rating Group </entry>
+                            <entry>Integer </entry>
+                            <entry>
+                                <p>This system parameter is created to keep the rating group
+                                    reference, which is used to identify the ViLTE call over Gy
+                                    interface.</p>
+                                <p>This parameter is also considered to enable or disable VoLTE or
+                                    ViLTE correlation support over Diameter 4G interface. If this
+                                    parameter is set as <varname>-1</varname>, then the VoLTE or
+                                    ViLTE correlation support is disabled. Otherwise, this
+                                    correlation support is enabled and the configured value is
+                                    considered as the rating group of ViLTE call.</p>
+                                <p>The maximum value allowed for this attribute is
+                                        <varname>4294967295</varname>.</p>
+                                <p>Default value: -1</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Virtual Policy Counter Support </entry>
+                            <entry>Enum (DISABLED, BUCKET_COUNTER) </entry>
+                            <entry>
+                                <p>This parameter is used to enable virtual Policy counter support.
+                                    To enable the feature, set the value to BUCKET_COUNTER.</p>
+                                <p>Default: DISABLED</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>VT Adjustment Factor (seconds) </entry>
+                            <entry>Integer </entry>
+                            <entry>
+                                <p>This parameter is used to randomize the VT value present in
+                                    returned CCA message for GY session. This is done to distribute
+                                    the CCR traffic within a fixed interval range after BCR date,
+                                    thus avoiding the traffic storm.</p>
+                                <p>The measurement unit is seconds and the default value is 0.</p>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>VT Adjustment Factor Prepaid (seconds) </entry>
+                            <entry>Integer </entry>
+                            <entry>
+                                <p>This parameter is used to shorten the <i>VT Adjustment Factor
+                                        (seconds)</i>, which is used when TTC is not send in case of
+                                    prepaid accounts.</p>
+                                <p>
+                                    <b>Note:</b> This parameter is only applicable to prepaid
+                                    accounts.</p>
+                            </entry>
+                            <entry> 20.6SP1 </entry>
+                        </row>
+                        <row>
+                            <entry nameend="col3" namest="col1">
+                                <p>
+                                    <uicontrol>Additional information for Sy parameters:</uicontrol>
+                                </p>
+                                <ul>
+                                    <li>
+                                        <p>If the OCS is configured to reject the request provided
+                                            with unknown policy counter identifiers, and if OCS
+                                            determines that one or more policy counter identifiers
+                                            are unknown, then the OCS returns a response with the
+                                                <i>Experimental-Result-Code</i> AVP set to
+                                                <varname>DIAMETER_ERROR_UNKNOWN
+                                                POLICY_COUNTERS</varname>.</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                            <entry/>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<note>To change the default value, log into the Service Manager Graphical User Interface (SM GUI).
+                Navigate to <uicontrol>Global configuration</uicontrol> &gt; <uicontrol>Application
+                    Preferences</uicontrol> and select <uicontrol>Managed Elements</uicontrol> from
+                the hamburger menu. ( <!--MMO resource relative URI: ../../Global_Configurations/Graphics/hamburgermenu_default.png-->
+                <image href="../images/img9yz-09126-ug01-pczza-sp1-hamburgermenu_default.png"
+                    scale="40" id="image_m5d_qjw_xmb"/> ). This opens the <uicontrol>ME Application
+                    Preferences</uicontrol> window from where you can select the required Managed
+                Element (ME) from the drop-down list. Only the configured application preferences
+                for ME that you need to work appears in the SM GUI.</note>
+</section>
+</conbody></concept>

@@ -1,0 +1,758 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e6470"><title>IMS charging service context</title><conbody>
+<section><title>Overview</title>
+<p>The IP Multimedia Subsystem (IMS) is a framework for delivering IP multimedia services. The voice over LTE (VoLTE) and video over LTE (ViLTE) are a system for transferring the voice and video traffic over LTE networks and provides high-speed wireless communications for phones including IoT devices. VoLTE and ViLTE are based on the IMS network, with specific profiles for control and media plans of voice and video service on LTE.</p>
+<p>The NCC application provides the charging data from the IMS nodes to the billing system of the
+				service provider for the IMS calls. It maps the charging AVPs to the rating engine
+				keys, rate the event, manages the account balance, and generates the CDRs. For IMS
+				calls, NCC supports the DCCA IMS Ro 1.1.0 or 3GPP IMS Ro interface to charge the IMS
+				session and IMS events.</p>
+<fig>
+<title>IMS reference point</title>
+<!--MMO resource relative URI: ../Graphics/Release_18.9/f-IMSinterface_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-f-imsinterface_default.png"/>
+</fig>
+<p>The Telecom Application Server (TAS) manages subscriber features for IMS. The TAS sends triggers
+				to NCC (the Online Charging System) using the Diameter Ro interface. NCC handles the
+				incoming Diameter Ro Credit Control Request (CCR) and grants time-based quota (if
+				credit is available) when replying through Diameter Ro Credit Control Answer
+				(CCA).</p>
+<p>IMS online charging is based on Diameter Ro session-based charging mode. The Session Charging with Unit Reservation (SCUR) mechanism is used for IMS call charging.</p>
+<p>TAS may also interact with the Media Resource Function (MRF) as needed to invoke media player when announcements are required to be inserted within an ongoing user session.</p>
+<p>NCC supports the <i>IMS-Information</i> AVP as defined in the 3GPP 32.299 Rel 14 and 3GPP 32.260
+				Rel 14 in Diameter dictionary and all rule tables. Charged party for a call is
+				identified from the <i>Subscription-ID</i> AVP. </p>
+<p>For IMS calls, only single MSCC is supported. If multiple MSCCs appear in a call, only the first one is considered. IMS calls are handled in SCUR/ECUR way. IMS calls support both <i>Service-Identifier</i> and <i>Rating-Group</i> AVPs. However, priority is given to <i>Service-Identifier</i> AVP.</p>
+</section>
+<section><title>Call type identification</title>
+<p>If a device has initiated a call, then it is identified as mobile originating call (MOC). If a device has received a call, then it is identified as mobile terminating call (MTC). If the receiving device has forwarded the call, then it is termed as FWD. The call type is identified using the <i>IMS-Information</i> AVP on the basis of the logic provided in the following table:</p>
+<table pgwide="1" colsep="1" rowsep="1">
+				<title>Call type and AVP</title>
+				<tgroup cols="2">
+					<colspec colname="col1" colwidth="1*"/>
+					<colspec colname="col2" colwidth="1.9*"/>
+					<thead>
+						<row>
+							<entry>
+								<p>Call type</p>
+							</entry>
+							<entry>
+								<p>AVP</p>
+							</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry> MOC </entry>
+							<entry> Service-Information/IMS-Information/Role-Of-Node = 0 </entry>
+						</row>
+						<row>
+							<entry> MTC </entry>
+							<entry> Service-Information/IMS-Information/Role-Of-Node = 1 </entry>
+						</row>
+						<row>
+							<entry> FWD </entry>
+							<entry>
+								<p>Service-Information/IMS-Information/Role-Of-Node = 2</p>
+								<p>OR</p>
+								<p>Service-Information/IMS-Information/Role-Of-Node = 0 and
+									Service-Information/MMTel-Information/Supplemantary-Service/MMTel-SService-Type=6</p>
+							</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</table>
+</section>
+<section><title>IMS centralized and decentralized calls</title>
+<p>Determination of centralized logic for IMS calls is different from Gy session call. In IMS calls, whether a call is centralized or decentralized is determined based on RSU and <varname>CC_TIME</varname> unit. See the following table for different scenarios.</p>
+<table pgwide="1" colsep="1" rowsep="1">
+				<title>Logic to determine centralized or decentralized IMS call</title>
+				<tgroup cols="3">
+					<colspec colname="col1" colwidth="1*"/>
+					<colspec colname="col2" colwidth="1.21*"/>
+					<colspec colname="col3" colwidth="1.63*"/>
+					<thead>
+						<row>
+							<entry>
+								<p>RSU present?</p>
+							</entry>
+							<entry>
+								<p>CC_TIME unit present?</p>
+							</entry>
+							<entry>
+								<p>Centralized or decentralized</p>
+							</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry> No </entry>
+							<entry> - </entry>
+							<entry> Centralized </entry>
+						</row>
+						<row>
+							<entry> Yes </entry>
+							<entry> No </entry>
+							<entry> Call is rejected with result code <varname>5005
+									(DIAMETER_MISSING_AVP)</varname>
+							</entry>
+						</row>
+						<row>
+							<entry> Yes </entry>
+							<entry> Yes </entry>
+							<entry>
+								<p>Decentralized</p>
+								<p>
+									<b>Note:</b> If any unit type other than
+										<varname>CC_TIME</varname> is present in the call, then the
+									unit type is ignored.</p>
+							</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</table>
+</section>
+<section><title>General charging for VoLTE calls</title>
+<p>For the VoLTE calls, charging is performed from the time the call is answered. The USU in the first CCRu received is always zero. If it is non-zero, then it is set as zero and nothing is charged for the first CCRu received.</p>
+<p>The application preference <varname>IMS Call Start Time Initial</varname> specifies whether the call start time in CDR is the time the CCRi is received or the time the first CCR-U is received.</p>
+<p>The application preference <varname>IMS connection cost at CCRI</varname> specifies whether connection cost is to be applied at CCRi or CCRu. See the flowing table for different scenarios of connection cost based on this preference.</p>
+<table pgwide="1" colsep="1" rowsep="1">
+				<tgroup cols="3">
+					<colspec colname="col1" colwidth="1.39*"/>
+					<colspec colname="col2" colwidth="1*"/>
+					<colspec colname="col3" colwidth="1.78*"/>
+					<thead>
+						<row>
+							<entry>
+								<p>If...</p>
+							</entry>
+							<entry>
+								<p>Application preference:</p>
+								<p>IMS connection cost at CCRI</p>
+							</entry>
+							<entry>
+								<p>Then...</p>
+							</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry morerows="1"> No CCRu/CCRt received after CCRi </entry>
+							<entry> true </entry>
+							<entry> Connection cost is deducted by audit and then the IMS session is
+								cleared. </entry>
+						</row>
+						<row>
+							<entry> false </entry>
+							<entry> No connection cost is deducted and then the IMS session is
+								cleared by audit. </entry>
+						</row>
+						<row>
+							<entry morerows="1"> CCRi and CCRt received and CCRu is missing </entry>
+							<entry> true </entry>
+							<entry> Connection cost is deducted at CCRt instead of CCRu. </entry>
+						</row>
+						<row>
+							<entry> false </entry>
+							<entry> No connection cost is deducted. </entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</table>
+<p>For IMS calls, only single MSCC is supported. If multiple MSCCs appear in a call, then only the first one is considered.</p>
+</section>
+<section><title>Whitelist/blacklist detection</title>
+<p>For Mobile Originated Call (MOC) and Forwarded (FWD) calls for voice, SMS, and MMS events, custom data, and rules can be configured to detect whether the <i>CALLED_PARTY_ADDRESS</i> is whitelisted or blacklisted and take appropriate action. </p>
+<p>Perform the following steps to configure whitelist/blacklist feature using the SM GUI:</p><ol>
+<li>
+<p>Create two custom data of type list inside device or group with name <varname>BLACKLIST</varname> and <varname>WHITELIST</varname>.</p>
+</li>
+<li>
+<p>Remove +, -, and leading zeros till first non-zero digit.</p>
+</li>
+<li>
+<p>Compare the value obtained with <varname>SPR_GROUP.BLACKLIST</varname> or <varname>SPR_GROUP.WHITELIST</varname>.</p>
+</li>
+</ol>
+<p><b>Example for blacklist detection</b></p><ol>
+<li><p>Create custom data with <varname>Context Type = Device</varname> as follows:</p>
+					<!--MMO resource relative URI: ../Graphics/Release_18.9/Whitelist_default.png-->
+					<image href="../images/img9yz-09126-ug01-pczza-sp1-whitelist_default.png"/>
+					<!--MMO resource relative URI: ../Graphics/Release_18.9/crCustomData_default.png-->
+					<image href="../images/img9yz-09126-ug01-pczza-sp1-crcustomdata_default.png"/>
+				</li>
+<li><p>Update device and add custom data as follows:</p>
+					<image href="../images/img9yz-09126-ug01-pczza-sp1-upddevaddcd_default.png"
+						scale="70"/>
+				</li>
+<li>
+<p>Configure rules for blacklist as follows:</p><ul>
+<li><p>For IMS, configure rule as follows:</p>
+							<!--MMO resource relative URI: ../Graphics/Release_19.0/blacklistIMS_default.png-->
+							<image
+								href="../images/img9yz-09126-ug01-pczza-sp1-blacklistims_default.png"
+							/>
+						</li>
+<li><p>For SMS, configure rule as follows:</p>
+							<!--MMO resource relative URI: ../Graphics/Release_19.0/blacklistSMS_default.png-->
+							<image
+								href="../images/img9yz-09126-ug01-pczza-sp1-blacklistsms_default.png"
+							/>
+						</li>
+<li><p>For MMS, configure rule as follows:</p>
+							<!--MMO resource relative URI: ../Graphics/Release_19.0/blacklistMMS_default.png-->
+							<image
+								href="../images/img9yz-09126-ug01-pczza-sp1-blacklistmms_default.png"
+							/>
+						</li>
+</ul>
+</li>
+</ol>
+</section>
+<section><title>Announcement support</title>
+<p>NCC supports the <i>VoLTE Announcement</i> AVP in CCA through rules.</p>
+<sectiondiv>
+<p><b>Announcement-Information AVP</b></p>
+<p>The <i>Announcement-Information</i> AVP (AVP code 3904) is of type grouped and holds the announcement service parameters. Each <i>Announcement-Information</i> AVP specifies a single announcement to be played to the specified user.</p>
+<fig>
+<codeblock>Announcement-Information:: =  &lt; AVP Header: 3904 &gt;
+									{ Announcement-Identifier }
+								*	[ Variable-Part ]
+									[ Time-Indicator ]
+									[ Quota-Indicator ]
+									[ Announcement-Order ]
+									[ Play-Alternative ]
+									[ Privacy-Indicator ]
+									[ Language ]
+</codeblock>
+</fig>
+</sectiondiv>
+<sectiondiv><p><b>Announcement rules</b></p><p>The result context <varname>CALL_RESULT</varname>
+					provides the action attributes for announcement support. This result context is
+					available under the following triggers:</p><ul>
+					<li>
+						<p>
+							<i>IMS_CALL_ESTABLISHMENT</i>
+						</p>
+					</li>
+					<li>
+						<p>
+							<i>IMS_CALL_MODIFICATION</i>
+						</p>
+					</li>
+					<li>
+						<p>
+							<i>IMS_CALL_TERMINATION</i>
+						</p>
+					</li>
+					<li>
+						<p>
+							<i>THRESHOLD</i>
+						</p>
+					</li>
+					<li>
+						<p>
+							<i>RATING_POST_PROCESSING</i>
+						</p>
+					</li>
+				</ul><table id="ai" pgwide="1" colsep="1" rowsep="1">
+					<title>Actions in CALL_RESULT result context and corresponding AVPs for
+						Announcement</title>
+					<tgroup cols="4">
+						<colspec colname="col1"/>
+						<colspec colname="col2"/>
+						<colspec colname="COLSPEC2"/>
+						<colspec colname="COLSPEC1"/>
+						<thead>
+							<row>
+								<entry>
+									<p>Rule actions</p>
+								</entry>
+								<entry>
+									<p>AVP attribute</p>
+								</entry>
+								<entry>
+									<p>Attribute name</p>
+								</entry>
+								<entry>
+									<p>Description</p>
+								</entry>
+							</row>
+						</thead>
+						<tbody>
+							<row>
+								<entry morerows="5"> Announcement- Information </entry>
+								<entry morerows="5"> AnnouncementInformation (#AnnouncementId#,
+									#AnnouncementOrder#, #TimeIndicator#, #QuotaIndicator#,
+									#PrivacyIndicator#, #PlayAlternative#) </entry>
+								<entry> AnnouncementId </entry>
+								<entry> A code identifying the announcement to be played. </entry>
+							</row>
+							<row>
+								<entry> AnnouncementOrder </entry>
+								<entry> When multiple announcement information blocks are provided
+									in a single message with the same time indicator, the
+									announcement order indicates the order in which announcements
+									should be connected for playback. </entry>
+							</row>
+							<row>
+								<entry> TimeIndicator </entry>
+								<entry>
+									<p>Instructs the announcement to be connected at the specified
+										time before granted quota is exhausted, which ranges from
+										zero to a value smaller than the granted quota. </p>
+									<p>A value of zero means that the time quota is exhausted.
+										Absence of this field indicates that the announcement is to
+										be played before the IMS session is allowed to continue.</p>
+									<p>Default: 0</p>
+								</entry>
+							</row>
+							<row>
+								<entry> QuotaIndicator </entry>
+								<entry>
+									<p>Indicates whether the granted quota should be deducted during
+										announcement setup and playback or if the quota usage is
+										suspended while the announcement is setup and played
+										back.</p>
+									<p>Default: <varname>QUOTA_IS_NOT_USED_DURING_PLAYBACK</varname>
+									</p>
+								</entry>
+							</row>
+							<row>
+								<entry> PrivacyIndicator </entry>
+								<entry>
+									<p>Identifies if the announcement is <varname>private</varname>
+										or <varname>not private</varname>. </p>
+									<p>Default: <varname>private</varname>
+									</p>
+								</entry>
+							</row>
+							<row>
+								<entry> PlayAlternative </entry>
+								<entry> Identifies either the <varname>served party</varname> or the
+										<varname>remote party</varname> to which the announcement is
+									to be played. Default: <varname>served party</varname>
+								</entry>
+							</row>
+							<row>
+								<entry morerows="1"> Announcement-Variable-Part </entry>
+								<entry morerows="1"> VariablePart (#AnnouncementId#,
+									#VariablePartOrder#, #VariablePartType#, #VariablePartValue#) </entry>
+								<entry> AnnouncementId </entry>
+								<entry> A code identifying the announcement to be played. </entry>
+							</row>
+							<row>
+								<entry>
+									<p>VariablePartOrder</p>
+									<p>VariablePartType</p>
+									<p>VariablePartValue</p>
+								</entry>
+								<entry> Provides the variable parts and the sequence of elements
+									specifying each variable part (order, type, and value) to be
+									played back during the announcement. </entry>
+							</row>
+						</tbody>
+					</tgroup>
+				</table>Language is also a part of this AVP, which is not set through any action.
+				The language from the notification profile of device is used for this purpose. The
+				default value is <varname>English</varname>.<p>The following figure provides an
+					example of announcement rule configuration.</p><fig>
+					<title>Announcement rule example</title>
+					<!--MMO resource relative URI: ../Graphics/Release_18.9/announcementRule_default.png-->
+					<image href="../images/img9yz-09126-ug01-pczza-sp1-announcementrule_default.png" scale="50"
+					/>
+				</fig></sectiondiv>
+</section>
+<section><title>Final Unit Indication/Final Unit Action AVP support</title>
+<p>The <i>Final-Unit-Indication/Final-Unit-Action</i> (FUI/FUA) AVP is supported for IMS calls, for last slice case, in the CCA for a given MSCC where FUA can have only <varname>TERMINATE</varname> action. User can configure FUA using threshold or rules. It is supported for both decentralized and centralized call. This is also supported in the Gy interface.</p>
+</section>
+<section><title>Short number support for VoLTE calls</title>
+			<p>NCC supports differential charging on the basis of short numbers dialed by the subscriber for
+				VoLTE MOC and FWD calls. The <i>Service-Information &gt; IMS-Information &gt;
+					Requested-Party-Address</i> AVP contains the short code dialed by the calling
+				party number. The presence of this AVP indicates that it is a short number call.</p>
+<p>There is a length check on the number received from the network. If the length of the number received from the network is less than or equal to the configured length, then only the call is treated as a short number call. If the length is greater than the configured length, then the call is treated as a normal call.</p>
+<p>The <i>Requested-Party-Address</i> AVP can also handle the characters "*" / "#" / "A" / "B" / "C" / "D".</p>
+<note>
+<p>The <i>Called-Party-Address</i> AVP contains the translated number and not the short number dialed by the subscriber. The short number is present only in the <i>Requested-Party-Address</i> AVP.</p>
+</note>
+<p>In the CDR generated for the call, the <uicontrol>shortCall</uicontrol> parameter indicates whether the call was treated as a short number call or a normal call.</p>
+<p>The following figure provides example rule configuration for determining short calls.<fig>
+<title>Example rule configuration for identifying short number call</title>
+<!--MMO resource relative URI: ../Graphics/Release_19.0/shortCall1_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-shortcall1_default.png"/>
+</fig></p>
+<p>The following figure provides sample tariff configuration for short number call.<fig>
+<title>Example tariff rule for short number call</title>
+<!--MMO resource relative URI: ../Graphics/Release_19.0/shortCall2_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-shortcall2_default.png"/>
+</fig></p>
+</section>
+<section><title>Emergency call support</title>
+<p>Emergency call is a type of short number call, which must always be allowed without any checking, rating, or charging. Sessions are also not created for emergency calls. A CDR is generated for such calls.</p>
+<sectiondiv>
+<p><b>SMS</b></p>
+<p>For SMS, a number is treated as emergency number based either on the length of <i>SMS-Information-Recipient-Info &gt; Recipient-Address &gt; Address-Data</i> AVP or when the number is defined in custom data.</p>
+<fig>
+<title>Rule for SMS emergency call</title>
+<!--MMO resource relative URI: ../Graphics/Release_19.0/emergencySMS_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-emergencysms_default.png" scale="40"/>
+</fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>MMS</b></p>
+<p>For MMS, a number is treated as emergency number based either on the length of <i>MMS-Information-Recipient-Address.Address-Data</i> AVP or when the number is defined in custom data.</p>
+<fig>
+<title>Rule for MMS emergency call</title>
+<!--MMO resource relative URI: ../Graphics/Release_19.0/emergencyMMS_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-emergencymms_default.png" scale="50"/>
+</fig>
+</sectiondiv>
+<sectiondiv>
+<p><b>IMS</b></p>
+<p>For IMS calls, a number is treated as emergency number based either on the length of the <i>Called-Party-Address</i> AVP or when the number is defined in custom data. IMS emergency call is supported even if the device is in <varname>BARRED</varname> state.</p>
+<fig>
+<title>Rule for IMS emergency call</title>
+<!--MMO resource relative URI: ../Graphics/Release_19.0/emergencyIMS_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-emergencyims_default.png" scale="50"/>
+</fig>
+<p>See section <!--xref URI: ../Chapters/a-CustomScenarios.xml#emerCallEx--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-emerCallEx"/> for an example scenario.</p>
+</sectiondiv>
+</section>
+<section><title>Low balance indicator AVP support</title>
+<p>The <i>Low-Balance-Indication</i> AVP (AVP code 2020) is of type <varname>Enumerated</varname> and indicates whether the subscriber balance went below a designated threshold by its account. This indication can be used to advise the end user about the need to replenish his balance. It can be one of the following values:</p><ul>
+<li>
+<p>
+<varname>0 - NOT-APPLICABLE</varname>
+</p>
+</li>
+<li>
+<p>
+<varname>1 - YES</varname>
+</p>
+</li>
+</ul>
+<sectiondiv>
+<p><b>Supported rule</b></p>
+<p>The <i>Low-Balance-Indication</i> AVP can be configured, for example, by using the following rule:</p>
+<systemoutput>CALL_RESULT.Add-AVP-In-CCA ( "Key_STRING", "Value_STRING", AvpLevel_ENUM )</systemoutput>
+<p>Example:</p>
+<systemoutput>CALL_RESULT.Add-AVP-In-CCA ( "Low-Balance-Indication", "0", AVPLevel_COMMMAND_LEVEL)</systemoutput>
+<fig>
+<title>Example rule for low balance indication</title>
+<!--MMO resource relative URI: ../Graphics/Release_19.0/lowBalInd_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-lowbalind_default.png"/>
+</fig>
+</sectiondiv>
+</section>
+<section><title>Getting trimmed value of numbers</title>
+<p>The <uicontrol>GY_MESSAGE.Get-Trimmed-Value</uicontrol> source context attribute is used in rules to get trimmed values of phone numbers. This method removes all default escape characters (that is, +, -, leading zeroes) from the input value and returns a trimmed value.</p>
+<p>For example, +918010022536 is trimmed to 918010022536 and 00000918010022536 is trimmed to 918010022536.</p>
+<table pgwide="1" colsep="1" rowsep="1">
+				<title>Triggers for Get-Trimmed-Value</title>
+				<tgroup cols="3">
+					<colspec colname="col1"/>
+					<colspec colname="col2"/>
+					<colspec colname="col3"/>
+					<thead>
+						<row>
+							<entry>
+								<p>Source context</p>
+							</entry>
+							<entry>
+								<p>Attribute</p>
+							</entry>
+							<entry>
+								<p>Triggers</p>
+							</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry> GY_MESSAGE </entry>
+							<entry> Get-Trimmed-Value </entry>
+							<entry>
+								<p>APPLICABILITY</p>
+								<p>TARIFF THRESHOLD</p>
+								<p>SMS_CALL_ESTABLISHMENT</p>
+								<p>SMS_CALL_TERMINATION</p>
+								<p>MMS_CALL_ESTABLISHMENT</p>
+								<p>MMS_CALL_TERMINATION</p>
+								<p>IMS_CALL_ESTABLISHMENT</p>
+								<p>IMS_CALL_MODIFICATION</p>
+								<p>IMS_CALL_TERMINATION</p>
+							</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</table>
+<fig>
+<title>Example rule for trimming numbers</title>
+<!--MMO resource relative URI: ../Graphics/Release_19.0/trimRule_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-trimrule_default.png"/>
+</fig>
+</section>
+<section><title>Normalization for Subscription ID</title>
+<p>NCC devices are provisioned with MDNs (as E.164 addresses) and not with SIP_URIs. It may happen
+				that both E164 and SIP_URI are present in a CCR. All SIP_URI subscription-IDs
+				received from the network can be normalized to MDNs (prefixes 1 and +1 are
+				removed).</p>
+<p>Following are some some examples of SIP URI and TEL URI:</p><ul>
+<li>
+<p>sip:+16958882103;rn=9918872101@Nokia.host;npri=888878798</p>
+</li>
+<li>
+<p>sip:16958882103;rn=9918872101@Nokia.host;npri=888878798</p>
+</li>
+<li>
+<p>sip:16958882103@Nokia.host;npri=888878798</p>
+</li>
+<li>
+<p>sip:+16958882103@Nokia.host;npri=888878798</p>
+</li>
+<li>
+<p>tel: +16958882103;…</p>
+</li>
+</ul>
+<p>For all these examples, the normalized MDN would be 6958882103.</p>
+<sectiondiv>
+<p><b>Configure custom attribute</b></p>
+<p>First, configure a custom attribute <varname>Subscription-Id.SIP-Number</varname>. This attribute allows to extract the number from the SIP URI data. A null is returned if the <varname>Subscription-Id</varname> is not SIP. For example, if SIP URI data is <varname>sip:16958882103@Nokia.host;npri=888878798</varname>, then Subscription-Id.SIP-Number becomes <varname>16958882103</varname>.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Rule to get E.164 number from SIP_URI</b></p>
+<p>The following rules can be used to get the E.164.</p>
+<fig>
+<title>Rule for checking Subscription ID</title>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/chk_sub_id_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-chk_sub_id_default.png" scale="50"/>
+</fig>
+<fig>
+<title>Rule for looping Subscription ID</title>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/loop_sub_id_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-loop_sub_id_default.png" scale="50"/>
+</fig>
+<fig>
+<title>Rule for trimming Subscription ID</title>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/trim_su_id_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-trim_su_id_default.png" scale="70"/>
+</fig>
+</sectiondiv>
+</section>
+<section><title>Normalization for Calling-Party-Address and Called-Party-Address</title>
+<p>After normalization, <varname>Called-Party-Address</varname> is used to check blacklist/whitelist in device customer data and UC allowed and barred list. For blacklist/whitelist in device custom data, <uicontrol>IMS_CALL_ESTABLISHMENT</uicontrol> trigger is used. For UC allowed and barred list, <uicontrol>GY_PRE_PROCESSING</uicontrol> trigger is used.</p>
+<p>For multiple occurrence of <varname>Calling-Party-Address</varname>, only the first number from the platform is normalized.</p>
+<p>Following are the rule examples for normalizing  Calling-Party-Address and Called-Party-Address.</p>
+<fig>
+<image href="../images/img9yz-09126-ug01-pczza-sp1-calling_called_n1_default.png" scale="70" placement="break"/>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/calling_called_n2_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-calling_called_n2_default.png" scale="70" placement="break"/>
+<!--MMO resource relative URI: ../Graphics/Release_20.6/calling_called_n3_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-calling_called_n3_default.png" scale="70" placement="break"/>
+</fig>
+</section>
+<section><title>Starts-with check</title>
+<p>The <uicontrol>CALL_COMMON.Starts-With</uicontrol> source context is used in rules to check whether a number starts with the defined numbers.</p>
+<p>For example, the following rule checks whether a number starts with the value <systemoutput>919898</systemoutput>.</p>
+<systemoutput>CALL_COMMON.Starts-With ( CALL_COMMON.Called-Party, "919898" ) = true</systemoutput>
+<p>The <varname>Starts-With</varname> function is also available under <systemoutput>IMS_CALL_ESTABLISHMENT</systemoutput> trigger. See the following usage:</p>
+<systemoutput>GY_MESSAGE.Starts-With ( "Value_To_Check_STRING", "Starting_Value_STRING" ) = true</systemoutput>
+</section>
+<section><title>Mobile number portability support</title>
+<p>The <uicontrol>CALL_COMMON.Number-Portability-Routing-Information</uicontrol> source context attribute provides support for the Mobile Number Portability (MNP) function for IMS, SMS, and MMS calls.</p>
+<p>Number portability attribute in <i>CALL_COMMON</i> source context is available for the following triggers:</p><ul>
+<li>
+<p>
+<i>APPLICABILITY</i>
+</p>
+</li>
+<li>
+<p>
+<i>TARIFF</i>
+</p>
+</li>
+<li>
+<p>
+<i>THRESHOLD</i>
+</p>
+</li>
+</ul>
+<p>The value of this attribute is read from the <i>Service-Information &gt; IMS-Information &gt; Number-Portability-Routing-Information</i> AVP, and is used without formatting.</p>
+<p>Following is an example rule for charging based on number portability.<fig>
+<codeblock>if
+    CALL_COMMON.Number-Portability-Routing-Information = "33333"
+then 
+    RATING.No-Charge</codeblock>
+</fig></p>
+<sectiondiv>
+				<p><b>Routing number support</b></p>
+				<p>If Recipient-Address/Address-Domain/Domain-Name AVP is present, then content of
+					Domain-Name is used to impact rating.</p>
+				<p>Else if Recipient-Address/Address-Domain/3GPP-IMSI-MCC-MNC AVP is present, then
+					content of 3GPP-IMSI-MCC-MNC AVP is used to impact rating.</p>
+				<p>For certain operators, the recepient address is obtained from Recipient-Info AVP
+					under MMS-Information.</p>
+				<p>The <uicontrol>CALL_COMMON.Routing-Number</uicontrol> source context attribute is
+					used to fetch the routing number. NCC takes the value of routing number from the
+					following AVPs and it is also used to fill the CDR tag of number portability
+					routing number. For MO-SMS/MMS call, if the
+					Recipient-Address/Address-Domain/Domain-Name AVP is present, then content of
+					Domain-Name is used. Else if the
+					Recipient-Address/Address-Domain/3GPP-IMSI-MCC-MNC AVP is present then content
+					of 3GPP-IMSI-MCC-MNC AVP is used. Otherwise, the following existing behavior is
+					used:</p>
+				<ul>
+					<li>
+						<p>For SMS call:
+								<i>Service-Information/SMS-Information/Recipients/Recipient-Address/Address-Data</i>
+						</p>
+					</li>
+					<li>
+						<p>For MMS call:
+								<i>Service-Information/MMS-Information/Recipient-Address/Address-Data</i>
+						</p>
+					</li>
+					<li>
+						<p>For IMS call:
+								<i>Service-Information/IMS-Information/Called-Party-Addres</i>
+						</p>
+					</li>
+				</ul>
+				<p><b>Assumption:</b> The Recipient-Address AVP may appear multiple times. Only the
+					first Recipient-Address AVP Number Portability is checked. For
+					Recipient-Address/Address-Domain/Domain-Name and
+					Recipient-Address/Address-Domain/3GPP-IMSI-MCC-MNC AVP, the number is obtained
+					directly without checking the RN parameter (remove prefix ‘+’, remove realm). </p>
+				<p>Following are some examples of parsing with the
+						<uicontrol>CALL_COMMON.Routing-Number</uicontrol> attribute:</p>
+				<table colsep="1" rowsep="1">
+					<tgroup cols="2">
+						<colspec colname="col1"/>
+						<colspec colname="col2"/>
+						<thead>
+							<row>
+								<entry>
+									<p>Input</p>
+								</entry>
+								<entry>
+									<p>Output routing number</p>
+								</entry>
+							</row>
+						</thead>
+						<tbody>
+							<row>
+								<entry> tel:+123610606025;npdi;rn=+12025440000;user=phone </entry>
+								<entry> 12025440000 </entry>
+							</row>
+							<row>
+								<entry>
+									sip:+917723000006;npdi;rn=1237@ims.mnc872.mcc405.3gppnetwork.org;user=phone </entry>
+								<entry> 1237 </entry>
+							</row>
+						</tbody>
+					</tgroup>
+				</table>
+				<p><b>Rule configuration example for MO-SMS/MMS calls</b></p>
+				<p>The rule variable is required to determine call sub-type since only MO call is
+					supported when checking the Routing number. </p>
+				<image placement="break" href="../images/routing_number1.png" id="image_a24_xqw_vmb"
+					scale="80"/>
+				<p/>
+				<image placement="break" href="../images/routing_number2.png" id="image_uhp_yqw_vmb"
+					scale="80"/>
+				<p>The routing number is obtained from SMS_CALL_ESTABLISHMENT and
+					MMS_CALL_ESTABLISHMENT triggers.</p>
+				<image placement="break" href="../images/routing_number3.png" id="image_bqj_rrw_vmb"
+					scale="80"/>
+				<p/>
+				<image placement="break" href="../images/routing_number4.png" id="image_byg_srw_vmb"
+					scale="80"/>
+			</sectiondiv>
+</section>
+<section><title>User location information AVP support</title>
+<p>The <i>PS-Information &gt; 3GPP-User-Location-Information</i> AVP determines the subscriber location.</p>
+<table pgwide="1" colsep="1" rowsep="1">
+				<title>Conditions and actions available for user location information</title>
+				<tgroup cols="3">
+					<colspec colname="col1" colwidth="1*"/>
+					<colspec colname="col2" colwidth="1*"/>
+					<colspec colname="col3" colwidth="1.45*"/>
+					<thead>
+						<row>
+							<entry>
+								<p>Context (Source/Result)</p>
+							</entry>
+							<entry>
+								<p>Attributes</p>
+							</entry>
+							<entry>
+								<p>Triggers </p>
+							</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry> GY_MESSAGE (source context) </entry>
+							<entry>
+								<p>MCC</p>
+								<p>MNC</p>
+								<p>MCCMNC</p>
+							</entry>
+							<entry>
+								<p>APPLICABILITY</p>
+								<p>TARIFF</p>
+								<p>THRESHOLD</p>
+								<p>GY_CREDIT_REQUEST</p>
+								<p>SMS_CALL_ESTABLISHMENT</p>
+								<p>SMS_CALL_TERMINATION</p>
+								<p>MMS_CALL_ESTABLISHMENT</p>
+								<p>MMS_CALL_TERMINATION</p>
+							</entry>
+						</row>
+						<row>
+							<entry> CALL_COMMON (source context) </entry>
+							<entry>
+								<p>MCC</p>
+								<p>MNC</p>
+								<p>MCCMNC</p>
+							</entry>
+							<entry>
+								<p>APPLICABILITY</p>
+								<p>TARIFF</p>
+								<p>THRESHOLD</p>
+							</entry>
+						</row>
+						<row>
+							<entry> SESSION_PARAMETERS (result context) </entry>
+							<entry>
+								<p>MCC</p>
+								<p>MNC</p>
+								<p>MCCMNC</p>
+								<p>Call-Roaming-Status</p>
+							</entry>
+							<entry>GY_CREDIT_REQUEST </entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</table>
+<sectiondiv>
+<p><b>Example: Determining roaming status of subscriber</b></p>
+<p>Define a complex map for MCCMNC values and corresponding roaming status as shown in the following figure:<fig>
+<title>Defining complex map</title>
+<!--MMO resource relative URI: ../Graphics/Release_19.0/CLIroam1_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-cliroam1_default.png"/>
+</fig></p>
+<p>Use the complex map in rule to determine home or roam:<fig>
+<title>Determining home/roam using rules</title>
+<!--MMO resource relative URI: ../Graphics/Release_19.0/CLIroam2_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-cliroam2_default.png"/>
+</fig></p>
+<p>Calculate the roaming status as shown in the following figure:<fig>
+<title>Calculating roaming status using rules</title>
+<!--MMO resource relative URI: ../Graphics/Release_19.0/CLIroam3_default.png-->
+<image href="../images/img9yz-09126-ug01-pczza-sp1-cliroam3_default.png"/>
+</fig></p>
+</sectiondiv>
+</section>
+</conbody></concept>

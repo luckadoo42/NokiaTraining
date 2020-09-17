@@ -1,0 +1,409 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="overview">
+    <title>CNF components</title>
+    <conbody>
+        <p>A CNF in NCC consists of multiple components. The following figure represents a
+            functional viewpoint of NCC with one IG CNF.</p>
+        <fig id="fig_ijt_mkz_cmb">
+            <title>IG components</title>
+            <image placement="break" href="../images/cnf_overview_IG-components.GIF" scale="25"
+                align="center" id="image_jjt_mkz_cmb"/>
+        </fig>
+        <section id="section_qj1_5kf_mlb">
+            <title>Pod types</title>
+            <p>NCC delivers a baseline set of pod types into all of its deployments. In addition,
+                NCC might deliver BTEL into some operator environments to provide a telemetry
+                infrastructure, depending on the needs in those particular operator environments and
+                what the operators are already providing themselves. The following table describes
+                the baseline pod types used in NCC CNF.</p>
+            <table frame="all" rowsep="1" colsep="1" id="table_kzx_jlf_mlb">
+                <title>NCC baseline pod types</title>
+                <tgroup cols="4">
+                    <colspec colname="c1" colnum="1" colwidth="1.67*"/>
+                    <colspec colname="newCol2" colnum="2" colwidth="1*"/>
+                    <colspec colname="c2" colnum="3" colwidth="4.87*"/>
+                    <colspec colname="newCol3" colnum="4" colwidth="1.06*"/>
+                    <thead>
+                        <row>
+                            <entry>Pod types</entry>
+                            <entry>Applies to</entry>
+                            <entry>Description</entry>
+                            <entry>Scalability</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>iohd</entry>
+                            <entry>ME, IG</entry>
+                            <entry>Represents the Diameter IO handler. Handles ingress and egress
+                                traffic for Diameter messages. Load balances ingress traffic for the
+                                Charging application, wrapping Diameter message in an HTTP
+                                Post.</entry>
+                            <entry>1+1</entry>
+                        </row>
+                        <row>
+                            <entry>charging</entry>
+                            <entry>ME, IG</entry>
+                            <entry>Provides the business logic for the Charging application. The
+                                following are the key features:<ul id="ul_lzx_jlf_mlb">
+                                    <li>Performs online rating and charging for data session.</li>
+                                    <li>Provides session and balance management for Diameter calls
+                                        triggered on the Gy interface.</li>
+                                    <li>Performs rating and charging for data and SMS services on
+                                        all device and customer types.</li>
+                                    <li>Invokes Nokia ART rules to determine the charging rates for
+                                        different services such as easy customization of rating,
+                                        charging, and additional flexibility.</li>
+                                    <li>Enables operators to offer their customers innovative,
+                                        flexible, and context-specific real-time charging models to
+                                        provide easy and immediate payment options for expanding the
+                                        existing revenue streams tailored to individual market
+                                        segments.</li>
+                                </ul></entry>
+                            <entry>Scalable </entry>
+                        </row>
+                        <row>
+                            <entry>servicemanager</entry>
+                            <entry>SM, IG</entry>
+                            <entry>Represents the Service Manager application. The following are the
+                                key features:<ul id="ul_mzx_jlf_mlb">
+                                    <li>Represents a common point of presence for provisioning all
+                                        the MEs in the network.</li>
+                                    <li>Provides GUI to service providers’ Operation,
+                                        Administration, and Maintenance (OAM) network as well as
+                                        REST and SOAP APIs to external provisioning.</li>
+                                    <li>Maintains master copy locally and distributes to the MEs
+                                        application configuration related data. </li>
+                                    <li>Distributes to a selected ME subscriber related data and
+                                        maintains the primary and backup locations of this
+                                        data.</li>
+                                    <li>Acts as a gateway for SOAP and REST API requests sent by
+                                        external clients, identifies the right ME for these
+                                        requests, and then proxies these requests to the right
+                                        destination.</li>
+                                </ul></entry>
+                            <entry>Scalable</entry>
+                        </row>
+                        <row>
+                            <entry>provisioning</entry>
+                            <entry>ME, IG</entry>
+                            <entry>Represents subscriber-related services (largely, not entirely).
+                                Includes <i>ME Provisioning</i> that receives updates from the SM
+                                and provisions them into the ME database. Also includes the
+                                subscriber Life-Cycle Manager function, which is triggered by TEM
+                                events and handles events for components such as
+                                end-of-billing-cycle handling.</entry>
+                            <entry>Scalable</entry>
+                        </row>
+                        <row>
+                            <entry>notification</entry>
+                            <entry>ME, IG</entry>
+                            <entry>Represents the Notification Server (NS) engine, which provides a
+                                rules-based notification service for sending various notifications
+                                to subscribers or to other machine systems, over many varied
+                                delivery channels such as SMS, e-mail, application channel, SOAP,
+                                and more. Only used for sending outgoing notifications.<p>The
+                                    following are the key features:</p><ul id="ul_nzx_jlf_mlb">
+                                    <li>Sends smart notifications to users based on predefined
+                                        notification templates selected after ART rule
+                                        evaluation.</li>
+                                        <li>Receives triggers from NCC applications (for example, the
+                                        Charging application) and other applications (for example,
+                                        SurePay, external PCF) for sending notifications. </li>
+                                    <li>Sends out notifications after evaluating whether and when a
+                                        notification should be sent.</li>
+                                    <li>Supports multiple channels like e-mail, SMS, SOAP, REST, and
+                                        TCP/IP for sending the notifications.</li>
+                                </ul></entry>
+                            <entry>Scalable</entry>
+                        </row>
+                        <row>
+                            <entry>aerospike</entry>
+                            <entry>All</entry>
+                            <entry>Represents the NoSQL database server (Aerospike) containers. Used
+                                by the NCC charging as well as various NCC functions.</entry>
+                            <entry>Manually scalable</entry>
+                        </row>
+                        <row>
+                            <entry>cdr (multiple pod types)</entry>
+                            <entry>ME, IG</entry>
+                            <entry>This component provides core CDR functionality. It leverages Data
+                                Refinery (DR) microservices to enhance the flexibility and features
+                                of NCC CDR handling. Consumes CDRs received on Kafka queue (from
+                                applications), manages and mediates them, and makes them available
+                                to a variety of consumers. This component includes several pod
+                                    types.<p>DR runs on MEs for providing CDR management, including
+                                    the following:</p><ul id="ul_ozx_jlf_mlb">
+                                    <li>DR CNF infrastructure</li>
+                                    <li>DR CDR streams</li>
+                                    <li>Redis DB</li>
+                                </ul>Redis DB is used as temporary storage of CDR data while the
+                                CDRs are being processed by the CDR streams.</entry>
+                            <entry>Manually scalable</entry>
+                        </row>
+                        <row>
+                            <entry>centralmanagement</entry>
+                            <entry>All</entry>
+                            <entry>Represents the central services and management. Includes Lock and
+                                Transaction Manager (LTM), Timed Events Manager (TEM), and
+                                centralized CNF-level system monitoring with network heartbeating.
+                                    <ul id="ul_pzx_jlf_mlb">
+                                    <li>LTM is used by applications to obtain a lock when accessing
+                                        database records for provisioning or call processing, based
+                                        on the device ID or the group ID to provide transactional
+                                        behavior on top of Aerospike. Its data is in-memory only. </li>
+                                    <li>Applications add entries to TEM to get called back for
+                                        future events, such as life-cycle events (for example, start
+                                        of a new billing cycle) and expiration of the validity time
+                                        for a session. These timed events are stored in the DB for
+                                        persistence.</li>
+                                    <li>CNF-level system monitoring provides an overall assessment
+                                        of the system's health and determines whether there is a
+                                        need to declare this system out-of-service and switch
+                                        traffic to the mate. It also performs network heartbeating
+                                        with the other NCC SMs and MEs in the network to create an
+                                        accurate view of the status and accessibility of those
+                                        NCC.</li>
+                                </ul>In a future version, separate microservices will be created for
+                                some of the services. The first likely separate microservice is LTM
+                                for capacity, isolation, and potentially scalability and fault
+                                tolerance. At that time, LTM will be made horizontally scalable to
+                                address real-time limitations from a single instance, as well as to
+                                increase fault tolerance.</entry>
+                            <entry>1+1</entry>
+                        </row>
+                        <row>
+                            <entry>kafka</entry>
+                            <entry>All</entry>
+                            <entry>Represents the distributed streaming platform. Used by NCC for a
+                                variety of purposes, including publish/subscribe to events such as
+                                data changes, or work distribution queues for timed events, audits,
+                                and sending CDRs from the applications to the CDR consumer
+                                pods.</entry>
+                            <entry>Work is in progress to make it scalable.</entry>
+                        </row>
+                        <row>
+                            <entry>etcd (csdc)</entry>
+                            <entry>All</entry>
+                            <entry>Represents ETCD. Used for service discovery and
+                                configuration.</entry>
+                            <entry>Cluster of 3 </entry>
+                        </row>
+                        <row>
+                            <entry>zookeeper</entry>
+                            <entry>All</entry>
+                            <entry>Represents the following centralized service used by Kafka:<ul
+                                    id="ul_sz1_4bh_rlb">
+                                    <li>maintaining configuration information</li>
+                                    <li>naming</li>
+                                    <li>providing distributed synchronization</li>
+                                    <li>providing group services</li>
+                                </ul></entry>
+                            <entry>Cluster of 3</entry>
+                        </row>
+                        <row>
+                            <entry>keycloak (ckey)</entry>
+                            <entry>SM, IG</entry>
+                            <entry>Represents Keycloak. Provides user authentication and SSO
+                                capabilities for the SM application and for Data Refinery. It stores
+                                its information in Maria DB and runs on the pair of SMs, but in
+                                local-only mode in the initial NCC version (not as GR). This pair is
+                                used by both SM for its authentication, as well as by the Data
+                                Refinery (which is running on MEs).</entry>
+                            <entry>Scalable</entry>
+                        </row>
+                        <row>
+                            <entry>mariadb </entry>
+                            <entry>All</entry>
+                            <entry>Included on the SMs, deployed as part of Keycloak, which requires
+                                Maria DB and is deployed as part of CKEY Helm. <p>In addition to
+                                    this cluster of two, there are additional instances of mariadb.
+                                    A separate instance of mariadb is included with the CDR
+                                    microservice (Data Refinery). If the optional BTEL services are
+                                    included in the NCC deployment, there is another separate
+                                    mariadb instance. For information about Maria DB component in
+                                    BTEL, see table <i>BTEL containers</i>.</p></entry>
+                            <entry>Cluster of 2</entry>
+                        </row>
+                        <row>
+                            <entry>admincli</entry>
+                            <entry>All</entry>
+                            <entry>Represents the admin command-line interface (CLI). This singleton
+                                pod is used for running various NCC OAM tools. Users access it with
+                                Kubernetes <codeph>kubectl</codeph> commands.</entry>
+                            <entry>Singleton </entry>
+                        </row>
+                        <row>
+                            <entry>cbur-m (master backup)</entry>
+                            <entry>All</entry>
+                            <entry>Backup Master retrieves the backup tarballs from the
+                                non-persistent volumes of the various cbur-a (agent) sidecar pods,
+                                encrypts them, and stores on its own persistent volume.</entry>
+                            <entry>Singleton</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <p>The following table describes BTEL components and their respective pod types. When
+                BTEL is included in a deployment, all BTEL components apply to all CNF types: SM, ME
+                and IG. The scalability of BTEL pod types varies and depends on a particular NCC
+                deployment. </p>
+            <table frame="all" rowsep="1" colsep="1" id="table_qzx_jlf_mlb">
+                <title>BTEL components</title>
+                <tgroup cols="2">
+                    <colspec colname="c1" colnum="1" colwidth="1.79*"/>
+                    <colspec colname="c2" colnum="2" colwidth="5.51*"/>
+                    <thead>
+                        <row>
+                            <entry>Component</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>Maria DB</entry>
+                            <entry>Used to store alarms. Includes the following container: <ul
+                                    id="ul_szx_jlf_mlb">
+                                    <li><i>cmdb-mariadb</i></li>
+                                </ul></entry>
+                        </row>
+                        <row>
+                            <entry>Message broker / queing</entry>
+                            <entry>Represents a message broker, which is an implementation of the
+                                protocol AMOP (Advanced Message Queuing Protocol) along with some
+                                extensions. Works as CALM messages queue to receive/buffer alarms.
+                                Includes the following container:<ul id="ul_tzx_jlf_mlb">
+                                    <li><i>crmq</i></li>
+                                </ul></entry>
+                        </row>
+                        <row>
+                            <entry>Prometheus</entry>
+                            <entry>Manages metrics and associated alerts. Includes the following
+                                    containers:<ul id="ul_uzx_jlf_mlb">
+                                    <li><p><i>cpro-alertmanager</i>
+                                        </p>Represents alert service, which handles the alerts sent
+                                        by the Prometheus server. It takes care of removing
+                                        duplicates, grouping, and routing alerts to the correct
+                                        receiver integration such as e-mail, PagerDuty or OpsGenie.
+                                        In BTEL the webhook channel is used to allow alerts to be
+                                        forwarded to CNOT from an alertmanager.</li>
+                                    <li><p><i>cpro-kube-state-metrics</i></p>Represents a simple
+                                        service that listens to the Kubernetes API server and
+                                        generates metrics about the state of the objects. It is not
+                                        focused on the health of individual Kubernetes components,
+                                        but rather on the health of various objects inside
+                                        (deployments, nodes, pods).</li>
+                                    <li><p><i>cpro-pushgateway</i>
+                                        </p>Represents the Prometheus Pushgateway, which allows
+                                        ephemeral and batch jobs to expose their metrics to
+                                        Prometheus. Since these type of jobs might not exist long
+                                        enough to be scraped, they can instead push their metrics to
+                                        a Pushgateway.</li>
+                                    <li><p><i>cpro-server</i></p>Represents the Prometheus service,
+                                        which provides the system monitoring and alerting toolkit.
+                                        The following are the key features:<ul id="ul_d5f_m41_nlb">
+                                            <li>multi-dimensional data model with time series data
+                                                identified by metric name and key/value pairs</li>
+                                            <li>time series collection using a pull model over
+                                                HTTP</li>
+                                            <li>scrape targets discovered using service discovery or
+                                                static configuration</li>
+                                            <li>PromQL, a flexible query language to query time
+                                                series data</li>
+                                            <li>local storage for time series data</li>
+                                        </ul></li>
+                                    <li><p><i>cpro-restserver</i></p>Represents the REST service.
+                                        Used to update alert rules and record rules in Prometheus
+                                        server configuration. The REST API is provided to customers
+                                        to create/update/delete/query the rules.</li>
+                                    <li><p><i>gen3gppxml</i>
+                                        </p>Represents the PM files generating service, which
+                                        queries metric data from the Prometheus server and generates
+                                        3GPPXML files on demand. (The generating counter sets and
+                                        measurement interval are configurable.) Used to integrate
+                                        with NetAct on PM data. (FastPass, which is required by
+                                        NetAct, is supported.)</li>
+                                    <li><p>
+                                            <i>grafana</i>
+                                        </p>Provides a rich-metrics dashboard and a graph editor for
+                                        Prometheus and other data sources such as Graphite,
+                                        influxDB, OpenTSDB and Elasticsearch.</li>
+                                </ul></entry>
+                        </row>
+                        <row>
+                            <entry>Notifications</entry>
+                            <entry>Manages notifications related to alarms/metrics alerts. Includes
+                                the following container:<ul id="ul_vzx_jlf_mlb">
+                                    <li>
+                                        <p><i>cnot</i></p>
+                                    </li>
+                                </ul></entry>
+                        </row>
+                        <row>
+                            <entry>Ingress controller</entry>
+                            <entry>Manages Ingress, which exposes HTTP and HTTPS routes from outside
+                                the cluster to services within the cluster. Includes the following
+                                    containers:<ul id="ul_wzx_jlf_mlb">
+                                    <li><p><i>citm-ingress-controller</i></p>Responsible for
+                                        fulfilling the Ingress usually with a load balancer, though
+                                        it might also configure the edge router or additional front
+                                        ends to help handle the traffic.</li>
+                                    <li><p><i>default-404</i></p>Represents the default back-end
+                                        service. Handles all URL paths and hosts that the CITM NGINX
+                                        Ingress controller does not understand (that is, all the
+                                        requests that are not mapped with Ingress).</li>
+                                </ul></entry>
+                        </row>
+                        <row>
+                            <entry>Alarm manager</entry>
+                            <entry>Includes the following containers:<ul id="ul_xzx_jlf_mlb">
+                                    <li><p><i>calm</i></p>Represents alarm service. It is a generic
+                                        agent to support network elements (NEs) integrated with
+                                        different network management systems (NMS) for fault
+                                        management (FM).</li>
+                                    <li><p><i>calm-config-rest</i>
+                                        </p>Represents REST service to update the configuration of
+                                        CALM.</li>
+                                </ul></entry>
+                        </row>
+                        <row>
+                            <entry>EFK stack</entry>
+                            <entry>Manages the searching and viewing of logs. Includes the following
+                                    containers:<ul id="ul_yzx_jlf_mlb">
+                                    <li><p><i>belk-elasticsearch-master</i>
+                                        </p>Works as the master node in the Elasticsearch cluster
+                                        and controls the cluster.</li>
+                                    <li><p><i>belk-elasticsearch-client</i>
+                                        </p>Represents the Elasticsearch client to receive RESTful
+                                        requests and send them to the Elasticsearch server.</li>
+                                    <li><p><i>belk-elasticsearch-data</i>
+                                        </p>Holds data and performs data related operations such as
+                                        CRUD, search, and aggregations.</li>
+                                    <li><p><i>belk-kibana</i></p>Represents Kibana, which is a
+                                        flexible analytics and visualization platform that supports
+                                        real-time summarizing and charting of streaming data from
+                                        Elasticsearch or Logstash.</li>
+                                    <li><p><i>belk-curator</i>
+                                        </p>Helps curate or manage the Elasticsearch indices and
+                                        snapshots.</li>
+                                </ul></entry>
+                        </row>
+                        <row>
+                            <entry>Fluentd</entry>
+                            <entry>Represents the container log collection service. Collects all the
+                                logs from all the containers running on Kubernetes, processes and
+                                forwards the logs to their destinations. The PM log is forwarded to
+                                the Fluentd-Prometheus plugin. The FM log is forwarded  to the Log
+                                or Alarm Manager via RabbitMQ.<p>There is one instance on each
+                                    worker node for Fluentd management and routing stdout info.
+                                    Includes the following container:</p><ul id="ul_fjh_sn1_nlb">
+                                    <li><i>belk-fluentd</i></li>
+                                </ul></entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+    </conbody>
+</concept>

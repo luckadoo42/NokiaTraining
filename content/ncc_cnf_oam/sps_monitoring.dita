@@ -1,0 +1,563 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="cnf_sps_monitoring"><title>NCC Monitoring</title><conbody>
+<section><title>System health</title>
+<p>The system health is a resultant value derived from the health of constituent components. Complex multi-service systems require an adequate number of working instances to carry out the assigned work load. The system must be monitored for degradation of health (systems not working at rated performance, or not working at all) and troubleshooting activities should be performed as needed. </p>
+</section>
+<section>
+            <title>Health checks</title>
+            <p>Health monitoring is composed of several checks that are run on several component
+                systems. The following lists some of those checks:</p>
+            <ul>
+                <li>
+                    <p>Disk access is monitored.</p>
+                    <!--Dray: FIXME; Relevant for CNF?-->
+                </li>
+                <li>
+                    <p>Free available disk space is monitored. Every component monitors free disk
+                        space on it's local system, and alarms and logs if the level of availability
+                        falls below a pre-configured
+                        threshold.<!--Dray: FIXME; Relevant for CNF?--></p>
+                </li>
+                <li>
+                    <p>An element’s unavailability in an active-standby pair is monitored. Not
+                        having one pair is a degradation. Not having either pair is a system
+                        outage.<!--Dray: FIXME; Relevant for CNF?--></p>
+                </li>
+                <li>
+                    <p>Reduced availability for N+K local redundancy systems is monitored. Loss of
+                        N+K in any system is degradation. Loss of more than K is system
+                        outage<!--Dray: FIXME; Relevant for CNF?--></p>
+                </li>
+                <li>
+                    <p>Database pod is monitored. Database pod outage is a degradation. A second
+                        database pod outage within a data migration window is a system outage.</p>
+                </li>
+            </ul>
+            <p>Basic health checking for all pods can be accomplished by entering the following
+                command as either the “root” user or the “tpaadmin” user on the centralmanagement pod:</p>
+            <p>
+                <userinput>/opt/healthcheck/bin/health time</userinput>
+            </p>
+            <p>The second line of the output states whether or not all containers are reachable, for
+                example:</p>
+            <p>
+                <systemoutput>“Completed time check with status completed” </systemoutput>–
+                everything is reachable</p>
+            <p>
+                <systemoutput> “Completed time check with status nok”</systemoutput>- at least one
+                container was not reachable. If this is the case then the unreachable pods are
+                listed in the output.</p>
+            <note> If the output states that the tool is already running, then the chances are that
+                there is a cron job running this tool. Try again after a few seconds.</note>
+        </section>
+<section><title>NCC service monitoring</title>
+<p>Every system component registers itself with Monitoring. Monitoring provides component statuses
+                based on their ability to handle a request per service instance and per container;
+                all of which contribute to the overall status of a service. Overall site status is
+                derived by the aggregate of all the monitored services. All vital services in a site
+                must be present with a status of UP before traffic can start in the system. This
+                applies to system starts and restarts. </p>
+            <p>NCC uses a composite combination of states to determine an overall status for a given
+                service. For example, the charging service can fulfill its duties only if the
+                charging pods are healthy and access to LTM and the Aerospike database is working.
+                If any of those individual states are failed, then the composite charging service
+                state will be declared failed.</p>
+<!--fig>
+<title>Summary of composing states monitoring application
+                    health<!-Dray: FIXME; Relevant for CNF?-></title>
+<!-MMO resource relative URI: ../Graphics/moncompstat_default.png->
+    <image href="../images/moncompstat_default.png" placement="break" scale="50"/>
+</fig-->
+<p>These composing states can provide insight as to what the underlying cause is for a service
+                failure, which can guide appropriate action to restore service.</p>
+            <p>Examples of composing states include:</p><ul>
+                <li>Whether the pods for the given service are healthy</li>
+                <li>Whether Aerospike database access is working</li>
+                <li>Whether LTM access is working</li>
+                <li>Whether this site is isolated from all external Diameter peers, factoring in
+                    system restart status and other considerations</li>
+            </ul>
+    <p> These states can be seen in the output of the chf-status tool. The chf-status tool can be
+                used to verify service status and take the necessary actions to ensure that services
+                are all UP. The composing states are an amalgamation of many individual states from
+                associated services that are used to determine the state of a service or component
+                (SM or ME) as being UP/DOWN or IS/OOS respectively. If you have co-located SM and
+                MEs in a site, the site would be OOS if both components are down. See the
+                    <!--xref URI: t-tools-SPS-status-tool.xml#spsstatus--><xref
+                    keyref="cnf_chf-status"/> for more information.</p>
+<p>When a system goes out of service certain capabilities are shut down, for example:</p><ul>
+<li>
+<p>the ability to provision from SM</p>
+</li>
+<li>
+<p>Diameter traffic (including peering)</p>
+</li>
+<li>
+<p>5G traffic</p>
+</li>
+</ul>
+<p>Currently, Diameter peers are monitored but http peers are not monitored. When a site is taken
+                out-of-service (OOS), the http/2 stack is always shutdown. Monitoring will
+                gracefully shut down the Diameter stack if anything other than the Diameter peering
+                (diameterio) is DOWN. If the only issue is the loss of remote peer connections, the
+                Diameter stack will not shutdown when peer connection monitoring is the only
+                monitoring job that is DOWN so that NCC can listen for incoming peer connections and
+                bring the site back into service. Monitoring of the OOS site continues while the
+                site is OOS and as soon as the site is ready to go to an In-service (IS) state, the
+                NCC automatically restarts the Diameter stack so that the site can receive traffic
+                again. <!--xref URI: #daiameterstackbehav--><xref
+                    keyref="cnf_sps_monitoring/daiameterstackbehav"/> shows the
+                relationship between when the Diameter stack and the ME component state are in
+                different scenarios.</p>
+<table id="daiameterstackbehav" colsep="1" rowsep="1">
+                <title>Behavior of the Diameter stack and the ME component state in different
+                    scenarios</title>
+                <tgroup cols="3">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <colspec colname="col3"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Scenario</p>
+                            </entry>
+                            <entry>
+                                <p>ME component state</p>
+                            </entry>
+                            <entry>
+                                <p>Diameter Stack</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> Site is in service </entry>
+                            <entry> UP </entry>
+                            <entry> UP </entry>
+                        </row>
+                        <row>
+                            <entry> Peer monitoring goes down, when ME Component is UP </entry>
+                            <entry> Goes DOWN </entry>
+                            <entry> Remains UP to monitor new peers, even though ME is OOS. </entry>
+                        </row>
+                        <row>
+                            <entry> Peer monitoring comes back, when it is the only monitored
+                                service DOWN. </entry>
+                            <entry> Goes UP </entry>
+                            <entry> Remains UP </entry>
+                        </row>
+                        <row>
+                            <entry> ME component is UP, but goes OOS due to another monitored
+                                service </entry>
+                            <entry> Goes DOWN </entry>
+                            <entry> Diameter stack goes down. Peer monitoring if in the start UP
+                                state, remains in the start UP state. No peer has connected yet.
+                                Peer monitoring if connected to 1+ peer, will go DOWN as the stack
+                                shuts down and the peers are dropped. </entry>
+                        </row>
+                        <row>
+                            <entry> ME component is down due to Peer monitoring. Other services are
+                                UP and then another service goes OOS. </entry>
+                            <entry> Remains DOWN </entry>
+                            <entry> Diameter stack goes down. It was UP before, as diameter peering
+                                had been the only issue. </entry>
+                        </row>
+                        <row>
+                            <entry> ME component is down due to peer monitoring and another
+                                monitored service is OOS. The other service comes back IS. </entry>
+                            <entry>
+                                <p>Remains DOWN</p>
+                                <p>Peer Monitoring remembers its DOWN state. </p>
+                            </entry>
+                            <entry> Diameter stack comes back to listen for peers. </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p>ME component is down due to another monitored service being
+                                    down.</p>
+                                <p>Before this occurred the Peer Monitoring had been in start
+                                    state.</p>
+                            </entry>
+                            <entry> ME component state goes UP. </entry>
+                            <entry> Diameter stack goes UP </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <p>ME component is down due to another monitored service being down. </p>
+                                <p>Before peer monitoring had dropped because the stack was shut
+                                    down.</p>
+                            </entry>
+                            <entry> ME component state remains DOWN. </entry>
+                            <entry> Stack comes up and NCC is waiting for a peer, which if
+                                everything is good should be available and the connection can
+                                happen. (Peer Monitoring should go to UP and ME to UP). However, if
+                                no peers are now available, the stack remains DOWN. </entry>
+                        </row>
+                        <row>
+                            <entry> Activity switch </entry>
+                            <entry> After activity switch finishes it will go back to whatever state
+                                it was in before, based on its monitored services, other than the
+                                Peer Monitor, which is reset to the start state. </entry>
+                            <entry>
+                                <p>Goes to UP if the ME component states compute to IS.</p>
+                                <p>Peer Monitoring is set to the start state. Nothing is remembered
+                                    for the peer state on the previous active IOHD.</p>
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<note>For Client or NCC initiated connections, a Disconnect Peer Request (DPR) message is initiated
+                by the NCC.</note>
+<note>When an NCC is recovering from a failure, it will only be declared to be in-service and ready
+                for traffic after its Aerospike database replication has achieved up-to-date
+                synchronization with the other NCC DBs in the network.</note>
+<p>
+                <!--xref URI: #monitortable-->
+    <xref keyref="cnf_sps_monitoring/monitortable"/> describes the
+                items that are monitored by the NCC.</p>
+<table id="monitortable" colsep="1" rowsep="1">
+                <title>Services monitored by NCC</title>
+                <tgroup cols="4">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <colspec colname="col3"/>
+                    <colspec colname="col4"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Monitored Service</p>
+                            </entry>
+                            <entry>
+                                <p>Type</p>
+                            </entry>
+                            <entry>
+                                <p>Service State Calculation</p>
+                            </entry>
+                            <entry>
+                                <p>Composing states to determine if an instance is UP</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> Aerospike Cluster service </entry>
+                            <entry> STANDALONE </entry>
+                            <entry> Calculated by an external DB layer monitor to include
+                                consideration of N+K, rack awareness (2 groups of N+K), and whether
+                                data migration is already happening when a DB pod fails. </entry>
+                            <entry> If the Aerospike Cluster Service is detected as DOWN on any
+                                container in the service instance, the service instance status is
+                                also DOWN. </entry>
+                        </row>
+                        <row>
+                            <entry> Charging application service </entry>
+                            <entry> NPLUSK </entry>
+                            <entry>Service is DOWN if there are no remaining in-service
+                                instances.</entry>
+                            <entry>
+                                <p>If any one of the following are detected as down by a given
+                                    charging pod, the charging service status is also DOWN: </p>
+                                <ul>
+                                    <li>
+                                        <p>Charging pod access</p>
+                                    </li>
+                                    <li>
+                                        <p>Aerospike database access</p>
+                                    </li>
+                                    <li>
+                                        <p>LTM access</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> CKEY service </entry>
+                            <entry> NPLUSK </entry>
+                            <entry> If the CKEY Service is detected as DOWN on any container in the
+                                service instance, the service instance status is also DOWN. </entry>
+                            <entry>
+                                <p>CKEY service running on IOHO pods is a service monitored from the
+                                    centralmanagement pod at specified intervals with the default interval
+                                    being every 5 seconds.</p>
+                                <p>If the CKEY Service is detected as DOWN on any container in the
+                                    service instance, the service instance status is also DOWN.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> CMDB Service </entry>
+                            <entry> NPLUSK </entry>
+                            <entry> If the CMDB Service is detected as DOWN on any container in the
+                                service instance, the service instance status is also DOWN. </entry>
+                            <entry>
+                                <p>CMDB service running on IOHO pods is a service monitored from the
+                                    centralmanagement pod at specified intervals with the default interval
+                                    being every 5 seconds.</p>
+                                <p>If the CMDB Service is detected as DOWN on any container in the
+                                    service instance, the service instance status is also DOWN.</p>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> DiameterIO service </entry>
+                            <entry> ONEPLUSONE </entry>
+                            <entry> A 1+1 service is considered UP if there is an active instance
+                                that is UP. </entry>
+                            <entry>
+                                <p>If any one of the following are detected as down by a given
+                                    charging pod, the charging service status is also DOWN: </p>
+                                <ul>
+                                    <li>
+                                        <p>DiameterIO access</p>
+                                    </li>
+                                    <li>
+                                        <p>Aerospike database access </p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> ETCD Cluster service </entry>
+                            <entry> STANDALONE </entry>
+                            <entry> If the ETCD Cluster Service is detected as DOWN on any container
+                                in the service instance, the service instance status is also DOWN. </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry> KAFKA service </entry>
+                            <entry> STANDALONE </entry>
+                            <entry> If the KAFKA Service is detected as DOWN on any container in the
+                                service instance, the service instance status is also DOWN. </entry>
+                            <entry> A distributed messaging platform, for handling various real-time
+                                events. The Kafka health monitor runs on the active OAME. It
+                                periodically produces and receives messages from Kafka. If multiple
+                                attempts are unsuccessful, the monitoring system will mark the
+                                service as DOWN.</entry>
+                        </row>
+                        <row>
+                            <entry> Lock and Transaction Manager (LTM) service </entry>
+                            <entry> ONEPLUSONE </entry>
+                            <entry> A 1+1 service is considered UP if there is an active instance
+                                that is UP. </entry>
+                            <entry>
+                                <p>If any one of the following are detected as down by a given
+                                    charging pod, the charging service status is also DOWN: </p>
+                                <ul>
+                                    <li>
+                                        <p>LTM access</p>
+                                    </li>
+                                    <li>
+                                        <p>Aerospike database access</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Notification Service </entry>
+                            <entry> NPLUSK </entry>
+                            <entry> Service goes DOWN if there are no remaining in-service
+                                instances</entry>
+                            <entry>
+                                <p>If any one of the following are detected as down by a given
+                                    charging pod, the charging service status is also DOWN: </p>
+                                <ul>
+                                    <li>
+                                        <p>Notification Service access</p>
+                                    </li>
+                                    <li>
+                                        <p>Aerospike database access</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Provisioning service </entry>
+                            <entry> NPLUSK </entry>
+                            <entry> Service goes DOWN if there are no remaining in-service
+                                instances</entry>
+                            <entry>
+                                <p>If any one of the following are detected as down by a given
+                                    charging pod, the charging service status is also DOWN: </p>
+                                <ul>
+                                    <li>
+                                        <p>Provisioning access</p>
+                                    </li>
+                                    <li>
+                                        <p>Aerospike database access </p>
+                                    </li>
+                                    <li>
+                                        <p>LTM access</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> RollBack service </entry>
+                            <entry> ONEPLUSONE </entry>
+                            <entry> A 1+1 service is considered UP if there is an active instance
+                                that is UP. </entry>
+                            <entry>
+                                <p>If any one of the following are detected as down by a given
+                                    charging pod, the charging service status is also DOWN: </p>
+                                <ul>
+                                    <li>
+                                        <p>Rollback access</p>
+                                    </li>
+                                    <li>
+                                        <p>Aerospike database access </p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> SM App </entry>
+                            <entry> NPLUSK </entry>
+                            <entry> Service goes DOWN if there are no remaining in-service
+                                instances.</entry>
+                            <entry>
+                                <p>If any one of the following are detected as down by a given
+                                    charging pod, the charging service status is also DOWN: </p>
+                                <ul>
+                                    <li>
+                                        <p>SM App Service </p>
+                                    </li>
+                                    <li>
+                                        <p>Aerospike database access </p>
+                                    </li>
+                                    <li>
+                                        <p>LTM access</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> Timed Event Manager (TEM) service </entry>
+                            <entry> ONEPLUSONE </entry>
+                            <entry> A 1+1 service is considered UP if there is an active instance
+                                that is UP. </entry>
+                            <entry>
+                                <p>If any one of the following are detected as down by a given
+                                    charging pod, the charging service status is also DOWN: </p>
+                                <ul>
+                                    <li>
+                                        <p>TEM</p>
+                                    </li>
+                                    <li>
+                                        <p>Aerospike database access </p>
+                                    </li>
+                                    <li>
+                                        <p>LTM access</p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> TRSCHEDULER service </entry>
+                            <entry> ONEPLUSONE </entry>
+                            <entry> A 1+1 service is considered UP if there is an active instance
+                                that is UP. </entry>
+                            <entry>
+                                <p>If any one of the following are detected as down by a given
+                                    charging pod, the charging service status is also DOWN: </p>
+                                <ul>
+                                    <li>
+                                        <p>TRSCHEDULER access </p>
+                                    </li>
+                                    <li>
+                                        <p>Aerospike database access </p>
+                                    </li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry> XDR </entry>
+                            <entry> NPLUSK </entry>
+                            <entry>Service goes down if there are no remaining in-service
+                                instances.</entry>
+                            <entry/>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+</section>
+<section><title>Traffic control from the IOHD for applications</title>
+<p>Applications track and report their latency to the monitoring job that is running on the
+                centralmanagement pod. When the centralmanagement pod discovers that a given
+                application is not performing (based on multiple composite states), it will inform
+                the IOHD to avoid sending traffic to that backend Diameter application. There are
+                monitoring listeners in the IOHD that automatically disable traffic when monitoring
+                detects that a service is down in the application. </p>
+<p>The application preference “IOHD Traffic to pod Requires Manual Enable” can be used to control
+                whether or not traffic to a pod needs to be manually enabled after being disabled by
+                monitoring. If the application preference is set to false, traffic is re-enabled
+                automatically once the problem detected by monitoring is resolved. If the
+                application preference is set to true, you must use the iohd-traffic-control tool to
+                manually re-enable traffic. The “iohd-Traffic-Control tool” is provided so that the
+                operator can put the service back into service manually when ready. The tool can be
+                used to manually disable or enable all traffic or specified traffic to an
+                application. If an application is taken out of service manually and the application
+                preference is set to “true”, traffic will need to be put back into service manually. </p>
+<p>Traffic is automatically disabled after the application is rendered OOS due to a failure of the composing states and may need manual intervention to put it back into service. The “iohd-Traffic-Control tool” gives the operator time to diagnose the problem. See the “iohd-Traffic-Control tool” in this guide for more information.</p>
+</section>
+<section><title>Monitoring of horizontally scalable pods</title>
+<p>NCC includes a variety of services that are horizontally scalable. When a system is dimensioned
+                for its max engineered capacity, a small amount of additional resource is added to
+                provide fault tolerance while still maintaining peak engineered capacity. The
+                engineered capacity can be provided by "N" pod instances, with "K" additional pod
+                instances added for fault tolerance.</p>
+<p>Given that NCC MEs are deployed in geo-redundant pairs, an ME reserves one-half of its capacity
+                to handle the mate failure scenario. In other words, the ME is engineered to handle
+                both its own and its mate's peak traffic.</p>
+<p>When dimensioning an NCC, the following baseline assumptions are made:</p>
+<table colsep="1" rowsep="1">
+                <tgroup cols="3">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <colspec colname="col3"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>N</p>
+                            </entry>
+                            <entry>
+                                <p>K</p>
+                            </entry>
+                            <entry>
+                                <p>Total</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry> 1 ~ 4 </entry>
+                            <entry> 1 </entry>
+                            <entry> 2 ~ 5 </entry>
+                        </row>
+                        <row>
+                            <entry> 5 ~ 11 </entry>
+                            <entry> 2 </entry>
+                            <entry> 6 ~ 14 </entry>
+                        </row>
+                        <row>
+                            <entry> 12+ </entry>
+                            <entry> 3 </entry>
+                            <entry> 15+ </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+<p>When an NCC CNF pod fails, Kubernetes will automatically start a new instance to replace it. In
+                most scenarios, this is sufficient, keeping the NCC healthy and providing service at
+                its rated capacity.</p>
+<p>In rare or unexpected failure scenarios where Kubernetes is unable to perform that task and there
+                are no more remaining healthy pod instances of a given type, then that given service
+                will be declared OOS. If that service is defined as vital, then the entire NCC will
+                declare itself OOS which will result in traffic being routed to the mate for
+                processing.</p>
+<sectiondiv>Aerospike database pods are dimensioned and configured a bit differently. They are
+                configured in two zones for managing data replication within a given NCC system,
+                with each zone configured to have "K" additional pods for fault tolerance. Each
+                record has one copy in each zone. Multiple pods within a zone can fail without
+                impacting access to any of the data or reducing the system's capacity.</sectiondiv>
+</section>
+</conbody></concept>

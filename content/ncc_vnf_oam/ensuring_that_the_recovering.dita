@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="id9YZ-09126-MT00-REZZA-SP2-d1e66761"><title>Ensuring that the recovering site stays OOS</title><taskbody><steps>
+<stepsection>Perform this procedure (for catastrophic failure) to configure the “set_oos_drr”
+        parameter to “true” using the CBAM interface or the VNF EXTENSION.json file on the
+        recovering site.</stepsection>
+<step><cmd>Update the VNF EXTENSION.json file or update using the CBAM interface to configure the “set_oos_drr” parameter to “true”. The “set_oos_drr” parameter is part of the VNF EXTENTION and defines whether or not a VNF stays in the OOS state. When this parameter is set to true, the instantiated VNF remains in the OOS state until the Disaster Recovery procedure has been executed. </cmd><info><p>This step will ensure that the recovering ME, SM, and/or IG will instantiate on OOS (Out Of Service) state and live traffic will not be routed on the recovering site. In this step, configuration files (XXX_ ME_VNF EXTENTION.json, XXX_ SM_VNF EXTENTION.json) which were used to instantiate the ME, SM, and/or IG before disaster, will be updated. Value "set_oos_drr" flag in both files need to be updated as "true" before re-instantiation of ME, SM, and/or IG. for example:</p><fig>
+<codeblock>VNF EXTENTION.json
+    {
+      "name": "localize_and_start_sps",
+      "value": "true"
+    },
+    {
+      "name": "set_oos_drr",
+      "value": "true"
+    },
+    {
+      "name": "ntp_servers",
+      "value": "135.111.9.166,4,y"</codeblock>
+</fig></info></step>
+<step><cmd>Instantiate the ME, IG, and/or SM using the VNF EXTENTION.json file from the first step.</cmd><info/></step>
+<step>
+        <cmd>If the OAME VMs are logged in ahead of the restore operation, then refer to the <i>NCC
+            Installation and Upgrade Guide</i> and execute the "Changing password on first login"
+          procedure for the tpaadmin user.</cmd>
+        <info>
+          <p> The password used for this procedure can be anything that follows the default password
+            complexity rules listed under the "Security and user management" section in the OAM
+            Guide, or it can be the same password that has been backed up. The restore procedure
+            will restore the password of tpaadmin that was backed up.</p>
+          <p>Refer </p>
+        </info>
+      </step>
+<step><cmd>Log in to the CBAM GUI and select the VNFs tab. The VNF-specific window appears.</cmd><info/></step>
+<step><cmd>Select the VNF on which you want to configure the “set_oos_drr” parameter to “true”. </cmd><info/></step>
+<step><cmd>Click OK.</cmd><info/></step>
+</steps>
+</taskbody></task>

@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-mariadbtool"><title>mariadb-tools.sh tool</title><conbody>
+<section><title>Description</title>
+<p>This tool is present on the IOHO node and operates on both of the IOHO nodes.</p>
+<p>For example, counts are checked from both of the IOHO nodes and restore is done on both of the
+                IOHO nodes. Backup is done from the local node only. For exact steps on how to do
+                backup and restore for mariadb, see the <i>NCC-Installation and Upgrade Guide</i>
+                only. </p>
+<p>This tool can do the following actions on IOHO nodes on SM and IG:</p><ul>
+<li>
+<p>Backup the CKEY replicated data in MariaDB in the given database using mariadb_db_backup in one datacenter on the Master IOHO node.</p>
+</li>
+<li>
+<p>Restore the CKEY data in MariaDB on both IOHO nodes in the given database using mariadb_db_backup and the specified file.</p>
+</li>
+<li>
+<p>Verify and check the counts of replicated (CKEY) and non-replicated data (CALM), if available, in the database.</p>
+</li>
+</ul>
+<p>The detailed logs of the tool are present in /opt/tpa/logs/MariaDBbackuptool.log.</p>
+<note>
+<p>During the execution of this tool, the sql process goes down and then comes up again. This tool waits for 5 seconds to get this process up and running. If the process is not running after 5 seconds, the tool will wait up to a maximum of 20 minutes to get this process up and running.</p>
+</note>
+<note>Before copying any files to any NCC VMs, the user must execute the df and du Linux commands
+                from each VM to determine the storage available and whether or not the copying of
+                new files can proceed. Usage of the Linux commands df (abbreviation for disk free)
+                and du (abbreviated from disk usage) can be found on every VM via the Linux manual
+                page by using “man df” and “man du” as root user. You can use any storage directory,
+                but there are two storage directories that can be used on any VM as follows:<ul>
+                    <li>
+                        <p> First choice, is under the /appdata directory which is created and
+                            mounted to the cinder volume (OpenStack)/independent disk (VMware) on
+                            every VM.</p>
+                    </li>
+                    <li>
+                        <p>Second choice, is under the /var/log directory which is created and
+                            mounted to the cinder volume (OpenStack)/independent disk (VMware) on
+                            every VM. For this tool, the backup can be stored in any directory as
+                            long as there is sufficient space; however, the DIRECTORY MUST EXIST
+                            BEFORE THE TOOL IS USED.</p>
+                    </li>
+                </ul><p>If there is enough storage available, proceed.</p><p>When you have completed
+                    the task, clean-up the files that are no longer needed.</p><p>If there is not
+                    enough space, either do some clean-up or contact Nokia Support.</p></note>
+</section>
+<section><title>Syntax</title>
+<p>To perform a backup of replicated data in MariaDB. </p>
+<p>
+<codeph>/opt/tpa/bin/mariadb-tools.sh -b -u &lt;username&gt; -p &lt;password&gt; -d &lt;DBname&gt; [-f &lt;file&gt;]</codeph>
+</p>
+<p>To perform a restore of replicated data in MariaDB. </p>
+<p>
+<codeph>/opt/tpa/bin/mariadb-tools.sh -r -u &lt;username&gt; -p &lt;password&gt; -d &lt;DBname&gt; [-f &lt;file&gt;]</codeph>
+</p>
+<p>To get the counts of replicated KeyCloak data and non-replicated (if present) Alarm data in MariaDB.</p>
+<p>
+<codeph>/opt/tpa/bin/mariadb-tools.sh -c -u &lt;username&gt; -p &lt;password&gt; -d &lt;DBname&gt;</codeph>
+</p>
+<table>
+<tgroup cols="2">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<thead>
+<row>
+<entry>
+<p>Options</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+<codeph>no arguments</codeph>
+</entry>
+<entry>
+logit this help information
+</entry>
+</row>
+<row>
+<entry>
+<codeph>-h</codeph>
+</entry>
+<entry>
+logit this help information
+</entry>
+</row>
+<row>
+<entry>
+<codeph>-b</codeph>
+</entry>
+<entry>
+Do a backup of replicated data in MariaDB.
+</entry>
+</row>
+<row>
+<entry>
+<codeph>-r</codeph>
+</entry>
+<entry>
+Do a restore of replicated data in MariaDB.
+</entry>
+</row>
+<row>
+<entry>
+<codeph>-c</codeph>
+</entry>
+<entry>
+Check the counts of replicated KeyCloak data and non-replicated (if present) Alarm data in MariaDB.
+</entry>
+</row>
+<row>
+<entry>
+<codeph>-u &lt;username&gt;</codeph>
+</entry>
+<entry>
+Username to connect to the MariaDB.
+</entry>
+</row>
+<row>
+<entry>
+<codeph>-p &lt;password&gt;</codeph>
+</entry>
+<entry>
+Password to connect to the MariaDB.
+</entry>
+</row>
+<row>
+<entry>
+<codeph>-d &lt;DBname&gt; </codeph>
+</entry>
+<entry>
+Name of the database to which you will connect.
+</entry>
+</row>
+<row>
+<entry>
+<codeph>-f &lt;file&gt;</codeph>
+</entry>
+<entry>
+<p>For a backup operation, the path and name of the file that will be created.</p>
+<p>For a restore operation, the path and name of the file to restore from.</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeph>-v </codeph>
+</entry>
+<entry>
+Enable detailed debug logs.
+</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section><title>Example</title>
+<p>The following example shows output similar to what you should see from a backup of MariaDB.</p>
+<fig>
+<title>Output from mariadb-tools.sh backup</title>
+<!--MMO resource relative URI: ../Graphics/mariadboutput1_default.png-->
+    <image href="../images/mariadboutput1_default.png"/>
+</fig>
+<p>The following example shows output similar to what you should see from a restore operation on MariaDB.</p>
+<fig>
+<title>Output from mariadb-tools.sh restore</title>
+<!--MMO resource relative URI: ../Graphics/mariadboutput2_default.png-->
+    <image href="../images/mariadboutput2_default.png"/>
+</fig>
+<p>The following example shows output similar to what you should see from counts for MariaDB.</p>
+<fig>
+<title>Output from mariadb-tools.sh counts</title>
+<!--MMO resource relative URI: ../Graphics/mariadboutput3_default.png-->
+    <image href="../images/mariadboutput3_default.png"/>
+</fig>
+</section>
+</conbody></concept>

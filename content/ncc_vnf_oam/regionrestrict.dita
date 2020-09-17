@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-regionrestrict"><title>Inter-site region restrictions</title><conbody>
+<section><title>Limitations</title>
+<p>The following limitations apply for intersite regional routing:</p><ul>
+<li>
+<p>NCC does not currently support having a single SM manage a network of NCC sites where policy
+                        services for a given device are homed on one NCC and charging services for
+                        that same device are homed on a different NCC. Policy and charging must
+                        either be homed on the same NCC for a given device, or separate SMs are
+                        required for policy and charging.</p>
+</li>
+<li>
+<p>If a NotifyCreate request from the NCC to an SM fails, no entry is created for the device in the
+                        SM. However, if a UD request or any API request comes in to the SM, the SM
+                        will broadcast the request to all NCCs and self-learn the device. </p>
+</li>
+<li>
+<p>If there is a Timeout of the Gx attach request, (that is CCA-I not received from the NCC), the UE
+                        will try to send another Gx attach using the second PGW. When the re-send is
+                        successful, the NCC will send the RAR(Gx) to remove the previously created
+                        Gx session (if any) thereby making sure that UE does not have the two Gx
+                        sessions.</p>
+</li>
+<li>
+<p>In cases where the device roams from region 1 to region 2 and there is a deletion request
+                        towards Region 1 and NCC fails from the SM, the next UDnotifyrequest (UD
+                        notification) is routed to the old NCC. The chances of not deleting the
+                        device are reduced and considered a rare possibility.</p>
+</li>
+<li>
+<p>In cases where the device roams from region 1 to region 2, new device creation at Region 2 may not have all the device data details (for example, custom data) required to properly create the device. The same behavior is experienced for devices in the internal and external SPRs.</p>
+</li>
+</ul>
+</section>
+</conbody></concept>

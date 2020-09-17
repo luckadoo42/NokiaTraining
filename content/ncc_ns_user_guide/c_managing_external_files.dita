@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9YZ-08540-UG02-PCZZA-d1e47702_overview">
+   <title>Managing external files</title>
+   <conbody>
+
+      <p>External files can be provided in NS for connecting to Kafka clusters.</p>
+      <p>NS runs within docker containers on the <userinput>comsvc</userinput> nodes. The external
+         files must be copied to all the <userinput>comsvc</userinput> nodes in the directory
+            <filepath>/opt/tpa/conf/sac/external/</filepath> to make them available inside the SPSNS
+         containers.</p>
+      <p>These files can be copied to the <userinput>comsvc</userinput> nodes from the OAME node using a file transfer utility, for example, <userinput>scp</userinput>.</p>
+      <p>The content of <filepath>/opt/tpa/conf/sac/external/</filepath> is copied inside the SPSNS
+         containers on start-up of NCC on the comsvc node(s), via <userinput>TPA_control
+            start</userinput> command.</p>
+      <p>The destination directory in the container is also <i>/opt/tpa/conf/sac/external/</i>. </p>
+      <p>Once these files are available to the SPSNS container(s), they can be used in various Kafka
+         broker properties in NCC. </p>
+      <note>
+
+         <p/>
+         <ul>
+
+            <li>
+               <p>All external files must have read permissions and the file ownership should be of <userinput>tpaadmin:tpa</userinput>.</p>
+            </li>
+            <li>
+               <p>To make new/changed files available to an already running SPSNS, NCC must be
+                  restarted (using <userinput>TPA_control stop</userinput> and
+                     <userinput>TPA_control start</userinput> commands) on the
+                     <userinput>comsvc</userinput> node.</p>
+            </li>
+            <li>
+               <p>The content is copied to the destination directory on every restart/TPA-restart of the comsvc node(s).</p>
+            </li>
+            <li>
+               <p>The external files are managed in this way only for the NCC BVNF solution. In this
+                  release, there is no automatic copying of files for the NCC BCMT solution.
+                     <draft-comment>This feature may be provided on SPS BCMT in future
+                     releases.</draft-comment> Therefore, for the NCC BCMT solution, the external
+                  files must be copied to the NS containers manually.</p>
+            </li>
+            <li>
+               <p>For upgrade and scale-out operations, the external files are NOT copied automatically to the upgraded/scaled-out <userinput>comsvc</userinput> node(s). These files must be copied to these new nodes.</p>
+            </li>
+         </ul>
+      </note>
+   </conbody>
+</concept>

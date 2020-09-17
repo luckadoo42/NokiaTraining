@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="force_remote_site_in_service">
+    <title>force-remote-site-in-service</title>
+    <conbody>
+        <section id="section_pjq_g2r_nlb">
+            <title>Description</title>
+            <p>This command tool can be used to treat another member in a heartbeat community as in
+                service so that processing on behalf of that member will stop. The tool overrides
+                the heartbeat decision for the member that the tool is run on, which continues until
+                a direct heartbeat is received from the errant member. </p>
+            <p>This tool should only be used in deployments that have two SMs and two MEs in two
+                locations.</p>
+        </section>
+        <section id="section_orf_kgr_nlb">
+            <title>Syntax</title>
+            <p>From the member that sees the remote member as OOS, log in to the centralmanagement pod as
+                tpaadmin and execute the command as follows. The site id in the topology of the
+                network is used as the key to turn on and off the forced in service
+                    state.<codeblock>force-remote-site-in-service [-f &lt;site_ID>] [-i] [-c &lt;site_ID>]</codeblock><note>The
+                    tool needs to be run on all the SMs and MEs.</note></p>
+            <p>Where:<table frame="all" rowsep="1" colsep="1" id="table_fmx_lgr_nlb">
+                    <tgroup cols="2">
+                        <colspec colname="c1" colnum="1" colwidth="1*"/>
+                        <colspec colname="c2" colnum="2" colwidth="1*"/>
+                        <thead>
+                            <row>
+                                <entry>Option</entry>
+                                <entry>Description</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry><codeph>-h or -?</codeph></entry>
+                                <entry>Displays usage/help information.</entry>
+                            </row>
+                            <row>
+                                <entry><codeph>-f &lt;site_ID>[:&lt;component>]</codeph></entry>
+                                <entry>
+                                    <p>Sets the member to IS from the other member. Applies to the
+                                        specified component (<codeph>sm</codeph> or
+                                            <codeph>me</codeph>) or to all components in the
+                                        site.</p>
+                                    <p>For example, it sets the member 2 ME component to IS from
+                                        member 1.</p>
+                                    <p><codeph>force-remote-site-in-service -f 2:me</codeph></p>
+                                    <p>The Site 2 ME is forced in service. Further, to the
+                                        example,</p>
+                                    <p>-f 2 —without the :&lt;component> all components at site
+                                        2</p>
+                                    <p>or</p>
+                                    <p>-f 2:sm —with the :sm gives you just the sm component of
+                                        site2</p>
+                                    <p>or</p>
+                                    <p>-f 2:me —with the :me gives you just the me component of site
+                                        2</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>-i</codeph></entry>
+                                <entry>
+                                    <p>Displays a list of members that have been “forced” to an IS
+                                        state. For example:</p>
+                                    <p><codeph>force-remote-site-in-service -i</codeph></p>
+                                    <p>The following sites are forced in service:</p>
+                                    <p>2 ME</p>
+                                    <p>2 SM</p>
+                                </entry>
+                            </row>
+                            <row>
+                                <entry><codeph>-c &lt;site_ID>[:&lt;component>]</codeph></entry>
+                                <entry>
+                                    <p>Manually clears the forced IS state for a member’s component.
+                                        Applies to the specified component (sm or me) or to all
+                                        components in the site. For example:</p>
+                                    <p><codeph>> force-remote-site-in-service -c 2:sm</codeph></p>
+                                    <p>The ME in Site 2 is no longer forced in service.</p>
+                                    <p>Further, to the example,</p>
+                                    <p>-c 2 —without the :&lt;component> all components at site
+                                        2</p>
+                                    <p>or</p>
+                                    <p>-c 2:sm —with the :sm gives you just the sm component of site
+                                        2</p>
+                                    <p>or</p>
+                                    <p>-c 2:me —with the :me gives you just the me component of site
+                                        2</p>
+                                </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table></p>
+        </section>
+    </conbody>
+</concept>

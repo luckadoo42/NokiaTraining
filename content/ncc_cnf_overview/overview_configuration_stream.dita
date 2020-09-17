@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="SPS_CDR_Streams_Stream_Overview_configuration_stream">
+<title>Configuration stream</title>
+<body>
+                
+                <p>Some configuration options are defined within the Configuration stream or in Data
+                    Refinery lookup tables. These configuration options are published to the
+                    database by running the Configuration Stream and thereby taken into use in all
+                    the other streams.</p>
+                <p>The configuration stored in the lookup tables can be maintained through the Data
+                    Refinery UI. Every configuration has a lookup table for the configuration draft
+                    and a corresponding read-only lookup table for the latest published
+                    configuration, currently in use. The name of the published table has prefix
+                    P_.</p>
+                <p>Configuration stream consists of two instances of a standalone node, CG
+                    Configuration Node – one for publishing configurations and one for reverting
+                    configurations. After modifications to draft lookup tables, the node for
+                    publishing configurations must be run to take the configuration changes into
+                    use. Running the node will attempt to publish all the changed lookup
+                    configurations, but before publishing, all the configurations are validated. The
+                    publishing proceeds only if all of the configurations are valid. Possible
+                    validation errors raise warnings, and the previously configured rules remain in
+                    use until CG Configuration Node has been run successfully in publish mode. It is
+                    not possible to publish only selected lookup tables. An info message is shown
+                    once the node has successfully updated the configuration, unless no changes were
+                    needed and therefore no message is shown.</p>
+                <p>The other node in the Configuration stream can be used for reverting the draft
+                    lookup tables back to the current published state. Any changes done in the draft
+                    lookup tables are discarded.</p>
+                <p>CG Configuration Node is a schedulable node, which can be run manually or be
+                    scheduled to run at a certain time. It is recommended to only run the node
+                    manually when needed. The default configurations will be published to the
+                    database automatically when the stream is started for the first time, if no
+                    configurations exist in the database yet.</p>
+                <p>The Configuration stream must always be run once before taking a new version of
+                    CDR Streams into use.</p>
+                <p>
+                    <fig id ="config">
+                        <title>Example of Configuration stream</title>
+                    <image href="../images/sps_configuration_stream.png" placement="break"
+                    align="left" height="4in"/>
+                    </fig>
+                </p>
+        <section id="section_xkk_xh5_cmb">
+            <title>Scaling</title>
+            <p>There is no need to scale the Configuration stream.</p>
+        </section>
+                </body>
+</topic>

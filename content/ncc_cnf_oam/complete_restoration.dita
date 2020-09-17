@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="complete_restoration">
+    <title>Complete restoration</title>
+    <body>
+        <p>When an NCC site is unhealthy, a complete restoration may be necessary. This section will
+            describe the procedure required to complete restore an NCC site.</p>
+        <section id="section_fnc_dbd_qmb">
+            <title>Problem description</title>
+            <p>This is a catastrophic failure, and there could be two possibilities. One, a disaster
+                situation like earthquake, flood, etc. where the complete k8s cluster is gone. Two,
+                a disaster situation that has affected only NCC and its components, like an
+                accidental uninstall.</p>
+        </section>
+        <section id="section_zby_jbd_qmb">
+            <title>Resolution</title>
+            <p>The NCC site has to be restored including kubernetes objects and data. This includes
+                NCC and other dependent components that are shipped with NCC. The installation needs
+                to be done again and database restored. Before recovery procedure is followed, the
+                kubernetes cluster should be at a point where a clean NCC install can be done
+                (basically cluster should be ready, with istio, namespace and ingress gateway). The
+                following needs to be done for recovery.</p>
+        </section>
+        <section id="section_eby_jbd_qmb">
+            <ol id="ol_hns_dbd_qmb">
+                <li>If the kubernetes objects that were created during NCC pre install were lost
+                    too, they need to be recovered. If not continue to next step. These k8s objects
+                    include Service accounts and other rbac, Service entry, Virtual service,
+                    Destination Rule. These don't change overtime and don't need to be backedup
+                    using NCC Backup and Restore. Instead if these files were backedup during
+                    original install, that could be used again to create these.</li>
+                <li>Perform helm install using the same original overrides file that was used. This
+                    would restore the k8s objects but still the data needs to be restored.</li>
+                <li>The recovering site should be marked out of service using
+                        <i>configure-manual-oos</i></li>
+                <li>Disabling XDR traffic on recovering site. Use <i>xdr-traffic-control</i> to
+                    block incoming XDR traffic. </li>
+                <li>Backup database at healthy site using <i>db-backup</i></li>
+                <li>Restore data at recovery site, using <i>db-restore</i></li>
+                <li>From SM GUI, use Reload ME operation to populate local data into the
+                    database.</li>
+                <li>Enable XDR traffic at recovery site, using
+                    <i><i>xdr-traffic-control</i></i></li>
+                <li>Use <i>db-repair-key-gen</i> to repair 'KeyGenerators' data set at recovery
+                    site.</li>
+                <li>Mark database recovery is completed (In Service IS) using
+                        <i><i>xdr-status</i></i></li>
+                <li>Remove out of service flag using <i>configure-manual-oos</i></li>
+            </ol>
+        </section>
+    </body>
+</topic>

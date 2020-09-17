@@ -1,0 +1,576 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-slicing_profile"><title>Slicing Profile</title><conbody>
+<section><title>Overview</title>
+<p>The slicing profile entity is the primary object used in the dynamic slicing feature and it works in centralized mode of rating and charging. When the reservation unit is not provided by PGW, the slice to be reserved is computed either statically or dynamically as per the slicing profile entity configuration.</p>
+<p>Currently, only one slicing profile is supported in NCC and the name of that slicing profile is
+    defined in global configuration or <filepath>TPA_system properties</filepath> file. By default,
+    the name of the slicing profile entity is <filepath>default_profile</filepath> provisioned by
+    the user as per the dynamic slicing feature.</p>
+<note>
+<p>You can define the slicing profile entity with any other name apart from <filepath>default_profile</filepath> and accordingly, this value must be updated in the <filepath>TPA_system properties</filepath> file.</p>
+<p>For information on slice reduction, see the <xref
+      href="slicereduction.dita#id9yz-09126-ug01-pczza-sp1-slicereduction/exe"/> section.</p>
+</note>
+</section>
+<section><title>Configuration</title>
+<p>Log into the SM GUI, navigate to <uicontrol>Policy &amp; Charging Configuration</uicontrol> &gt;
+     <uicontrol>CHARGING</uicontrol> tab and select <uicontrol>Slicing Profile</uicontrol> from the
+    hamburger menu ( <!--MMO resource relative URI: ../../Global_Configurations/Graphics/hamburgermenu_default.png-->
+    <image href="../images/img9yz-09126-ug01-pczza-sp1-hamburgermenu_default.png" scale="40"/> ). To
+    define a new slicing profile entity, click <!--MMO resource relative URI: ../Graphics/Release_18.0/Add_button_default.png-->
+    <image href="../images/img9yz-09126-ug01-pczza-sp1-add_button_default.png" scale="40"/> to add
+    the basic details as described in the given table.</p>
+<sectiondiv>
+<p><b>Basic Details</b></p>
+<table pgwide="1" colsep="1" rowsep="1">
+     <title>Parameters for slicing profile</title>
+     <tgroup cols="4">
+      <colspec colname="col1"/>
+      <colspec colname="COLSPEC0"/>
+      <colspec colname="COLSPEC2"/>
+      <colspec colname="col2"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Parameter</p>
+        </entry>
+        <entry>
+         <p>Description</p>
+        </entry>
+        <entry>
+         <p>Options</p>
+        </entry>
+        <entry>
+         <p>Mandatory/Optional</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> Profile Name </entry>
+        <entry> This parameter indicates a unique name to identify the slicing profile. </entry>
+        <entry> String </entry>
+        <entry> Mandatory </entry>
+       </row>
+       <row>
+        <entry> Slice Size (Bytes) </entry>
+        <entry>
+         <p>This parameter indicates the static size of slice in bytes.</p>
+         <p>The value of this parameter is always greater than zero.</p>
+        </entry>
+        <entry> Long </entry>
+        <entry> Mandatory </entry>
+       </row>
+       <row>
+        <entry> Quota Holding Time (s) </entry>
+        <entry>
+         <p>This parameter indicates the value of the quota holding time in seconds and controls the
+          time the session remains in the idle state in the network. </p>
+         <p>The value of this parameter is always greater than zero.</p>
+        </entry>
+        <entry> Long </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry> Validity Time (s) </entry>
+        <entry>
+         <p>This parameter indicates the value of the validity time in seconds, controls the time
+          the quota remains active in the network, and controls the effective allocation of
+          resources. </p>
+         <p>The value of this parameter is always greater than zero.</p>
+        </entry>
+        <entry> Long </entry>
+        <entry> Mandatory </entry>
+       </row>
+       <row>
+        <entry> Ignore Reserved Quota </entry>
+        <entry>
+         <p>This parameter determines whether reservation quota needs to be considered in slice
+          reduction logic or not. It can have one of the following values:</p>
+         <ul>
+          <li>
+           <p>
+            <varname>No:</varname> When the parameter value is set as <varname>No</varname>, it
+            means reserved quota is not ignored during slice allocation or reduction mechanism.</p>
+          </li>
+          <li>
+           <p>
+            <varname>Counter</varname>: When the parameter value is set as
+             <varname>Counter</varname>, it means that in case of <i>No-Charge</i>, the reserved
+            quota is ignored and during slice allocation or reduction mechanism, the current value
+            is considered.</p>
+          </li>
+         </ul>
+         <p>Default value of this parameter is <varname>No</varname>.</p>
+         <p>
+          <b>Note:</b> Counter value is only applicable for <i>No-Charge</i>. This logic is not
+          applicable when quota is allocated from bucket or main balance charging as they are not
+          generally allowed to go negative.</p>
+        </entry>
+        <entry> Select either <varname>No</varname> or <varname>Counter</varname> from the drop-down
+         list. </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry> Security Domain </entry>
+        <entry> This parameter indicates the security domain associated with the slicing profile
+         entity. </entry>
+        <entry> Select the required security domain from the predefined security domains in the
+         drop-down list. </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry nameend="col2" namest="col1">
+         <uicontrol>Slicing Configuration</uicontrol>
+        </entry>
+       </row>
+       <row>
+        <entry morerows="1">
+         <uicontrol>Default Actions</uicontrol>
+        </entry>
+        <entry nameend="col2" namest="COLSPEC0"> Contains the preconfigured values and it is
+         pre-provisioned. </entry>
+       </row>
+       <row>
+        <entry nameend="col2" namest="COLSPEC0">
+         <!--MMO resource relative URI: ../Graphics/Release_18.5/Default_actions_slicing_profile_default.png-->
+         <image
+          href="../images/img9yz-09126-ug01-pczza-sp1-default_actions_slicing_profile_default.png"/>
+        </entry>
+       </row>
+       <row>
+        <entry nameend="col2" namest="col1"> Click <uicontrol>NEW RULE</uicontrol> and add the given
+         details for <i>DYNAMIC_SLICE</i>. Press <uicontrol>CTRL+spacebar</uicontrol>, select
+          <i>DYNAMIC_SLICE</i> to get the following parameters. </entry>
+       </row>
+       <row>
+        <entry> Rule Name </entry>
+        <entry> This parameter indicates the name of the condition based customized rule. </entry>
+        <entry> String </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry> Algo-Name </entry>
+        <entry>
+         <p>This parameter indicates the name of the algorithm you want to configure based on
+          configurable conditions, such as <varname>BASIC_ALGO</varname>,
+           <varname>BUCKET_ALGO</varname>, and <varname>DYNAMIC_ ALGO</varname>.</p>
+         <p>It is applicable to customized rule.</p>
+        </entry>
+        <entry> String </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry nameend="col2" namest="col1">
+         <!--MMO resource relative URI: ../Graphics/Release_19.6/SP_algo_default.png-->
+         <image href="../images/img9yz-09126-ug01-pczza-sp1-sp_algo_default.png" align="left"/>
+        </entry>
+       </row>
+       <row>
+        <entry> Select-Algo </entry>
+        <entry>
+         <p>This parameter allows you to select the <i>DYNAMIC_ALGO_2</i> for calculating the slice
+          size. It uses the parameters of <i>DYNAMICE_ALGO</i> along with two additional optional
+          parameters named <uicontrol>Min Slice Size</uicontrol> and <uicontrol>Max Slice
+           Size</uicontrol>.</p>
+         <p>It is applicable to customized rule and parameterized algorithm with Min and Max
+          slice.</p>
+         <p>Format is:</p>
+         <userinput>DYNAMIC_SLICE.Select-Algo(AlgoName, Min slice size, Max slice size)</userinput>
+         <p>Example:<userinput>DYNAMIC_SLICE.Select-Algo(“DYNAMIC_ALGO_2”, 500, 5000)</userinput>
+         </p>
+         <p>Note the following points:</p><ul>
+          <li>
+           <p>Both <uicontrol>Min Slice Size</uicontrol> and <uicontrol>Max Slice Size</uicontrol>
+            parameters are optional. If both <uicontrol>Min Slice Size</uicontrol> and
+             <uicontrol>Max Slice Size</uicontrol> parameters are not provided, then algorithm
+            behaves like <i>DYNAMIC_ALGO</i>.</p>
+          </li>
+          <li>
+           <p>If both <uicontrol>Select-Algo</uicontrol> and <uicontrol>Algo-Name</uicontrol> are
+            configured in the rule, then preference is given to
+            <uicontrol>Select-Algo</uicontrol>.</p>
+          </li>
+          <li>
+           <p>If <uicontrol>Max Slice Size</uicontrol> is not configured and <uicontrol>Min Slice
+             Size</uicontrol> is configured, then the <uicontrol>Max Slice Size</uicontrol> is the
+            initial bucket value.</p>
+          </li>
+         </ul>
+        </entry>
+        <entry> String </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry> Max-Number-Of-Devices-In-Group </entry>
+        <entry>
+         <p>This parameter determines the maximum number of devices with rating group. For any
+          device, the maximum number of lines with respect to rating group is 10. It is applicable
+          to customized rule/default actions.</p>
+         <p>Consider the following points while configuring this parameter:</p>
+         <ul>
+          <li>
+           <p>The number of rating group that a device can support should be considered. For
+            example, if there are 4 devices in a group and each device creates a session from two
+            different rating groups, then number of lines is 4 * 2 = 8.</p>
+          </li>
+          <li>
+           <p>The maximum number of device a group can have and the number of session a device can
+            create related to different MSCC. Otherwise, the algorithm computes slice with
+            errors.</p>
+          </li>
+         </ul>
+        </entry>
+        <entry> Long </entry>
+        <entry> Mandatory </entry>
+       </row>
+       <row>
+        <entry> Min-Slice-Size </entry>
+        <entry>
+         <p>This parameter indicates the minimum slice size defined for the slicing profile. The
+          value is defined in bytes and applicable for Granted Service Units (GSU) of volume type. </p>
+         <p>The value must not be negative and not in decimal. It is applicable to customized
+          rule.</p>
+         <p>
+          <uicontrol>Note</uicontrol>: The minimum value is 0 and the maximum value is
+          9223372036854775807.</p>
+        </entry>
+        <entry> Long </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry> Max-Slice-Size </entry>
+        <entry>
+         <p>This parameter indicates the maximum slice size defined for the slicing profile. The
+          value is defined in bytes and applicable for GSU of volume type. This value must not be
+          negative and in decimal.</p>
+         <p>
+          <uicontrol>Note</uicontrol>: The minimum value is 0 and the maximum value is
+          9223372036854775807. 0 value is considered as not configured.</p>
+        </entry>
+        <entry> Long </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry> Quota-Holding-Time </entry>
+        <entry> This parameter indicates the value of the quota holding time in seconds and controls
+         the time the session remains in the idle state in the network. It is applicable to
+         customized rule or default actions. When the value of this parameter is 0, QHT is not sent
+         to the network. </entry>
+        <entry> Long </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry> Slice-Allocation-Factor </entry>
+        <entry>
+         <p>This parameter indicates the value calculated on the delta between the current usage and
+          threshold value. This value should always be defined in percentage and the user should not
+          configure the parameter value more than 100 percent. It is applicable to customized
+          rule.</p>
+         <p>The value must not be negative and not in decimal.</p>
+        </entry>
+        <entry> Long </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry> Slice-size </entry>
+        <entry>
+         <p>This parameter indicates a static size of slice in bytes. It is applicable to customized
+          rule/default actions. The value of this parameter must always be greater than zero.</p>
+         <p>This parameter must be included in the rules when configured without algorithms
+           <i>Dynamic_Algo</i> or <i>Dynamic_Algo_2</i>.</p>
+        </entry>
+        <entry> Long </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry> Validity-Time </entry>
+        <entry>
+         <p>This parameter indicates the value of the validity time in seconds, controls the time
+          the quota remains active in the network, and controls the effective allocation of
+          resources (dynamic slice allocation). It is applicable to customized rule. </p>
+         <p>The value of this parameter is always greater than zero. If defined as zero, then
+          fallback is to default action or values in slicing entity.</p>
+        </entry>
+        <entry> Long </entry>
+        <entry> Mandatory </entry>
+       </row>
+       <row>
+        <entry rowsep="0"> Volume-Quota-Threshold </entry>
+        <entry rowsep="0">
+         <p>This parameter is applicable to data (volume) call, supported for both centralized and
+          decentralized calls. It can be used when certain quantity (volume only) is reserved and
+          granted in CCA. It is applicable to customized rule.</p>
+         <p>The value of VQT can be configured in percentage and calculated on the granted volume
+          quota sent in CCA, such as 90%. If the VQT value is 0 or after calculation the VQT value
+          is 0, then it is not sent in CCA.</p>
+         <p>The value of VQT can also be configured as fixed value. If the
+           <i>Volume-Quota-Threshold-Algo</i> is configured as <varname>FIXED_ADD_IN_GSU</varname>,
+          then the <i>Volume-Quota-Threshold</i> parameter in slicing profile rule specifies the
+          absolute value used to set the AVP in CCA message sent back to the network.</p>
+         <p>
+          <uicontrol>Note:</uicontrol> It is recommended to keep the VQT percentage value as higher
+          as possible so that it does not increase TPS.</p>
+        </entry>
+        <entry rowsep="0"> Long </entry>
+        <entry rowsep="0"> Optional </entry>
+       </row>
+       <row>
+        <entry rowsep="0"/>
+        <entry rowsep="0">
+         <p>If VQT value after calculation is greater than 4,294,967,295, then 4,294,967,295 is set
+          as VQT value. This is according to the specification of <i>Volume-Quota-Threshold</i> AVP
+          which is of type unsigned32 and maximum value allowed is 4,294,967,295.</p>
+         <p>The value of this parameter is in the range of 0 to 100.</p>
+        </entry>
+        <entry rowsep="0"/>
+        <entry rowsep="0"/>
+       </row>
+       <row>
+        <entry nameend="col2" namest="col1">
+         <!--MMO resource relative URI: ../Graphics/Release_18.5/VQT_default.png-->
+         <image href="../images/img9yz-09126-ug01-pczza-sp1-vqt_default.png" align="left"/>
+         <p>The VQT parameter can be configured in both default action and rule.</p>
+        </entry>
+       </row>
+       <row>
+        <entry rowsep="0"> Volume-Quota-Threshold-Algo </entry>
+        <entry rowsep="0">
+         <p>This parameter is added in the slicing profile rule under <i>Dynamic_Slice</i> and can
+          have one of the following values:</p>
+         <p/>
+         <ul>
+          <li>
+           <p>
+            <varname>FIXED_ADD_IN_GSU</varname>: When configured as
+             <varname>FIXED_ADD_IN_GSU</varname>, then the
+             <uicontrol>Volume-Quota-Threshold</uicontrol> parameter in slicing profile rule
+            specifies the absolute value used to set AVP in CCA message sent back to the network. It
+            is added to the derived quota amount to determine the GSU value when GSU is not a final
+            slice.</p>
+          </li>
+          <li>
+           <p>
+            <varname>PERCENTAGE</varname>: When configured as <varname>PERCENTAGE</varname>, the
+             <uicontrol>Volume-Quota-Threshold</uicontrol> parameter value in slicing profile rule
+            is configured in <i>%</i> and calculated on the granted volume quota sent in CCA
+            message.</p>
+          </li>
+         </ul>
+         <p>By default, the value of this action attribute is set as <varname>PERCENTAGE</varname>
+          to achieve the existing slice reduction functionality.</p>
+         <p>This parameter is also defined per MSCC or rating group. Depending on the type of
+          algorithm used, the<uicontrol> Volume-Quota-Threshold</uicontrol> parameter is calculated
+          and sent back to the network in CCA message.</p>
+        </entry>
+        <entry rowsep="0"> Long </entry>
+        <entry rowsep="0"> Optional </entry>
+       </row>
+       <row>
+        <entry colsep="0" nameend="col2" namest="col1">
+         <!--MMO resource relative URI: ../Graphics/Release_20.6/Volume-Quota-Threshold-Algo_default.png-->
+         <image href="../images/img9yz-09126-ug01-pczza-sp1-volume-quota-threshold-algo_default.png"
+         />
+        </entry>
+       </row>
+       <row>
+        <entry> MIN-TTC </entry>
+        <entry>
+         <p>This parameter indicates the minimum tariff time change value in seconds.</p>
+         <p>If this parameter is not configured, then it is treated as 0.</p>
+         <p>If <uicontrol>MIN-TTC</uicontrol> is greater than <uicontrol>MIN-TTC</uicontrol>, then
+           <uicontrol>MIN-TTC</uicontrol> value is ignored and treated as 0. It is applicable to
+          customized rule.</p>
+        </entry>
+        <entry> Long </entry>
+        <entry> Optional </entry>
+       </row>
+       <row>
+        <entry> MIN-VT </entry>
+        <entry>
+         <p>This parameter indicates the minimum validity time in seconds.</p>
+         <p>If this parameter is not configured, then it is treated as 0. It is applicable to
+          customized rule.</p>
+        </entry>
+        <entry> Long </entry>
+        <entry> Optional </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+</sectiondiv>
+</section>
+<section id="additionalinfo"><title>Additional information</title>
+<p>Following are noteworthy points:</p><ul>
+<li>
+<p>
+<i>DYNAMIC_SLICE.Select-Algo</i> has higher priority than <i>DYNAMIC_SLICE.Algo-Name</i>.</p>
+</li>
+<li>
+<p>Rules are evaluated one-by-one, first one to be evaluated to true is picked up and algorithm defined in the actions are used for slicing. </p>
+</li>
+<li>
+<p>If none of the dynamic slicing profile rules are matched, then the slicing logic processes the <i>DefaultAction</i>.</p>
+</li>
+<li>
+<p>The <i>DefaultAction</i> is picked only when any of the rule defined is not true and if the <i>DefaultAction</i> is also not valid, then static values defined at entity level are picked for processing. Therefore, static values have least priority.</p>
+</li>
+<li>
+<p>If <i>DYNAMIC_ALGO_2</i> is defined without the optional parameters of <uicontrol>Min Slice Size</uicontrol> and <uicontrol>Max Slice Size</uicontrol>, then it works same as <i>DYNAMIC_ALGO</i>.</p>
+</li>
+<li>
+<p>The <uicontrol>Select-Algo</uicontrol> configuration is not case-sensitive.</p>
+</li>
+<li>
+<p>In case of decentralized charging, if the <i>Algo-Name</i> is <varname>DYNAMIC_ALGO</varname> or <varname>DYNAMIC_ALGO_2</varname> in the slicing profile object rule, then the <i>DefaultAction</i> is executed as per the configuration.</p>
+</li>
+<li>
+<p>In case of centralized charging, it is recommended not to configure the <i>DefaultAction</i> with <uicontrol>Algo-Name</uicontrol>. If configured, then the <uicontrol>Algo-Name</uicontrol> is ignored.</p>
+</li>
+<li>
+<p>In case of centralized charging, do not configure VT as 0 in the slicing profile entity rule. If VT is 0, then it is not considered as NOK scenario and the final value is read from the slicing profile entity, bypassing the processing of <i>DefaultAction</i>.</p>
+</li>
+<li>
+<p>In case of centralized charging, for non-IMS and non-volume buckets, if a rule is configured in the slicing profile, then that rule is executed. If the Dynamic Algo is configured in the rule or if a rule is not configured, then default profile action is considered. </p>
+</li>
+</ul>
+<p>Following table provides information on the valid and invalid configurations for the Select-Algo
+    parameter. <table pgwide="1" colsep="1" rowsep="1">
+     <title>Select-Algo configuration</title>
+     <tgroup cols="5">
+      <colspec colname="col1"/>
+      <colspec colname="col2"/>
+      <colspec colname="col3"/>
+      <colspec colname="col4"/>
+      <colspec colname="COLSPEC0"/>
+      <thead>
+       <row>
+        <entry>
+         <p>Algo configuration</p>
+        </entry>
+        <entry>
+         <p>Algo-Name</p>
+        </entry>
+        <entry>
+         <p>Min</p>
+        </entry>
+        <entry>
+         <p>Max</p>
+        </entry>
+        <entry>
+         <p>Valid/Invalid</p>
+        </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry> DYNAMIC_SLICE.Select-Algo ( "DYNAMIC_ALGO_2", 1, 1024) </entry>
+        <entry> DYNAMIC_ALGO_2 </entry>
+        <entry> 1 </entry>
+        <entry> 1024 </entry>
+        <entry> Valid </entry>
+       </row>
+       <row>
+        <entry> DYNAMIC_SLICE.Select-Algo ( "Dynamic_algo_2", , 1024 ) </entry>
+        <entry> Dynamic_algo_2 </entry>
+        <entry> NA </entry>
+        <entry> 1024 </entry>
+        <entry> Valid </entry>
+       </row>
+       <row>
+        <entry> DYNAMIC_SLICE.Select-Algo ( "DYNAMIC_ALGO_2", 1 , ) </entry>
+        <entry> DYNAMIC_ALGO_2 </entry>
+        <entry> 1 </entry>
+        <entry> NA </entry>
+        <entry> Valid </entry>
+       </row>
+       <row>
+        <entry> DYNAMIC_SLICE.Select-Algo ( "Dynamic_Algo_2", 1, 1024 ) </entry>
+        <entry> Dynamic_algo_2 </entry>
+        <entry> 1 </entry>
+        <entry> 1024 </entry>
+        <entry> Valid </entry>
+       </row>
+       <row>
+        <entry> DYNAMIC_SLICE.Select-Algo ( "DYNAMIC_ALGO_2" ) </entry>
+        <entry> DYNAMIC_ALGO_2 </entry>
+        <entry> NA </entry>
+        <entry> NA </entry>
+        <entry> Valid </entry>
+       </row>
+       <row>
+        <entry> DYNAMIC_SLICE.Select-Algo ( "Dynamic_Algo_2" ) </entry>
+        <entry> Dynamic_algo_2 </entry>
+        <entry> NA </entry>
+        <entry> NA </entry>
+        <entry> Valid </entry>
+       </row>
+       <row>
+        <entry> DYNAMIC_SLICE.Select-Algo ( "DYNAMIC_ALGO_2" , 1500 , 24 ) </entry>
+        <entry> DYNAMIC_ALGO_2_ </entry>
+        <entry> 1500 </entry>
+        <entry> 24 </entry>
+        <entry> Invalid </entry>
+       </row>
+       <row>
+        <entry> DYNAMIC_SLICE.Select-Algo ( "DYNAMIC_ALGO_2" , 500 , 500) </entry>
+        <entry> DYNAMIC_ALGO_2_ </entry>
+        <entry> 500 </entry>
+        <entry> 500 </entry>
+        <entry> Invalid </entry>
+       </row>
+       <row>
+        <entry nameend="COLSPEC0" namest="col1"> For the preceding two invalid scenarios, algorithm
+         is not executed but the algorithm rule slice size is returned. If a rule slice size is not
+         configured, then it gets picked from the entity slice size. </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table></p>
+<note>
+<p>If <uicontrol>Min Slice Size</uicontrol> or <uicontrol>Max Slice Size</uicontrol> is configured as zero, then it is considered as no minimum or maximum slice configured.</p>
+</note>
+</section>
+<section><title>Actions associated with a slicing profile </title>
+<table pgwide="1" colsep="1" rowsep="1">
+    <tgroup cols="2">
+     <colspec colname="col1" colwidth="1*"/>
+     <colspec colname="col2" colwidth="1.84*"/>
+     <thead>
+      <row>
+       <entry>
+        <p>Action</p>
+       </entry>
+       <entry>
+        <p>Description</p>
+       </entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry> Create </entry>
+       <entry> Creates a slicing profile entity in the database by providing the mandatory and
+        optional parameters. </entry>
+      </row>
+      <row>
+       <entry> Read </entry>
+       <entry> Displays the slicing profile entity data fetched from database. </entry>
+      </row>
+      <row>
+       <entry> Update </entry>
+       <entry> Updates a particular slicing profile entity in database. </entry>
+      </row>
+      <row>
+       <entry> Delete </entry>
+       <entry> Deletes a particular slicing profile entity from database. This operation is not
+        recommended. </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+<note>
+<p>These actions are valid for internal purposes only and cannot be accessed using the SM GUI.</p>
+</note>
+</section>
+</conbody></concept>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+		<task id="id9YZ-09018-IN00-RJZZA-Enabling-WebSSO"><title>Enabling Web SSO on SM App VMs</title><taskbody id="d1e13349"><context>
+<sectiondiv>
+<p><b>Overview</b></p>
+<p>This procedure provides instructions on how to enable Web SSO on SM App VMs. Contact Nokia for
+					the credentials.</p>
+</sectiondiv>
+			<p>To enable DFSec on Web SSO on SM App VMs:</p>
+</context><steps>
+
+<step><cmd>Log in to any SM App VM as tpaadmin user.</cmd><info><note>
+
+<p>Before repeating this procedure for the next SM App VM, ensure that jersey is UP as follows:</p><ol>
+
+<li>
+<p>Tail the logs using <codeph>tail -f /opt/tpa/logs/SPSServer.log  | grep -i jersey</codeph> command.</p>
+</li>
+<li>
+<p>Wait for <systemoutput>Jersey is now Ready Starting Web Traffic now</systemoutput> line to appear in the logs.</p>
+</li>
+</ol>
+</note></info></step>
+<step><cmd>Stop the TPA server using <codeph>TPA_control stop</codeph> command.</cmd><info/></step>
+<step><cmd>Go to the path <filepath>/opt/tpa/osgi/instance</filepath>
+</cmd><info/></step>
+<step><cmd>Execute:</cmd><info><p>
+<codeph>mv  keycloak.cfg.disabled  keycloak.cfg</codeph>
+</p></info></step>
+<step><cmd>In <filepath>/opt/tpa/osgi/instance/webagent.override.descriptor.properties</filepath> file, do the following:</cmd><info><ul>
+
+<li>
+<p>Find the following line:</p>
+<p>
+<systemoutput>"com.nokia.tpapps.servicemanager-gui:/opt/SPS_20_3_R1/osgi/instance/keycloak/keycloak.gui.web.xml"</systemoutput>
+</p>
+</li>
+<li>
+<p>If the line is present and commented, uncomment the line.</p>
+<p>
+<b>Expected outcome</b>
+</p>
+<p>
+<systemoutput>com.nokia.tpapps.servicemanager-gui:/opt/SPS_20_3_R1/osgi/instance/keycloak/keycloak.gui.web.xml</systemoutput>
+</p>
+</li>
+<li>
+<p>If the line is absent, add at the end of the file the following:</p>
+<p>
+<systemoutput>com.nokia.tpapps.servicemanager-gui:/opt/SPS_20_3_R1/osgi/instance/keycloak/keycloak.gui.web.xml</systemoutput>
+</p>
+</li>
+</ul></info></step>
+<step><cmd>Start the TPA server using <codeph>TPA_contol start</codeph> command. </cmd><info/></step>
+<step><cmd>Repeat this procedure for each SM App VM.</cmd><info/></step>
+</steps>
+</taskbody></task>

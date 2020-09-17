@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9YZ-08540-UG02-PCZZA-d1e26500_attributes">
+   <title>Attributes</title>
+   <conbody>
+			
+			   <p>One or more attribute key-value pairs can be specified within
+					<codeph>&lt;attributes&gt;&lt;/attributes&gt;</codeph> tags. Each
+				attribute must be specified within as a separate key-value pair as follows. The
+				&lt;attributes&gt; tag is optional. </p>
+			   <codeblock>&lt;attributes&gt;
+             &lt;attribute&gt; 
+             &lt;key&gt;[attribute key 1]
+             &lt;/key&gt; &lt;value&gt;[attribute value 1]&lt;/value&gt; 
+         &lt;/attribute&gt; 
+             &lt;attribute&gt; 
+             &lt;key&gt;[attribute key 2]&lt;/key&gt; 
+             &lt;value&gt;[attribute value 2]&lt;/value&gt; 
+         &lt;/attribute&gt; 
+         &lt;/attributes&gt;</codeblock>
+			   <table rowsep="1"
+             colsep="1"
+             frame="all"
+             pgwide="1"
+             id="restAttribs">
+				     <title>Attributes supported in the incoming request</title>
+				     <tgroup cols="2">
+				<colspec colname="col1" colwidth="1*"/>
+				<colspec colname="col2" colwidth="4.16*"/>
+				<thead>
+					<row>
+						<entry>
+							<p>Attribute</p>
+						</entry>
+						<entry>
+							<p>Description</p>
+						</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row>
+						<entry>
+							<p>EMAIL, SMS, SOAP, REST, TCPIP, KAFKA</p>
+						</entry>
+						<entry>
+							<p>The key specifies the target server type and the value specifies the
+								defined target server names.</p>
+							<p>The notification service supports multiple target servers specified
+								in the incoming trigger request. Each target server must be
+								specified as a separate key-value pair.</p>
+							<p>The target server name is optional. If the server name is not
+								specified in the request or if the key name is other than the valid
+								names (i.e., EMAIL, SMS, SOAP, REST, TCPIP, KAFKA), then the default
+								server specified in the application preferences is used to send the
+								notification.</p>
+							<p>If multiple target servers of the similar type are specified in the
+								incoming request, then only one target server is used randomly. For
+								example, if key (&lt;key&gt;) is 'SMS' and the values
+								(&lt;value&gt;) are 'SMSSERVER1', 'SMSSERVER2', and 'SMSSERVER3'
+								then any one SMS server is selected for sending the request.</p>
+						</entry>
+					</row>
+					<row>
+						<entry> priority </entry>
+						<entry>
+							<p>High-priority notifications are sent directly, bypassing the
+								frequency logic. Normal priority notifications are sent after
+								considering the frequency logic.</p>
+							<p>Priority is an optional parameter in the incoming request. If
+								priority is not specified in the request, or if the key name is
+								other than the valid names, then the priority specified in the
+								notification template is considered to send the notification.</p>
+							<p>Valid values: HIGH, NORMAL</p>
+						</entry>
+					</row>
+					<row>
+						<entry> notifSuppress </entry>
+						<entry>
+							<p>This attribute is used for suppressing a notification. If the value
+								for this attribute is true, the notification is not sent and is
+								added to the EDR log. If the value is false, the notification is
+								sent.</p>
+							<p>If notifSuppress is not specified in the request, or the value
+								provided is other than the valid values, then the default value is
+								false. That is, the notification is sent.</p>
+							<p>Valid values: true, false</p>
+						</entry>
+					</row>
+					<row>
+						<entry> fallback </entry>
+						<entry>
+							<p>Text</p>
+							<p>If the request contains this attribute and if the notification
+								delivery fails for any notification channel, then NS sends an
+								alternate SMS to the default SMPP server. The SMS contains the value
+								specified in this attribute.</p>
+							<p>
+								<b>Note</b>
+							</p>
+							<ul>
+								<li>
+									<p>NS attempts to send the fallback SMS only once.</p>
+								</li>
+								<li>
+									<p>If the user's phone number is not configured, then fallback
+										SMS is not sent. The message is only saved in the EDR
+										log.</p>
+								</li>
+								<li>
+									<p>NS uses the default SmppServer to send the fallback SMS.</p>
+								</li>
+								<li>
+									<p>If multiple channels are applicable for a client request, and
+										the notification delivery fails for one or more channels,
+										then NS tries to send fallback SMS for each channel for
+										which notification delivery has failed.</p>
+								</li>
+							</ul>
+							<p>Example scenario: If all retires are exhausted for sending an EMAIL
+								notification but still NS is unable to send the notification, and if
+								the request has fallback key and its value, then the value which is
+								specified is used to send SMS to the default SMPP server.</p>
+						</entry>
+					</row>
+					<row>
+						<entry> SMS-Orig-Id </entry>
+						<entry>
+							<p>Mobile number</p>
+							<p>The mobile number provided in this attribute overrides the value
+								specified in the SMPP server for outgoing SMS.</p>
+							<ul>
+								<li>
+									<p>SMS-Orig-Id is sent for the retry SMS.</p>
+								</li>
+								<li>
+									<p>SMS-Orig-Id is not sent in case of FallBack SMS.</p>
+								</li>
+							</ul>
+						</entry>
+					</row>
+					<row>
+						<entry> SMS-Deferral-Time </entry>
+						<entry>
+							<p>Using this attribute, operators can schedule the delivery of the SMS
+								to the device with a new value provided in the incoming triggering
+								request.</p>
+							<p>Time format should be "YYMMDDhhmmsstnnp"</p>
+							<p>where</p>
+							<p>YY: last two digits of the year (00-99)</p>
+							<p>MM: month (01-12)</p>
+							<p>DD: day (01-31)</p>
+							<p>hh: hour (00-23)</p>
+							<p>mm: minute (00-59)</p>
+							<p>ss: second (00-59)</p>
+							<p>t: tenth of a second (0-9)</p>
+							<p>nn: Time difference in quarter hours between local time (as provided
+								in the first 13 letters) and UTC (Universal Time Constant) time
+								(00-48).</p>
+							<p>p: Specifies absolute or relative delivery.</p>
+							<ul>
+								<li>
+									<p>“+” indicates that the local time is <b>nn</b> quarter hours
+										after the UTC time.</p>
+								</li>
+								<li>
+									<p>“-” indicates that the local time is <b>nn</b> quarter hours
+										before the UTC time.</p>
+								</li>
+								<li>
+									<p>“R” indicates that local time is relative to the current SMSC
+										server time. See <xref href="c_scheduled_delivery_type.dita"
+										/> for details.</p>
+								</li>
+							</ul>
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+			   </table>
+			   <p>The following attributes are also supported for specific customers. NS uses these
+				attributes without any formatting or changes.</p>
+			   <ul>
+				     <li>
+					       <p>MASID</p>
+				     </li>
+				     <li>
+					       <p>SPAID</p>
+				     </li>
+				     <li>
+					       <p>HOSTID</p>
+				     </li>
+				     <li>
+					       <p>CLIENTID</p>
+				     </li>
+			   </ul>
+		</conbody>
+</concept>

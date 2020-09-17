@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="SPS_CDR_Streams_Stream_Overview_storing_records_into_database">
+<title>Storing records into database</title>
+<body>
+                
+                <p>CG Kafka Node stores the incoming records into the database for further
+                    processing. When the node stores a record into the database, it also sets the
+                    session timeout for that record. Once it has stored a set number of records, or
+                    a set time period has elapsed without that number of records being received, it
+                    marks a batch as complete, and the batch is ready to be processed by the
+                    Business logic stream. The storing is performed in two steps. After storing the
+                    records is done, commit to Kafka is performed, and if successful, a batch queue
+                    notification is created for the Business logic stream about the newly saved
+                    records.</p>
+                <p>If saving to database fails, CG Kafka Node retries a few times. If unsuccessful,
+                    an error is raised and the node is put into failed state. The polled records are
+                    not committed to Kafka and they will be reprocessed at a later stage.</p>
+                <p>If saving to database is successful, but commit to Kafka fails after a few
+                    attempts, CG Kafka Node removes the records from the database and raises an
+                    error. The polled records are not committed to Kafka and they will be
+                    reprocessed at a later stage. Because the batch queue notification was not yet
+                    done, the removal of the records from database does not affect processing in the
+                    Business logic stream.</p>
+            </body>
+</topic>

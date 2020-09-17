@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e26182"><title>Trigger AVP support for 5G calls</title><conbody>
+<section><title>Overview</title>
+<p>This section provides information about the support for the <varname>Trigger</varname> AVP in NCC
+                for 5G calls for both MSCC level and root level.</p>
+<p>NCC call controller supports <varname>Trigger</varname> AVP in CCA for 5G, via rules. This
+                support is available for Gy interface. The <varname>Trigge</varname> AVP is
+                supported for both de-centralized and centralized calls. This AVP comes into picture
+                only if some quantity is reserved and granted in CCA.</p>
+</section>
+<section><title>Trigger AVP</title>
+<p>The Trigger AVP is of type Grouped and holds a single trigger type and other trigger information.
+                The presence of the Trigger AVP without any <i>Trigger-Type</i> AVP in a CCA allows
+                OCS to disable all the triggers. The presence of the Trigger AVP in the CCR
+                identifies the event(s) triggering the CCR.</p>
+</section>
+<section><title>Trigger-Type AVP</title>
+<p>The <i>Trigger-Type</i> AVP is of type Enumerated and indicates a single re-authorisation event
+                type. When included in the Credit Control Answer command, the <i>Trigger-Type</i>
+                AVP indicates the events that shall cause the credit control client to re-authorize
+                the associated quota. The client shall not re-authorize the quota when events which
+                are not included in the Trigger AVP occur. When included in the Credit Control
+                Request command, it indicates the specific event which caused the re-authorisation
+                request of the <i>Reporting-Reason</i> with value
+                    <varname>RATING_CONDITION_CHANGE</varname> associated.</p>
+</section>
+<section><title>Trigger-Category AVP</title>
+<p>This AVP indicates whether the charging data generated for the trigger lead to a charging event
+                towards NCC immediately or not. The valid values are described in the following
+                table:</p>
+<table colsep="1" rowsep="1">
+                <tgroup cols="2">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Trigger category</p>
+                            </entry>
+                            <entry>
+                                <p>Description</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>TriggerCategory_IMMEDIATE_REPORT</entry>
+                            <entry> The charging data generated for a trigger leads to charging
+                                event towards NCC immediately. </entry>
+                        </row>
+                        <row>
+                            <entry>TriggerCategory_DEFERRED_REPORT</entry>
+                            <entry> The charging data generated for a trigger does not lead to a
+                                charging event towards NCC. </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+</section>
+<section><title>Trigger arming</title><p>Adding triggers to a response is called arming. This is
+                done by selecting any <varname>triggerType</varname> except for
+                    <varname>NCHF_DISARMING</varname>. In this case triggers are sent in response at
+                the selected level.</p><p>There are a number of mid-session service events
+                (triggers), which affect the rating of the current service usage, for example,
+                end-user QoS changes or location updates. Some of these services can be
+                enabled/disabled. For such events, when allocating resources NCC may instruct to
+                update the unit upon a number of different session-related triggers that can affect
+                the rating conditions. NCC instructs to monitor for such events by using the Trigger
+                element containing a single trigger type. Once the triggers are armed then these
+                triggers remain in effect until other triggers are not armed.</p><p><b>Example of
+                    armed triggers in response</b></p><p>Root level:
+                </p><codeblock>{"invocationTimeStamp":"2020-07-27T09:05:23Z","invocationSequenceNumber":0,"triggers":[{"triggerType":"QUOTA_THRESHOLD","triggerCategory":"IMMEDIATE_REPORT","timeLimit":2100,"volumeLimit":1,"volumeLimit64":123,"maxNumberOfccc":1234},{"triggerType":"VALIDITY_TIME","triggerCategory":"IMMEDIATE_REPORT","timeLimit":32100,"volumeLimit":31,"volumeLimit64":3123,"maxNumberOfccc":31234}],"multipleUnitInformation":[{"ratingGroup":5,"resultCode":"SUCCESS","grantedUnit":{"totalVolume":5368709120},"validityTime":"10","quotaHoldingTime":10}]}</codeblock><p>MSCC
+                level:</p><codeblock>{"invocationTimeStamp":"2020-07-27T09:07:24Z","invocationSequenceNumber":0,"multipleUnitInformation":[{"ratingGroup":5,"resultCode":"SUCCESS","grantedUnit":{"totalVolume":5368709120},"triggers":[{"triggerType":"OTHER_QUOTA_TYPE","triggerCategory":"IMMEDIATE_REPORT","timeLimit":2100,"volumeLimit":1,"volumeLimit64":123,"maxNumberOfccc":1234},{"triggerType":"GFBR_GUARANTEED_STATUS_CHANGE","triggerCategory":"IMMEDIATE_REPORT","timeLimit":32100,"volumeLimit":31,"volumeLimit64":3123,"maxNumberOfccc":31234}],"validityTime":"10","quotaHoldingTime":10}]}</codeblock>The
+            following figure provides an example scenario for arming 5G triggers at MSCC level.<fig
+                id="fig_ycm_bxz_wmb">
+                <title>Example: Rule for trigger arming</title>
+                <image href="../images/trig_arming_5g.jpg" id="image_zcm_bxz_wmb"/>
+            </fig></section>
+<section><title>Trigger disarming</title><p>Disarming can be done when the Triggers element is
+                present without any trigger type in a response message. This allows NCC to disable
+                all the triggers that were armed in a previous Trigger element of the same service
+                usage/rating group.</p><p>Removing triggers from a response is called as disarming.
+                This is done by selecting the <varname>triggerType</varname> as
+                    <varname>NCHF_DISARMING</varname>. In this case, an empty trigger list is sent
+                to SMF, which indicates disarming of all triggers at the selected
+                    level.</p><note><varname>NCHF_DISARMING</varname> is a custom trigger type and
+                is not present in the specification for the <varname>triggerType</varname> enum. It
+                is provided for configuring trigger disarming.</note><p><b>Example of disarmed
+                    triggers in response</b></p><p>Root level:
+                </p><codeblock>{"invocationTimeStamp":"2020-07-22T14:01:28Z","invocationSequenceNumber":0,"triggers":[],"multipleUnitInformation":[{"ratingGroup":5,"resultCode":"SUCCESS","grantedUnit":{"totalVolume":5368709120},"validityTime":"10","quotaHoldingTime":10}]}</codeblock><p>MSCC
+                level:</p><codeblock>{"invocationTimeStamp":"2020-07-27T09:14:08Z","invocationSequenceNumber":0,"multipleUnitInformation":[{"ratingGroup":5,"resultCode":"SUCCESS","grantedUnit":{"totalVolume":5368709120},"triggers":[],"validityTime":"10","quotaHoldingTime":10}]}</codeblock>The
+            following figure provides an example scenario for disarming 5G triggers at MSCC
+                level.<fig id="fig_kwr_hxz_wmb">
+                <title>Example: Rule for trigger disarming</title>
+                <image href="../images/trig_disarming_5g.jpg" id="image_lwr_hxz_wmb"/>
+            </fig></section>
+        <section id="section_ad3_lvv_5mb">
+            <title><b>Configuring triggers in response</b></title>
+            <p><b>Application preference</b></p>
+            <p>To enable trigger in response, the application preference, <varname>Trigger Feature
+                    Supported</varname> must be set to <varname>true</varname>. If it is set to
+                    <varname>false</varname>, then the triggers are not sent in the response, even
+                if configured in rule.</p>
+            <table colsep="1" rowsep="1" id="table_gdd_1d1_xmb">
+                <tgroup cols="3">
+                    <colspec colname="col1"/>
+                    <colspec colname="col2"/>
+                    <colspec colname="COLSPEC1"/>
+                    <thead>
+                        <row>
+                            <entry>
+                                <p>Trigger Feature Supported</p>
+                            </entry>
+                            <entry>
+                                <p>And...</p>
+                            </entry>
+                            <entry>
+                                <p>Then</p>
+                            </entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>False </entry>
+                            <entry> - </entry>
+                            <entry>No change </entry>
+                        </row>
+                        <row>
+                            <entry>True </entry>
+                            <entry>Trigger Received in CCR-U is armed </entry>
+                            <entry>No change </entry>
+                        </row>
+                        <row>
+                            <entry>True </entry>
+                            <entry>Trigger Received in CCR-U is NOT armed </entry>
+                            <entry>Ignores the triggered Value received in the request, takes the
+                                appropriate value from DB (last request) and continue with existing
+                                logic. </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <p><b>Rule</b></p>
+            <p>In rules, configure <i>Arm-Nchf-Trigger</i> attribute. It has the following
+                parameters:</p>
+            <ul id="ul_lcv_bwv_5mb">
+                <li>TriggerLevel <p>The values can be <varname>root</varname> or
+                            <varname>mscc</varname>. Trigger type must be considered while adding
+                        this input.</p></li>
+                <li>NCHFTriggerType</li>
+                <li>TriggerCategory</li>
+                <li>TimeLimit <i>(optional)</i></li>
+                <li>VolumeLimit <i>(optional)</i></li>
+                <li>VolumeLimit64 <i>(optional)</i></li>
+                <li>MaxNumberOfCCC <i>(optional)</i></li>
+            </ul>
+        </section>
+        <section id="section_fjr_twz_wmb">
+            <title>Consider the following points for NCHF triggers</title>
+            <ul id="ul_bpk_h55_5mb">
+                <li>For an N40 initial/update request, NCHF triggers can be present in both request
+                    and response.</li>
+                <li>
+                    <p>When sending a trigger list in the request, the
+                            <codeph>triggerCategory</codeph> must be sent. If it is not available,
+                        then an error AVP is returned in response. Refer to the following
+                        example:</p>
+                    <p>
+                        <codeblock>{"invocationTimestamp":"2020-07-27T14:07:05Z","invocationResult":{"error":{"type":"http:\/\/135.249.88.102:8081\/nchf-convergedcharging\/v1\/chargingdata\/N40-sps-me-b988747c-a282-4491-b5f7-679968eaa955\/update","title":"Attribute missing","status":400,"detail":"triggerCategory is not present at UsedUnitContainer level in 5G UPDATE_REQUEST","instance":"sps-me\/sps102\/N40-sps-me-b988747c-a282-4491-b5f7-679968eaa955","cause":"MANDATORY_IE_MISSING"}},"invocationSequenceNumber":1}</codeblock>
+                    </p>
+                </li>
+                <li>In requests, NCHF triggers are used in rules with <i>NCHF_CHARGING_MESSAGE</i>
+                    source context.</li>
+                <li>In responses, NCHF triggers can be sent at two levels (that is,
+                        <varname>root</varname> or <varname>MSCC</varname>).<note> Arming or
+                        disarming of triggers at root level disables all the changes accepted at
+                        MSCC level.</note><ul id="ul_nrv_wx5_5mb">
+                        <li>Root level: <i>NCHF_CHARGING_CALL_ESTABLISHMENT</i> and
+                                <i>NCHF_CHARGING_CALL_MODIFICATION</i> triggers are configured at
+                            root level. .<note>In this configuration, while arming the trigger, the
+                                    <varname>triggerLevel</varname> is set as
+                                    <varname>root</varname>.</note></li>
+                        <li>MSCC level: <i>RATING_POST_PROCESSING</i> trigger is configured at MSCC
+                                level.<note>In this configuration, while arming the trigger, the
+                                    <varname>triggerLevel</varname> is set as
+                                    <varname>mscc</varname></note></li>
+                    </ul></li>
+            </ul>
+        </section>
+</conbody></concept>

@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-d1e237554"><title>Vendor-specific announcement AVPs definition</title><conbody>
+<section><title>Overview</title>
+<p>The AVPs covered in this section are vendor-specific AVPs defined to handle various charging scenarios unique to specific environments. These AVPs are not defined by the generic standards and therefore are specific to network elements from the vendor used in specific scenarios. All Diameter AVP Headers contain an optional field called Vendor-ID. The Vendor-ID field is present if the <varname>V</varname> bit is set in the AVP Flags field. The vendor identifier is used in the Vendor-ID field of the AVP header and in the <varname>Vendor-Id</varname> AVP. The <varname>Vendor-Id</varname> AVP is used to identify the vendor in the <varname>Vendor-Specific-Application-Id</varname> and <varname>Experimental-Result-Code</varname> grouped AVPs. The Vendor-Id AVP, as part of the <varname>Vendor-Specific-Application-Id</varname> grouped AVP, contains the value of 10415, which is the IANA registered value for '3GPP' in 3GPP TS 29.230. </p>
+<p>Since these AVPs are vendor specific, each AVP uses the vendor-specific Vendor-ID to indicate who defined the AVP and how this AVP is used.</p>
+</section>
+<section id="avpDef"><title>AVP definitions</title>
+<sectiondiv>
+<p><b>Announcement-Instructions AVP</b></p>
+<p>The <varname>Announcement-Instructions</varname> AVP is of type grouped and is used by the OCS to provide announcement instructions to the TAS. This allows the TAS to establish appropriate connection with the announcement units. The information carried in this AVP is used by TAS to inform the MRF what announcements to play. This AVP is included as part of the CCA response message when announcement are required. The <varname>Announcement-Instructions</varname> AVP has the following ABNF grammar:</p>
+<systemoutput>Announcement-Instructions :: = &lt; AVP Header: 700&gt;
+[ Announcement-Number ]
+[ Announcement-Type ]
+[ Announcement-Order ]
+[ Announcement-Variable-Part ]
+[ Announcement-Prompt-Collect-Parameter ]
+</systemoutput>
+</sectiondiv>
+<sectiondiv>
+<p><b>Announcement-Number AVP</b></p>
+<p>The <varname>Announcement-Number</varname> AVP contains the announcement number to be played when this AVP is received. This AVP should contain an announcement number to be correlated to a system announcement based on TAS vendor implementation (the correlation may be direct or may be done via a mapping table).</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Announcement-Order AVP</b></p>
+<p>The <varname>Announcement-Order</varname> AVP contains the relative order/sequence for this announcement (applies when multiple instances of Announcement-Instructions AVP are included). It is an optional AVP within the Announcement-Instructions AVP. It specifies the order for each announcement starting from 1. If it is missing or if it has a value 0, then this indicates that the order is not important. This is populated based on the order in which the announcements are generated within the OCS logic where there are multiple announcements to be played at the same point in a call.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Announcement-Type AVP</b></p>
+<p>The <varname>Announcement-Type</varname> AVP indicates when an announcement is to be played. It is an optional AVP within the <varname>Announcement-Instructions</varname> AVP. It can have a pre-defined set of values as shown in the following table:</p>
+<table frame="all" pgwide="1" colsep="1" rowsep="1">
+                    <tgroup cols="5">
+                        <colspec colname="col1"/>
+                        <colspec colname="col2"/>
+                        <colspec colname="col3"/>
+                        <colspec colname="col4"/>
+                        <colspec colname="col5"/>
+                        <thead>
+                            <row>
+                                <entry>
+                                    <p>Values</p>
+                                </entry>
+                                <entry>
+                                    <p>Descriptor</p>
+                                </entry>
+                                <entry>
+                                    <p>Description</p>
+                                </entry>
+                                <entry>
+                                    <p>Used by TAS</p>
+                                </entry>
+                                <entry>
+                                    <p>Used by OCS</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry> 0 </entry>
+                                <entry> PREQUOTA_ANNOUNCEMENT </entry>
+                                <entry> This indicates a pre-quota announcement is requested prior
+                                    to the quota is used. </entry>
+                                <entry> YES </entry>
+                                <entry> YES </entry>
+                            </row>
+                            <row>
+                                <entry> 1 </entry>
+                                <entry> POSTQUOTA_ANNOUNCEMENT </entry>
+                                <entry> This indicates a post-quota announcement is requested after
+                                    the quota is used </entry>
+                                <entry> YES </entry>
+                                <entry> YES </entry>
+                            </row>
+                            <row>
+                                <entry> 2 </entry>
+                                <entry> PROMPT_AND_COLLECT </entry>
+                                <entry> This indicates a prompt and collect sessions is requested.
+                                    This means that TAS has to perform a prompt and collect session
+                                    and pass the information collected
+                                        (<varname>Service-Specific-Type = 1015</varname>) back to
+                                    OCS. OCS can then make appropriate decisions affecting the call
+                                    handling. </entry>
+                                <entry> YES </entry>
+                                <entry> YES </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+</sectiondiv>
+<sectiondiv>
+<p><b>Announcement-Variable-Part-Data AVP</b></p>
+<p>The <varname>Announcement-Variable-Part-Data</varname> AVP contains the data corresponding to the type of data specified in <varname>Announcement-Variable-Part-Type</varname> AVP.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Announcement-Variable-Part-Type AVP</b></p>
+<p>The <varname>Announcement-Variable-Part-Type</varname> AVP contains the type of units carried in the <varname>Announcement-Variable- Part-Data</varname>. It can have a pre-defined set of values as shown in the following table. AVP value to be used in network as specified in following the table.</p>
+<table frame="all" pgwide="1" colsep="1" rowsep="1">
+                    <tgroup cols="5">
+                        <colspec colname="col1"/>
+                        <colspec colname="col2"/>
+                        <colspec colname="col3"/>
+                        <colspec colname="col4"/>
+                        <colspec colname="col5"/>
+                        <thead>
+                            <row>
+                                <entry>
+                                    <p>Values</p>
+                                </entry>
+                                <entry>
+                                    <p>Descriptor</p>
+                                </entry>
+                                <entry>
+                                    <p>Description</p>
+                                </entry>
+                                <entry>
+                                    <p>Used by TAS</p>
+                                </entry>
+                                <entry>
+                                    <p>Used by OCS</p>
+                                </entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry> 0 </entry>
+                                <entry> INTEGER </entry>
+                                <entry> Integer (A string of numbers, which is announced as a single
+                                    number, up to 10 digits) </entry>
+                                <entry> YES </entry>
+                                <entry> YES </entry>
+                            </row>
+                            <row>
+                                <entry> 1 </entry>
+                                <entry> NUMBER </entry>
+                                <entry> Number (A string of numbers, which is announced as
+                                    individual digits, up to 24 digits) </entry>
+                                <entry> YES </entry>
+                                <entry> YES </entry>
+                            </row>
+                            <row>
+                                <entry> 2 </entry>
+                                <entry> TIME </entry>
+                                <entry> Time (A time string in the form HHMM) </entry>
+                                <entry> YES </entry>
+                                <entry> YES </entry>
+                            </row>
+                            <row>
+                                <entry> 3 </entry>
+                                <entry> DATE </entry>
+                                <entry> Date (A Date string in the form: MMDDYYYY </entry>
+                                <entry> YES </entry>
+                                <entry> YES </entry>
+                            </row>
+                            <row>
+                                <entry> 4 </entry>
+                                <entry> PRICE </entry>
+                                <entry> Price (A currency string, in the format AAAAAABB [AAAAAA is
+                                    the integral part, BB is the decimal part] and string
+                                    identifying the type of currency) </entry>
+                                <entry> YES </entry>
+                                <entry> YES </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+</sectiondiv>
+<sectiondiv>
+<p><b>Announcement-Variable-Part AVP</b></p>
+<p>The <varname>Announcement-Variable-Part</varname> AVP is used by the OCS to provide additional details on how the announcement must be handled by the TAS. This AVP is used when variable parts need to be applied as part of the announcement, to be signalled in the connection between TAS and MRF. The AVPs shall be used to build MSCML documents for SIP INFO messages sent to the MRF. It has the following ABNF grammar:</p>
+<systemoutput>Announcement-Variable-Part :: = &lt; AVP Header: 704&gt;
+[ Announcement-Variable-Part-Type ]
+[ Announcement-Variable-Part-Data ]
+</systemoutput>
+</sectiondiv>
+<sectiondiv>
+<p><b>Announcement-Prompt-Collect-Parameter AVP</b></p>
+<p>The <varname>Announcement-Prompt-Collect-Parameter</varname> AVP is used by the OCS to provide announcement prompt and collect parameters for the TAS.</p>
+<systemoutput>Announcement-Prompt-Collect-Parameter] :: = &lt; AVP Header: 708&gt;
+[Announcement-Prompt-Collect-Interruptible]
+[Announcement-Prompt-Collect-MinDigits]
+[Announcement-Prompt-Collect-MaxDigits]
+</systemoutput>
+</sectiondiv>
+<sectiondiv>
+<p><b>Announcement-Prompt-Collect-Interruptible AVP</b></p>
+<p>The <varname>Announcement-Prompt-Collect-Interruptible</varname> AVP is used by the OCS to provide one of announcement prompt and collect parameters for the TAS.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Announcement-Prompt-Collect-MinDigits AVP</b></p>
+<p>The <varname>Announcement-Prompt-Collect-MinDigits</varname> AVP is used by the OCS to provide one of announcement prompt and collect parameters for the TAS.</p>
+</sectiondiv>
+<sectiondiv>
+<p><b>Announcement-Prompt-Collect-MaxDigits AVP</b></p>
+<p>The <varname>Announcement-Prompt-Collect-MaxDigits</varname> AVP is used by the OCS to provide one of announcement prompt and collect parameters for the TAS.</p>
+</sectiondiv>
+</section>
+<section><title>Setting vendor specific attributes (VSAs) in dictionary</title>
+<p>The AVPs defined in <!--xref URI: #avpDef--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-d1e237554/avpDef"/> are available when VSAs are set in the dictionary and announcement associated values are set in rules.</p>
+<sectiondiv>
+<p><b>CustomVendorDefinition.xml</b></p>
+<p>Modify the <i>/opt/tpa/ conf/sac/diameter/vsa/CustomVendorDefinition.xml</i> dictionary file as follows:</p>
+<systemoutput>&lt;vendor id="10415" name="Announcement"/&gt;</systemoutput>
+</sectiondiv>
+<sectiondiv>
+<p><b>AttributeDefinitionAnnouncement.xml</b></p>
+<p>Modify the <i>/opt/tpa/conf/sac/diameter/vsa/AttributeDefinitionAnnouncement.xml</i> dictionary file as follows:</p>
+<systemoutput>&lt;attribute code="700"
+vendorName="LUCENT"
+name="Announcement-Instructions"
+format="GROUPED"
+mFlag="OPTIONAL"
+pFlag="OPTIONAL"
+vFlag="REQUIRED"
+encrypt="false"
+register="true"
+proprietary="true"&gt;
+    &lt;groupedAttributeSyntax&gt;
+        &lt;optional attributeName="Announcement-Number"/&gt;
+        &lt;optional attributeName="Announcement-Type"/&gt;
+        &lt;optional attributeName="Announcement-Order"/&gt;
+        &lt;optional attributeName="Announcement-Variable-Part"/&gt;
+        &lt;optional attributeName="Announcement-Prompt-Collect-Parameter"/&gt;
+    &lt;/groupedAttributeSyntax&gt;
+&lt;/attribute&gt;
+&lt;attribute code="701"
+vendorName="LUCENT"
+name="Announcement-Number"
+format="UNSIGNED32"
+mFlag="OPTIONAL"
+pFlag="OPTIONAL"
+vFlag="REQUIRED"
+encrypt="false"
+register="true"
+proprietary="true"/&gt;
+&lt;attribute code="702"
+vendorName="LUCENT"
+name="Announcement-Order"
+format="UNSIGNED32"
+mFlag="OPTIONAL"
+pFlag="OPTIONAL"
+vFlag="REQUIRED"
+encrypt="false"
+register="true"
+proprietary="true"/&gt;
+&lt;attribute code="703"
+vendorName="LUCENT"
+name="Announcement-Type"
+format="UNSIGNED32"
+mFlag="OPTIONAL"
+pFlag="OPTIONAL"
+vFlag="REQUIRED"
+encrypt="false"
+register="true"
+proprietary="true"&gt;&lt;/attribute&gt;
+&lt;attribute code="705"
+vendorName="LUCENT"
+name="Announcement-Variable-Part-Data"
+format="UTF8STRING"
+mFlag="OPTIONAL"
+pFlag="OPTIONAL"
+vFlag="REQUIRED"
+encrypt="false"
+register="true"
+proprietary="true"/&gt;
+&lt;attribute code="706"
+vendorName="LUCENT"
+name="Announcement-Variable-Part-Type"
+format="ENUMERATED"
+mFlag="OPTIONAL"
+pFlag="OPTIONAL"
+vFlag="REQUIRED"
+encrypt="false"
+register="true"
+proprietary="true"&gt;
+    &lt;enumeratedAttributeSyntax&gt;
+        &lt;enumeration value="0" name="INTEGER" display="INTEGER"/&gt;
+        &lt;enumeration value="1" name="NUMBER" display="NUMBER"/&gt;
+        &lt;enumeration value="2" name="TIME" display="TIME"/&gt;
+        &lt;enumeration value="3" name="DATE" display="DATE"/&gt;
+        &lt;enumeration value="4" name="PRICE" display="PRICE"/&gt;
+    &lt;/enumeratedAttributeSyntax&gt;
+&lt;/attribute&gt;
+&lt;attribute code="704"
+vendorName="LUCENT"
+name="Announcement-Variable-Part"
+format="GROUPED"
+mFlag="OPTIONAL"
+pFlag="OPTIONAL"
+vFlag="REQUIRED"
+encrypt="false"
+register="true"
+proprietary="true"&gt;
+    &lt;groupedAttributeSyntax&gt;
+        &lt;optional attributeName="Announcement-Variable-Part-Type"/&gt;
+        &lt;optional attributeName="Announcement-Variable-Part-Data"/&gt;
+    &lt;/groupedAttributeSyntax&gt;
+&lt;/attribute&gt;
+&lt;attribute code="709"
+vendorName="LUCENT"
+name="Announcement-Prompt-Collect-Interruptible"
+format="ENUMERATED"
+mFlag="OPTIONAL"
+pFlag="OPTIONAL"
+vFlag="REQUIRED"
+encrypt="false"
+register="true"
+proprietary="true"&gt;
+    &lt;enumeratedAttributeSyntax&gt;
+        &lt;enumeration value="0" name="False" display="False"/&gt;
+        &lt;enumeration value="1" name="True" display="True"/&gt;
+    &lt;/enumeratedAttributeSyntax&gt;
+&lt;/attribute&gt;
+&lt;attribute code="710"
+vendorName="LUCENT"
+name="Announcement-Prompt-Collect-MinDigits"
+format="UNSIGNED32"
+mFlag="OPTIONAL"
+pFlag="OPTIONAL"
+vFlag="REQUIRED"
+encrypt="false"
+register="true"
+proprietary="true"/&gt;
+&lt;attribute code="711"
+vendorName="LUCENT"
+name="Announcement-Prompt-Collect-MaxDigits"
+format="UNSIGNED32"
+mFlag="OPTIONAL"
+pFlag="OPTIONAL"
+vFlag="REQUIRED"
+encrypt="false"
+register="true"
+proprietary="true"/&gt;
+&lt;attribute code="708"
+vendorName="LUCENT"
+name="Announcement-Prompt-Collect-Parameter"
+format="GROUPED"
+mFlag="OPTIONAL"
+pFlag="OPTIONAL"
+vFlag="REQUIRED"
+encrypt="false"
+register="true"
+proprietary="true"&gt;
+    &lt;groupedAttributeSyntax&gt;
+        &lt;optional attributeName="Announcement-Prompt-Collect-Interruptible"/&gt;
+        &lt;optional attributeName="Announcement-Prompt-Collect-MinDigits"/&gt;
+        &lt;optional attributeName="Announcement-Prompt-Collect-MaxDigits"/&gt;
+    &lt;/groupedAttributeSyntax&gt;
+&lt;/attribute&gt;
+</systemoutput>
+</sectiondiv>
+<sectiondiv>
+<p><b>ChargingVsaToContextMapping.xml</b></p>
+<p>Modify the <i>/opt/tpa/conf/sac/diameter/rule/ChargingVsaToContextMapping.xml</i> dictionary file as follows:</p>
+<systemoutput>&lt;diameterToRuleContextMap
+    xmlns="diameterRuleContextMap"&gt;
+    &lt;vsaToContext&gt;
+        &lt;vsaToRuleSourceContexts&gt;
+            &lt;!-- TODO --&gt;
+        &lt;/vsaToRuleSourceContexts&gt;
+        &lt;vsaToRuleResultContexts&gt;
+            &lt;vsaRuleResultContext&gt;
+                &lt;context type="GY"/&gt;
+                &lt;customizedAttributes parentAttributeName="Multiple-Services-Credit-Control"&gt;
+                    &lt;vendorInfo&gt;
+                        &lt;name&gt;LUCENT&lt;/name&gt;
+                        &lt;includeAttribute name="Announcement-Instructions"/&gt;
+                        &lt;includeAttribute name="Announcement-Instructions.Announcement-Number"/&gt;
+                        &lt;includeAttribute name="Announcement-Instructions.Announcement-Type"/&gt;
+                        &lt;includeAttribute name="Announcement-Instructions.Announcement-Order"/&gt;
+                        &lt;includeAttribute name="Announcement-Instructions.Announcement-Variable-Part.Announcement-Variable-Part-Type"/&gt;
+                        &lt;includeAttribute name="Announcement-Instructions.Announcement-Variable-Part.Announcement-Variable-Part-Data"/&gt;
+                        &lt;includeAttribute name="Announcement-Instructions.Announcement-Prompt-Collect-Parameter.Announcement-Prompt-Collect-Interruptible"/&gt;
+                        &lt;includeAttribute name="Announcement-Instructions.Announcement-Prompt-Collect-Parameter.Announcement-Prompt-Collect-MinDigits"/&gt;
+                        &lt;includeAttribute name="Announcement-Instructions.Announcement-Prompt-Collect-Parameter.Announcement-Prompt-Collect-MaxDigits"/&gt;
+                    &lt;/vendorInfo&gt;
+                &lt;/customizedAttributes&gt;
+            &lt;/vsaRuleResultContext&gt;
+        &lt;/vsaToRuleResultContexts&gt;
+    &lt;/vsaToContext&gt;
+&lt;/diameterToRuleContextMap&gt;
+</systemoutput>
+</sectiondiv>
+</section>
+</conbody></concept>

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+		<task id="id9YZ-09018-IN00-RJZZA-install-SPS-vmware"><title>Installing NCC in VMware</title><taskbody id="Installation_procedure_VMware"><context><sectiondiv>
+				<p><b>Overview</b></p>
+				<note>
+					<p>Before installing the NCC, ensure that you have read
+							<!--xref URI: ../Chapters/c-install-introduction.xml#Install_overview_chapter--><xref
+							keyref="id9YZ-09018-IN00-RJZZA-Install_overview_chapter"/> and completed
+						all the preliminary steps outlined in that chapter.</p>
+				</note>
+				<p>This section describes the workflow of the NCC installation in VMware. The NCC is
+					deployed on one Organization Virtual Data Center (VDC).</p>
+				<note>
+					<p>The minimum NCC deployment is one SM site (VNF) and one ME site (VNF), or one
+						IG site (VNF). </p>
+				</note>
+			</sectiondiv>To install the NCC in VMware:</context><steps>
+
+<step><cmd>Contact Nokia Professional services to obtain the following:</cmd><info><ul>
+
+<li>
+<p>VMDK images</p>
+</li>
+<li>
+<p>CSAR packages</p>
+</li>
+<li>
+<p>Scalable files</p>
+</li>
+<li>
+<p>VNF Extension files</p>
+</li>
+<li>
+<p>OVF files</p>
+</li>
+<li>
+<p>MD5 files</p>
+</li>
+</ul><note>
+
+<p>See the following:</p><ul>
+
+<li>
+<p>For instructions on how to generate the CSAR packages, the Scalable files and the VNF Extension
+									files, see the NCC VNF Artifacts Generator Tool User Guide.</p>
+</li>
+<li>
+<p>For information on the Scalable files, see the NCC VNF Artifacts Generator Tool User Guide. The
+									Scalable files cannot be manually updated since they are
+									automatically generated.</p>
+</li>
+<li>
+<p>For information on the VNF Extension files, see section <!--xref URI: t-install-VNF-Extension.xml#Modifying_Excel--><xref keyref="id9YZ-09018-IN00-RJZZA-Modifying_Excel"/>.</p>
+</li>
+<li>
+<p>For more information on standard lifecycle management and VNF maintenance operations in CBAM such as uploading CSAR packages, creating, modifying and instantiating a VNF, see CloudBand Application Manager (CBAM) documentation in the Nokia Discovery Center by going to <xref format="html" scope="external" href="https://doc.networks.nokia.com">https://doc.networks.nokia.com</xref>
+</p>
+</li>
+</ul>
+</note></info></step>
+<step><cmd><draft-comment>FIXME - put an instruction here</draft-comment></cmd><info>
+<note>
+
+<p>Put the OVF files and the VMDK images into the same specified path on the vCloud VM.</p>
+</note>
+<p>Download the following artifacts:</p><ul>
+
+<li>
+<p>VMDK images</p>
+</li>
+<li>
+<p>CSAR packages</p>
+</li>
+<li>
+<p>Scalable files</p>
+</li>
+<li>
+<p>VNF Extension files</p>
+</li>
+<li>
+<p>OVF files</p>
+</li>
+<li>
+<p>MD5 files</p>
+</li>
+</ul>
+</info></step>
+<step><cmd>Using the instructions in Nokia Support Portal, verify the downloaded VMDK images and files by generating MD5 hash values and comparing the generated values with the values provided in Support Portal and in MD5 files. The generated MD5 hash values, the MD5 hash values in Support Portal and the values in MD5 files must match. If you find discrepancies, download the VMDK images and files again. For more information on the images, see <!--xref URI: t-install-artifacts.xml#Images--><xref keyref="id9YZ-09018-IN00-RJZZA-d1e4043/Images"/>.</cmd><info><note>
+
+<p>In addition to MD5 values, Nokia provides SHA-256 hash values. The NCC does not use SHA-256 hash
+							values for image verification.</p>
+</note></info></step>
+<step><cmd>Upload the OVF files and VMDK images to vCloud using the procedure <!--xref URI: t-install-uploading-Vapp-template.xml#Uploading-OVF-file--><xref keyref="id9YZ-09018-IN00-RJZZA-Uploading-OVF-file"/>.</cmd><info/></step>
+<step><cmd>Log in to the CBAM GUI and upload the CSAR packages for this deployment using the procedure <!--xref URI: t-install-uploading-CSAR-package.xml#Uploading_updated_CSAR--><xref keyref="id9YZ-09018-IN00-RJZZA-Uploading_updated_CSAR"/>.</cmd><info/></step>
+<step><cmd><draft-comment>FIXME - put an instruction here</draft-comment></cmd><info>
+<note>
+
+<p>All the parameters in the VNF Extension file, including &lt;sdc_config_data&gt; parameter, must
+							be updated before instantiation if you are installing the NCC and before
+							SU if you are upgrading the NCC. If a parameter or a group of parameters
+							can be updated post-instantiate and post-SU, the NCC documentation
+							outlines this information.</p>
+</note>
+<p>For each site in your deployment, do the following:</p><ol>
+
+<li>
+<p>In the CBAM GUI, do the following:</p><ol>
+
+<li>
+<p>Create a VNF with a particular CSAR package using the procedure <!--xref URI: t-install-creating-VNF.xml#Create_VNF--><xref keyref="id9YZ-09018-IN00-RJZZA-Create_VNF"/>.</p>
+</li>
+<li>
+<p>Modify this VNF with the VNF Extension file generated for this VNF using the procedure <!--xref URI: t-install-modifying-VNF.xml#Modify_VNF--><xref keyref="id9YZ-09018-IN00-RJZZA-Modify_VNF"/>.</p>
+</li>
+<li>
+<p>Instantiate this VNF with the Scalable file generated for this VNF using the procedure <!--xref URI: t-install-instantiating-VNF.xml#Instantiate_VNF--><xref keyref="id9YZ-09018-IN00-RJZZA-Instantiate_VNF"/>.</p>
+</li>
+</ol>
+</li>
+<li>
+<p>Log in to the VNF and change the password using the procedure <!--xref URI: t-install-changing-password-on-first-login.xml#Changing-password--><xref keyref="id9YZ-09018-IN00-RJZZA-Changing-password"/>.</p>
+</li>
+<li>
+<p>Verify this VNF using the procedure <!--xref URI: t-install-verifying-instantiation.xml#Verifying-installation--><xref keyref="id9YZ-09018-IN00-RJZZA-Verifying-installation"/>.</p>
+</li>
+<li>
+<p>Optionally, if you choose to use DFSec, do the following procedures: </p><ol>
+
+<li>
+<p>
+<!--xref URI: t-install-enabling-DFSec-on-IOHO.xml#Enabling-DFSec-->
+<xref keyref="id9YZ-09018-IN00-RJZZA-Enabling-DFSec"/>
+</p>
+</li>
+<li>
+<p>
+<!--xref URI: t-install-enabling-DFSec-on-SM.xml#Enabling-WebSSO-->
+<xref keyref="id9YZ-09018-IN00-RJZZA-Enabling-WebSSO"/>
+</p>
+</li>
+</ol>
+<p>For more information about DFSec, see <i>Overview Guide</i>.</p>
+</li>
+</ol>
+</info></step>
+</steps>
+</taskbody></task>

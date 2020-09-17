@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-ug01-pczza-sp1-dbwira"><title>Data bundles with international roaming access</title><conbody>
+<section><title>Overview</title>
+<p>Operators can provide flexibility to subscribers to use the data bundles for both domestic and international roaming. For the data used during international roaming, a daily spending limit can be configured. If the daily spending limit is reached, then the throttling of speed (policy change) happens for the international roaming subscriber. The daily cap is reset every day at midnight.</p>
+</section>
+<section><title>Configuration</title>
+<p>For the data bundles used during international roaming, all the counters are reset irrespective of whether they are linked to account or subscription. Also, the SNR is sent for indicating the policy counter status when the counter is reached to configured threshold and again when the counter is reset to 0.</p>
+<p>Configure the following entities:</p><ol>
+<li>
+<p>Configure a threshold profile group with the <uicontrol>Schedule-Event</uicontrol> action. Note that this action is applicable only for counters. The syntax for <uicontrol>Schedule-Event</uicontrol> action is as follows:</p>
+<p>
+<codeph>Schedule-Event ("&lt;TIME_VALUE&gt;", &lt;TIME_UNIT&gt;, &lt;Action&gt;)</codeph>
+</p>
+<p>where</p><ul>
+<li>
+<p>TIME_VALUE is the length of the period</p>
+</li>
+<li>
+<p>TIME_UNIT is the period of unit such as DAY, WEEK, MONTH</p>
+</li>
+<li>
+<p>Action is the action to perform such as RESET</p>
+<p>For example, the Schedule-Event action for daily counter reset is as follows:</p>
+<p>
+<codeph>THRESHOLD.Schedule-Event ("1", TimeUnit_Days, ThresholdScheduledEventType_RESET)</codeph>
+</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Create a counter and link the threshold created in the previous step to it. <uicontrol>Threshold Profile Group IDs</uicontrol> is the field name in the counter to link thresholds. Set the <uicontrol>OCS Policy Counter</uicontrol> to true.</p>
+</li>
+<li>
+<p>Create a charging service with data bucket. Attach the threshold created with the data bucket.</p>
+</li>
+<li>
+<p>Configure a data bundle and link the charging service created.</p>
+</li>
+<li>
+<p>Create a device and link the counter.</p>
+</li>
+</ol>
+<p>See <!--xref URI: c-Call_controller.xml#plccntrreset--><xref keyref="id9YZ-09126-UG01-PCZZA-SP1-d1e28451/plccntrreset"/> for information regarding handling of pending counters.</p>
+</section>
+<section><title>Additional information</title>
+<p>Note the following important points:</p><ul>
+<li>
+<p>Counter is reset at period defined in the <uicontrol>Schedule-Event</uicontrol> action. It does not consider the periodicity defined in the linked account or subscription.</p>
+</li>
+<li>
+<p>If a counter has its own reset configuration, then it is not reset during account renewal.</p>
+</li>
+</ul>
+</section>
+<section><title>Examples</title>
+<p>
+<uicontrol>Example 1: Counter with its own periodicity</uicontrol>
+</p>
+<p>In this example, the counter is reset at the period defined in the <uicontrol>Schedule-Event</uicontrol> action configured in the threshold profile group. SNR is sent based on the configurations made.</p>
+<p>Consider that a device has the following subscription and counters linked to it:</p><ul>
+<li>
+<p>A device subscription linked to account that renews at every 2 minutes.</p>
+</li>
+<li>
+<p>A device policy counter with normal configuration without the <uicontrol>Schedule-Event</uicontrol> action.</p>
+</li>
+<li>
+<p>A device policy counter with <uicontrol>Schedule-Event</uicontrol> action configuration that resets counter daily.</p>
+</li>
+</ul>
+<p>Configure the following entities to reset counter and send SNR for data bundle with roaming access:</p><ol>
+<li>
+<p>Configure the Threshold profile group. According to this configuration, when the threshold value is 0, SNR is set to HIGH (speed is at high rate) and the counter is reset daily. The notification is sent with the data defined in the notification template. When the threshold value of 50 GB is reached, the SNR is set to MEDIUM, that is, the speed is throttled to medium rate. Set the <uicontrol>OCS Policy Threshold</uicontrol> to <varname>true</varname>.</p>
+</li>
+<li><p>Create a charging service with a data bucket and attach the threshold.</p>
+                    <!--MMO resource relative URI: ../Graphics/Release_20.3/IRCS_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-ircs_default.png" scale="70"
+                    />
+                </li>
+<li><p>Configure a data bundle and link the charging service created.</p>
+                    <!--MMO resource relative URI: ../Graphics/Release_20.3/IRBundle_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-irbundle_default.png"
+                        scale="60"/>
+                </li>
+<li><p>Configure the following policy counters:</p>
+                    <p>
+                        <uicontrol>Normal policy counter</uicontrol>
+                    </p><p>Threshold is not linked to this counter.</p>
+                    <!--MMO resource relative URI: ../Graphics/Release_20.3/PC_Normal_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-pc_normal_default.png"/>
+                    <p/><p>
+                        <uicontrol>Policy counter for reset</uicontrol>
+                    </p><p>Threshold (TPG102) is linked to this counter.</p>
+                    <!--MMO resource relative URI: ../Graphics/Release_20.3/PC_Reset_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-pc_reset_default.png"
+                        scale="65"/>
+                </li>
+<li><p>Create a device and attach the data bundle and device counters (policy counters).</p><p>A
+                        data call is made and it crosses threshold at 50. SNR throttles and status
+                        is set to <varname>MEDIUM</varname>. Counter is reset at the scheduled time
+                        defined in the <uicontrol>Schedule-Event</uicontrol> action.</p>
+                    <!--MMO resource relative URI: ../Graphics/Release_20.3/Threshold1_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-threshold1_default.png"
+                        scale="65"/>
+                    <!--MMO resource relative URI: ../Graphics/Release_20.0/TPG1_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-tpg1_default.png" scale="65"/>
+                    <!--MMO resource relative URI: ../Graphics/Release_20.0/TPG2_default.png-->
+                    <image href="../images/img9yz-09126-ug01-pczza-sp1-tpg2_default.png" scale="65"
+                    />
+                </li>
+</ol>
+<p>
+<uicontrol>Example 2: Counter reset is due by its periodicity and is reset by call</uicontrol>
+</p>
+<p>Consider that a device has the following subscription and counters linked to it:</p><ul>
+<li>
+<p>A device subscription linked to account.</p>
+</li>
+<li>
+<p>A device policy counter with normal configuration without the <uicontrol>Schedule-Event</uicontrol> action.</p>
+</li>
+<li>
+<p>A device policy counter with <uicontrol>Schedule-Event</uicontrol> action configuration that resets counter daily.</p>
+</li>
+</ul>
+<p>The counter is reset when a call is triggered. Following is the threshold configuration for counter scheduling. According to this configuration, when the threshold value is 0, SNR is set to HIGH (speed is at high rate) and the counter is reset daily. The notification is sent with the data defined in the notification template. When the threshold value of 25 Byte is reached, the SNR is set to LOW, that is, the speed is throttled to low speed rate. Set the <uicontrol>OCS Policy Threshold</uicontrol> to <varname>true</varname>.</p>
+<fig>
+                <!--MMO resource relative URI: ../Graphics/Release_20.0/mod397ph2th1_default.png-->
+                <image href="../images/img9yz-09126-ug01-pczza-sp1-mod397ph2th1_default.png"
+                    scale="65"/>
+            </fig>
+<fig>
+                <!--MMO resource relative URI: ../Graphics/Release_20.0/mod397ph2th2_default.png-->
+                <image href="../images/img9yz-09126-ug01-pczza-sp1-mod397ph2th2_default.png"
+                    scale="65"/>
+            </fig>
+</section>
+</conbody></concept>

@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA General Task//EN" "generalTask.dtd">
+<task id="id9YZ-09126-MT00-REZZA-SP2-d1e70026"><title>Procedure: Enabling auto-heal on a VNF</title><taskbody id="d1e70520">
+        <context>Auto-heal is a scheduled maintenance operation in CBAM that runs periodically at a
+            specified time period called wait period. By default the wait period is 11 minutes. The
+            purpose of auto-heal is to find and heal unhealthy VMs within a VNF. The VMs are healed
+            based on their priority described in section <!--xref URI: #Auto-healing-process--><xref
+                keyref="id9YZ-09126-MT00-REZZA-SP2-d1e70026/Auto-healing-process"/>. Auto-heal
+            attempts to heal a VM a specified number of times defined as
+            &lt;autoheal/max_retry_times&gt;. The records of healing attempts are stored in the
+                <filepath>/opt/tpa/auto_operations/lastHealedNodes</filepath> file. Additional
+            information about auto-heal is stored in the
+                <filepath>/opt/tpa/logs/autoheal.log</filepath> file. To heal a VM, auto-heal
+            invokes manual heal and tries to do a hard reboot of the VM. If auto-heal does not
+            succeed, manual heal with rebuild option should be used.<p>The procedure in this section
+                provides instructions on how to enable and configure auto-heal in CBAM. By default
+                auto-heal is disabled in CBAM.</p></context>
+        <section>
+            <title>Unhealthy VMs</title>
+            <p>Auto-heal considers a VM unhealthy as follows:</p>
+            <ul>
+                <li>
+                    <p>An Auxiliary VM is considered unhealthy if the ZooKeeper service is not
+                        working as expected and the status of the ETCD cluster endpoint is
+                        unhealthy.</p>
+                </li>
+                <li>
+                    <p>A DB VM is unhealthy if it does not respond to <codeph>db-stats -v
+                            memory</codeph> command.</p>
+                </li>
+                <li>
+                    <p>All other VMs are unhealthy if they are DOWN when <codeph>sps-status</codeph>
+                        command is invoked.</p>
+                </li>
+            </ul>
+        </section>
+        <section>
+            <title>Maximum number of retries</title>
+            <p>By default auto-heal attempts to heal an unhealthy VM three times. This default value
+                is specified with &lt;autoheal/max_retry_times&gt; parameter which is defined in the
+                VNF’s VNF Extenstion file. The value of &lt;autoheal/max_retry_times&gt; can be
+                modified after the VNF instantiation with
+                    <codeph>/opt/tpa/bin/configure-auto-heal</codeph> tool described in section
+                    <!--xref URI: t-tools-SPS-auto-heal.xml#Auto-heal-tool--><xref
+                    keyref="id9YZ-09126-MT00-REZZA-SP2-Auto-heal-tool"/>. For more information on
+                &lt;autoheal/max_retry_times&gt; parameter, see section <i>VNF Extension file</i> in
+                    <i>Installation and Upgrade Guide</i>.</p>
+        </section>
+        <section>
+            <title>Scheduling of auto-heal in CBAM</title>
+            <p>Auto-heal is scheduled only when the VNF is in instantiated state. If there is an
+                ongoing LCM operation that modify VNF state (POST, PATCH, PUT), the auto operations
+                are not scheduled. Auto-heal is not scheduled if there is an ongoing manual heal
+                operation. Only one VM at a time can be healed regardless of whether a heal
+                operation is triggered automatically or manually.</p>
+            <p>A manual heal operation for a specific VNF triggered by auto-heal is executed only if
+                there is no other operation being executed for that VNF.</p>
+        </section>
+        <section id="Auto-healing-process">
+            <title>Auto-healing process</title>
+            <p>Auto-heal checks all the VMs within a VNF for being healthy. If it finds unhealthy
+                VMs, auto-heal creates a healing queue of unhealthy VMs based on their priority.
+                When, trying to heal a VM, auto-heal reaches the maximum number of retries for that
+                VM, the following occurs:</p>
+            <ul>
+                <li>
+                    <p>Auto-heal stops trying to heal the VM that reached the limit. However, if
+                        auto-heal finds on this VNF other unhealthy VMs but with higher priority, it
+                        will attempt to heal them. For the lower priority VMs no subsequent
+                        auto-heal operations will be triggered on this VNF until the VM that
+                        auto-heal failed to heal is manually healed. This ensures that the VM with
+                        the highest healing priority is healed first. Until this VM with the highest
+                        priority is healed, no other manual heal operation should be carried out on
+                        this VNF.</p>
+                </li>
+                <li>
+                    <p>CBAM generates an alarm stating that the scheduled workflow for auto-heal has
+                        failed. Additional information about the cause of an operation failure can
+                        be found in CBAM workflows.log. For more information on auto-heal alarms,
+                        see section <!--xref URI: #Alarms--><xref
+                            keyref="id9YZ-09126-MT00-REZZA-SP2-d1e70026/Alarms"/>.</p>
+                </li>
+                <li>
+                    <p>A record in the <filepath>lastHealedNodes</filepath> is generated. </p>
+                </li>
+            </ul>
+            <p>If auto-heal stops trying to heal a VM because the maximum number of retries for this
+                VM is reached, the user should manually heal the VM using the procedure
+                    <!--xref URI: t-oam-healing-manual-healing.xml#Manual-healing--><xref
+                    keyref="id9YZ-09126-MT00-REZZA-SP2-Manual-healing"/> with rebuild set to
+                    <varname>yes</varname>.</p>
+            <p>In the auto-heal operation, the VMs have the following priority with number one being
+                the highest priority:</p>
+            <ol>
+                <li>
+                    <p>OAME</p>
+                </li>
+                <li>
+                    <p>IOHD</p>
+                </li>
+                <li>
+                    <p>IOHO</p>
+                </li>
+                <li>
+                    <p>DB</p>
+                </li>
+                <li>
+                    <p>Auxiliary</p>
+                </li>
+                <li>
+                    <p>CDR</p>
+                </li>
+                <li>
+                    <p>Diameter App</p>
+                </li>
+                <li>
+                    <p>SM App</p>
+                </li>
+                <li>
+                    <p>ComSvc</p>
+                </li>
+            </ol>
+            <p>Within the VMs of the same type, the VM with the smaller VM index has the highest
+                priority.</p>
+        </section>
+        <section>
+            <title>Auto-heal logging</title>
+            <p>Active <filepath>AutoHeal</filepath> logs can be found
+                    in <filepath>/opt/tpa/logs/AutoHeal.log</filepath> on the Active OAME VM.</p>
+            <p>Heal history can be found
+                    in <filepath>/opt/tpa/auto_operations/lastHealedNodes</filepath> on the Active
+                OAME VM. This history is synced between Active-Standby OAME VMs. The
+                    <filepath>lastHealedNodes</filepath> file has a record of when the last time the
+                VM has been selected for auto-heal and how many times in a row it has been attempted
+                to heal.</p>
+        </section>
+        <section id="Alarms">
+            <title>Auto-heal alarms</title>
+            <p>Auto-heal alarms are raised on CBAM, when auto-heal reaches the maximum number of
+                retries. No NCC alarm is raised for a failed auto-heal operation. The following is
+                an example of an auto-heal alarm raised by CBAM stating that auto-heal for a
+                particular VM cannot be scheduled for the second time.</p>
+            <note>Auto-heal operational failures are visible on CBAM alarms when auto-operation
+                workflows are starving, cannot be scheduled, run too long, fail during execution or
+                cannot trigger the operation. For more information on CBAM alarms, see CBAM
+                documentation.<p/></note>
+            <table frame="none">
+                <tgroup cols="2">
+                    <colspec colname="col1" colsep="0"/>
+                    <colspec colname="col2"/>
+                    <tbody>
+                        <row rowsep="0">
+                            <entry>
+                                <codeblock>Id:</codeblock>
+                            </entry>
+                            <entry>
+                                <codeblock>249</codeblock>
+                            </entry>
+                        </row>
+                        <row rowsep="0">
+                            <entry>
+                                <codeblock>Status:</codeblock>
+                            </entry>
+                            <entry>
+                                <codeblock>Active</codeblock>
+                            </entry>
+                        </row>
+                        <row rowsep="0">
+                            <entry>
+                                <codeblock>Severity:</codeblock>
+                            </entry>
+                            <entry>
+                                <codeblock>Minor</codeblock>
+                            </entry>
+                        </row>
+                        <row rowsep="0">
+                            <entry>
+                                <codeblock>Acknowledgement:</codeblock>
+                            </entry>
+                            <entry>
+                                <codeblock>Unacknowledged</codeblock>
+                            </entry>
+                        </row>
+                        <row rowsep="0">
+                            <entry>
+                                <codeblock>Occurrence:</codeblock>
+                            </entry>
+                            <entry>
+                                <codeblock>2</codeblock>
+                            </entry>
+                        </row>
+                        <row rowsep="0">
+                            <entry>
+                                <codeblock>Category:</codeblock>
+                            </entry>
+                            <entry>
+                                <codeblock>CloudBand Application Manager</codeblock>
+                            </entry>
+                        </row>
+                        <row rowsep="0">
+                            <entry>
+                                <codeblock>Object:</codeblock>
+                            </entry>
+                            <entry>
+                                <codeblock>CBAM-7f7103a007cb47ecaa47340926af5188 - auto_heal</codeblock>
+                            </entry>
+                        </row>
+                        <row rowsep="0">
+                            <entry>
+                                <codeblock>Alarm Code:</codeblock>
+                            </entry>
+                            <entry>
+                                <codeblock>cbam_scheduled_workflow_failed</codeblock>
+                            </entry>
+                        </row>
+                        <row rowsep="0">
+                            <entry>
+                                <codeblock>Alarm Text:</codeblock>
+                            </entry>
+                            <entry>
+                                <codeblock>Scheduled workflow failed</codeblock>
+                            </entry>
+                        </row>
+                        <row rowsep="0">
+                            <entry>
+                                <codeblock>Fault:</codeblock>
+                            </entry>
+                            <entry>
+                                <codeblock>vnf_instance_id - policy_id: CBAM-7f7103a007cb47ecaa47340926af5188 - auto_heal; alarm occurrence: 2</codeblock>
+                            </entry>
+                        </row>
+                        <row rowsep="0">
+                            <entry>
+                                <systemoutput>Updated:</systemoutput>
+                            </entry>
+                            <entry>
+                                <codeblock>&lt;timestamp&gt;</codeblock>
+                            </entry>
+                        </row>
+                        <row rowsep="0">
+                            <entry>
+                                <codeblock>Created:</codeblock>
+                            </entry>
+                            <entry>
+                                <codeblock>&lt;timestamp&gt;</codeblock>
+                            </entry>
+                        </row>
+                        <row rowsep="0">
+                            <entry>
+                                <codeblock>Acknowledged:</codeblock>
+                            </entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry rowsep="0">
+                                <codeblock>Cleared:</codeblock>
+                            </entry>
+                            <entry rowsep="0"/>
+                        </row>
+                        <row>
+                            <entry>
+                                <codeblock>Dynamic information:</codeblock>
+                            </entry>
+                            <entry>
+                                <codeblock>{"details": "The scheduled workflow was not able to determine whether a VNF operation should be started."}</codeblock>
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <p>When this alarm is raised, <filepath>AutoHeal.log</filepath> traces the
+                following:</p>
+            <p>
+                <systemoutput>&lt;timestamp -0400&gt;&lt;sps-sm-oame-0&gt;&lt;find-bad-nodes&gt;
+                    ERROR: The node 'SPS_SM_18_9_R1_I114-ioho-0' has reached the max retry times '1'
+                    and requires manual operation. &lt;timestamp
+                    -0400&gt;&lt;sps-sm-oame-0&gt;&lt;find-bad-nodes&gt; INFO: Final result:
+                    '{"trigger_operation": false, "vm_name": "SPS_SM_18_9_R1_I114-ioho-0",
+                    "error_message": "The node 'SPS_SM_18_9_R1_I114-ioho-0' has reached the max
+                    retry times '1' and requires manual operation."}', return code:
+                    '1'.</systemoutput>
+            </p>
+            <note>For more information on CBAM, see CloudBand Application Manager (CBAM)
+                documentation in the Nokia Discovery Center by going to <xref format="html"
+                    href="https://doc.networks.nokia.com" scope="external"
+                    >https://doc.networks.nokia.com</xref><p> </p></note>
+            <note>When auto-heal runs, the VM is rebooted with hard reboot.</note>
+            <p>To enable auto-heal on the VNF:</p>
+        </section>
+        <steps id="steps_ibx_b15_wmb">
+            <step>
+                <cmd>Log in to the CBAM GUI.</cmd>
+                <info/>
+            </step>
+            <step>
+                <cmd>In the CBAM GUI, click the options button with three horizontal lines, and then
+                    select <b>Virtualized Network Functions</b>. The <b>Virtualized Network
+                        Functions</b> pane appears.</cmd>
+                <info/>
+            </step>
+            <step>
+                <cmd>In the <b>Virtualized Network Functions</b> pane, select the VNF on which to
+                    enable auto-heal and hover the mouse over the right of the selected VNF, and
+                    then click the <b>Modify</b> button represented by the pencil icon. The
+                        <b>General Data</b> pane appears.</cmd>
+                <info/>
+            </step>
+            <step>
+                <cmd>In the <b>General Data</b> pane, <b>Auto-operations</b> are listed as item 5.
+                    To reach to <b>Auto-operations</b>, click <b>Continue</b> five consecutive
+                    times. The <b>Auto-operations</b> pane appears.</cmd>
+                <info/>
+            </step>
+            <step>
+                <cmd>Select <b>auto-heal</b> and click the check mark button. The <b>auto-heal</b>
+                    window appears.</cmd>
+                <info/>
+            </step>
+            <step>
+                <cmd>In the <b>auto-heal</b> window, if needed, configure the <b>Period</b>
+                    parameter.</cmd>
+                <info>
+                    <note>
+                        <p>The <b>Period</b> cannot be less then the default setting, which is 11
+                            minutes.</p>
+                    </note>
+                </info>
+            </step>
+            <step>
+                <cmd>In the <b>auto-heal</b> window, select the <b>Enable</b> check box and click
+                        <b>Finish</b>.</cmd>
+                <info>
+                    <note>
+                        <p>In auto-healing the VM is rebooted with hard reboot.</p>
+                    </note>
+                    <p>
+                        <b>Expected outcome</b>
+                    </p>
+                    <p>In the <b>Auto-operations</b> window, the <b>Enabled</b> parameter for
+                            <b>auto-heal</b> is set to true.</p>
+                </info>
+            </step>
+            <step>
+                <cmd>Do the following to ensure that the auto-scaling is enabled to run at the
+                    configured period in CBAM:</cmd>
+                <info>
+                    <ul id="ul_jbx_b15_wmb">
+                        <li>
+                            <p>In the CBAM catalog, select and then click the VNF on which you have
+                                enabled <b>auto-heal</b>. The <b>Virtual Network Function
+                                    Details</b> window appears.</p>
+                        </li>
+                        <li>
+                            <p>In the <b>Virtual Network Function Details</b> window click the
+                                    <b>History</b> tab. The <b>History</b> list appears.</p>
+                        </li>
+                        <li>
+                            <p>From the <b>History</b> list, select and then click the most recent
+                                    <b>Modify</b> operation. This operation is also listed in the
+                                    <b>Last Operation Status</b> field in the left pane. The
+                                    <b>Parameters</b> list appears.</p>
+                        </li>
+                        <li>
+                            <p>In the Parameters list, click <b>vnfConfigurableProperties</b> and
+                                ensure that the <b>enabled</b> parameter in the <b>auto-heal</b>
+                                operation is set to true.</p>
+                        </li>
+                    </ul>
+                </info>
+            </step>
+        </steps>
+    </taskbody></task>

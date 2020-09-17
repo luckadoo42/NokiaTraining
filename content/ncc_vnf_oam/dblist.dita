@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="id9yz-09126-mt00-rezza-sp2-dblist"><title>db-list tool</title><conbody>
+<section><title>Description</title>
+<p>The db-list tool lists the records in the Aerospike database and the listing is written into compressed (.gz) files in a JSON format.</p>
+<p>Following guidelines are applied for the usage of the tool:</p><ul>
+<li>
+<p>This tool is relevant to the ME only. Any data that the tool is meant to dump is not present on the SM.</p>
+</li>
+<li>
+<p>If the db-list tool is executed on the active OAME node, then it throws an error message stating that it consumes a lot of resources and should be executed on a standby OAME host. To force the execution of the same, the command line argument <codeph>-F</codeph> can be used. </p>
+</li>
+<li>
+<p>During the execution of the db-list tool, if any switchover happens in OAME host from active to standby or vice versa, then it is recommended to re-execute the db-list tool on standby OAME host only. The data files created during switchover phase may have inconsistent data or files having partial data with file extension “.part”. The data files created before interruption needs to be manually deleted from the system.</p>
+</li>
+<li>
+<p>The db-list tool is installed only on the OAME node. The tool should be executed only on the standby OAME node as it consumes CPU and other resources on the host node.</p>
+<p>Nokia recommends you to run the db-list tool only in low business or low traffic hours.</p>
+</li>
+<li>
+<p>Only one instance of the db-list tool can be executed on a single OAME node at a given time. The tool cannot be executed in case a similar tool (for example, db-backup, db-restore, asbackup, or asrestore tool) is currently running on the same OAME node.</p>
+<p>Nokia recommends you to ensure that the db-list tool or any other similar tool is not concurrently running on other nodes.</p>
+</li>
+<li>
+<p>The data is spread over two Aerospike sets related by a <i>club-id</i>.</p>
+<p>Nokia recommends you to use the db-list tool when database updates in the system are minimum and the database updates happen due to activities like provisioning, on-call traffic, or audit are minimum. Once the db-list tool has been started for execution for a specific set and that set fetches objects from another set, the time elapsed between fetching information from these two sets might lead to inconsistent data.</p>
+<p>For instance, to dump all data related to a device, the device is read from one set and then its custom data, aggregate view instances, and bucket instances among others are read from different set. If it takes <i>x</i> amount of time (usually in milliseconds for each entity) to dump the same data then, for instance, if any provisioning activity or Diameter call or audit are ongoing during the same time frame then data dumped might be inconsistent. The case may arise where subscription id is read from device data and by the time tool tries to read the subscription object, it may already have been deleted from the database due to any activity mentioned above.</p>
+</li>
+<li>
+<p>The db-list tool always starts from the beginning and there is no option to pause or resume a previous tool invocation. This means that, if the db-list tool is interrupted due to any reason or exception, then when the tool is executed next time, it starts from the beginning. The data files created before interruption needs to be manually deleted from the system.</p>
+</li>
+<li>
+<p>Edigest is dumped with each &lt;entity&gt; option.</p>
+<p>
+<b>Note:</b> Edigest is a primary key that uniquely identifies a record in the Aerospike database within a given namespace. Primary key is used in application, while the digest is used for addressing the record in the database.</p>
+</li>
+<li>
+<p>The logs of the db-list tool are dumped in the <filepath>/opt/tpa/logs/CommandsDebug.log</filepath>.</p>
+</li>
+<li>
+<p>In order to dump all policy and charging sessions, run the <i>db-list</i> tool separately for all policy and charging sessions.</p>
+<p>
+<codeph>./db-list -l policysessions</codeph>
+</p>
+<p>
+<codeph>./db-list -l chargingsessions</codeph>
+</p>
+</li>
+<li>
+<p>In case of dump taken from a system having a larger data size provisioned, for example millions of devices with all associated charging data, then the following options in db-list tool are helpful:</p>
+<p/><ul>
+<li>
+<p>
+<i>t</i> : number of threads</p>
+</li>
+<li>
+<p>
+<i>q</i> : worker queue capacity (it is fixed to 100k records at present)</p>
+</li>
+<li>
+<p>
+<i>r</i> : JVM heap size (it is 2G at present)</p>
+</li>
+</ul>
+<p>For more information, see the <i>Troubleshooting</i> appendix of this guide.</p>
+</li>
+</ul>
+</section>
+<section><title>Syntax</title>
+<p>Log into the standby OAME node as the <uicontrol>tpaadmin</uicontrol> user and type the <codeph>db-list</codeph> command:</p>
+<codeblock>db-list [-l &lt;entity&gt;] [-s &lt;primary|all&gt;] [-n &lt;namespace&gt;] [-m &lt;max&gt;] [-o &lt;dir&gt;]</codeblock>
+<p>None of the options mentioned in this command are mandatory.</p>
+<note>
+<p>If the tool is to be used as the <uicontrol>root</uicontrol> user, then navigate to the <i>/opt/tpa/bin/</i> directory where the tool is located.</p>
+</note>
+<p>The tool can be launched without any options. If this occurs, then it uses the default value for each option.</p>
+<table pgwide="1">
+<tgroup cols="3">
+<colspec colname="col1"/>
+<colspec colname="col2"/>
+<colspec colname="COLSPEC0"/>
+<thead>
+<row>
+<entry>
+<p>Options</p>
+</entry>
+<entry>
+<p>Description</p>
+</entry>
+<entry>
+<p>Option arguments</p>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+<codeblock>No arguments</codeblock>
+</entry>
+<entry>
+Displays usage or help information.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-h or -?</codeblock>
+</entry>
+<entry>
+Displays usage or help information.
+</entry>
+<entry>
+—
+</entry>
+</row>
+<row>
+<entry rowsep="0">
+<codeblock>-l &lt;entity&gt;</codeblock>
+</entry>
+<entry rowsep="0">
+<p>Displays the type of entity for which you need records listed.</p>
+<p>Only one entity at a time can be added in this argument. For example, <userinput>-l &lt;devices&gt;</userinput>
+</p>
+</entry>
+<entry rowsep="0">
+<p>Default value of this option is <codeph>-l devices</codeph>.</p>
+<p>The <codeph>-l &lt;entity&gt;</codeph> option of the db-list tool has the following output:</p><ul>
+<li>
+<p>
+<codeph>-l devices</codeph>: Lists the devices in the <i>InfrequentlyChangingData</i> set along with the custom data, device subscriptions, subscription counter, associated bucket instances, threshold instances, account balance data, cap instances, device counters, Aggregate View (AV), and DPU present in the <i>DynamicData</i> set.</p>
+<p>Edigest is present for device, custom data, subscription, subscription counter, device counter, AV instance, DPU, account balance, and for bucket instance at CS level.</p>
+</li>
+<li>
+<p>
+<codeph>-l accounts</codeph>: Lists the accounts along with the account administrator present in <i>InfrequentlyChangingData</i> and custom data attributes of the account present in the <i>DynamicData</i> set.</p>
+<p>Edigest is present for account and custom data associated with account.</p>
+</li>
+<li>
+<p>
+<codeph>-l users</codeph>: Lists the users along with the custom data attributes of the user present in the <i>InfrequentlyChangingData</i> and <i>DynamicData</i> set respectively.</p>
+<p>Edigest is present for user and custom data associated with account.</p>
+</li>
+<li>
+<p>
+<codeph>-l groups</codeph>: Lists the groups in the <i>InfrequentlyChangingData</i> set along with the custom data, group subscriptions, associated bucket instances, subscription counter, threshold instances, cap instances, group and device_group counters, aggregate view, and account balance data present in the <i>DynamicData</i> set.</p>
+<p>Edigest is present for group, custom data, subscription, subscription counter, group counter, AV instance, device group counter, account balance, and for bucket instance at CS level.</p>
+</li>
+<li>
+<p>
+<codeph>-l policysessions</codeph>: Lists all the session present in the <filepath>SessionContainer</filepath> set.</p>
+</li>
+<li>
+<p>
+<codeph>-l ipcansessions</codeph>: Lists only the sessions of <i>Ip-Can</i> type present in the <filepath>SessionContainer</filepath> set.</p>
+</li>
+</ul>
+</entry>
+</row>
+<row>
+<entry/>
+<entry/>
+<entry rowsep="1">
+<p/><ul>
+<li>
+<p>
+<codeph>-l sysessions</codeph>: Lists only the sessions of <i>Sy</i> type present in the <filepath>SessionContainer</filepath> set.</p>
+</li>
+<li>
+<p>
+<codeph>-l afsessions</codeph>: Lists only the sessions of <i>Af</i> type present in the <filepath>SessionContainer</filepath> set.</p>
+</li>
+<li>
+<p>
+<codeph>-l ucs</codeph>: Lists all the records present in the <filepath>UsageControlService</filepath> set.</p>
+</li>
+<li>
+<p>
+<codeph>-l allsubscriberdata</codeph>: Lists all the subscriber entities data (which includes, devices, groups, users, and accounts).</p>
+</li>
+<li>
+<p>
+<codeph>-l gysessions</codeph>: Lists all the Gy sessions present in the <i>DynamicData</i> set.</p>
+</li>
+<li>
+<p>
+<codeph>-l imssessions</codeph>: Lists all the IMS sessions present in the <i>DynamicData</i> set.</p>
+</li>
+<li>
+<p>
+<codeph>-l ratingsessions</codeph>: Lists all the rating sessions present in the <i>DynamicData</i> set.</p>
+</li>
+<li>
+<p>
+<codeph>-l chargingsysessions</codeph>: Lists all the Sy sessions present in the <i>DynamicData</i> set.</p>
+</li>
+<li>
+<p>
+<codeph>-l chargingsessions</codeph>: Lists all the charging sessions (Gy, rating, IMS, and Sy) present in the <i>DynamicData</i> set.</p>
+</li>
+</ul>
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-s &lt;primary|all&gt;</codeblock>
+</entry>
+<entry>
+<p>The <varname>primary</varname> option lists only the records that are primary to this site and the <varname>all</varname> option lists all devices.</p>
+<p>This option is applicable only when the listed object is one of devices, accounts, users, or groups. This option is ignored if the value is not one of the values for devices, accounts, users, or groups.</p>
+</entry>
+<entry>
+<p>Default value is <varname>primary</varname>.</p>
+<p>Lists <varname>primary</varname> or <varname>all</varname>
+</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-n &lt;namespace|all&gt;</codeblock>
+</entry>
+<entry>
+The Aerospike namespace to look in for the records.
+</entry>
+<entry>
+<p>Default value is <varname>all</varname>.</p>
+<p>The namespace should be a partitioned namespace. For example, the namespaces starting with the <b>spspd</b> prefix.</p>
+<p>If <varname>all</varname> is specified, then the tool lists from all the partitioned namespaces.</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-m  &lt;max|all&gt;</codeblock>
+</entry>
+<entry>
+The maximum number of records to be listed.
+</entry>
+<entry>
+<p>Default value is <varname>all</varname>.</p>
+<p>If <varname>all</varname> is specified, then the tool does not stop until it has processed all of the records.</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-o &lt;dir&gt;</codeblock>
+</entry>
+<entry>
+<p>The output directory where the listed records are placed.</p>
+<p>In the specified directory, the tool creates a new directory bearing the name of the selected object type and the current timestamp.</p><ol>
+<li>
+<p>Ensure that you have sufficient disk space in the file system mount where the output directory is located.</p>
+</li>
+<li>
+<p>Ensure that the user used to execute the tool has write permissions on the specified output directory.</p>
+</li>
+</ol>
+</entry>
+<entry>
+Default value is <varname>/opt/tpa/logs/</varname>.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-t &lt;nThreads&gt;</codeblock>
+</entry>
+<entry>
+Displays the number of processing threads.
+</entry>
+<entry>
+<p>Default value is equal to half the number of CPUs or VCPUs on the node.</p>
+<p>A high number of processing threads increase the CPU utilization of the node. On the other hand, a lower processing thread count may engage Aerospike query threads for longer durations.</p>
+<p>Nokia recommends you to select the number of processing threads nearest to the number of CPUs.</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-f &lt;nFiles&gt;</codeblock>
+</entry>
+<entry>
+Displays the number of out files.
+</entry>
+<entry>
+<p>Default value is equal to the number of processing threads.</p>
+<p>Nokia recommends you to keep the number of out files the same as the number of processing threads.</p>
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-q &lt;nCapacity&gt;</codeblock>
+</entry>
+<entry>
+Displays the capacity of queue in thread pool.
+</entry>
+<entry>
+Default value is 100k.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-r &lt;heap&gt;</codeblock>
+</entry>
+<entry>
+Displays the heap size (in MB) for database dump process.
+</entry>
+<entry>
+This option is set depending upon the available RAM.
+</entry>
+</row>
+<row>
+<entry>
+<codeblock>-F</codeblock>
+</entry>
+<entry>
+Forces the db-list tool to execute on active OAME node.
+</entry>
+<entry/>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section><title>Example output</title>
+<p>Output similar to the following screenshots appear when you run the db-list tool as a <uicontrol>root</uicontrol> user with no arguments:</p>
+<fig>
+<title>db-list tool</title>
+<!--MMO resource relative URI: ../Graphics/dblistOPnew1_default.png-->
+    <image href="../images/dblistopnew1_default.png"/>
+</fig>
+<p>The tool asks for a confirmation before proceeding with its task.</p>
+<fig>
+<title>db-list confirm</title>
+<!--MMO resource relative URI: ../Graphics/dblist2confirm_default.png-->
+    <image href="../images/dblist2confirm_default.png"/>
+</fig>
+<p>The tool also prints progress in terms of the number of records processed after every 30 seconds.</p>
+<fig>
+<title>db-list print</title>
+<!--MMO resource relative URI: ../Graphics/dblistprint2_default.png-->
+    <image href="../images/dblistprint2_default.png"/>
+</fig>
+</section>
+</conbody></concept>
